@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('operating_sides', function (Blueprint $table) {
+        Schema::create('operating_sites', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
         });
@@ -22,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('operating_sides');
+        Schema::dropIfExists('operating_sites');
     }
 };

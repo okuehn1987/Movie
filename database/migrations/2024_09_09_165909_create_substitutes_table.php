@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('supervisor_substitutes', function (Blueprint $table) {
+        Schema::create('substitutes', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
         });
@@ -22,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('supervisor_substitutes');
+        Schema::dropIfExists('substitutes');
     }
 };
