@@ -59,9 +59,13 @@ class User extends Authenticatable
     {
         return $this->belongsTo(User::class);
     }
-    public function substitutes()
+    public function isSubstitutedBy()
     {
-        return $this->hasMany(User::class);
+        return $this->belongsToMany(User::class, 'substitutes', 'user_id', 'substitute_id');
+    }
+    public function isSubstitutionFor()
+    {
+        return $this->belongsToMany(User::class, 'substitutes', 'substitute_id', 'user_id');
     }
     public function absences()
     {

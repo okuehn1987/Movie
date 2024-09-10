@@ -17,6 +17,18 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         Organization::factory(3)->has(OperatingSite::factory(3)->has(User::factory(10)))->create();
-        $admin = User::create(['operating_site_id' => 1, 'password' => Hash::make('admin'), 'email' => 'admin@admin.com', 'name' => 'admin', 'role' => 'super-admin']);
+        $admin = User::create([
+            'operating_site_id' => 1,
+            'password' => Hash::make('admin'),
+            'email' => 'admin@admin.com',
+            'name' => 'admin',
+            'role' => 'super-admin'
+        ]);
+        $admin->isSubstitutedBy()->attach(User::find(1));
+        $admin->isSubstitutedBy()->attach(User::find(2));
+        $admin->isSubstitutedBy()->attach(User::find(3));
+        $admin->isSubstitutionFor()->attach(User::find(3));
+        $admin->isSubstitutionFor()->attach(User::find(5));
+        $admin->isSubstitutionFor()->attach(User::find(6));
     }
 }
