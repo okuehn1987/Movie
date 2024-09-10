@@ -6,13 +6,15 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
+    /**s
      * Run the migrations.
      */
     public function up(): void
     {
         Schema::create('special_working_hours_factors', function (Blueprint $table) {
             $table->id();
+            $table->softDeletes();
+            $table->foreignId('organization_id');
             $table->timestamps();
         });
     }

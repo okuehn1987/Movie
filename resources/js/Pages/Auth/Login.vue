@@ -1,92 +1,106 @@
 <script setup lang="ts">
-import Checkbox from '@/Components/Checkbox.vue';
-import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import GuestLayout from "@/Layouts/GuestLayout.vue";
+import { Link, useForm } from "@inertiajs/vue3";
+// import { useOrganizationSettings } from "@/OrganizationTemplates";
 
 defineProps<{
     canResetPassword?: boolean;
     status?: string;
 }>();
 
-const form = useForm({
-    email: '',
-    password: '',
-    remember: false,
+const adminForm = useForm({
+    email: "",
+    password: "",
 });
 
-const submit = () => {
-    form.post(route('login'), {
+const adminLogin = () => {
+    adminForm.post(route("login"), {
         onFinish: () => {
-            form.reset('password');
+            adminForm.reset("password");
         },
     });
 };
+// const settings = useOrganizationSettings();
 </script>
 
 <template>
-    <GuestLayout>
-        <Head title="Log in" />
-
-        <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
-            {{ status }}
-        </div>
-
-        <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Email" />
-
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autofocus
-                    autocomplete="username"
-                />
-
-                <InputError class="mt-2" :message="form.errors.email" />
+    <GuestLayout title="Login">
+        <div class="flex-grow-1 d-flex flex-column justify-center">
+            <div v-if="status">
+                <v-alert
+                    v-if="status"
+                    type="success"
+                    class="mb-4"
+                    :text="status"
+                    variant="tonal"
+                ></v-alert>
             </div>
+            <v-form @submit.prevent="adminLogin" class="mt-8">
+                <v-text-field
+                    v-model="adminForm.email"
+                    :readonly="adminForm.processing"
+                    :errorMessages="adminForm.errors.email"
+                    prepend-inner-icon="mdi-email-outline"
+                    class="mb-2"
+                    variant="solo"
+                    clearable
+                    label="Email"
+                ></v-text-field>
 
-            <div class="mt-4">
-                <InputLabel for="password" value="Password" />
-
-                <TextInput
-                    id="password"
+                <v-text-field
+                    v-model="adminForm.password"
+                    :readonly="adminForm.processing"
+                    :errorMessages="adminForm.errors.password"
                     type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password"
-                    required
-                    autocomplete="current-password"
-                />
-
-                <InputError class="mt-2" :message="form.errors.password" />
-            </div>
-
-            <div class="block mt-4">
-                <label class="flex items-center">
-                    <Checkbox name="remember" v-model:checked="form.remember" />
-                    <span class="ms-2 text-sm text-gray-600">Remember me</span>
-                </label>
-            </div>
-
-            <div class="flex items-center justify-end mt-4">
-                <Link
-                    v-if="canResetPassword"
-                    :href="route('password.request')"
-                    class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    variant="solo"
+                    prepend-inner-icon="mdi-lock-outline"
+                    clearable
+                    label="Passwort"
+                ></v-text-field>
+                <v-btn
+                    :loading="adminForm.processing"
+                    block
+                    color="primary"
+                    size="large"
+                    type="submit"
+                    variant="elevated"
+                    >Login</v-btn
                 >
-                    Forgot your password?
-                </Link>
-
-                <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Log in
-                </PrimaryButton>
+                <v-card-text
+                    class="pb-0 px-0 text-center mt-4 d-flex justify-space-between"
+                >
+                    <Link
+                        :href="route('password.request')"
+                        class="text-primary text-decoration-none py-2"
+                    >
+                        <v-icon icon="mdi-lock"></v-icon>
+                        Passwort vergessen?
+                    </Link>
+                </v-card-text>
+            </v-form>
+        </div>
+        <!-- <template #bottom>
+            <div
+                class="d-flex justify-space-evenly w-100"
+                style="max-width: 600px"
+            >
+                <Link
+                    :href="route('impressum')"
+                    class="text-primary text-decoration-none py-2"
+                    >Impressum</Link
+                >
+                <Link
+                    :href="route('datenschutz')"
+                    class="text-primary text-decoration-none py-2"
+                    >Datenschutz</Link
+                >
+                <Link
+                    :href="route('contact')"
+                    class="text-primary text-decoration-none py-2"
+                    >Kontakt</Link
+                >
             </div>
-        </form>
+        </template> -->
     </GuestLayout>
 </template>
+<style scoped></style>

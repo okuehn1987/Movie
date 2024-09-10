@@ -13,16 +13,17 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->softDeletes();
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->enum('role', ['super-admin', 'employee'])->default('employee');
+            $table->foreignId('operating_site_id');
+            $table->foreignId('group_id')->nullable();
+            $table->foreignId('supervisor_id')->nullable()->references('id')->on('users');
             $table->rememberToken();
             $table->timestamps();
-            $table->enum('roles', ['super-admin', 'employee']);
-            $table->foreignId('operating_side_id');
-            $table->foreignId('group_id');
-            $table->foreignId('supervisor_id')->references('id')->on('users');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

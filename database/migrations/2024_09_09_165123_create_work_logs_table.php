@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('work_logs', function (Blueprint $table) {
             $table->id();
+            $table->softDeletes();
+            $table->foreignId('user_id');
             $table->timestamps();
         });
     }

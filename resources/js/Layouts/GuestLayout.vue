@@ -1,20 +1,46 @@
 <script setup lang="ts">
-import ApplicationLogo from '@/Components/ApplicationLogo.vue';
-import { Link } from '@inertiajs/vue3';
+import { Head } from "@inertiajs/vue3";
+
+defineProps<{
+    title: string;
+}>();
 </script>
 
 <template>
-    <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-        <div>
-            <Link href="/">
-                <ApplicationLogo class="w-20 h-20 fill-current text-gray-500" />
-            </Link>
+    <v-app>
+        <Head :title="title"></Head>
+        <div class="h-100 d-flex align-center flex-column text-white">
+            <div
+                class="w-100 d-flex flex-column align-center justify-center"
+                style="flex: 1; height: 0"
+            >
+                <div
+                    class="w-100 px-6 d-flex justify-center"
+                    style="
+                        flex: 1;
+                        height: 0;
+                        overflow: auto;
+                        max-width: 600px;
+                        padding-top: calc(8vh + 10px);
+                        margin-top: -8vh;
+                    "
+                >
+                    <slot />
+                </div>
+            </div>
+            <slot name="bottom" />
         </div>
-
-        <div
-            class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg"
-        >
-            <slot />
-        </div>
-    </div>
+    </v-app>
 </template>
+
+<style>
+.v-application__wrap {
+    height: 100dvh;
+}
+.v-bottom-navigation {
+    position: absolute !important;
+}
+#app {
+    height: 100%;
+}
+</style>

@@ -1,98 +1,84 @@
 <script setup lang="ts">
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
-import { Link, useForm, usePage } from '@inertiajs/vue3';
+import { useForm, usePage, router } from "@inertiajs/vue3";
 
 defineProps<{
-    mustVerifyEmail?: Boolean;
-    status?: String;
+    mustVerifyEmail?: boolean;
+    status?: string;
 }>();
 
 const user = usePage().props.auth.user;
 
 const form = useForm({
-    name: user.name,
-    email: user.email,
+    name: user!.name,
+    email: user!.email,
 });
 </script>
 
 <template>
-    <section>
-        <header>
-            <h2 class="text-lg font-medium text-gray-900">Profile Information</h2>
-
-            <p class="mt-1 text-sm text-gray-600">
-                Update your account's profile information and email address.
+    <v-card class="h-100 d-flex flex-column pa-3">
+        <v-card-title>
+            <h5>Profil-Informationen</h5>
+        </v-card-title>
+        <v-card-text style="flex-grow: 0">
+            <p>
+                Aktualisieren Sie die Profilinformationen und die E-Mail-Adresse
+                Ihres Kontos.
             </p>
-        </header>
+        </v-card-text>
 
-        <form @submit.prevent="form.patch(route('profile.update'))" class="mt-6 space-y-6">
-            <div>
-                <InputLabel for="name" value="Name" />
-
-                <TextInput
+        <form
+            @submit.prevent="form.patch(route('profile.update'))"
+            class="d-flex flex-column flex-grow-1"
+        >
+            <div class="flex-grow-1">
+                <v-text-field
                     id="name"
                     type="text"
-                    class="mt-1 block w-full"
                     v-model="form.name"
+                    label="Name"
                     required
-                    autofocus
                     autocomplete="name"
+                    :error-messages="form.errors.name"
                 />
-
-                <InputError class="mt-2" :message="form.errors.name" />
-            </div>
-
-            <div>
-                <InputLabel for="email" value="Email" />
-
-                <TextInput
+                <v-text-field
                     id="email"
                     type="email"
-                    class="mt-1 block w-full"
                     v-model="form.email"
+                    label="Email"
                     required
                     autocomplete="username"
+                    :error-messages="form.errors.email"
                 />
-
-                <InputError class="mt-2" :message="form.errors.email" />
             </div>
 
-            <div v-if="mustVerifyEmail && user.email_verified_at === null">
-                <p class="text-sm mt-2 text-gray-800">
-                    Your email address is unverified.
-                    <Link
-                        :href="route('verification.send')"
-                        method="post"
-                        as="button"
-                        class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    >
-                        Click here to re-send the verification email.
-                    </Link>
-                </p>
-
-                <div
-                    v-show="status === 'verification-link-sent'"
-                    class="mt-2 font-medium text-sm text-green-600"
+            <v-alert
+                class="mb-3"
+                v-if="mustVerifyEmail && user?.email_verified_at === null"
+            >
+                Deine E-Mail-Adresse wurde nicht verifiziert.
+                <span
+                    role="button"
+                    @click.stop="router.post(route('verification.send'))"
+                    style="text-decoration: underline"
                 >
-                    A new verification link has been sent to your email address.
+                    Klicken Sie hier, um die Verifizierungs-E-Mail erneut zu
+                    senden.
+                </span>
+
+                <div v-show="status === 'verification-link-sent'">
+                    Ein neuer Verifizierungslink wurde an Ihre E-Mail-Adresse
+                    gesendet.
                 </div>
-            </div>
+            </v-alert>
 
-            <div class="flex items-center gap-4">
-                <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
-
-                <Transition
-                    enter-active-class="transition ease-in-out"
-                    enter-from-class="opacity-0"
-                    leave-active-class="transition ease-in-out"
-                    leave-to-class="opacity-0"
+            <div class="text-end">
+                <v-btn type="submit" color="primary" :loading="form.processing"
+                    >Speichern</v-btn
                 >
-                    <p v-if="form.recentlySuccessful" class="text-sm text-gray-600">Saved.</p>
-                </Transition>
+                <v-snackbar v-model="form.recentlySuccessful"
+                    >Gespeichert</v-snackbar
+                >
             </div>
         </form>
-    </section>
+    </v-card>
 </template>

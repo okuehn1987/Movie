@@ -1,6 +1,6 @@
 import "./bootstrap";
 import "../css/app.css";
-
+import "@mdi/font/css/materialdesignicons.css";
 import { createApp, h, DefineComponent } from "vue";
 import { createInertiaApp } from "@inertiajs/vue3";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
@@ -13,9 +13,37 @@ import "vuetify/styles";
 import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
+import { VCalendar } from "vuetify/labs/VCalendar";
 
 const vuetify = createVuetify({
-    components,
+    theme: {
+        defaultTheme: "lightTheme",
+        themes: {
+            lightTheme: {
+                dark: false,
+                colors: {
+                    primary: "#47545D",
+                    darkPrimary: "#47545D",
+                    lightPrimary: "#fff",
+                    secondary: "#868f96",
+                    accent: "#c09762",
+                    error: "#dc2626",
+                    background: "#EDEEEF",
+                    assistantMessageBackground: "#fefefe",
+                    assistantMessageColor: "#000",
+                    consumerMessageBackground: "#e2ffc7",
+                    consumerMessageColor: "#000",
+                    consumerChatHeaderFooter: "rgb(245, 245, 245)",
+                    consumerChatBackground: "#ebe6e0",
+                    layout: "#47545D",
+                    tableHeader: "#868f96",
+                    "surface-variant": "#fff",
+                    "on-surface-variant": "#000",
+                },
+            },
+        },
+    },
+    components: { ...components, VCalendar },
     directives,
 });
 

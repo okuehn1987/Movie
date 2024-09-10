@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('abscence_types', function (Blueprint $table) {
             $table->id();
+            $table->softDeletes();
+            $table->foreignId('organization_id');
             $table->timestamps();
         });
     }

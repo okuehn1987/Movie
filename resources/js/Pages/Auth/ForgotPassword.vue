@@ -1,59 +1,66 @@
 <script setup lang="ts">
-import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
-import { Head, useForm } from '@inertiajs/vue3';
-
+import GuestLayout from "@/Layouts/GuestLayout.vue";
+import { useForm } from "@inertiajs/vue3";
 defineProps<{
     status?: string;
 }>();
 
 const form = useForm({
-    email: '',
+    email: "",
 });
 
 const submit = () => {
-    form.post(route('password.email'));
+    form.post(route("password.email"));
 };
 </script>
 
 <template>
-    <GuestLayout>
-        <Head title="Forgot Password" />
-
-        <div class="mb-4 text-sm text-gray-600">
-            Forgot your password? No problem. Just let us know your email address and we will email you a password reset
-            link that will allow you to choose a new one.
-        </div>
-
-        <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
-            {{ status }}
-        </div>
-
-        <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Email" />
-
-                <TextInput
+    <GuestLayout title="Forgot Password">
+        <div class="d-flex h-100 justify-center align-center flex-column">
+            <div class="mb-5" v-if="!status">
+                <v-alert color="darkPrimary" variant="plain">
+                    Passwort vergessen? Kein Problem. Geben Sie einfach Ihre
+                    E-Mail-Adresse ein und wir senden Ihnen einen Link zum
+                    Zurücksetzen des Passworts.
+                </v-alert>
+            </div>
+            <div class="mb-5" v-if="status">
+                <v-alert color="success" variant="elevated">
+                    {{ status }}
+                </v-alert>
+            </div>
+            <v-form @submit.prevent="submit" class="w-100 text-center">
+                <v-text-field
                     id="email"
+                    label="Email"
+                    :errorMessages="form.errors.email"
                     type="email"
-                    class="mt-1 block w-full"
+                    class="mt-1 mb-3"
                     v-model="form.email"
+                    variant="solo"
                     required
-                    autofocus
                     autocomplete="username"
+                    style="width: 100%"
                 />
-
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
-
-            <div class="flex items-center justify-end mt-4">
-                <PrimaryButton :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Email Password Reset Link
-                </PrimaryButton>
-            </div>
-        </form>
+                <v-btn
+                    color="primary"
+                    :loading="form.processing"
+                    :disabled="form.processing"
+                    type="submit"
+                    variant="elevated"
+                >
+                    Passwort Zurücksetzen
+                </v-btn>
+                <v-card-text class="pb-0 px-0 text-center mt-4">
+                    <v-btn
+                        :href="route('login')"
+                        class="text-primary btn btn-link text-black mt-2 text-decoration-none"
+                        variant="outlined"
+                    >
+                        Zurück zum Login
+                    </v-btn>
+                </v-card-text>
+            </v-form>
+        </div>
     </GuestLayout>
 </template>

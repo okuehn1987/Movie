@@ -1,96 +1,44 @@
-<script setup lang="ts">
-import { computed, onMounted, onUnmounted, watch } from 'vue';
-
-const props = withDefaults(
-    defineProps<{
-        show?: boolean;
-        maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
-        closeable?: boolean;
-    }>(),
-    {
-        show: false,
-        maxWidth: '2xl',
-        closeable: true,
-    }
-);
-
-const emit = defineEmits(['close']);
-
-watch(
-    () => props.show,
-    () => {
-        if (props.show) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'visible';
-        }
-    }
-);
-
-const close = () => {
-    if (props.closeable) {
-        emit('close');
-    }
-};
-
-const closeOnEscape = (e: KeyboardEvent) => {
-    if (e.key === 'Escape' && props.show) {
-        close();
-    }
-};
-
-onMounted(() => document.addEventListener('keydown', closeOnEscape));
-
-onUnmounted(() => {
-    document.removeEventListener('keydown', closeOnEscape);
-    document.body.style.overflow = 'visible';
-});
-
-const maxWidthClass = computed(() => {
-    return {
-        sm: 'sm:max-w-sm',
-        md: 'sm:max-w-md',
-        lg: 'sm:max-w-lg',
-        xl: 'sm:max-w-xl',
-        '2xl': 'sm:max-w-2xl',
-    }[props.maxWidth];
-});
-</script>
-
 <template>
-    <Teleport to="body">
-        <Transition leave-active-class="duration-200">
-            <div v-show="show" class="fixed inset-0 overflow-y-auto px-4 py-6 sm:px-0 z-50" scroll-region>
-                <Transition
-                    enter-active-class="ease-out duration-300"
-                    enter-from-class="opacity-0"
-                    enter-to-class="opacity-100"
-                    leave-active-class="ease-in duration-200"
-                    leave-from-class="opacity-100"
-                    leave-to-class="opacity-0"
+    <div>
+        <v-dialog v-model="modelValue" @click.stop="updateValue">
+            <v-container
+                style="max-width: 1500px"
+                class="d-flex justify-center"
+            >
+                <v-card
+                    @click.stop="() => {}"
+                    :link="false"
+                    style="max-height: calc(100vh - 80px); overflow-y: auto"
+                    :style="{ width: width ?? '100%' }"
                 >
-                    <div v-show="show" class="fixed inset-0 transform transition-all" @click="close">
-                        <div class="absolute inset-0 bg-gray-500 opacity-75" />
-                    </div>
-                </Transition>
-
-                <Transition
-                    enter-active-class="ease-out duration-300"
-                    enter-from-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                    enter-to-class="opacity-100 translate-y-0 sm:scale-100"
-                    leave-active-class="ease-in duration-200"
-                    leave-from-class="opacity-100 translate-y-0 sm:scale-100"
-                    leave-to-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                >
-                    <div
-                        v-show="show"
-                        class="mb-6 bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:w-full sm:mx-auto"
-                        :class="maxWidthClass"
+                    <v-card-title
+                        class="text-center font-weight-bold py-6 text-h5 text-primary text-uppercase"
+                        v-if="title"
                     >
-                        <slot v-if="show" />
+                        {{ title }}
+                    </v-card-title>
+                    <div class="px-6 pb-6" :class="{ 'pt-6': !title }">
+                        <slot></slot>
                     </div>
-                </Transition>
-            </div>
-        </Transition>
-    </Teleport>
+                </v-card>
+            </v-container>
+        </v-dialog>
+    </div>
 </template>
+<script setup lang="ts">
+import { toRefs } from "vue";
+
+const props = defineProps<{
+    modelValue: boolean;
+    title?: string;
+    width?: string;
+}>();
+const { modelValue } = toRefs(props);
+
+const emit = defineEmits<{
+    "update:modelValue": [value: boolean];
+}>();
+function updateValue() {
+    emit("update:modelValue", !modelValue.value);
+}
+</script>

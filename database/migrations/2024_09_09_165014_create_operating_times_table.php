@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('operating_times', function (Blueprint $table) {
             $table->id();
+            $table->softDeletes();
+            $table->foreignId('operating_site_id');
             $table->timestamps();
         });
     }

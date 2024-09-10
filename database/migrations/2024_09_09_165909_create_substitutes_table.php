@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('substitutes', function (Blueprint $table) {
             $table->id();
+            $table->softDeletes();
+            $table->foreignId('user_id');
+            $table->foreignId('substitute_id')->references('id')->on('users');
             $table->timestamps();
         });
     }

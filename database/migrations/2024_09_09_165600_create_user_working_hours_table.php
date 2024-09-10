@@ -13,7 +13,10 @@ return new class extends Migration
     {
         Schema::create('user_working_hours', function (Blueprint $table) {
             $table->id();
+            $table->softDeletes();
+            $table->foreignId('user_id');
             $table->timestamps();
+            
         });
     }
 
