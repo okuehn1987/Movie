@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import AdminLayout from "@/Layouts/AdminLayout.vue";
+import { AbscenceType } from "@/types/types";
 
 defineProps<{
-    abscenceTypes: unknown[];
+    abscenceTypes: AbscenceType[];
+    types: string[];
 }>();
 </script>
 <template>
-    <AdminLayout title="Abwesenheitsgründe">{{ abscenceTypes }}</AdminLayout>
+    <AdminLayout title="Abwesenheitsgründe"
+        >{{ abscenceTypes }} - {{ types }}</AdminLayout
+    >
 </template>

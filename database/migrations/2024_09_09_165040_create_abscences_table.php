@@ -16,6 +16,10 @@ return new class extends Migration
             $table->softDeletes();
             $table->foreignId('abscence_type_id');
             $table->foreignId('user_id');
+            $table->string("start");
+            $table->string("end");
+            $table->string("date");
+            $table->enum("status", ["created", "declined", "accepted"]);
             $table->timestamps();
         });
     }

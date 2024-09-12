@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('groups', function (Blueprint $table) {
             $table->id();
             $table->softDeletes();
+            $table->string("name");
             $table->foreignId('organization_id');
             $table->timestamps();
         });

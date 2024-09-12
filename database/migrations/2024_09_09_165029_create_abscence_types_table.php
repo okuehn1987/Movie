@@ -14,6 +14,19 @@ return new class extends Migration
         Schema::create('abscence_types', function (Blueprint $table) {
             $table->id();
             $table->softDeletes();
+            $table->string("name");
+            $table->string("abbreviation");
+            $table->enum("type", [
+                "Unbezahlter Urlaub",
+                "Ausbildung/ Berufsschule",
+                "Fort- und Weiterbildung",
+                "AZV-Tag",
+                "Bildungsurlaub",
+                "Sonderurlaub",
+                "Elternzeit",
+                "Urlaub",
+                "Andere"
+            ]);
             $table->foreignId('organization_id');
             $table->timestamps();
         });

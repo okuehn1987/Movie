@@ -10,6 +10,8 @@ class OperatingSite extends Model
 {
     use HasFactory, SoftDeletes, ScopeInOrganization;
 
+    protected $guarded = [];
+
     public function operatingTimes()
     {
         return $this->hasMany(OperatingTime::class);

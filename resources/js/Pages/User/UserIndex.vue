@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import AdminLayout from "@/Layouts/AdminLayout.vue";
+import { User } from "@/types/types";
 
 defineProps<{
-    users: unknown[];
+    users: User[];
 }>();
 </script>
 <template>

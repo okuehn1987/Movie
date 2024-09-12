@@ -11,12 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('operating_sites', function (Blueprint $table) {
+        Schema::create('custom_address', function (Blueprint $table) {
             $table->id();
-            $table->softDeletes();
-            $table->string("email")->nullable();
-            $table->string("phone_number")->nullable();
-            $table->string("fax")->nullable();
             $table->string("street")->nullable();
             $table->string("house_number")->nullable();
             $table->string("address_suffix")->nullable();
@@ -24,8 +20,7 @@ return new class extends Migration
             $table->string("city")->nullable();
             $table->string("zip")->nullable();
             $table->string("federal_state")->nullable();
-            $table->foreignId('organization_id');
-            $table->boolean("is_head_quarter")->default(false);
+            $table->foreignId("organization_id");
             $table->timestamps();
         });
     }
@@ -35,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('operating_sites');
+        Schema::dropIfExists('custom_address');
     }
 };

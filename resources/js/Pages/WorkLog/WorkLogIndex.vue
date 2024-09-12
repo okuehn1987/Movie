@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import AdminLayout from "@/Layouts/AdminLayout.vue";
+import { WorkLog } from "@/types/types";
 
 defineProps<{
-    workLogs: unknown[];
+    workLogs: WorkLog[];
 }>();
 </script>
 <template>

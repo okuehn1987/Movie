@@ -43,7 +43,6 @@ const adminLogin = () => {
                     prepend-inner-icon="mdi-email-outline"
                     class="mb-2"
                     variant="solo"
-                    clearable
                     label="Email"
                 ></v-text-field>
 
@@ -54,7 +53,6 @@ const adminLogin = () => {
                     type="password"
                     variant="solo"
                     prepend-inner-icon="mdi-lock-outline"
-                    clearable
                     label="Passwort"
                 ></v-text-field>
                 <v-btn

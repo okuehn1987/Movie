@@ -10,6 +10,6 @@ class AbscenceTypeController extends Controller
 {
     public function index()
     {
-        return Inertia::render('AbscenceType/AbscenceTypeIndex', ['abscenceTypes' => AbscenceType::inOrganization()->get()]);
+        return Inertia::render('AbscenceType/AbscenceTypeIndex', ['abscenceTypes' => AbscenceType::inOrganization()->get(), 'types' => AbscenceType::getTypes()]);
     }
 }

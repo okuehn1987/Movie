@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import AdminLayout from "@/Layouts/AdminLayout.vue";
+import { OperatingSite } from "@/types/types";
 
 defineProps<{
-    operatingSites: unknown[];
+    operatingSites: OperatingSite[];
 }>();
 </script>
 <template>

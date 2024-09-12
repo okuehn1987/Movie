@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import AdminLayout from "@/Layouts/AdminLayout.vue";
+import { SpecialWorkingHoursFactor } from "@/types/types";
 
 defineProps<{
-    factors: unknown[];
+    factors: SpecialWorkingHoursFactor[];
 }>();
 </script>
 <template>

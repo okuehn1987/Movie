@@ -19,9 +19,9 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
-        'password',
     ];
 
     /**
@@ -82,5 +82,17 @@ class User extends Authenticatable
     public function organization()
     {
         return $this->belongsToThrough(Organization::class, OperatingSite::class);
+    }
+    public function owns()
+    {
+        return $this->hasOne(Organization::class, 'organization_id');
+    }
+    public function userWorkingHours()
+    {
+        return $this->hasMany(UserWorkingHour::class);
+    }
+    public function userLeaveDays()
+    {
+        return $this->hasMany(UserLeaveDay::class);
     }
 }

@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->softDeletes();
             $table->foreignId('user_id');
+            $table->dateTime("start");
+            $table->dateTime("end");
             $table->timestamps();
         });
     }

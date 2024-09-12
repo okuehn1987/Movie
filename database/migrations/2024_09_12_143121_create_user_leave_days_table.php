@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('operating_times', function (Blueprint $table) {
+        Schema::create('user_leave_days', function (Blueprint $table) {
             $table->id();
             $table->softDeletes();
-            $table->enum("type", ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]);
-            $table->string("start");
-            $table->string("end");
-            $table->foreignId('operating_site_id');
+            $table->foreignId('user_id');
+            $table->integer("leave_days");
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('operating_times');
+        Schema::dropIfExists('user_leave_days');
     }
 };

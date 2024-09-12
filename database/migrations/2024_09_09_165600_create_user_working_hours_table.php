@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->softDeletes();
             $table->foreignId('user_id');
+            $table->float("weekly_working_hours");
             $table->timestamps();
-            
         });
     }
 

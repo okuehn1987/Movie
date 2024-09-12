@@ -9,6 +9,7 @@ trait ScopeInOrganization
     public static function scopeInOrganization(Builder $builder)
     {
         $org = Organization::getCurrent();
+        if (!$org) return $builder;
         if (new self instanceof \App\Models\Abscence) {
             return $builder->whereIn('abscence_type_id', AbscenceType::select('id')->inOrganization());
         }

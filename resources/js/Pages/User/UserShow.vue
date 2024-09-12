@@ -2,9 +2,9 @@
 import AdminLayout from "@/Layouts/AdminLayout.vue";
 
 defineProps<{
-    organizations: unknown[];
+    user: unknown;
 }>();
 </script>
 <template>
-    <AdminLayout title="Organisationen">{{ organizations }}</AdminLayout>
+    <AdminLayout title="User Show">{{ user }}</AdminLayout>
 </template>

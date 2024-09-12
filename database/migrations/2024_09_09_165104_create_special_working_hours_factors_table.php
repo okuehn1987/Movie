@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->softDeletes();
             $table->foreignId('organization_id');
+            $table->enum("type", ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday", "holiday", "nightshift"]);
+            $table->float("extra_charge");
             $table->timestamps();
         });
     }

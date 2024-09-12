@@ -12,4 +12,9 @@ class UserController extends Controller
     {
         return Inertia::render('User/UserIndex', ['users' => User::inOrganization()->get()]);
     }
+
+    public function show(User $user)
+    {
+        return Inertia::render('User/UserShow', ['user' => $user]);
+    }
 }

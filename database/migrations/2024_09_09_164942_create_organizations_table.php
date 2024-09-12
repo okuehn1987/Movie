@@ -14,6 +14,14 @@ return new class extends Migration
         Schema::create('organizations', function (Blueprint $table) {
             $table->id();
             $table->softDeletes();
+            $table->string('name')->unique();
+            $table->foreignId('owner_id')->nullable()->references('id')->on('users')->onDelete('set null');
+            $table->string("tax_registration_id")->nullable();
+            $table->string("commercial_registration_id")->nullable();
+            $table->string("website")->nullable();
+            $table->string("logo")->nullable();
+            $table->boolean("night_surcharges")->default(false);
+            $table->boolean("vacation_limitation_period")->default(false);
             $table->timestamps();
         });
     }

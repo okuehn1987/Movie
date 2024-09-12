@@ -11,6 +11,10 @@ class Organization extends Model
 {
     use HasFactory, SoftDeletes, ScopeInOrganization;
 
+    protected $fillable = [
+        'name'
+    ];
+
     public function operatingSites()
     {
         return $this->hasMany(OperatingSite::class);
@@ -32,12 +36,21 @@ class Organization extends Model
         return $this->hasMany(SpecialWorkingHoursFactor::class);
     }
 
+    public function owner()
+    {
+        return $this->hasOne(User::class, 'owner_id');
+    }
+    public function customAddresses()
+    {
+        return $this->hasMany(CustomAddress::class);
+    }
+
     public static function getCurrent()
     {
         if (Auth::check()) return Auth::user()->organization;
-        // return Organization::where('name', Organization::getOrganizationNameByDomain())->first();
         return Organization::find(1);
     }
+
 
     public static function getOrganizationNameByDomain()
     {
