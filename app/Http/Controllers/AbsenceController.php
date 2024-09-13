@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class AbscenceController extends Controller
+class AbsenceController extends Controller
 {
     //
 }

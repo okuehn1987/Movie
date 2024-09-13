@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Abscence extends Model
+class Absence extends Model
 {
     use HasFactory, SoftDeletes, ScopeInOrganization;
 
@@ -14,8 +14,8 @@ class Abscence extends Model
     {
         return $this->belongsTo(User::class);
     }
-    public function abscenceType()
+    public function absenceType()
     {
-        return $this->belongsTo(AbscenceType::class);
+        return $this->belongsTo(AbsenceType::class);
     }
 }

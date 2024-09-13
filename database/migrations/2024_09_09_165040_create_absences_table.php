@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('abscences', function (Blueprint $table) {
+        Schema::create('absences', function (Blueprint $table) {
             $table->id();
             $table->softDeletes();
-            $table->foreignId('abscence_type_id');
+            $table->foreignId('absence_type_id');
             $table->foreignId('user_id');
             $table->string("start");
             $table->string("end");
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('abscences');
+        Schema::dropIfExists('absences');
     }
 };

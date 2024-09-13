@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('abscence_types', function (Blueprint $table) {
+        Schema::create('absence_types', function (Blueprint $table) {
             $table->id();
             $table->softDeletes();
             $table->string("name");
@@ -27,6 +27,7 @@ return new class extends Migration
                 "Urlaub",
                 "Andere"
             ]);
+            $table->boolean('requires_approval')->default(false);
             $table->foreignId('organization_id');
             $table->timestamps();
         });
@@ -37,6 +38,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('abscence_types');
+        Schema::dropIfExists('absence_types');
     }
 };

@@ -23,9 +23,9 @@ class Organization extends Model
     {
         return $this->hasManyThrough(User::class, OperatingSite::class);
     }
-    public function abscenceTypes()
+    public function absenceTypes()
     {
-        return $this->hasMany(AbscenceType::class);
+        return $this->hasMany(AbsenceType::class);
     }
     public function groups()
     {

@@ -94,9 +94,9 @@ export type OperatingTime = DBObject &
         operating_site_id: OperatingSite["id"];
     };
 
-export type Abscence = DBObject &
+export type Absence = DBObject &
     SoftDelete & {
-        abscence_type_id: AbscenceType["id"];
+        absence_type_id: AbsenceType["id"];
         user_id: User["id"];
         start: string;
         end: string;
@@ -104,7 +104,7 @@ export type Abscence = DBObject &
         status: Status;
     };
 
-export type AbscenceType = DBObject &
+export type AbsenceType = DBObject &
     SoftDelete & {
         name: string;
         abbreviation: string;

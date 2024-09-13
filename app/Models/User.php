@@ -69,7 +69,7 @@ class User extends Authenticatable
     }
     public function absences()
     {
-        return $this->hasMany(Abscence::class);
+        return $this->hasMany(Absence::class);
     }
     public function group()
     {

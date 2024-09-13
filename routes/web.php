@@ -18,8 +18,8 @@ Route::middleware(['auth', HasOrganizationAccess::class])->group(function () {
     Route::singleton('profile', ProfileController::class)->only(['edit', 'update', 'destroy'])->destroyable();
     Route::resource('organization', OrganizationController::class)->only(['index', 'store', 'destroy']);
     Route::resource('organization', OrganizationController::class)->only(['show', 'update']);
-    Route::resource('abscence', AbscenceController::class)->only(['update', 'store']);
-    Route::resource('abscenceType', AbscenceTypeController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::resource('absence', AbsenceController::class)->only(['update', 'store']);
+    Route::resource('absenceType', AbsenceTypeController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('specialWorkingHoursFactor', SpecialWorkingHoursFactorController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('group', GroupController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('workLog', WorkLogController::class)->only(['index', 'store', 'update']);

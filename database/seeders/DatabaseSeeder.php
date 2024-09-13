@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\AbscenceType;
+use App\Models\AbsenceType;
 use App\Models\OperatingSite;
 use App\Models\Organization;
 use App\Models\User;
@@ -19,8 +19,8 @@ class DatabaseSeeder extends Seeder
     {
         Organization::factory(3)->has(OperatingSite::factory(3)->has(User::factory(10)))->create();
         foreach (Organization::all() as $org) {
-            foreach (AbscenceType::$DEFAULTS as $type) {
-                AbscenceType::factory([
+            foreach (AbsenceType::$DEFAULTS as $type) {
+                AbsenceType::factory([
                     "organization_id" => $org->id,
                     'type' => $type['name'],
                     ...$type,

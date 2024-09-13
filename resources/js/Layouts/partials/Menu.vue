@@ -24,9 +24,9 @@ const user = computed(() => page.props.auth.user);
                 <span style="font-size: xx-small">Organisationen</span></v-btn
             >
             <v-btn
-                @click="router.get(route('abscenceType.index'))"
+                @click="router.get(route('absenceType.index'))"
                 :class="
-                    route().current('abscenceType.index')
+                    route().current('absenceType.index')
                         ? 'text-white'
                         : 'text-grey-lighten-1'
                 "

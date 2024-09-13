@@ -33,6 +33,7 @@ defineProps<{
                         </v-toolbar-title>
                     </div>
                     <div class="d-flex justify-end">
+                        <v-btn><v-icon icon="mdi-bell"></v-icon></v-btn>
                         <v-btn class="me-4">
                             <v-icon icon="mdi-menu" size="x-large"></v-icon>
                             <v-menu activator="parent">

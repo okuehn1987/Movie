@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class AbscenceType extends Model
+class AbsenceType extends Model
 {
     use HasFactory, SoftDeletes, ScopeInOrganization;
 
@@ -26,9 +26,9 @@ class AbscenceType extends Model
         return [...collect(self::$DEFAULTS)->map(fn($e) => $e['name']), 'Andere'];
     }
 
-    public function abscences()
+    public function absences()
     {
-        return $this->hasMany(Abscence::class);
+        return $this->hasMany(Absence::class);
     }
     public function organization()
     {
