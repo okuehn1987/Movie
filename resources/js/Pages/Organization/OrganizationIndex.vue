@@ -25,7 +25,6 @@ const organizationForm = useForm({
 });
 
 function submit() {
-    console.log("submit");
     organizationForm.post(route("organization.store"), {
         onSuccess: () => organizationForm.reset(),
     });

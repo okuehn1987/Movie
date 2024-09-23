@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AbsenceType;
 use App\Models\OperatingSite;
+use App\Models\OperatingTime;
 use App\Models\Organization;
+use App\Models\SpecialWorkingHoursFactor;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -59,7 +62,42 @@ class OrganizationController extends Controller
             'operating_site_id' => $operating_site->id
         ]);
         $user->save();
-        $org->update(['owner_id' => $user->id]);
+        $org->owner_id = $user->id;
+        $org->save();
+
+        return back();
+    }
+
+    public function show(Request $request, Organization $organization)
+    {
+        return Inertia::render('Organization/OrganizationShow', [
+            'organization' => $organization,
+            'operating_sites' => OperatingSite::inOrganization()->get(),
+            'operating_times' => OperatingTime::inOrganization()->get(),
+            'absence_types' => AbsenceType::inOrganization()->get(),
+            'special_working_hours_factors' => SpecialWorkingHoursFactor::inOrganization()->get()
+        ]);
+    }
+
+    public function update(Request $request, Organization $organization)
+    {
+        $validated = $request->validate([
+            'name' => "required|string",
+            'tax_registration_id' => "nullable|string",
+            "commercial_registration_id" => "nullable|string",
+            "logo" => "nullable|file",
+            "website" => "nullable|string",
+            "night_surcharges" => "required|boolean",
+            "vacation_limitation_period" => "required|boolean",
+        ]);
+
+        $organization->update($validated);
+
+        return back();
+    }
+    public function destroy(Request $request, Organization $organization)
+    {
+        $organization->delete();
 
         return back();
     }

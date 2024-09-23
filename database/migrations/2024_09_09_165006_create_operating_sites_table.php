@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('operating_sites', function (Blueprint $table) {
             $table->id();
             $table->softDeletes();
+            $table->string('name')->nullable();
             $table->string("email")->nullable();
             $table->string("phone_number")->nullable();
             $table->string("fax")->nullable();

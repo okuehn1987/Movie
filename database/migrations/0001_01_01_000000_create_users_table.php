@@ -25,7 +25,7 @@ return new class extends Migration
             $table->foreignId('supervisor_id')->nullable()->references('id')->on('users');
             $table->foreignId('organization_id')->nullable();
             $table->string("staff_number")->nullable();
-            $table->string("date_of_birth");
+            $table->date("date_of_birth");
             $table->float("home_office_ratio")->nullable();
             $table->string("phone_number")->nullable();
             $table->string("street")->nullable();

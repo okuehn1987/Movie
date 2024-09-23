@@ -98,126 +98,18 @@ const user = computed(() => page.props.auth.user);
                 ><v-icon icon="mdi-map-marker"></v-icon>
                 <span style="font-size: xx-small">Betriebsorte</span></v-btn
             >
-            <!-- <v-btn
-                v-if="user.role === 'super-admin'"
-                @click="router.get(route('organization.index'))"
-                :class="
-                    route().current('organization.index')
-                        ? 'text-white'
-                        : 'text-grey-lighten-1'
-                "
-                style="min-width: 0"
-                class="px-1"
-            >
-                <v-icon icon="mdi-domain"></v-icon>
-                <span style="font-size: xx-small">Organisationen</span>
-            </v-btn>
             <v-btn
-                v-if="user.has_payment_permission"
-                @click="router.get(route('payment.index'))"
+                @click="router.get(route('organization.show'))"
                 :class="
-                    route().current('payment.index')
+                    route().current('organization.show')
                         ? 'text-white'
                         : 'text-grey-lighten-1'
                 "
                 style="min-width: 0"
                 class="px-1"
+                ><v-icon icon="mdi-domain"></v-icon>
+                <span style="font-size: xx-small">Organisation</span></v-btn
             >
-                <v-icon icon="mdi-currency-eur"></v-icon>
-                <span style="font-size: xx-small">Kostenübersicht</span>
-            </v-btn>
-            <v-btn
-                v-if="
-                    user.has_consumer_permission &&
-                    $page.props.flags.consumer_administration
-                "
-                @click="router.get(route('consumer.index'))"
-                :class="
-                    route().current('consumer.index')
-                        ? 'text-white'
-                        : 'text-grey-lighten-1'
-                "
-                style="min-width: 0"
-                class="px-1"
-            >
-                <v-icon icon="mdi-account-injury"></v-icon>
-                <span style="font-size: xx-small"
-                    >{{ useOrganizationSettings().consumer_name }}en</span
-                >
-            </v-btn>
-            <v-btn
-                v-if="
-                    user.has_video_permission &&
-                    $page.props.flags.videos_for_consumers
-                "
-                @click="router.get(route('video.index'))"
-                :class="
-                    route().current('video.index')
-                        ? 'text-white'
-                        : 'text-grey-lighten-1'
-                "
-                style="min-width: 0"
-                class="px-1"
-            >
-                <v-icon icon="mdi-video" />
-                <span style="font-size: xx-small">Videos</span>
-            </v-btn>
-            <v-btn
-                v-if="user.has_file_permission"
-                @click="router.get(route('file.index'))"
-                :class="
-                    route().current('file.index')
-                        ? 'text-white'
-                        : 'text-grey-lighten-1'
-                "
-                style="min-width: 0"
-                class="px-1"
-            >
-                <v-icon icon="mdi-file-document-multiple" />
-                <span style="font-size: xx-small">PDFs</span>
-            </v-btn>
-            <v-btn
-                v-if="user.has_chatAssistant_permission"
-                @click="router.get(route('chatAssistant.index'))"
-                :class="
-                    route().current('chatAssistant.index')
-                        ? 'text-white'
-                        : 'text-grey-lighten-1'
-                "
-                style="min-width: 0"
-                class="px-1"
-            >
-                <v-icon icon="mdi-assistant" />
-                <span style="font-size: xx-small">Assistenten</span>
-            </v-btn>
-            <v-btn
-                v-if="user.has_chat_permission"
-                @click="router.get(route('chat.index'))"
-                :class="
-                    route().current('chat.index')
-                        ? 'text-white'
-                        : 'text-grey-lighten-1'
-                "
-                style="min-width: 0"
-                class="px-1"
-            >
-                <v-icon icon="mdi-chat" />
-                <span style="font-size: xx-small">Chats</span>
-            </v-btn>
-            <v-btn
-                v-if="user.has_user_permission"
-                @click="router.get(route('user.index'))"
-                :class="
-                    route().current('user.index')
-                        ? 'text-white'
-                        : 'text-grey-lighten-1'
-                "
-                style="min-width: 0"
-                class="px-1"
-            >
-                <v-icon icon="mdi-account-group" />
-                <span style="font-size: xx-small">Nutzerverwaltung</span>
-            </v-btn> -->
         </template>
     </v-bottom-navigation>
 </template>

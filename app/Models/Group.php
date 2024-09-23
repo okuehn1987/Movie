@@ -10,6 +10,11 @@ class Group extends Model
 {
     use HasFactory, SoftDeletes, ScopeInOrganization;
 
+    protected $fillable = [
+        'name',
+        'organization_id'
+    ];
+
     public function users()
     {
         return $this->hasMany(User::class);

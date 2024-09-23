@@ -79,6 +79,7 @@ export type Organization = DBObject &
 export type OperatingSite = DBObject &
     Address &
     SoftDelete & {
+        name: string | null;
         email: string | null;
         phone_number: string | null;
         fax: string | null;

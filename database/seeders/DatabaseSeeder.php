@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\AbsenceType;
+use App\Models\Group;
 use App\Models\OperatingSite;
 use App\Models\Organization;
 use App\Models\User;
@@ -17,7 +18,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        Organization::factory(3)->has(OperatingSite::factory(3)->has(User::factory(10)))->create();
+        Organization::factory(3)->has(OperatingSite::factory(3)->has(User::factory(10)))->has(Group::factory(3))->create();
         foreach (Organization::all() as $org) {
             foreach (AbsenceType::$DEFAULTS as $type) {
                 AbsenceType::factory([
