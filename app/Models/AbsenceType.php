@@ -10,6 +10,8 @@ class AbsenceType extends Model
 {
     use HasFactory, SoftDeletes, ScopeInOrganization;
 
+    protected $fillable = ['name', 'type', 'abbreviation', 'requires_approval'];
+
     public static $DEFAULTS = [
         ['name' => 'Unbezahlter Urlaub', 'abbreviation' => 'UB'],
         ['name' => 'Ausbildung/ Berufsschule', 'abbreviation' => 'BS'],

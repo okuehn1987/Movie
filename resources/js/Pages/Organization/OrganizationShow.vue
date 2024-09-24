@@ -9,7 +9,9 @@ import {
 } from "@/types/types";
 import { ref } from "vue";
 import OrganizationSettings from "./OrganizationSettings.vue";
-import WorkTimeSettings from "./WorkTimeSettings.vue";
+import SWHFSettings from "./SWHFSettings.vue";
+import AbsenceTypeIndex from "../AbsenceType/AbsenceTypeIndex.vue";
+
 defineProps<{
     organization: Organization;
     operating_sites: OperatingSite[];
@@ -18,9 +20,11 @@ defineProps<{
     absence_types: AbsenceType[];
 }>();
 
-const tab = ref<"Allgemeine Informationen" | "Arbeitszeiten">(
-    "Allgemeine Informationen"
-);
+const tab = ref<
+    | "Allgemeine Informationen"
+    | "Sonderarbeitszeitfaktor"
+    | "Abwesenheitsgründe"
+>("Allgemeine Informationen");
 </script>
 <template>
     <AdminLayout title="Organisation">
@@ -37,8 +41,13 @@ const tab = ref<"Allgemeine Informationen" | "Arbeitszeiten">(
                         ></v-tab>
                         <v-tab
                             prepend-icon="mdi-clock-outline"
-                            text="Arbeitszeiten"
-                            value="Arbeitszeiten"
+                            text="Sonderarbeitszeitfaktor"
+                            value="Sonderarbeitszeitfaktor"
+                        ></v-tab>
+                        <v-tab
+                            prepend-icon="mdi-clock-outline"
+                            text="Abwesenheitsgründe"
+                            value="Abwesenheitsgründe"
                         ></v-tab>
                     </v-tabs>
                     <v-tabs-window v-model="tab" class="w-100">
@@ -47,9 +56,16 @@ const tab = ref<"Allgemeine Informationen" | "Arbeitszeiten">(
                                 :organization
                             ></OrganizationSettings>
                         </v-tabs-window-item>
-                        <v-tabs-window-item value="Arbeitszeiten">
-                            <WorkTimeSettings></WorkTimeSettings
-                        ></v-tabs-window-item>
+                        <v-tabs-window-item value="Sonderarbeitszeitfaktor">
+                            <SWHFSettings
+                                :special_working_hours_factors
+                            ></SWHFSettings>
+                        </v-tabs-window-item>
+                        <v-tabs-window-item value="Abwesenheitsgründe">
+                            <AbsenceTypeIndex
+                                :absenceTypes="absence_types"
+                            ></AbsenceTypeIndex>
+                        </v-tabs-window-item>
                     </v-tabs-window>
                 </div>
             </v-card>

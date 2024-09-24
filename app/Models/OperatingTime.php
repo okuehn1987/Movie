@@ -10,6 +10,8 @@ class OperatingTime extends Model
 {
     use HasFactory, SoftDeletes, ScopeInOrganization;
 
+    protected $fillable = ['operating_site_id', 'start', 'end', 'type'];
+
     public function operatingSite()
     {
         return $this->belongsTo(OperatingSite::class);
