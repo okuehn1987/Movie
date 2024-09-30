@@ -77,6 +77,7 @@ defineProps<{
 .v-application__wrap {
     height: 100dvh;
 }
+
 #app {
     height: 100%;
 }

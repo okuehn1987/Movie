@@ -26,6 +26,7 @@ return new class extends Migration
             $table->foreignId('organization_id')->nullable();
             $table->string("staff_number")->nullable();
             $table->date("date_of_birth");
+            $table->boolean("home_office")->default(false);
             $table->float("home_office_ratio")->nullable();
             $table->string("phone_number")->nullable();
             $table->string("street")->nullable();

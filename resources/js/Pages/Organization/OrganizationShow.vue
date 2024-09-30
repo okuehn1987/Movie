@@ -9,7 +9,7 @@ import {
 } from "@/types/types";
 import { ref } from "vue";
 import OrganizationSettings from "./OrganizationSettings.vue";
-import SWHFSettings from "./SWHFSettings.vue";
+import SWHFIndex from "../SWHF/SWHFIndex.vue";
 import AbsenceTypeIndex from "../AbsenceType/AbsenceTypeIndex.vue";
 
 defineProps<{
@@ -57,9 +57,9 @@ const tab = ref<
                             ></OrganizationSettings>
                         </v-tabs-window-item>
                         <v-tabs-window-item value="Sonderarbeitszeitfaktor">
-                            <SWHFSettings
+                            <SWHFIndex
                                 :special_working_hours_factors
-                            ></SWHFSettings>
+                            ></SWHFIndex>
                         </v-tabs-window-item>
                         <v-tabs-window-item value="Abwesenheitsgründe">
                             <AbsenceTypeIndex

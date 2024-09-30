@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AbsenceType;
 use App\Models\Organization;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class AbsenceTypeController extends Controller
@@ -19,8 +20,10 @@ class AbsenceTypeController extends Controller
         $validated = $request->validate([
             "name" =>  "required|string",
             "abbreviation" =>  "required|string",
-            "type" =>  "required|string",
+            "type" =>  ['required', Rule::in(AbsenceType::getTypes())],
             "requires_approval" => "required|boolean"
+        ], [
+            'type.in' => 'Typ muss in ' . join(', ', AbsenceType::getTypes()) . ' vorhanden sein'
         ]);
 
         $absenceType = new AbsenceType($validated);

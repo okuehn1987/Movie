@@ -7,6 +7,7 @@ use App\Models\Group;
 use App\Models\OperatingSite;
 use App\Models\Organization;
 use App\Models\User;
+use App\Models\WorkLog;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -18,7 +19,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        Organization::factory(3)->has(OperatingSite::factory(3)->has(User::factory(10)))->has(Group::factory(3))->create();
+        Organization::factory(3)->has(OperatingSite::factory(3)->has(User::factory(10)->has(WorkLog::factory(3))->has(WorkLog::factory(1, ['end' => null]))))->has(Group::factory(3))->create();
         foreach (Organization::all() as $org) {
             foreach (AbsenceType::$DEFAULTS as $type) {
                 AbsenceType::factory([
@@ -36,7 +37,7 @@ class DatabaseSeeder extends Seeder
             'last_name' => 'admin',
             'role' => 'super-admin',
             'organization_id' => 1
-        ])->create();
+        ])->has(WorkLog::factory(3))->has(WorkLog::factory(1, ['end' => null]))->create();
         Organization::find(1)->update(['owner_id' => $admin->id]);
         $admin->isSubstitutedBy()->attach(User::find(1));
         $admin->isSubstitutedBy()->attach(User::find(2));

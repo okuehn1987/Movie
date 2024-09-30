@@ -245,7 +245,7 @@ function submit() {
                         color="primary"
                         class="me-2"
                     >
-                        <v-icon size="large"> mdi-pencil </v-icon>
+                        <v-icon size="large" icon="mdi-pencil"></v-icon>
                     </v-btn>
                     <v-dialog>
                         <template v-slot:activator="{ props: activatorProps }">

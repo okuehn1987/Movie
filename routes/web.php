@@ -8,12 +8,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     if (Auth::check()) {
-        return redirect(route('profile.edit'));
+        return redirect(route('dashboard'));
     }
     return redirect('login');
 })->name('home');
 
+
 Route::middleware(['auth', HasOrganizationAccess::class])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('user', UserController::class)->only(['index', 'store', 'destroy', 'update', 'show']);
     Route::singleton('profile', ProfileController::class)->only(['edit', 'update', 'destroy'])->destroyable();
     Route::resource('organization', OrganizationController::class)->only(['index', 'store', 'destroy']);

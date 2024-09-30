@@ -7,10 +7,22 @@ defineProps<{
     types?: string[];
 }>();
 
+const DEFAULTS = [
+    { name: "Unbezahlter Urlaub", abbreviation: "UB" },
+    { name: "Ausbildung/ Berufsschule", abbreviation: "BS" },
+    { name: "Fort- und Weiterbildung", abbreviation: "FW" },
+    { name: "AZV-Tag", abbreviation: "AZ" },
+    { name: "Bildungsurlaub", abbreviation: "BU" },
+    { name: "Sonderurlaub", abbreviation: "SU" },
+    { name: "Elternzeit", abbreviation: "EZ" },
+    { name: "Urlaub", abbreviation: "EU" },
+    { name: "Andere", abbreviation: "AN" },
+];
+
 const absenceTypeForm = useForm({
     name: "",
     abbreviation: "",
-    type: "Andere",
+    type: "",
     requires_approval: false,
 });
 
@@ -41,7 +53,7 @@ function submit() {
                 </template>
 
                 <template v-slot:default="{ isActive }">
-                    <v-card title="Organisation erstellen">
+                    <v-card title="Abwesenheitgrund erstellen">
                         <v-form @submit.prevent="submit">
                             <v-row>
                                 <v-col cols="12" md="6">
@@ -67,6 +79,21 @@ function submit() {
                                         v-model="absenceTypeForm.abbreviation"
                                         variant="underlined"
                                     ></v-text-field>
+                                </v-col>
+                                <v-col cols="12" md="6">
+                                    <v-select
+                                        class="px-8"
+                                        label="Typ"
+                                        :items="DEFAULTS"
+                                        item-value="name"
+                                        item-title="name"
+                                        required
+                                        :error-messages="
+                                            absenceTypeForm.errors.type
+                                        "
+                                        v-model="absenceTypeForm.type"
+                                        variant="underlined"
+                                    ></v-select>
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-checkbox

@@ -10,6 +10,18 @@ class SpecialWorkingHoursFactor extends Model
 {
     use HasFactory, SoftDeletes, ScopeInOrganization;
 
+    protected $guarded = [];
+
+    public static $TYPES = [
+        "monday" => "Montag",
+        "tuesday" => "Dienstag",
+        "wednesday" => "Mittwoch",
+        "thursday" => "Donnerstag",
+        "friday" => "Freitag",
+        "saturday" => "Samstag",
+        "sunday" => "Sonntag",
+    ];
+
     public function organization()
     {
         return $this->belongsTo(Organization::class);

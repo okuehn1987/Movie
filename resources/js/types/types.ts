@@ -8,7 +8,7 @@ type SoftDelete = {
     deleted_at: string;
 };
 
-type Weekday =
+export type Weekday =
     | "monday"
     | "tuesday"
     | "wednesday"
@@ -43,6 +43,7 @@ export type User = DBObject &
         organization_id: Organization["id"];
         staff_number: number;
         date_of_birth: string;
+        home_office: boolean;
         home_office_ratio: number | null;
         phone_number: string | null;
         email_verified_at: string;
@@ -161,4 +162,5 @@ export type WorkLog = DBObject &
         user_id: User["id"];
         start: string;
         end: string;
+        is_home_office: boolean;
     };

@@ -16,7 +16,8 @@ return new class extends Migration
             $table->softDeletes();
             $table->foreignId('user_id');
             $table->dateTime("start");
-            $table->dateTime("end");
+            $table->dateTime("end")->nullable();
+            $table->boolean("is_home_office")->default(false);
             $table->timestamps();
         });
     }

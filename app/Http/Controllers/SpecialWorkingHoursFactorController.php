@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Organization;
 use App\Models\SpecialWorkingHoursFactor;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class SpecialWorkingHoursFactorController extends Controller
@@ -11,5 +13,35 @@ class SpecialWorkingHoursFactorController extends Controller
     public function index()
     {
         return Inertia::render('SWHF/SWHFIndex', ['factors' => SpecialWorkingHoursFactor::inOrganization()->get()]);
+    }
+
+    public function show(Request $request, SpecialWorkingHoursFactor $specialWorkingHoursFactor)
+    {
+        return Inertia::render('SWHF/SWHFShow', ['specialWorkingHoursFactor' => $specialWorkingHoursFactor]);
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'type' => ['required', Rule::in(array_keys(SpecialWorkingHoursFactor::$TYPES))],
+            'extra_charge' => 'required|numeric',
+            'id' => 'nullable|exists:special_working_hours_factors,id'
+        ], [
+            'type.in' => 'Muss in ' . join(', ', SpecialWorkingHoursFactor::$TYPES) . ' vorhanden sein'
+        ]);
+
+
+        SpecialWorkingHoursFactor::updateOrCreate([
+            'id' => $validated['id']
+        ], [
+            ...$validated,
+            'organization_id' => Organization::getCurrent()->id
+        ]);
+
+
+        return back();
+        // $specialWorkingHoursFactor = new SpecialWorkingHoursFactor($validated);
+        // $specialWorkingHoursFactor->organization_id = Organization::getCurrent()->id;
+        // $specialWorkingHoursFactor->save();
     }
 }

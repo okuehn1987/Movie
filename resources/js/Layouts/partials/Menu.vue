@@ -24,34 +24,6 @@ const user = computed(() => page.props.auth.user);
                 <span style="font-size: xx-small">Organisationen</span></v-btn
             >
             <v-btn
-                @click="router.get(route('absenceType.index'))"
-                :class="
-                    route().current('absenceType.index')
-                        ? 'text-white'
-                        : 'text-grey-lighten-1'
-                "
-                style="min-width: 0"
-                class="px-1"
-                ><v-icon icon="mdi-domain"></v-icon>
-                <span style="font-size: xx-small"
-                    >Abwesenheitsgründe</span
-                ></v-btn
-            >
-            <v-btn
-                @click="router.get(route('specialWorkingHoursFactor.index'))"
-                :class="
-                    route().current('specialWorkingHoursFactor.index')
-                        ? 'text-white'
-                        : 'text-grey-lighten-1'
-                "
-                style="min-width: 0"
-                class="px-1"
-                ><v-icon icon="mdi-domain"></v-icon>
-                <span style="font-size: xx-small"
-                    >Sonderarbeitzeitfaktor</span
-                ></v-btn
-            >
-            <v-btn
                 @click="router.get(route('group.index'))"
                 :class="
                     route().current('group.index')
