@@ -16,4 +16,8 @@ class WorkLog extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function workLogPatches()
+    {
+        return $this->hasMany(WorkLogPatch::class);
+    }
 }

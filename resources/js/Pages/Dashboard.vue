@@ -18,9 +18,6 @@ const now = useNow();
 //    Stattdessen Text "Es fehlt eine Meldung. Bitte Zeitkorrektur"
 //       Zeitkorrektur = Link zur Zeitkorrektur
 
-// anzeige aktueller Vorgesetzter
-// anzeige wichtiger Informationen (falls vorhanden)
-
 function changeWorkStatus(home_office = false) {
     router.post(route("workLog.store"), {
         is_home_office: home_office,
@@ -34,10 +31,17 @@ function changeWorkStatus(home_office = false) {
             <v-row>
                 <v-col cols="12" md="4">
                     <v-card>
-                        <v-toolbar
-                            color="primary"
-                            title="Arbeitszeit"
-                        ></v-toolbar>
+                        <v-toolbar color="primary">
+                            <v-toolbar-title>Arbeitszeit </v-toolbar-title>
+                            <v-btn
+                                :href="
+                                    route('user.workLog.index', {
+                                        user: page.props.auth.user.id,
+                                    })
+                                "
+                                ><v-icon icon="mdi-eye"></v-icon
+                            ></v-btn>
+                        </v-toolbar>
                         <v-card-text>
                             <div>
                                 <div>
@@ -95,7 +99,7 @@ function changeWorkStatus(home_office = false) {
                         </v-card-text>
                     </v-card>
                 </v-col>
-                <v-col cols="12" md="4">
+                <v-col cols="12" md="4" v-if="supervisor">
                     <v-card>
                         <v-toolbar
                             color="primary"

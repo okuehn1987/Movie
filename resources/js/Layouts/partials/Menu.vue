@@ -12,6 +12,7 @@ const user = computed(() => page.props.auth.user);
     <v-bottom-navigation grow class="bg-layout">
         <template v-if="user">
             <v-btn
+                v-if="user.role === 'super-admin'"
                 @click="router.get(route('organization.index'))"
                 :class="
                     route().current('organization.index')
@@ -22,6 +23,18 @@ const user = computed(() => page.props.auth.user);
                 class="px-1"
                 ><v-icon icon="mdi-domain"></v-icon>
                 <span style="font-size: xx-small">Organisationen</span></v-btn
+            >
+            <v-btn
+                @click="router.get(route('dashboard'))"
+                :class="
+                    route().current('dashboard')
+                        ? 'text-white'
+                        : 'text-grey-lighten-1'
+                "
+                style="min-width: 0"
+                class="px-1"
+                ><v-icon icon="mdi-domain"></v-icon>
+                <span style="font-size: xx-small">Dashboard</span></v-btn
             >
             <v-btn
                 @click="router.get(route('group.index'))"

@@ -6,7 +6,7 @@ import { createInertiaApp } from "@inertiajs/vue3";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 import { ZiggyVue } from "../../vendor/tightenco/ziggy";
 
-const appName = import.meta.env.VITE_APP_NAME || "Laravel";
+const appName = import.meta.env["VITE_APP_NAME"] || "Laravel";
 
 // Vuetify
 import "vuetify/styles";
@@ -14,6 +14,7 @@ import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import { VCalendar } from "vuetify/labs/VCalendar";
+import { VDateInput } from "vuetify/labs/components";
 
 const vuetify = createVuetify({
     theme: {
@@ -24,6 +25,7 @@ const vuetify = createVuetify({
                 colors: {
                     primary: "#47545D",
                     darkPrimary: "#47545D",
+                    success: "#2C632C",
                     lightPrimary: "#fff",
                     secondary: "#868f96",
                     accent: "#c09762",
@@ -35,7 +37,7 @@ const vuetify = createVuetify({
             },
         },
     },
-    components: { ...components, VCalendar },
+    components: { ...components, VCalendar, VDateInput },
     directives,
 });
 
