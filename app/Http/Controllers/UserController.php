@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class UserController extends Controller
@@ -16,6 +17,7 @@ class UserController extends Controller
     {
         return Inertia::render('User/UserIndex', [
             'users' => User::inOrganization()->with('group:id,name')->get(),
+            'permissions' => User::$PERMISSIONS,
             'groups' => Group::inOrganization()->get(),
             'operating_sites' => OperatingSite::inOrganization()->get()
         ]);
@@ -26,7 +28,8 @@ class UserController extends Controller
         return Inertia::render('User/UserShow', [
             'user' => $user,
             'groups' => Group::inOrganization()->get(),
-            'operating_sites' => OperatingSite::inOrganization()->get()
+            'operating_sites' => OperatingSite::inOrganization()->get(),
+            'permissions' => User::$PERMISSIONS,
         ]);
     }
     public function store(Request $request)
@@ -47,15 +50,22 @@ class UserController extends Controller
             "staff_number" => "nullable|integer",
             "password" => "required|string",
             "group_id" => "nullable|integer",
-            'operating_site_id' => 'required|integer'
+            'operating_site_id' => 'required|integer',
+            'permissions' => 'nullable|array',
+            'permissions.*' => ['required', Rule::in(collect(User::$PERMISSIONS)->map(fn($p) => $p['name']))]
         ]);
 
-        $user = new User([...$validated, 'date_of_birth' => Carbon::parse(Carbon::parse($validated['date_of_birth'])->format('d-m-Y'))]);
+        $user = new User([...$validated, 'date_of_birth' => Carbon::parse($validated['date_of_birth'])]);
         $user->password = Hash::make($validated['password']);
+
+        foreach ($validated['permissions'] as $permission) {
+            $user[$permission] = true;
+        }
+
         $user->save();
     }
 
-    public function destroy(Request $request, User $user)
+    public function destroy(User $user)
     {
         $user->delete();
     }

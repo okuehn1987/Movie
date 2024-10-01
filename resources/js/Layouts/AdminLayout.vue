@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { Head, router } from "@inertiajs/vue3";
+import { Head, router, usePage } from "@inertiajs/vue3";
 import Menu from "@/Layouts/partials/Menu.vue";
 
 defineProps<{
     title: string;
     backurl?: string;
 }>();
+
+const page = usePage();
 </script>
 
 <template>
@@ -33,8 +35,21 @@ defineProps<{
                         </v-toolbar-title>
                     </div>
                     <div class="d-flex justify-end">
-                        <v-btn><v-icon icon="mdi-bell"></v-icon></v-btn>
-                        <v-btn class="me-4">
+                        <v-btn :href="route('dashboard')" stacked>
+                            <v-badge
+                                v-if="
+                                    page.props.auth.user.notificationCount > 0
+                                "
+                                color="error"
+                                :content="
+                                    page.props.auth.user.notificationCount
+                                "
+                            >
+                                <v-icon icon="mdi-bell"></v-icon>
+                            </v-badge>
+                            <v-icon v-else icon="mdi-bell"></v-icon>
+                        </v-btn>
+                        <v-btn class="me-4" stacked>
                             <v-icon icon="mdi-menu" size="x-large"></v-icon>
                             <v-menu activator="parent">
                                 <v-list min-width="200">

@@ -36,6 +36,9 @@ return new class extends Migration
             $table->string("city")->nullable();
             $table->string("zip")->nullable();
             $table->string("federal_state")->nullable();
+
+            $table->boolean('work_log_patching')->default(false);
+
             $table->rememberToken();
             $table->timestamps();
         });

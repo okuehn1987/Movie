@@ -12,7 +12,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        return Inertia::render('Dashboard', [
+        return Inertia::render('Dashboard/Dashboard', [
             'lastWorkLog' => WorkLog::select('id', 'start', 'end', 'is_home_office')->inOrganization()->where('user_id', Auth::id())->latest('start')->first(),
             'supervisor' => User::select('id', 'first_name', 'last_name')->find(Auth::user()->supervisor_id)
         ]);

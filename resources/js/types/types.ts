@@ -8,6 +8,21 @@ type SoftDelete = {
     deleted_at: string;
 };
 
+export type Paginator<T> = {
+    total: number;
+    per_page: number;
+    current_page: number;
+    last_page: number;
+    first_page_url: string;
+    last_page_url: string;
+    next_page_url: string;
+    prev_page_url: any;
+    path: string;
+    from: number;
+    to: number;
+    data: T;
+};
+
 export type Weekday =
     | "monday"
     | "tuesday"
@@ -47,7 +62,8 @@ export type User = DBObject &
         home_office_ratio: number | null;
         phone_number: string | null;
         email_verified_at: string;
-    };
+        notificationCount: number;
+    } & Record<Permission, boolean>;
 
 export type UserWorkingHours = DBObject &
     SoftDelete & {
@@ -170,17 +186,6 @@ export type WorkLogPatch = WorkLog & {
     work_log_id: WorkLog["id"];
 };
 
-export type Paginator<T> = {
-    total: number;
-    per_page: number;
-    current_page: number;
-    last_page: number;
-    first_page_url: string;
-    last_page_url: string;
-    next_page_url: string;
-    prev_page_url: any;
-    path: string;
-    from: number;
-    to: number;
-    data: T;
-};
+type Permission = "work_log_patching";
+
+export type UserPermission = { name: Permission; label: string };

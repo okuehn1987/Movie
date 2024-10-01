@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -13,49 +15,36 @@ class User extends Authenticatable
     use \Znck\Eloquent\Traits\BelongsToThrough;
     use HasFactory, Notifiable, SoftDeletes, ScopeInOrganization;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = [
-        'first_name',
-        'last_name',
-        'email',
-        'date_of_birth',
-        'group_id',
-        'operating_site_id',
-        'phone_number',
-        'street',
-        'house_number',
-        'address_suffix',
-        'country',
-        'city',
-        'zip',
-        'federal_state',
-    ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
+    protected $guarded = ['password', 'role', 'email_verified_at'];
+
+
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+
+    public static $PERMISSIONS = [
+        ['name' => "work_log_patching", 'label' => "Zeitkorrekturen verwalten"]
+    ];
+
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function getNotificationCountAttribute()
+    {
+        $count = 0;
+
+        if ($this->work_log_patching) {
+            $count += WorkLog::inOrganization()->whereHas('workLogPatches', fn(Builder $q) => $q->where('status', 'created'))->count();
+        }
+        return $count;
     }
 
     public function workLogs()

@@ -1,21 +1,22 @@
 <script setup lang="ts">
 import AdminLayout from "@/Layouts/AdminLayout.vue";
-import { Group, OperatingSite, User } from "@/types/types";
+import { Group, OperatingSite, User, UserPermission } from "@/types/types";
 import { Link, useForm } from "@inertiajs/vue3";
 import { DateTime } from "luxon";
-import { VDateInput } from "vuetify/labs/components";
+import UserForm from "./UserForm.vue";
 
 defineProps<{
     users: (User & { group: Pick<Group, "id" | "name"> })[];
     groups: Group[];
     operating_sites: OperatingSite[];
+    permissions: UserPermission[];
 }>();
 
 const userForm = useForm({
     first_name: "",
     last_name: "",
     email: "",
-    date_of_birth: null,
+    date_of_birth: undefined,
     city: "",
     zip: "",
     street: "",
@@ -26,8 +27,9 @@ const userForm = useForm({
     phone_number: "",
     staff_number: 0,
     password: "",
-    group_id: null,
-    operating_site_id: null,
+    group_id: undefined,
+    operating_site_id: undefined,
+    permissions: [] as UserPermission["name"][],
 });
 
 function submit() {
@@ -46,13 +48,6 @@ function submit() {
 <template>
     <AdminLayout title="Mitarbeiter">
         <v-container>
-            <v-alert
-                class="mb-4"
-                v-if="userForm.wasSuccessful"
-                closable
-                color="success"
-                >Mitarbeiter wurde erfolgreich angelegt.</v-alert
-            >
             <v-data-table-virtual
                 :headers="[
                     { title: '#', key: 'id' },
@@ -74,165 +69,16 @@ function submit() {
                             </v-btn>
                         </template>
 
-                        <template v-slot:default="{ isActive }">
-                            <v-card>
-                                <v-form @submit.prevent="submit">
-                                    <v-toolbar
-                                        color="primary"
-                                        class="mb-4"
-                                        title="Mitarbeiter hinzufügen"
-                                    ></v-toolbar>
-                                    <v-card-text>
-                                        <h3>Allgemeine Informationen</h3>
-                                        <v-divider></v-divider>
-                                    </v-card-text>
-                                    <v-row>
-                                        <v-col cols="12" md="6">
-                                            <v-text-field
-                                                v-model="userForm.first_name"
-                                                label="Vorname"
-                                                class="px-8"
-                                                variant="underlined"
-                                            ></v-text-field>
-                                        </v-col>
-                                        <v-col cols="12" md="6">
-                                            <v-text-field
-                                                v-model="userForm.last_name"
-                                                label="Nachname"
-                                                class="px-8"
-                                                variant="underlined"
-                                            ></v-text-field>
-                                        </v-col>
-                                        <v-col cols="12" md="6">
-                                            <v-text-field
-                                                v-model="userForm.email"
-                                                label="Email"
-                                                class="px-8"
-                                                variant="underlined"
-                                            ></v-text-field>
-                                        </v-col>
-                                        <v-col cols="12" md="6">
-                                            <v-text-field
-                                                v-model="userForm.password"
-                                                label="Passwort"
-                                                class="px-8"
-                                                variant="underlined"
-                                            ></v-text-field>
-                                        </v-col>
-                                        <v-col cols="12" md="6">
-                                            <v-date-input
-                                                v-model="userForm.date_of_birth"
-                                                label="Geburtsdatum"
-                                                class="px-8"
-                                                variant="underlined"
-                                            ></v-date-input>
-                                        </v-col>
-                                    </v-row>
-                                    <v-card-text>
-                                        <h3>Adresse</h3>
-                                        <v-divider></v-divider>
-                                    </v-card-text>
-                                    <v-row>
-                                        <v-col cols="12" md="6">
-                                            <v-text-field
-                                                v-model="userForm.street"
-                                                label="Straße"
-                                                class="px-8"
-                                                variant="underlined"
-                                            ></v-text-field>
-                                        </v-col>
-                                        <v-col cols="12" md="6">
-                                            <v-text-field
-                                                v-model="userForm.house_number"
-                                                label="Hausnummer"
-                                                class="px-8"
-                                                variant="underlined"
-                                            ></v-text-field>
-                                        </v-col>
-                                        <v-col cols="12" md="6">
-                                            <v-text-field
-                                                v-model="userForm.city"
-                                                label="Ort"
-                                                class="px-8"
-                                                variant="underlined"
-                                            ></v-text-field>
-                                        </v-col>
-                                        <v-col cols="12" md="6">
-                                            <v-text-field
-                                                v-model="userForm.zip"
-                                                label="Postleitzahl"
-                                                class="px-8"
-                                                variant="underlined"
-                                            ></v-text-field>
-                                        </v-col>
-                                        <v-col cols="12" md="6">
-                                            <v-text-field
-                                                v-model="userForm.country"
-                                                label="Land"
-                                                class="px-8"
-                                                variant="underlined"
-                                            ></v-text-field>
-                                        </v-col>
-                                        <v-col cols="12" md="6">
-                                            <v-text-field
-                                                v-model="userForm.federal_state"
-                                                label="Bundesland"
-                                                class="px-8"
-                                                variant="underlined"
-                                            ></v-text-field>
-                                        </v-col>
-                                    </v-row>
-                                    <v-card-text>
-                                        <h3>Abteilung</h3>
-                                        <v-divider></v-divider>
-                                    </v-card-text>
-                                    <v-row>
-                                        <v-col cols="12">
-                                            <v-select
-                                                v-model="userForm.group_id"
-                                                class="px-8"
-                                                :items="groups"
-                                                item-title="name"
-                                                item-value="id"
-                                                label="Wähle eine Abteilung aus, zu die der Mitarbeiter gehören soll."
-                                                variant="underlined"
-                                            ></v-select>
-                                        </v-col>
-                                        <v-col cols="12">
-                                            <v-select
-                                                v-model="
-                                                    userForm.operating_site_id
-                                                "
-                                                class="px-8"
-                                                :items="operating_sites"
-                                                item-title="name"
-                                                item-value="id"
-                                                label="Wähle den Betriebsort des Mitarbeiters aus."
-                                                variant="underlined"
-                                            ></v-select>
-                                        </v-col>
-                                    </v-row>
-                                    <v-card-actions>
-                                        <div class="d-flex justify-end w-100">
-                                            <v-btn
-                                                color="error"
-                                                variant="elevated"
-                                                class="me-2"
-                                                @click="isActive.value = false"
-                                            >
-                                                Abbrechen
-                                            </v-btn>
-                                            <v-btn
-                                                type="submit"
-                                                color="primary"
-                                                variant="elevated"
-                                                >Erstellen
-                                            </v-btn>
-                                        </div>
-                                    </v-card-actions>
-                                </v-form>
-                            </v-card>
-                        </template>
+                        <v-card>
+                            <UserForm
+                                :userForm
+                                :groups
+                                :operating_sites
+                                :permissions
+                                :submit
+                                mode="create"
+                            ></UserForm>
+                        </v-card>
                     </v-dialog>
                 </template>
                 <template v-slot:item.actions="{ item }">

@@ -36,7 +36,8 @@ class DatabaseSeeder extends Seeder
             'first_name' => 'admin',
             'last_name' => 'admin',
             'role' => 'super-admin',
-            'organization_id' => 1
+            'organization_id' => 1,
+            ...collect(User::$PERMISSIONS)->flatMap(fn($p) => [$p['name'] => true])->toArray()
         ])->has(WorkLog::factory(3))->has(WorkLog::factory(1, ['end' => null]))->create();
         Organization::find(1)->update(['owner_id' => $admin->id]);
         $admin->isSubstitutedBy()->attach(User::find(1));
