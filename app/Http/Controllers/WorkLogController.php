@@ -44,35 +44,11 @@ class WorkLogController extends Controller
     {
         return Inertia::render('WorkLog/UserWorkLogIndex', [
             'user' => $user,
-            'paginator' => WorkLog::where('user_id', $user->id)
+            'workLogs' => WorkLog::where('user_id', $user->id)
                 ->whereNotNull('end')
                 ->with('workLogPatches:id,work_log_id,updated_at,status,start,end,is_home_office')
                 ->orderBy('start', 'DESC')
                 ->paginate(13),
         ]);
-    }
-    public function update(Request $request, WorkLog $workLog)
-    {
-        $validated = $request->validate([
-            'start' => 'required|date',
-            'end' => 'required|date',
-            'is_home_office' => 'required|boolean',
-        ]);
-        WorkLogPatch::create([
-            'is_home_office' => $validated['is_home_office'],
-            'start' => Carbon::parse($validated['start']),
-            'end' => Carbon::parse($validated['end']),
-            'status' => 'created',
-            'work_log_id' => $workLog->id,
-            'user_id' => $workLog->user_id
-        ]);
-
-        return back();
-    }
-    public function destroy(WorkLogPatch $workLogPatch)
-    {
-        $workLogPatch->delete();
-
-        return back();
     }
 }

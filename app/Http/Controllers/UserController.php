@@ -63,11 +63,15 @@ class UserController extends Controller
         }
 
         $user->save();
+
+        return back();
     }
 
     public function destroy(User $user)
     {
         $user->delete();
+
+        return back();
     }
 
     public function update(Request $request, User $user)

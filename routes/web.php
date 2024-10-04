@@ -25,8 +25,8 @@ Route::middleware(['auth', HasOrganizationAccess::class])->group(function () {
     Route::resource('specialWorkingHoursFactor', SpecialWorkingHoursFactorController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('group', GroupController::class)->only(['index', 'store', 'update', 'destroy']);
 
-    Route::resource('workLogPatch', WorkLogController::class)->only(['destroy']);
-    Route::resource('workLog', WorkLogController::class)->only(['index', 'store', 'update']);
+    Route::resource('workLogPatch', WorkLogPatchController::class)->only(['destroy', 'store', 'update']);
+    Route::resource('workLog', WorkLogController::class)->only(['index', 'store']);
     Route::get('/user/{user}/workLogs', [WorkLogController::class, 'userWorkLogs'])->name('user.workLog.index');
     Route::resource('travelLog', TravelLogController::class)->only(['store', 'update']);
 

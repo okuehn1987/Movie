@@ -32,7 +32,7 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user()->append('notificationCount'),
+                'user' => $request->user()?->append('notificationCount'),
             ],
         ];
     }

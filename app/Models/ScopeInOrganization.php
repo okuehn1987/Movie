@@ -19,7 +19,7 @@ trait ScopeInOrganization
                 OperatingSite::select('id')->inOrganization()
             );
         }
-        if (new self instanceof \App\Models\TravelLog || new self instanceof \App\Models\WorkLog) {
+        if (new self instanceof \App\Models\TravelLog || new self instanceof \App\Models\WorkLog || new self instanceof \App\Models\WorkLogPatch) {
             return $builder->whereIn('user_id', User::select('id')->inOrganization());
         }
         if (
