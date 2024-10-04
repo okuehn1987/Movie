@@ -12,7 +12,9 @@ type CalendarEvent = {
 	id: number;
 };
 
-type UserProp = User & { work_logs: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id'>[] };
+type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'group_id'> & {
+	work_logs: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id'>[];
+};
 
 const props = defineProps<{
 	users: UserProp[];
@@ -20,7 +22,7 @@ const props = defineProps<{
 	groups: (Pick<Group, 'id' | 'name'> & { users: { id: User['id']; group_id: Group['id'] } })[];
 }>();
 
-const selectedGroups = ref<Group['id'][]>([]);
+const selectedGroups = ref<Group['id'][]>(props.groups.map(g => g.id));
 
 const expanded = ref<Set<number>>(new Set([]));
 
@@ -35,38 +37,44 @@ watch(
 	{ deep: true }
 );
 
+const searchQuery = ref('');
+
+const maxEventCountPerDay = 4;
+const daysInMonth = DateTime.fromJSDate(calendarMonth.value[0]).daysInMonth ?? DateTime.now().daysInMonth;
+
 const events = computed(() => {
-	const userDates = props.users
-		.filter(user => selectedGroups.value.length == 0 || selectedGroups.value.includes(user.group_id))
-		.flatMap(user => {
-			const dates: string[] = [];
-			for (const log of user.work_logs) {
-				const day = DateTime.fromSQL(log.start).startOf('day').toISO();
-				if (day && !dates.includes(day)) dates.push(day);
-			}
-			return dates.flatMap(date => ({
-				start: new Date(date),
-				end: new Date(date),
-				title: user.first_name + ' ' + user.last_name,
-				id: user.id,
-			}));
-		});
-	const days = DateTime.fromJSDate(calendarMonth.value[0]).daysInMonth ?? DateTime.now().daysInMonth;
+	let users = props.users;
+	users = users.filter(user => selectedGroups.value.includes(user.group_id));
+
+	users = users.filter(user => (user.first_name + user.last_name).toLowerCase().includes(searchQuery.value.toLowerCase()));
+
+	const userWorkLogEvents = users.flatMap(user => {
+		const dates: string[] = [];
+		for (const log of user.work_logs) {
+			const day = DateTime.fromSQL(log.start).startOf('day').toISO();
+			if (day && !dates.includes(day)) dates.push(day);
+		}
+		return dates.map(date => ({
+			start: new Date(date),
+			end: new Date(date),
+			title: user.first_name + ' ' + user.last_name,
+			id: user.id,
+		}));
+	});
 
 	const filteredDates = [];
-	for (let i = 1; i <= days; i++) {
-		const datesInDay = userDates.filter(date => DateTime.fromJSDate(date.start).day === i);
-		if (datesInDay.length > 5) {
-			filteredDates.push({ start: datesInDay[0].start, end: datesInDay[0].end, title: '', id: -1 });
+
+	for (let i = 1; i <= daysInMonth; i++) {
+		const eventsInDay = userWorkLogEvents.filter(date => DateTime.fromJSDate(date.start).day === i);
+		if (eventsInDay.length > maxEventCountPerDay) {
+			filteredDates.push({ start: eventsInDay[0].start, end: eventsInDay[0].end, title: '', id: -1 });
 		}
 		let count = 0;
-		for (const date of datesInDay) {
-			if (count < 5 || expanded.value.has(i)) {
+		for (const date of eventsInDay) {
+			if (count < maxEventCountPerDay || expanded.value.has(i)) {
 				filteredDates.push(date);
 				count++;
-			} else {
-				break;
-			}
+			} else break;
 		}
 	}
 	return filteredDates satisfies CalendarEvent[];
@@ -109,22 +117,24 @@ function openEvent(event: CalendarEvent) {
 								<v-icon size="large" icon="mdi-chevron-right"></v-icon>
 							</v-btn>
 						</template>
+						<v-text-field v-model="searchQuery" hide-details label="Suche" max-width="300" class="me-2"></v-text-field>
 						<v-dialog max-width="1000">
 							<template v-slot:activator="{ props }">
-								<v-btn v-bind="props"><v-icon icon="mdi-filter"></v-icon> </v-btn>
+								<v-btn v-bind="props" class="me-2"><v-icon icon="mdi-filter"></v-icon> </v-btn>
 							</template>
 							<v-card>
 								<v-toolbar color="primary" title="Filteroptionen"> </v-toolbar>
-								<v-card-text
-									><v-select
+								<v-card-text>
+									<v-select
+										label="Gruppe"
 										v-model="selectedGroups"
 										multiple
 										variant="underlined"
 										:items="groups"
 										item-value="id"
 										item-title="name"
-									></v-select
-								></v-card-text>
+									></v-select>
+								</v-card-text>
 							</v-card>
 						</v-dialog>
 					</v-toolbar>

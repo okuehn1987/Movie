@@ -24,13 +24,12 @@ class WorkLogController extends Controller
         if (array_key_exists('year', $validated) && $validated['year'] && array_key_exists('month', $validated) && $validated['month'])
             $date = Carbon::parse($validated['year'] . '-' . $validated['month'] . '-01');
 
-        $users = User::select(['id', 'first_name', 'last_name'])->inOrganization()
+        $users = User::select(['id', 'first_name', 'last_name','group_id'])->inOrganization()
             ->whereHas(
                 'workLogs',
                 fn($q) => $q->whereYear('start', $date->year)->whereMonth('start', $date->month)
-            )->with(
-                'workLogs:id,start,end,is_home_office,user_id'
             )
+            ->with('workLogs:id,start,end,is_home_office,user_id')
             ->get();
 
         return Inertia::render('WorkLog/WorkLogIndex', ['users' => $users, 'date' => $date, 'groups' => Group::select(['id', 'name'])->inOrganization()->with('users:id,group_id')->get()]);

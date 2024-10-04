@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
                 ])->create();
             }
         }
+
         $admin = User::factory([
             'operating_site_id' => 1,
             'password' => Hash::make('admin'),
@@ -46,5 +47,12 @@ class DatabaseSeeder extends Seeder
         $admin->isSubstitutionFor()->attach(User::find(3));
         $admin->isSubstitutionFor()->attach(User::find(5));
         $admin->isSubstitutionFor()->attach(User::find(6));
+
+        foreach(User::all() as $user){
+            // get random group of organization
+            $group = $user->organization->groups->random();
+            $user->group_id = $group->id;
+            $user->save();
+        }
     }
 }
