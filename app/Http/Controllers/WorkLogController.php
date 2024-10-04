@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Group;
 use App\Models\User;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
@@ -13,9 +14,26 @@ use Inertia\Inertia;
 
 class WorkLogController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Inertia::render('WorkLog/WorkLogIndex', ['workLogs' => WorkLog::inOrganization()->get()]);
+        $validated = $request->validate([
+            'year' => 'nullable|integer|min:1970|max:2099',
+            'month' => 'nullable|numeric|min:1|max:12'
+        ]);
+        $date = Carbon::now();
+        if (array_key_exists('year', $validated) && $validated['year'] && array_key_exists('month', $validated) && $validated['month'])
+            $date = Carbon::parse($validated['year'] . '-' . $validated['month'] . '-01');
+
+        $users = User::select(['id', 'first_name', 'last_name'])->inOrganization()
+            ->whereHas(
+                'workLogs',
+                fn($q) => $q->whereYear('start', $date->year)->whereMonth('start', $date->month)
+            )->with(
+                'workLogs:id,start,end,is_home_office,user_id'
+            )
+            ->get();
+
+        return Inertia::render('WorkLog/WorkLogIndex', ['users' => $users, 'date' => $date, 'groups' => Group::select(['id', 'name'])->inOrganization()->with('users:id,group_id')->get()]);
     }
 
     public function store(Request $request)
