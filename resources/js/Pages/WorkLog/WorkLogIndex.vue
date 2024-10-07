@@ -4,6 +4,7 @@ import { Group, User, WorkLog } from '@/types/types';
 import { DateTime } from 'luxon';
 import { computed, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { usePageIsLoading } from '@/utils';
 
 type CalendarEvent = {
 	start: Date;
@@ -26,14 +27,28 @@ const selectedGroups = ref<Group['id'][]>(props.groups.map(g => g.id));
 
 const expanded = ref<Set<number>>(new Set([]));
 
+const viewModes = [
+	{ value: 'Monat', key: 'month' },
+	{ value: 'Woche', key: 'week' },
+	{ value: 'Tag', key: 'day' },
+];
+const viewMode = ref<'month' | 'week' | 'day'>('month');
 const calendarMonth = ref([new Date(props.date)]);
+
+const loading = usePageIsLoading();
 watch(
-	calendarMonth,
-	() =>
-		router.get(route('workLog.index'), {
-			year: calendarMonth.value[0].getFullYear(),
-			month: (calendarMonth.value[0].getMonth() + 1).toString().padStart(2, '0'),
-		}),
+	() => [...calendarMonth.value],
+	(currValue, prevValue) => {
+		if (currValue[0].getMonth() === prevValue[0].getMonth()) return;
+		router.get(
+			route('workLog.index'),
+			{
+				year: calendarMonth.value[0].getFullYear(),
+				month: (calendarMonth.value[0].getMonth() + 1).toString().padStart(2, '0'),
+			},
+			{ preserveState: true }
+		);
+	},
 	{ deep: true }
 );
 
@@ -100,23 +115,55 @@ function openEvent(event: CalendarEvent) {
 	};
 	showEventDialog.value = true;
 }
+
+function changeDateTime(add: boolean) {
+	const dateChange = viewMode.value === 'month' ? { month: 1 } : viewMode.value === 'week' ? { week: 1 } : { day: 1 };
+	if (add) {
+		calendarMonth.value[0] = DateTime.fromJSDate(calendarMonth.value[0]).plus(dateChange).toJSDate();
+	} else {
+		calendarMonth.value[0] = DateTime.fromJSDate(calendarMonth.value[0]).minus(dateChange).toJSDate();
+	}
+}
 // TODO: filter z.b. nach abteilungen, fehltage, arbeit
 // TODO: absences anzeigen
 </script>
 <template>
 	<AdminLayout title="Arbeitszeiten">
 		<v-container>
-			<v-calendar :events v-model="calendarMonth">
+			<v-calendar
+				:events
+				v-model="calendarMonth"
+				:view-mode="viewMode"
+				:weekdays="[1, 2, 3, 4, 5, 6, 0]"
+				hide-week-number
+				:interval-format="(e:any) => DateTime.fromJSDate(e.start).toFormat('HH:mm') + ' Uhr'"
+			>
 				<template v-slot:header>
-					<v-toolbar color="primary" :title="calendarMonth[0].toLocaleDateString('de-DE', { year: 'numeric', month: 'long' })">
+					<v-toolbar color="primary">
 						<template v-slot:prepend>
-							<v-btn @click="() => (calendarMonth[0] = DateTime.fromJSDate(calendarMonth[0]).minus({ month: 1 }).toJSDate())">
+							<v-btn @click="() => changeDateTime(false)">
 								<v-icon size="large" icon="mdi-chevron-left"></v-icon>
 							</v-btn>
-							<v-btn @click="() => (calendarMonth[0] = DateTime.fromJSDate(calendarMonth[0]).plus({ month: 1 }).toJSDate())">
+							<v-btn @click="() => changeDateTime(true)">
 								<v-icon size="large" icon="mdi-chevron-right"></v-icon>
 							</v-btn>
 						</template>
+						<template v-slot:title>
+							<div class="d-flex align-center">
+								{{ calendarMonth[0].toLocaleDateString('de-DE', { year: 'numeric', month: 'long' }) }}
+								<v-progress-circular v-if="loading" indeterminate class="ms-4"></v-progress-circular>
+							</div>
+						</template>
+						<v-select
+							v-model="viewMode"
+							:items="viewModes"
+							item-value="key"
+							item-title="value"
+							class="me-2"
+							max-width="150"
+							hide-details
+							label="Ansicht"
+						></v-select>
 						<v-text-field v-model="searchQuery" hide-details label="Suche" max-width="300" class="me-2"></v-text-field>
 						<v-dialog max-width="1000">
 							<template v-slot:activator="{ props }">

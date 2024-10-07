@@ -25,12 +25,8 @@ const submitPatchSuccess = ref(false);
 
 const currentPage = ref(props.patches?.current_page);
 
-// momentanen überstunden ohne aktuellen Log
-// bei abwesenheit buttons disablen
-
-// Kommen", "Gehen"-Button dürfen bei vergessener "Gehen"-Buchung am Vortag, am Folgetag nicht angezeigt werden
-//    Stattdessen Text "Es fehlt eine Meldung. Bitte Zeitkorrektur"
-//       Zeitkorrektur = Link zur Zeitkorrektur
+// TODO: momentanen überstunden ohne aktuellen Log
+// TODO: bei abwesenheit buttons disablen
 
 function changeWorkStatus(home_office = false) {
 	router.post(route('workLog.store'), {
@@ -86,7 +82,14 @@ function changePatchStatus(accepted: boolean) {
 									{{ DateTime.fromSQL(lastWorkLog.start).toFormat('dd.MM HH:mm') }}
 								</div>
 							</div>
-							<div>
+
+							<v-alert color="danger" class="mt-2" v-if="now.diff(DateTime.fromSQL(lastWorkLog.start)).as('hours') > 16">
+								Es fehlt eine Meldung. Bitte Zeitkorrektur.
+								<v-btn color="primary" class="ms-2" :href="`/user/${page.props.auth.user.id}/workLogs?workLog=${lastWorkLog.id}`"
+									>Zeitkorrektur</v-btn
+								>
+							</v-alert>
+							<div v-else>
 								<template
 									v-if="(page.props.auth.user.home_office && lastWorkLog.end) || (lastWorkLog.is_home_office && !lastWorkLog.end)"
 								>

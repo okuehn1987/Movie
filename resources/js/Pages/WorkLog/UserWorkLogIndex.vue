@@ -3,7 +3,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Paginator, User, WorkLog, WorkLogPatch } from '@/types/types';
 import { router, useForm } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 type PatchProp = Omit<WorkLogPatch, 'deleted_at' | 'created_at' | 'user_id'>;
 
@@ -24,6 +24,12 @@ const showPatch = ref<PatchProp | null>(null);
 const inputVariant = computed(() => (showPatch.value ? 'plain' : 'underlined'));
 
 const editableWorkLogs = computed(() => props.workLogs.data.filter((_, i) => i < 5));
+
+const workLogId = parseInt((location.href.match(/workLog=(\d+)/) || [])[1]);
+
+onMounted(() => {
+	if (workLogId) return editWorkLog(workLogId);
+});
 
 watch(currentPage, () => {
 	router.visit(
@@ -89,6 +95,7 @@ function editWorkLog(id: WorkLog['id']) {
 	showDialog.value = true;
 }
 
+console.log(workLogId);
 function retreatPatch() {
 	const workLog = props.workLogs.data.find(e => e.id === workLogForm.id);
 	if (!workLog) return;
@@ -143,7 +150,7 @@ function retreatPatch() {
 						.toSorted((a, b) => (a.start < b.start ? 1 : -1))
 						.map(workLog => ({
 							start: DateTime.fromSQL(workLog.start).toFormat('dd.MM.yyyy HH:mm'),
-							end: DateTime.fromSQL(workLog.end).toFormat('dd.MM.yyyy HH:mm'),
+							end: workLog.end ? DateTime.fromSQL(workLog.end).toFormat('dd.MM.yyyy HH:mm') : 'Noch nicht beendet',
 							is_home_office: workLog.is_home_office ? 'Ja' : 'Nein',
 							id: workLog.id,
 							status: {

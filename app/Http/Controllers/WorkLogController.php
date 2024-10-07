@@ -24,7 +24,7 @@ class WorkLogController extends Controller
         if (array_key_exists('year', $validated) && $validated['year'] && array_key_exists('month', $validated) && $validated['month'])
             $date = Carbon::parse($validated['year'] . '-' . $validated['month'] . '-01');
 
-        $users = User::select(['id', 'first_name', 'last_name','group_id'])->inOrganization()
+        $users = User::select(['id', 'first_name', 'last_name', 'group_id'])->inOrganization()
             ->whereHas(
                 'workLogs',
                 fn($q) => $q->whereYear('start', $date->year)->whereMonth('start', $date->month)
@@ -32,7 +32,11 @@ class WorkLogController extends Controller
             ->with('workLogs:id,start,end,is_home_office,user_id')
             ->get();
 
-        return Inertia::render('WorkLog/WorkLogIndex', ['users' => $users, 'date' => $date, 'groups' => Group::select(['id', 'name'])->inOrganization()->with('users:id,group_id')->get()]);
+        return Inertia::render('WorkLog/WorkLogIndex', [
+            'users' => $users,
+            'date' => $date,
+            'groups' => Group::select(['id', 'name'])->inOrganization()->with('users:id,group_id')->get()
+        ]);
     }
 
     public function store(Request $request)
@@ -62,7 +66,6 @@ class WorkLogController extends Controller
         return Inertia::render('WorkLog/UserWorkLogIndex', [
             'user' => $user,
             'workLogs' => WorkLog::where('user_id', $user->id)
-                ->whereNotNull('end')
                 ->with('workLogPatches:id,work_log_id,updated_at,status,start,end,is_home_office')
                 ->orderBy('start', 'DESC')
                 ->paginate(13),
