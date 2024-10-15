@@ -53,8 +53,9 @@ watch(
 );
 
 const searchQuery = ref('');
+const showFilter = ref(false);
 
-const maxEventCountPerDay = 4;
+const maxEventCountPerDay = 3;
 const daysInMonth = DateTime.fromJSDate(calendarMonth.value[0]).daysInMonth ?? DateTime.now().daysInMonth;
 
 const events = computed(() => {
@@ -95,7 +96,7 @@ const events = computed(() => {
     return filteredDates satisfies CalendarEvent[];
 });
 
-function expandDay(event: CalendarEvent) {
+function toggleExpandDay(event: CalendarEvent) {
     const day = DateTime.fromJSDate(event.start).day;
     if (expanded.value.has(day)) {
         expanded.value.delete(day);
@@ -131,6 +132,7 @@ function changeDateTime(add: boolean) {
     <AdminLayout title="Arbeitszeiten">
         <v-container>
             <v-calendar
+                class="bg-white"
                 :events
                 v-model="calendarMonth"
                 :view-mode="viewMode"
@@ -165,12 +167,12 @@ function changeDateTime(add: boolean) {
                             label="Ansicht"
                         ></v-select>
                         <v-text-field v-model="searchQuery" hide-details label="Suche" max-width="300" class="me-2"></v-text-field>
-                        <v-dialog max-width="1000">
-                            <template v-slot:activator="{ props }">
-                                <v-btn v-bind="props" class="me-2"><v-icon icon="mdi-filter"></v-icon></v-btn>
-                            </template>
+                        <v-btn @click.stop="showFilter = true" class="me-2"><v-icon icon="mdi-filter"></v-icon></v-btn>
+                        <v-dialog max-width="1000" v-model="showFilter">
                             <v-card>
-                                <v-toolbar color="primary" title="Filteroptionen"></v-toolbar>
+                                <v-toolbar color="primary" title="Filteroptionen">
+                                    <template v-slot:append><v-btn icon="mdi-close" @click.stop="showFilter = false"></v-btn></template>
+                                </v-toolbar>
                                 <v-card-text>
                                     <v-select
                                         label="Gruppe"
@@ -191,7 +193,7 @@ function changeDateTime(add: boolean) {
                         v-if="event['id'] == -1"
                         class="w-100 mb-2"
                         :prepend-icon="expanded.has(DateTime.fromJSDate(event['start'] as Date).day) ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-                        @click.stop="expandDay(event as CalendarEvent)"
+                        @click.stop="toggleExpandDay(event as CalendarEvent)"
                     >
                         {{ expanded.has(DateTime.fromJSDate(event['start'] as Date).day) ? 'Weniger Anzeigen' : 'Alle Anzeigen' }}
                     </v-chip>
