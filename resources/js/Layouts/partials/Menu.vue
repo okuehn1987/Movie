@@ -69,7 +69,7 @@ console.log(route('absence.store'));
                 <span style="font-size: xx-small">Betriebsorte</span>
             </v-btn>
             <v-btn
-                @click="router.get(route('organization.show'))"
+                @click="router.get(route('organization.show', { organization: $page.props.organization }))"
                 :class="route().current('organization.show') ? 'text-white' : 'text-grey-lighten-1'"
                 style="min-width: 0"
                 class="px-1"
