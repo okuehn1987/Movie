@@ -18,3 +18,12 @@ export function usePageIsLoading() {
 
 	return loading;
 }
+
+export function useParams() {
+	const params = new URLSearchParams(location.search);
+
+	const obj = {} as Record<string, string>;
+	for (const [key, value] of params.entries()) obj[key] = value;
+
+	return obj;
+}

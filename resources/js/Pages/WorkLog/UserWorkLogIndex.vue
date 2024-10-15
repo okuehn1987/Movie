@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Paginator, User, WorkLog, WorkLogPatch } from '@/types/types';
+import { useParams } from '@/utils';
 import { router, useForm } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { computed, onMounted, ref, watch } from 'vue';
@@ -16,20 +17,22 @@ const props = defineProps<{
 	>;
 }>();
 
+const params = useParams();
+const workLogId = params['workLog'];
+
+onMounted(() => {
+	if (workLogId) editWorkLog(Number(workLogId));
+});
+
 const currentPage = ref(props.workLogs.current_page);
 
 const showDialog = ref(false);
 
-const showPatch = ref<PatchProp | null>(null);
-const inputVariant = computed(() => (showPatch.value ? 'plain' : 'underlined'));
+const patchMode = ref<'edit' | 'fix' | 'show' | null>(null);
+const patchLog = ref<WorkLog | null>(null);
+const inputVariant = computed(() => (patchLog.value ? 'plain' : 'underlined'));
 
 const editableWorkLogs = computed(() => props.workLogs.data.filter((_, i) => i < 5));
-
-const workLogId = parseInt((location.href.match(/workLog=(\d+)/) || [])[1]);
-
-onMounted(() => {
-	if (workLogId) return editWorkLog(workLogId);
-});
 
 watch(currentPage, () => {
 	router.visit(
@@ -81,21 +84,27 @@ function submit() {
 function editWorkLog(id: WorkLog['id']) {
 	const workLog = props.workLogs.data.find(e => e.id === id);
 	if (!workLog) return;
-
 	const lastPatch = workLog.work_log_patches.at(-1);
-	if (lastPatch && lastPatch.status === 'created') showPatch.value = lastPatch;
-	else showPatch.value = null;
+	if (!workLog.end) {
+		patchMode.value = 'fix';
+		patchLog.value = workLog;
+	} else if (!lastPatch) {
+		patchLog.value = null;
+		patchMode.value = 'edit';
+	} else if (lastPatch && lastPatch.status === 'created') {
+		patchLog.value = lastPatch;
+		patchMode.value = 'show';
+	}
 
 	workLogForm.id = id;
 	workLogForm.start = new Date(workLog.start);
-	workLogForm.end = new Date(workLog.end);
+	workLogForm.end = workLog.end ? new Date(workLog.end) : new Date();
 	workLogForm.start_time = DateTime.fromSQL(workLog.start).toFormat('HH:mm');
-	workLogForm.end_time = DateTime.fromSQL(workLog.end).toFormat('HH:mm');
+	workLogForm.end_time = DateTime.fromSQL(workLog.end || DateTime.now().toSQL()).toFormat('HH:mm');
 	workLogForm.is_home_office = workLog.is_home_office;
 	showDialog.value = true;
 }
 
-console.log(workLogId);
 function retreatPatch() {
 	const workLog = props.workLogs.data.find(e => e.id === workLogForm.id);
 	if (!workLog) return;
@@ -184,7 +193,7 @@ function retreatPatch() {
 						<v-row no-gutters>
 							<v-col cols="12" md="3">
 								<v-date-input
-									:disabled="!!showPatch"
+									:disabled="patchMode == 'fix'"
 									class="px-8"
 									label="Start"
 									required
@@ -196,7 +205,7 @@ function retreatPatch() {
 							></v-col>
 							<v-col cols="12" md="3">
 								<v-text-field
-									:disabled="!!showPatch"
+									:disabled="patchMode == 'fix'"
 									type="time"
 									class="px-8"
 									label="Start"
@@ -208,7 +217,7 @@ function retreatPatch() {
 							</v-col>
 							<v-col cols="12" md="3">
 								<v-date-input
-									:disabled="!!showPatch"
+									:disabled="patchMode != 'fix'"
 									class="px-8"
 									label="Ende"
 									required
@@ -220,7 +229,7 @@ function retreatPatch() {
 							</v-col>
 							<v-col cols="12" md="3">
 								<v-text-field
-									:disabled="!!showPatch"
+									:disabled="!!patchLog"
 									type="time"
 									class="px-8"
 									label="Ende"
@@ -233,7 +242,7 @@ function retreatPatch() {
 
 							<v-col cols="12" md="3">
 								<v-checkbox
-									:disabled="!!showPatch"
+									:disabled="!!patchLog"
 									class="px-8 ms-n2"
 									label="Homeoffice"
 									required
@@ -247,7 +256,7 @@ function retreatPatch() {
 						<v-card-actions>
 							<div class="d-flex justify-end w-100">
 								<v-btn color="error" class="me-2" variant="elevated" @click="showDialog = false"> Abbrechen </v-btn>
-								<v-btn v-if="showPatch" @click.stop="retreatPatch" color="primary" variant="elevated"> Antrag zurückziehen </v-btn>
+								<v-btn v-if="patchLog" @click.stop="retreatPatch" color="primary" variant="elevated"> Antrag zurückziehen </v-btn>
 								<v-btn v-else type="submit" color="primary" variant="elevated"> Korrektur beantragen </v-btn>
 							</div>
 						</v-card-actions>

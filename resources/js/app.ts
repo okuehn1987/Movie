@@ -37,14 +37,15 @@ const vuetify = createVuetify({
 			},
 		},
 	},
-	// locale: {
-	// 	locale: 'de',
-	// },
-	// date: {
-	// 	locale: {
-	// 		de: 'de-DE',
-	// 	},
-	// },
+	locale: {
+		locale: 'de',
+		fallback: 'en',
+	},
+	date: {
+		locale: {
+			de: 'de-DE',
+		},
+	},
 	components: { ...components, VCalendar, VDateInput },
 	directives,
 });
