@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon';
 import { onMounted, onUnmounted, ref } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { router, InertiaForm } from '@inertiajs/vue3';
 
 export function useNow() {
     const now = ref(DateTime.now());
@@ -19,11 +19,12 @@ export function usePageIsLoading() {
     return loading;
 }
 
-export function useParams() {
-	const params = new URLSearchParams(location.search);
+export function tableHeight(items: unknown[], reduction = 0) {
+    return items.length ? `calc(100vh - 152px${reduction ? ' - ' + reduction + 'px' : ''})` : undefined;
+}
 
-	const obj = {} as Record<string, string>;
-	for (const [key, value] of params.entries()) obj[key] = value;
-
-	return obj;
+export function copyDataToForm(form: InertiaForm<Record<string, any>>, obj: Record<string, unknown>) {
+    for (const key in form.data()) {
+        if (key in obj && key in form) form[key] = obj[key];
+    }
 }

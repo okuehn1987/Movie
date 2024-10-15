@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Group, User } from '@/types/types';
+import { tableHeight } from '@/utils';
 import { useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
@@ -26,17 +27,18 @@ function submit() {
     <AdminLayout title="Abteilungen">
         <v-container>
             <v-data-table-virtual
+                fixed-header
+                :max-height="tableHeight(groups)"
                 :headers="[
                     { title: '#', key: 'id' },
                     { title: 'Abteilungsname', key: 'name' },
-                    { title: '', key: 'data-table-expand' },
-                    { title: '', key: 'action', align: 'end' },
+                    { title: '', key: 'data-table-expand', align: 'end' },
                 ]"
                 :items="groups"
                 v-model:expanded="expanded"
                 hover
             >
-                <template v-slot:header.action>
+                <template v-slot:header.data-table-expand>
                     <v-dialog max-width="1000">
                         <template v-slot:activator="{ props: activatorProps }">
                             <v-btn v-bind="activatorProps" color="primary">
@@ -52,6 +54,7 @@ function submit() {
                                         <v-col cols="12">
                                             <v-text-field
                                                 v-model="groupForm.name"
+                                                :error-messages="groupForm.errors.name"
                                                 label="Abteilungsname"
                                                 class="px-8"
                                                 variant="underlined"
@@ -60,6 +63,7 @@ function submit() {
                                         <v-col cols="12">
                                             <v-select
                                                 v-model="groupForm.users"
+                                                :error-messages="groupForm.errors.users"
                                                 class="px-8"
                                                 :items="users"
                                                 item-title="name"
@@ -82,21 +86,25 @@ function submit() {
                     </v-dialog>
                 </template>
                 <template v-slot:expanded-row="{ columns, item }">
-                    <v-data-table-virtual
-                        hover
-                        :headers="[
-                            { title: '#', key: 'id' },
-                            { title: 'Vorname', key: 'first_name' },
-                            { title: 'Nachname', key: 'last_name' },
-                            { title: 'Email', key: 'email' },
-                            {
-                                title: 'Personalnummer',
-                                key: 'staff_number',
-                            },
-                            { title: 'Geburtsdatum', key: 'date_of_birth' },
-                        ]"
-                        :items="item.users"
-                    ></v-data-table-virtual>
+                    <tr>
+                        <td :colspan="columns.length" style="padding: 0">
+                            <v-data-table-virtual
+                                class="bg-secondary"
+                                :headers="[
+                                    { title: '#', key: 'id' },
+                                    { title: 'Vorname', key: 'first_name' },
+                                    { title: 'Nachname', key: 'last_name' },
+                                    { title: 'Email', key: 'email' },
+                                    {
+                                        title: 'Personalnummer',
+                                        key: 'staff_number',
+                                    },
+                                    { title: 'Geburtsdatum', key: 'date_of_birth' },
+                                ]"
+                                :items="item.users"
+                            ></v-data-table-virtual>
+                        </td>
+                    </tr>
                 </template>
             </v-data-table-virtual>
         </v-container>

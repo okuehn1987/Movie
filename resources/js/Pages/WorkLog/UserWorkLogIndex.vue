@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Paginator, User, WorkLog, WorkLogPatch } from '@/types/types';
-import { useParams } from '@/utils';
 import { router, useForm } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { computed, onMounted, ref, watch } from 'vue';
@@ -17,27 +16,19 @@ const props = defineProps<{
     >;
 }>();
 
-const params = useParams();
-const workLogId = params['workLog'];
-
-onMounted(() => {
-    if (workLogId) editWorkLog(Number(workLogId));
-});
-
 const currentPage = ref(props.workLogs.current_page);
 
 const showDialog = ref(false);
 
 const patchMode = ref<'edit' | 'fix' | 'show' | null>(null);
-const patchLog = ref<WorkLog | null>(null);
+const patchLog = ref<WorkLog | PatchProp | null>(null);
 const inputVariant = computed(() => (patchLog.value ? 'plain' : 'underlined'));
 
 const editableWorkLogs = computed(() => props.workLogs.data.filter((_, i) => i < 5));
 
-const workLogId = parseInt((location.href.match(/workLog=(\d+)/) || [])[1]);
-
 onMounted(() => {
-    if (workLogId) return editWorkLog(workLogId);
+    const workLogId = route().params['workLog'];
+    if (workLogId) return editWorkLog(Number(workLogId));
 });
 
 watch(currentPage, () => {
@@ -137,7 +128,7 @@ function retreatPatch() {
                 Korrigierung der Arbeitszeit erfolgreich beantragt.
             </v-alert>
             <v-data-table
-                v-model:page="workLogs.current_page"
+                v-model:page="currentPage"
                 :headers="[
                     { title: 'Start', key: 'start' },
                     { title: 'Ende', key: 'end' },

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Group, OperatingSite, User, UserPermission } from '@/types/types';
-import { Link, useForm } from '@inertiajs/vue3';
-import { DateTime } from 'luxon';
+import { Link } from '@inertiajs/vue3';
 import UserForm from './UserForm.vue';
 
 defineProps<{
@@ -11,37 +10,6 @@ defineProps<{
     operating_sites: OperatingSite[];
     permissions: UserPermission[];
 }>();
-
-const userForm = useForm({
-    first_name: '',
-    last_name: '',
-    email: '',
-    date_of_birth: undefined,
-    city: '',
-    zip: '',
-    street: '',
-    house_number: '',
-    address_suffix: '',
-    country: '',
-    federal_state: '',
-    phone_number: '',
-    staff_number: 0,
-    password: '',
-    group_id: undefined,
-    operating_site_id: undefined,
-    permissions: [] as UserPermission['name'][],
-});
-
-function submit() {
-    userForm
-        .transform(data => ({
-            ...data,
-            date_of_birth: DateTime.fromISO(new Date(data.date_of_birth + '').toISOString()),
-        }))
-        .post(route('user.store'), {
-            onSuccess: () => userForm.reset(),
-        });
-}
 </script>
 <template>
     <AdminLayout title="Mitarbeiter">
@@ -69,7 +37,7 @@ function submit() {
                         </template>
 
                         <v-card>
-                            <UserForm :userForm :groups :operating_sites :permissions :submit mode="create"></UserForm>
+                            <UserForm :groups :operating_sites :permissions :submitRoute="route('user.store')" mode="create"></UserForm>
                         </v-card>
                     </v-dialog>
                 </template>

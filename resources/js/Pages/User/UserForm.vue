@@ -1,21 +1,52 @@
 <script setup lang="ts">
 import { Group, OperatingSite, User, UserPermission } from '@/types/types';
-import { InertiaForm } from '@inertiajs/vue3';
+import { copyDataToForm } from '@/utils';
+import { useForm } from '@inertiajs/vue3';
+import { DateTime } from 'luxon';
 
-defineProps<{
-    userForm: InertiaForm<
-        Partial<
-            Omit<User, UserPermission['name']> & {
-                permissions: UserPermission['name'][];
-            }
-        >
-    >;
-    submit: () => void;
+const props = defineProps<{
+    user?: User;
     operating_sites: OperatingSite[];
     permissions: UserPermission[];
     groups: Group[];
     mode: 'create' | 'edit';
+    submitRoute: string;
 }>();
+
+const userForm = useForm({
+    first_name: '',
+    last_name: '',
+    email: '',
+    date_of_birth: undefined,
+    city: '',
+    zip: '',
+    street: '',
+    house_number: '',
+    address_suffix: '',
+    country: '',
+    federal_state: '',
+    phone_number: '',
+    staff_number: 0,
+    password: '',
+    group_id: undefined,
+    operating_site_id: undefined,
+    permissions: [] as UserPermission['name'][],
+});
+
+if (props.user) {
+    copyDataToForm(userForm, props.user);
+}
+
+function submit() {
+    userForm
+        .transform(data => ({
+            ...data,
+            date_of_birth: DateTime.fromISO(new Date(data.date_of_birth + '').toISOString()),
+        }))
+        .patch(props.submitRoute, {
+            onSuccess: () => userForm.reset(),
+        });
+}
 </script>
 <template>
     <v-form @submit.prevent="submit">
@@ -39,11 +70,11 @@ defineProps<{
             <v-col cols="12" md="6">
                 <v-text-field v-model="userForm.email" label="Email" class="px-8" variant="underlined"></v-text-field>
             </v-col>
-            <v-col cols="12" md="6">
+            <v-col cols="12" md="6" v-if="mode == 'create'">
                 <v-text-field v-model="userForm.password" label="Passwort" class="px-8" variant="underlined"></v-text-field>
             </v-col>
             <v-col cols="12" md="6">
-                <v-date-input v-model="userForm.date_of_birth" label="Geburtsdatum" class="px-8" variant="underlined"></v-date-input>
+                <v-date-input v-model="userForm.date_of_birth" prepend-icon="" label="Geburtsdatum" class="px-8" variant="underlined"></v-date-input>
             </v-col>
         </v-row>
         <v-card-text>
@@ -103,7 +134,7 @@ defineProps<{
             <v-divider></v-divider>
         </v-card-text>
         <v-row>
-            <v-col cols="12" md="6" v-for="permission in permissions">
+            <v-col cols="12" md="6" v-for="permission in permissions" :key="permission.name">
                 <v-checkbox class="px-8" v-model="userForm.permissions" :value="permission.name" :label="permission.label"></v-checkbox>
             </v-col>
         </v-row>

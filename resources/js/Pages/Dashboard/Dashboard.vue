@@ -35,7 +35,7 @@ function changeWorkStatus(home_office = false) {
     });
 }
 
-function openPatch(_: any, row: { item: { id: WorkLogPatch['id'] } }) {
+function openPatch(_: unknown, row: { item: { id: WorkLogPatch['id'] } }) {
     const patch = props.patches?.data.find(p => p.id === row.item.id);
     if (!patch) return;
     patchDialog.value = patch;
@@ -43,15 +43,16 @@ function openPatch(_: any, row: { item: { id: WorkLogPatch['id'] } }) {
 }
 
 function changePatchStatus(accepted: boolean) {
+    if (!patchDialog.value) return;
     router.patch(
-        route('workLogPatch.update', { workLogPatch: patchDialog.value?.id }),
+        route('workLogPatch.update', { workLogPatch: patchDialog.value.id }),
         { accepted: accepted },
         {
             onSuccess: () => {
                 showPatchDialog.value = false;
                 submitPatchSuccess.value = true;
             },
-        },
+        }
     );
 }
 </script>
@@ -133,7 +134,7 @@ function changePatchStatus(accepted: boolean) {
                             <div v-else>
                                 <v-data-table
                                     hover
-                                    v-model:page="patches.current_page"
+                                    v-model:page="currentPage"
                                     :items-per-page="patches.per_page"
                                     item-value="id"
                                     @click:row="openPatch"
@@ -170,7 +171,7 @@ function changePatchStatus(accepted: boolean) {
                                             [patchDialog.work_log, patchDialog].map((p, i) => ({
                                                 version: i == 0 ? 'Alter Stand:' : 'Neuer Stand:',
                                                 start: DateTime.fromSQL(p.start).toFormat('dd.MM.yyyy HH:mm'),
-                                                end: DateTime.fromSQL(p.end).toFormat('dd.MM.yyyy HH:mm'),
+                                                end: p.end ? DateTime.fromSQL(p.end).toFormat('dd.MM.yyyy HH:mm') : 'kein Ende',
                                                 is_home_office: p.is_home_office ? 'Ja' : 'Nein',
                                             }))
                                         "

@@ -6,6 +6,7 @@ use App\Models\Group;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class GroupController extends Controller
@@ -18,7 +19,8 @@ class GroupController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string',
-            'users' => 'array'
+            'users' => 'nullable|array',
+            'users.*' => ['required', 'exists:users,id', Rule::in(User::inOrganization()->select('id')->get()->pluck('id'))]
         ]);
 
         $group = Group::create(['organization_id' => Organization::getCurrent()->id, 'name' => $validated['name']]);

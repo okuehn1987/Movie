@@ -16,14 +16,13 @@ export type Paginator<T> = {
     first_page_url: string;
     last_page_url: string;
     next_page_url: string;
-    prev_page_url: any;
+    prev_page_url: string | null;
     path: string;
     from: number;
     to: number;
     data: T;
 };
 
-export type Weekday = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
 export type Weekday = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
 
 type Address = {
@@ -36,7 +35,6 @@ type Address = {
     federal_state: string | null;
 };
 
-export type Status = 'created' | 'declined' | 'accepted';
 export type Status = 'created' | 'declined' | 'accepted';
 
 export type User = DBObject &
@@ -176,7 +174,8 @@ export type WorkLog = DBObject &
         is_home_office: boolean;
     };
 
-export type WorkLogPatch = WorkLog & {
+export type WorkLogPatch = Omit<WorkLog, 'end'> & {
+    end: string;
     status: Status;
     work_log_id: WorkLog['id'];
 };

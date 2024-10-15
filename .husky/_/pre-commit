@@ -1,0 +1,3 @@
+echo "Running pre-commit hook formatting & linting, see command output for details"
+npx prettier --write .
+npm run lint
