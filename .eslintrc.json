@@ -1,0 +1,26 @@
+{
+    "root": true,
+    "env": {
+        "node": true
+    },
+    "extends": ["plugin:vue/vue3-essential", "eslint:recommended", "@vue/typescript/recommended"],
+    "ignorePatterns": ["ziggy.js"],
+    "rules": {
+        "vue/no-deprecated-slot-attribute": "off",
+        "@typescript-eslint/no-explicit-any": "warn",
+        "@typescript-eslint/no-non-null-assertion": "warn",
+        "no-constant-binary-expression": "error",
+        "no-duplicate-imports": "error",
+        "no-template-curly-in-string": "error",
+        "no-unreachable-loop": "error",
+        "no-shadow": "error",
+        "no-unused-expressions": "error",
+        "no-var": "error",
+        "prefer-const": "warn",
+        "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^" }],
+        "vue/require-v-for-key": "off",
+        "vue/no-dupe-keys": "off",
+        "vue/multi-word-component-names": "off",
+        "vue/valid-v-slot": "off"
+    }
+}

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import AdminLayout from "@/Layouts/AdminLayout.vue";
-import { OperatingSite } from "@/types/types";
-import { useForm } from "@inertiajs/vue3";
+import AdminLayout from '@/Layouts/AdminLayout.vue';
+import { OperatingSite } from '@/types/types';
+import { useForm } from '@inertiajs/vue3';
 
 defineProps<{
     operatingSites: OperatingSite[];
@@ -9,22 +9,22 @@ defineProps<{
 }>();
 
 const operatingSiteForm = useForm({
-    address_suffix: "",
-    city: "",
-    country: "",
-    email: "",
-    fax: "",
-    federal_state: "",
-    house_number: "",
+    address_suffix: '',
+    city: '',
+    country: '',
+    email: '',
+    fax: '',
+    federal_state: '',
+    house_number: '',
     is_head_quarter: false,
-    phone_number: "",
-    street: "",
-    zip: "",
-    name: "",
+    phone_number: '',
+    street: '',
+    zip: '',
+    name: '',
 });
 
 function submit() {
-    operatingSiteForm.post(route("operatingSite.store"), {
+    operatingSiteForm.post(route('operatingSite.store'), {
         onSuccess: () => operatingSiteForm.reset(),
     });
 }
@@ -32,13 +32,7 @@ function submit() {
 <template>
     <AdminLayout title="Betriebsorte">
         <v-container>
-            <v-alert
-                class="mb-4"
-                v-if="operatingSiteForm.wasSuccessful"
-                closable
-                color="success"
-                >Betriebsstätte wurde erfolgreich erstellt.</v-alert
-            >
+            <v-alert class="mb-4" v-if="operatingSiteForm.wasSuccessful" closable color="success">Betriebsstätte wurde erfolgreich erstellt.</v-alert>
             <v-data-table-virtual
                 hover
                 :headers="[
@@ -68,11 +62,7 @@ function submit() {
                         <template v-slot:default="{ isActive }">
                             <v-card>
                                 <v-form @submit.prevent="submit">
-                                    <v-toolbar
-                                        color="primary"
-                                        class="mb-4"
-                                        title="Betriebsstätte erstellen"
-                                    ></v-toolbar>
+                                    <v-toolbar color="primary" class="mb-4" title="Betriebsstätte erstellen"></v-toolbar>
                                     <v-card-text>
                                         <h3>Kontaktinformationen</h3>
                                         <v-divider></v-divider>
@@ -84,10 +74,7 @@ function submit() {
                                                 class="px-8"
                                                 label="Name"
                                                 required
-                                                :error-messages="
-                                                    operatingSiteForm.errors
-                                                        .street
-                                                "
+                                                :error-messages="operatingSiteForm.errors.street"
                                                 v-model="operatingSiteForm.name"
                                             ></v-text-field>
                                         </v-col>
@@ -97,13 +84,8 @@ function submit() {
                                                 class="px-8"
                                                 label="E-Mail "
                                                 required
-                                                :error-messages="
-                                                    operatingSiteForm.errors
-                                                        .email
-                                                "
-                                                v-model="
-                                                    operatingSiteForm.email
-                                                "
+                                                :error-messages="operatingSiteForm.errors.email"
+                                                v-model="operatingSiteForm.email"
                                             ></v-text-field>
                                         </v-col>
                                         <v-col cols="12" md="6">
@@ -112,13 +94,8 @@ function submit() {
                                                 class="px-8"
                                                 label="Telefonnummer"
                                                 required
-                                                :error-messages="
-                                                    operatingSiteForm.errors
-                                                        .email
-                                                "
-                                                v-model="
-                                                    operatingSiteForm.phone_number
-                                                "
+                                                :error-messages="operatingSiteForm.errors.email"
+                                                v-model="operatingSiteForm.phone_number"
                                             ></v-text-field>
                                         </v-col>
                                     </v-row>
@@ -133,13 +110,8 @@ function submit() {
                                                 class="px-8"
                                                 label="Straße"
                                                 required
-                                                :error-messages="
-                                                    operatingSiteForm.errors
-                                                        .street
-                                                "
-                                                v-model="
-                                                    operatingSiteForm.street
-                                                "
+                                                :error-messages="operatingSiteForm.errors.street"
+                                                v-model="operatingSiteForm.street"
                                             ></v-text-field>
                                         </v-col>
                                         <v-col cols="12" md="6">
@@ -148,13 +120,8 @@ function submit() {
                                                 class="px-8"
                                                 label="Hausnummer"
                                                 required
-                                                :error-messages="
-                                                    operatingSiteForm.errors
-                                                        .house_number
-                                                "
-                                                v-model="
-                                                    operatingSiteForm.house_number
-                                                "
+                                                :error-messages="operatingSiteForm.errors.house_number"
+                                                v-model="operatingSiteForm.house_number"
                                             ></v-text-field>
                                         </v-col>
                                         <v-col cols="12" md="6">
@@ -162,13 +129,8 @@ function submit() {
                                                 variant="underlined"
                                                 class="px-8"
                                                 label="Addresszusatz"
-                                                :error-messages="
-                                                    operatingSiteForm.errors
-                                                        .address_suffix
-                                                "
-                                                v-model="
-                                                    operatingSiteForm.address_suffix
-                                                "
+                                                :error-messages="operatingSiteForm.errors.address_suffix"
+                                                v-model="operatingSiteForm.address_suffix"
                                             ></v-text-field>
                                         </v-col>
                                         <v-col cols="12" md="6">
@@ -177,10 +139,7 @@ function submit() {
                                                 class="px-8"
                                                 label="Ort"
                                                 required
-                                                :error-messages="
-                                                    operatingSiteForm.errors
-                                                        .city
-                                                "
+                                                :error-messages="operatingSiteForm.errors.city"
                                                 v-model="operatingSiteForm.city"
                                             ></v-text-field>
                                         </v-col>
@@ -190,9 +149,7 @@ function submit() {
                                                 class="px-8"
                                                 label="PLZ"
                                                 required
-                                                :error-messages="
-                                                    operatingSiteForm.errors.zip
-                                                "
+                                                :error-messages="operatingSiteForm.errors.zip"
                                                 v-model="operatingSiteForm.zip"
                                             ></v-text-field>
                                         </v-col>
@@ -202,13 +159,8 @@ function submit() {
                                                 class="px-8"
                                                 label="Bundesland"
                                                 required
-                                                :error-messages="
-                                                    operatingSiteForm.errors
-                                                        .federal_state
-                                                "
-                                                v-model="
-                                                    operatingSiteForm.federal_state
-                                                "
+                                                :error-messages="operatingSiteForm.errors.federal_state"
+                                                v-model="operatingSiteForm.federal_state"
                                             ></v-text-field>
                                         </v-col>
                                         <v-col cols="12" md="6">
@@ -217,43 +169,20 @@ function submit() {
                                                 class="px-8"
                                                 label="Land"
                                                 required
-                                                :error-messages="
-                                                    operatingSiteForm.errors
-                                                        .country
-                                                "
-                                                v-model="
-                                                    operatingSiteForm.country
-                                                "
+                                                :error-messages="operatingSiteForm.errors.country"
+                                                v-model="operatingSiteForm.country"
                                             ></v-text-field>
                                         </v-col>
 
                                         <v-col cols="12" md="6">
-                                            <v-checkbox
-                                                class="px-5"
-                                                v-model="
-                                                    operatingSiteForm.is_head_quarter
-                                                "
-                                                label="Hauptsitz?"
-                                            ></v-checkbox>
+                                            <v-checkbox class="px-5" v-model="operatingSiteForm.is_head_quarter" label="Hauptsitz?"></v-checkbox>
                                         </v-col>
                                     </v-row>
 
                                     <v-card-actions>
                                         <div class="d-flex justify-end w-100">
-                                            <v-btn
-                                                color="error"
-                                                variant="elevated"
-                                                class="me-2"
-                                                @click="isActive.value = false"
-                                            >
-                                                Abbrechen
-                                            </v-btn>
-                                            <v-btn
-                                                type="submit"
-                                                color="primary"
-                                                variant="elevated"
-                                                >Erstellen
-                                            </v-btn>
+                                            <v-btn color="error" variant="elevated" class="me-2" @click="isActive.value = false">Abbrechen</v-btn>
+                                            <v-btn type="submit" color="primary" variant="elevated">Erstellen</v-btn>
                                         </div>
                                     </v-card-actions>
                                 </v-form>
@@ -270,7 +199,7 @@ function submit() {
                             })
                         "
                     >
-                        <v-icon icon="mdi-eye"> </v-icon>
+                        <v-icon icon="mdi-eye"></v-icon>
                     </v-btn>
                 </template>
             </v-data-table-virtual>

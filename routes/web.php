@@ -17,7 +17,6 @@ Route::get('/', function () {
 Route::middleware(['auth', HasOrganizationAccess::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('user', UserController::class)->only(['index', 'store', 'destroy', 'update', 'show']);
-    Route::singleton('profile', ProfileController::class)->only(['edit', 'update', 'destroy'])->destroyable();
     Route::resource('organization', OrganizationController::class)->only(['index', 'store', 'destroy']);
     Route::resource('organization', OrganizationController::class)->only(['show', 'update']);
     Route::resource('absence', AbsenceController::class)->only(['update', 'store']);
@@ -32,6 +31,9 @@ Route::middleware(['auth', HasOrganizationAccess::class])->group(function () {
 
     Route::resource('operatingSite', OperatingSiteController::class)->only(['index', 'store', 'destroy', 'update', 'show']);
     Route::resource('operatingTime', OperatingTimeController::class)->only(['store', 'update', 'destroy']);
+
+
+    Route::singleton('profile', ProfileController::class)->only(['edit', 'update', 'destroy'])->destroyable();
 });
 
 

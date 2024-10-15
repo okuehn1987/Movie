@@ -68,7 +68,7 @@ class WorkLogController extends Controller
             'workLogs' => WorkLog::where('user_id', $user->id)
                 ->with('workLogPatches:id,work_log_id,updated_at,status,start,end,is_home_office')
                 ->orderBy('start', 'DESC')
-                ->paginate(13),
+                ->paginate(2),
         ]);
     }
 }

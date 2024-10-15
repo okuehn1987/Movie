@@ -1,46 +1,44 @@
 <script setup lang="ts">
-import AdminLayout from "@/Layouts/AdminLayout.vue";
-import { Group, OperatingSite, User, UserPermission } from "@/types/types";
-import { Link, useForm } from "@inertiajs/vue3";
-import { DateTime } from "luxon";
-import UserForm from "./UserForm.vue";
+import AdminLayout from '@/Layouts/AdminLayout.vue';
+import { Group, OperatingSite, User, UserPermission } from '@/types/types';
+import { Link, useForm } from '@inertiajs/vue3';
+import { DateTime } from 'luxon';
+import UserForm from './UserForm.vue';
 
 defineProps<{
-    users: (User & { group: Pick<Group, "id" | "name"> })[];
+    users: (User & { group: Pick<Group, 'id' | 'name'> })[];
     groups: Group[];
     operating_sites: OperatingSite[];
     permissions: UserPermission[];
 }>();
 
 const userForm = useForm({
-    first_name: "",
-    last_name: "",
-    email: "",
+    first_name: '',
+    last_name: '',
+    email: '',
     date_of_birth: undefined,
-    city: "",
-    zip: "",
-    street: "",
-    house_number: "",
-    address_suffix: "",
-    country: "",
-    federal_state: "",
-    phone_number: "",
+    city: '',
+    zip: '',
+    street: '',
+    house_number: '',
+    address_suffix: '',
+    country: '',
+    federal_state: '',
+    phone_number: '',
     staff_number: 0,
-    password: "",
+    password: '',
     group_id: undefined,
     operating_site_id: undefined,
-    permissions: [] as UserPermission["name"][],
+    permissions: [] as UserPermission['name'][],
 });
 
 function submit() {
     userForm
-        .transform((data) => ({
+        .transform(data => ({
             ...data,
-            date_of_birth: DateTime.fromISO(
-                new Date(data.date_of_birth + "").toISOString()
-            ),
+            date_of_birth: DateTime.fromISO(new Date(data.date_of_birth + '').toISOString()),
         }))
-        .post(route("user.store"), {
+        .post(route('user.store'), {
             onSuccess: () => userForm.reset(),
         });
 }
@@ -61,7 +59,8 @@ function submit() {
                 ]"
                 :items="users"
                 hover
-                ><template v-slot:header.actions>
+            >
+                <template v-slot:header.actions>
                     <v-dialog max-width="1000">
                         <template v-slot:activator="{ props: activatorProps }">
                             <v-btn v-bind="activatorProps" color="primary">
@@ -70,14 +69,7 @@ function submit() {
                         </template>
 
                         <v-card>
-                            <UserForm
-                                :userForm
-                                :groups
-                                :operating_sites
-                                :permissions
-                                :submit
-                                mode="create"
-                            ></UserForm>
+                            <UserForm :userForm :groups :operating_sites :permissions :submit mode="create"></UserForm>
                         </v-card>
                     </v-dialog>
                 </template>
@@ -96,33 +88,21 @@ function submit() {
                     <v-dialog>
                         <template v-slot:activator="{ props: activatorProps }">
                             <v-btn v-bind="activatorProps" color="error">
-                                <v-icon size="large" icon="mdi-delete">
-                                </v-icon>
+                                <v-icon size="large" icon="mdi-delete"></v-icon>
                             </v-btn>
                         </template>
 
                         <template v-slot:default="{ isActive }">
-                            <v-card
-                                ><v-toolbar
-                                    color="primary"
-                                    class="mb-4"
-                                    title="Mitarbeiter löschen"
-                                ></v-toolbar>
-                                <v-card-text
-                                    >Bist du dir sicher, dass du
+                            <v-card>
+                                <v-toolbar color="primary" class="mb-4" title="Mitarbeiter löschen"></v-toolbar>
+                                <v-card-text>
+                                    Bist du dir sicher, dass du
                                     {{ item.first_name }}
                                     {{ item.last_name }} entfernen möchtest?
                                 </v-card-text>
                                 <v-card-actions>
                                     <div class="d-flex justify-end w-100">
-                                        <v-btn
-                                            color="error"
-                                            variant="elevated"
-                                            class="me-2"
-                                            @click="isActive.value = false"
-                                        >
-                                            Abbrechen
-                                        </v-btn>
+                                        <v-btn color="error" variant="elevated" class="me-2" @click="isActive.value = false">Abbrechen</v-btn>
                                         <Link
                                             :href="
                                                 route('user.destroy', {
@@ -131,12 +111,7 @@ function submit() {
                                             "
                                             method="delete"
                                         >
-                                            <v-btn
-                                                type="submit"
-                                                color="primary"
-                                                variant="elevated"
-                                                >Löschen
-                                            </v-btn>
+                                            <v-btn type="submit" color="primary" variant="elevated">Löschen</v-btn>
                                         </Link>
                                     </div>
                                 </v-card-actions>
