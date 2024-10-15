@@ -39,7 +39,7 @@ watch(currentPage, () => {
         }),
         {
             only: ['paginator'],
-        }
+        },
     );
 });
 
@@ -117,7 +117,7 @@ function retreatPatch() {
             onSuccess: () => {
                 showDialog.value = false;
             },
-        }
+        },
     );
 }
 </script>
