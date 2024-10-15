@@ -23,14 +23,7 @@ export type Paginator<T> = {
     data: T;
 };
 
-export type Weekday =
-    | "monday"
-    | "tuesday"
-    | "wednesday"
-    | "thursday"
-    | "friday"
-    | "saturday"
-    | "sunday";
+export type Weekday = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
 
 type Address = {
     street: string | null;
@@ -42,7 +35,7 @@ type Address = {
     federal_state: string | null;
 };
 
-export type Status = "created" | "declined" | "accepted";
+export type Status = 'created' | 'declined' | 'accepted';
 
 export type User = DBObject &
     SoftDelete &
@@ -50,12 +43,12 @@ export type User = DBObject &
         first_name: string;
         last_name: string;
         email: string;
-        role: "super-admin" | "employee";
+        role: 'super-admin' | 'employee';
         password: string;
         operating_site_id: number;
-        group_id: Group["id"];
-        supervisor_id: User["id"];
-        organization_id: Organization["id"];
+        group_id: Group['id'];
+        supervisor_id: User['id'];
+        organization_id: Organization['id'];
         staff_number: number;
         date_of_birth: string;
         home_office: boolean;
@@ -67,13 +60,13 @@ export type User = DBObject &
 
 export type UserWorkingHours = DBObject &
     SoftDelete & {
-        user_id: User["id"];
+        user_id: User['id'];
         weekly_working_hours: number;
     };
 
 export type UserLeaveDays = DBObject &
     SoftDelete & {
-        user_id: User["id"];
+        user_id: User['id'];
         leave_days: number;
     };
 
@@ -86,7 +79,7 @@ export type Organization = DBObject &
     SoftDelete &
     Flags & {
         name: string;
-        owner_id: User["id"];
+        owner_id: User['id'];
         tax_registration_id: string | null;
         commercial_registration_id: string | null;
         website: string | null;
@@ -100,7 +93,7 @@ export type OperatingSite = DBObject &
         email: string | null;
         phone_number: string | null;
         fax: string | null;
-        organization_id: Organization["id"];
+        organization_id: Organization['id'];
         is_head_quarter: boolean;
     };
 
@@ -109,13 +102,13 @@ export type OperatingTime = DBObject &
         type: Weekday;
         start: string;
         end: string;
-        operating_site_id: OperatingSite["id"];
+        operating_site_id: OperatingSite['id'];
     };
 
 export type Absence = DBObject &
     SoftDelete & {
-        absence_type_id: AbsenceType["id"];
-        user_id: User["id"];
+        absence_type_id: AbsenceType['id'];
+        user_id: User['id'];
         start: string;
         end: string;
         date: string;
@@ -127,55 +120,55 @@ export type AbsenceType = DBObject &
         name: string;
         abbreviation: string;
         type:
-            | "Unbezahlter Urlaub"
-            | "Ausbildung/ Berufsschule"
-            | "Fort- und Weiterbildung"
-            | "AZV-Tag"
-            | "Bildungsurlaub"
-            | "Sonderurlaub"
-            | "Elternzeit"
-            | "Urlaub"
-            | "Andere";
-        organization_id: Organization["id"];
+            | 'Unbezahlter Urlaub'
+            | 'Ausbildung/ Berufsschule'
+            | 'Fort- und Weiterbildung'
+            | 'AZV-Tag'
+            | 'Bildungsurlaub'
+            | 'Sonderurlaub'
+            | 'Elternzeit'
+            | 'Urlaub'
+            | 'Andere';
+        organization_id: Organization['id'];
     };
 
 export type Group = DBObject &
     SoftDelete & {
         name: string;
-        organization_id: Organization["id"];
+        organization_id: Organization['id'];
     };
 
 export type SpecialWorkingHoursFactor = DBObject &
     SoftDelete & {
-        organization_id: Organization["id"];
-        type: Weekday | "holiday" | "nightshift";
+        organization_id: Organization['id'];
+        type: Weekday | 'holiday' | 'nightshift';
         extra_charge: number;
     };
 
 export type Substitute = DBObject &
     SoftDelete & {
-        user_id: User["id"];
-        substitute_id: User["id"];
+        user_id: User['id'];
+        substitute_id: User['id'];
     };
 
 export type TravelLog = DBObject &
     SoftDelete & {
-        user_id: User["id"];
-        start_location: User["id"] | OperatingSite["id"] | CustomAddress["id"];
+        user_id: User['id'];
+        start_location: User['id'] | OperatingSite['id'] | CustomAddress['id'];
         start_time: string;
         end_time: string;
-        end_location: User["id"] | OperatingSite["id"] | CustomAddress["id"];
+        end_location: User['id'] | OperatingSite['id'] | CustomAddress['id'];
     };
 
 export type CustomAddress = DBObject &
     SoftDelete &
     Address & {
-        organization_id: Organization["id"];
+        organization_id: Organization['id'];
     };
 
 export type WorkLog = DBObject &
     SoftDelete & {
-        user_id: User["id"];
+        user_id: User['id'];
         start: string;
         end: string;
         is_home_office: boolean;
@@ -183,9 +176,9 @@ export type WorkLog = DBObject &
 
 export type WorkLogPatch = WorkLog & {
     status: Status;
-    work_log_id: WorkLog["id"];
+    work_log_id: WorkLog['id'];
 };
 
-type Permission = "work_log_patching";
+type Permission = 'work_log_patching';
 
 export type UserPermission = { name: Permission; label: string };

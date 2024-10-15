@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import GuestLayout from "@/Layouts/GuestLayout.vue";
-import { useForm } from "@inertiajs/vue3";
+import GuestLayout from '@/Layouts/GuestLayout.vue';
+import { useForm } from '@inertiajs/vue3';
 
 const props = defineProps<{
     email: string;
@@ -10,14 +10,14 @@ const props = defineProps<{
 const form = useForm({
     token: props.token,
     email: props.email,
-    password: "",
-    password_confirmation: "",
+    password: '',
+    password_confirmation: '',
 });
 
 const submit = () => {
-    form.post(route("password.store"), {
+    form.post(route('password.store'), {
         onFinish: () => {
-            form.reset("password", "password_confirmation");
+            form.reset('password', 'password_confirmation');
         },
     });
 };
@@ -68,13 +68,7 @@ const submit = () => {
                     ></v-text-field>
                 </div>
                 <div class="d-flex justify-center">
-                    <v-btn
-                        type="submit"
-                        :loading="form.processing"
-                        variant="elevated"
-                        color="primary"
-                        >Passwort zurücksetzen</v-btn
-                    >
+                    <v-btn type="submit" :loading="form.processing" variant="elevated" color="primary">Passwort zurücksetzen</v-btn>
                 </div>
             </v-form>
         </div>

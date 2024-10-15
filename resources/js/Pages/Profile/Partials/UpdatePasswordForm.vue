@@ -1,29 +1,29 @@
 <script setup lang="ts">
-import { useForm } from "@inertiajs/vue3";
-import { ref } from "vue";
+import { useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 const passwordInput = ref<HTMLInputElement | null>(null);
 const currentPasswordInput = ref<HTMLInputElement | null>(null);
 
 const form = useForm({
-    current_password: "",
-    password: "",
-    password_confirmation: "",
+    current_password: '',
+    password: '',
+    password_confirmation: '',
 });
 
 const updatePassword = () => {
-    form.put(route("password.update"), {
+    form.put(route('password.update'), {
         preserveScroll: true,
         onSuccess: () => {
             form.reset();
         },
         onError: () => {
             if (form.errors.password) {
-                form.reset("password", "password_confirmation");
+                form.reset('password', 'password_confirmation');
                 passwordInput.value?.focus();
             }
             if (form.errors.current_password) {
-                form.reset("current_password");
+                form.reset('current_password');
                 currentPasswordInput.value?.focus();
             }
         },
@@ -34,10 +34,7 @@ const updatePassword = () => {
 <template>
     <v-card>
         <v-card-title><h5>Passwort ändern</h5></v-card-title>
-        <v-card-text
-            >Stellen Sie sicher, dass Ihr Konto ein langes, zufälliges Passwort
-            verwendet, um sicher zu bleiben.</v-card-text
-        >
+        <v-card-text>Stellen Sie sicher, dass Ihr Konto ein langes, zufälliges Passwort verwendet, um sicher zu bleiben.</v-card-text>
 
         <form @submit.prevent="updatePassword" class="pa-3">
             <v-text-field
@@ -67,12 +64,8 @@ const updatePassword = () => {
             />
 
             <div class="text-end">
-                <v-btn type="submit" color="primary" :loading="form.processing"
-                    >Speichern</v-btn
-                >
-                <v-snackbar v-model="form.recentlySuccessful"
-                    >Gespeichert</v-snackbar
-                >
+                <v-btn type="submit" color="primary" :loading="form.processing">Speichern</v-btn>
+                <v-snackbar v-model="form.recentlySuccessful">Gespeichert</v-snackbar>
             </div>
         </form>
     </v-card>

@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import AdminLayout from "@/Layouts/AdminLayout.vue";
-import { Group, User } from "@/types/types";
-import { useForm } from "@inertiajs/vue3";
-import { ref } from "vue";
+import AdminLayout from '@/Layouts/AdminLayout.vue';
+import { Group, User } from '@/types/types';
+import { useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 defineProps<{
     groups: (Group & { users: User[] })[];
-    users: Pick<User, "id">[];
+    users: Pick<User, 'id'>[];
 }>();
 
 const groupForm = useForm({
-    name: "",
+    name: '',
     users: [],
 });
 
 const expanded = ref([]);
 
 function submit() {
-    groupForm.post(route("group.store"), {
+    groupForm.post(route('group.store'), {
         onSuccess: () => groupForm.reset(),
     });
 }
@@ -47,11 +47,7 @@ function submit() {
                         <template v-slot:default="{ isActive }">
                             <v-card>
                                 <v-form @submit.prevent="submit">
-                                    <v-toolbar
-                                        color="primary"
-                                        class="mb-4"
-                                        title="Abteilung erstellen"
-                                    ></v-toolbar>
+                                    <v-toolbar color="primary" class="mb-4" title="Abteilung erstellen"></v-toolbar>
                                     <v-row>
                                         <v-col cols="12">
                                             <v-text-field
@@ -76,20 +72,8 @@ function submit() {
                                     </v-row>
                                     <v-card-actions>
                                         <div class="d-flex justify-end w-100">
-                                            <v-btn
-                                                color="error"
-                                                variant="elevated"
-                                                class="me-2"
-                                                @click="isActive.value = false"
-                                            >
-                                                Abbrechen
-                                            </v-btn>
-                                            <v-btn
-                                                type="submit"
-                                                color="primary"
-                                                variant="elevated"
-                                                >Erstellen
-                                            </v-btn>
+                                            <v-btn color="error" variant="elevated" class="me-2" @click="isActive.value = false">Abbrechen</v-btn>
+                                            <v-btn type="submit" color="primary" variant="elevated">Erstellen</v-btn>
                                         </div>
                                     </v-card-actions>
                                 </v-form>
@@ -112,9 +96,9 @@ function submit() {
                             { title: 'Geburtsdatum', key: 'date_of_birth' },
                         ]"
                         :items="item.users"
-                    >
-                    </v-data-table-virtual>
+                    ></v-data-table-virtual>
                 </template>
-            </v-data-table-virtual> </v-container
-    ></AdminLayout>
+            </v-data-table-virtual>
+        </v-container>
+    </AdminLayout>
 </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import GuestLayout from "@/Layouts/GuestLayout.vue";
-import { Link, useForm } from "@inertiajs/vue3";
+import GuestLayout from '@/Layouts/GuestLayout.vue';
+import { Link, useForm } from '@inertiajs/vue3';
 // import { useOrganizationSettings } from "@/OrganizationTemplates";
 
 defineProps<{
@@ -9,14 +9,14 @@ defineProps<{
 }>();
 
 const adminForm = useForm({
-    email: "",
-    password: "",
+    email: '',
+    password: '',
 });
 
 const adminLogin = () => {
-    adminForm.post(route("login"), {
+    adminForm.post(route('login'), {
         onFinish: () => {
-            adminForm.reset("password");
+            adminForm.reset('password');
         },
     });
 };
@@ -27,13 +27,7 @@ const adminLogin = () => {
     <GuestLayout title="Login">
         <div class="flex-grow-1 d-flex flex-column justify-center">
             <div v-if="status">
-                <v-alert
-                    v-if="status"
-                    type="success"
-                    class="mb-4"
-                    :text="status"
-                    variant="tonal"
-                ></v-alert>
+                <v-alert v-if="status" type="success" class="mb-4" :text="status" variant="tonal"></v-alert>
             </div>
             <v-form @submit.prevent="adminLogin" class="mt-8">
                 <v-text-field
@@ -55,22 +49,9 @@ const adminLogin = () => {
                     prepend-inner-icon="mdi-lock-outline"
                     label="Passwort"
                 ></v-text-field>
-                <v-btn
-                    :loading="adminForm.processing"
-                    block
-                    color="primary"
-                    size="large"
-                    type="submit"
-                    variant="elevated"
-                    >Login</v-btn
-                >
-                <v-card-text
-                    class="pb-0 px-0 text-center mt-4 d-flex justify-space-between"
-                >
-                    <Link
-                        :href="route('password.request')"
-                        class="text-primary text-decoration-none py-2"
-                    >
+                <v-btn :loading="adminForm.processing" block color="primary" size="large" type="submit" variant="elevated">Login</v-btn>
+                <v-card-text class="pb-0 px-0 text-center mt-4 d-flex justify-space-between">
+                    <Link :href="route('password.request')" class="text-primary text-decoration-none py-2">
                         <v-icon icon="mdi-lock"></v-icon>
                         Passwort vergessen?
                     </Link>

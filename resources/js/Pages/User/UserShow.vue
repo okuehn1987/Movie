@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import AdminLayout from "@/Layouts/AdminLayout.vue";
-import { Group, OperatingSite, User, UserPermission } from "@/types/types";
-import { useForm } from "@inertiajs/vue3";
-import { DateTime } from "luxon";
-import UserForm from "./UserForm.vue";
+import AdminLayout from '@/Layouts/AdminLayout.vue';
+import { Group, OperatingSite, User, UserPermission } from '@/types/types';
+import { useForm } from '@inertiajs/vue3';
+import { DateTime } from 'luxon';
+import UserForm from './UserForm.vue';
 
 const props = defineProps<{
     user: User;
@@ -33,13 +33,11 @@ console.log(userForm.date_of_birth);
 
 function submit() {
     userForm
-        .transform((data) => ({
+        .transform(data => ({
             ...data,
-            date_of_birth: DateTime.fromISO(
-                new Date(data.date_of_birth + "").toISOString()
-            ),
+            date_of_birth: DateTime.fromISO(new Date(data.date_of_birth + '').toISOString()),
         }))
-        .patch(route("user.update", { user: props.user.id }), {
+        .patch(route('user.update', { user: props.user.id }), {
             onSuccess: () => userForm.reset(),
         });
 }
@@ -48,14 +46,7 @@ function submit() {
     <AdminLayout title="User Show">
         <v-container>
             <v-card>
-                <UserForm
-                    :userForm
-                    :groups
-                    :operating_sites
-                    :submit
-                    :permissions
-                    mode="edit"
-                ></UserForm>
+                <UserForm :userForm :groups :operating_sites :submit :permissions mode="edit"></UserForm>
             </v-card>
         </v-container>
     </AdminLayout>
