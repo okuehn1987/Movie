@@ -10,10 +10,10 @@ use Inertia\Inertia;
 
 class SpecialWorkingHoursFactorController extends Controller
 {
-    public function index()
-    {
-        return Inertia::render('SWHF/SWHFIndex', ['factors' => SpecialWorkingHoursFactor::inOrganization()->get()]);
-    }
+    // public function index()
+    // {
+    //     return Inertia::render('SWHF/SWHFIndex', ['specialWorkingHoursFactor' => SpecialWorkingHoursFactor::inOrganization()->get()]);
+    // }
 
     public function show(Request $request, SpecialWorkingHoursFactor $specialWorkingHoursFactor)
     {

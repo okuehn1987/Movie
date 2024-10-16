@@ -10,10 +10,10 @@ use Inertia\Inertia;
 
 class AbsenceTypeController extends Controller
 {
-    public function index()
-    {
-        return Inertia::render('AbsenceType/AbsenceTypeIndex', ['absenceTypes' => AbsenceType::inOrganization()->get(), 'types' => AbsenceType::getTypes()]);
-    }
+    // public function index()
+    // {
+    //     return Inertia::render('AbsenceType/AbsenceTypeIndex', ['absenceTypes' => AbsenceType::inOrganization()->get(), 'types' => AbsenceType::getTypes()]);
+    // }
 
     public function store(Request $request)
     {
