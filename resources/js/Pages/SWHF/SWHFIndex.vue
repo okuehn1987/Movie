@@ -52,7 +52,6 @@ function submit() {
     <v-dialog max-width="1000" v-model="showDialog">
         <v-card>
             <v-toolbar color="primary" title="Besondere Arbeitszeitzuschläge erstellen" class="mb-4"></v-toolbar>
-
             <v-form @submit.prevent="submit">
                 <v-row>
                     <v-col cols="12" md="6">
@@ -78,7 +77,6 @@ function submit() {
                         ></v-text-field>
                     </v-col>
                 </v-row>
-
                 <v-card-actions>
                     <div class="d-flex justify-end w-100">
                         <v-btn
@@ -100,7 +98,6 @@ function submit() {
             </v-form>
         </v-card>
     </v-dialog>
-
     <v-card flat>
         <v-alert color="success" closable class="my-2 mx-4" v-if="swhfForm.wasSuccessful">
             Besonderer Arbeitszeitzuschlag erfolgreich gespeichert.
@@ -132,7 +129,6 @@ function submit() {
                             <v-icon size="large" icon="mdi-delete"></v-icon>
                         </v-btn>
                     </template>
-
                     <template v-slot:default="{ isActive }">
                         <v-card>
                             <v-toolbar color="primary" class="mb-4" title="Mitarbeiter löschen"></v-toolbar>

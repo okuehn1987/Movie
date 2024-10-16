@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Organization } from '@/types/types';
+import { fillNullishValues } from '@/utils';
 import { useForm } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 
@@ -44,7 +45,7 @@ function submit() {
                 ]"
                 :items="
                     organizations.map(o => ({
-                        ...o,
+                        ...fillNullishValues(o),
                         created_at: DateTime.fromISO(o.created_at).toFormat('dd.MM.yyyy'),
                     }))
                 "

@@ -16,7 +16,7 @@ const page = usePage();
         <div class="h-100 d-flex flex-column">
             <v-app-bar :elevation="2" color="layout">
                 <div class="w-100" style="display: grid; grid-template-columns: 1fr auto 1fr">
-                    <div>
+                    <div class="d-flex align-center">
                         <v-btn v-if="backurl" variant="plain" icon="mdi-arrow-left" @click.stop="router.get(backurl)"></v-btn>
                     </div>
                     <div class="d-flex align-center text-center">
@@ -55,7 +55,7 @@ const page = usePage();
             <div id="scrollContainer" class="d-flex flex-column" style="height: 0; flex: 1; overflow-y: auto">
                 <slot />
             </div>
-            <Menu v-if="!backurl"></Menu>
+            <Menu />
         </div>
     </v-app>
 </template>

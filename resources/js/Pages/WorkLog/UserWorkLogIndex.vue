@@ -122,7 +122,7 @@ function retreatPatch() {
 }
 </script>
 <template>
-    <AdminLayout :title="user.first_name + ' ' + user.last_name">
+    <AdminLayout :title="user.first_name + ' ' + user.last_name" :backurl="route('dashboard')">
         <v-container>
             <v-alert class="mb-4" color="primary" v-if="workLogForm.wasSuccessful" closable>
                 Korrigierung der Arbeitszeit erfolgreich beantragt.

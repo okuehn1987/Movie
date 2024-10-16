@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Group, User } from '@/types/types';
-import { tableHeight } from '@/utils';
+import { fillNullishValues, tableHeight } from '@/utils';
 import { useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
@@ -101,7 +101,7 @@ function submit() {
                                     },
                                     { title: 'Geburtsdatum', key: 'date_of_birth' },
                                 ]"
-                                :items="item.users"
+                                :items="item.users.map(u => fillNullishValues(u))"
                             ></v-data-table-virtual>
                         </td>
                     </tr>

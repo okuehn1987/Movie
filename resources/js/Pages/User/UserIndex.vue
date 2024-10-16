@@ -3,6 +3,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Group, OperatingSite, User, UserPermission } from '@/types/types';
 import { Link } from '@inertiajs/vue3';
 import UserForm from './UserForm.vue';
+import { fillNullishValues } from '@/utils';
 
 defineProps<{
     users: (User & { group: Pick<Group, 'id' | 'name'> })[];
@@ -25,7 +26,7 @@ defineProps<{
                     { title: 'Geburtsdatum', key: 'date_of_birth' },
                     { title: '', key: 'actions', align: 'end' },
                 ]"
-                :items="users"
+                :items="users.map(u => fillNullishValues(u))"
                 hover
             >
                 <template v-slot:header.actions>

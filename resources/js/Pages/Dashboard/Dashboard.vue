@@ -52,7 +52,7 @@ function changePatchStatus(accepted: boolean) {
                 showPatchDialog.value = false;
                 submitPatchSuccess.value = true;
             },
-        }
+        },
     );
 }
 </script>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { OperatingSite } from '@/types/types';
+import { fillNullishValues } from '@/utils';
 import { useForm } from '@inertiajs/vue3';
 
 defineProps<{
@@ -49,7 +50,7 @@ function submit() {
                     { title: 'Fax', key: 'fax' },
                     { title: '', key: 'action', align: 'end' },
                 ]"
-                :items="operatingSites"
+                :items="operatingSites.map(o => fillNullishValues(o))"
             >
                 <template v-slot:header.action>
                     <v-dialog max-width="1000">

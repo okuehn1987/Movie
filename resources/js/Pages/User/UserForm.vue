@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Group, OperatingSite, User, UserPermission } from '@/types/types';
-import { copyDataToForm } from '@/utils';
 import { useForm } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 
@@ -17,7 +16,7 @@ const userForm = useForm({
     first_name: '',
     last_name: '',
     email: '',
-    date_of_birth: undefined,
+    date_of_birth: null as null | string,
     city: '',
     zip: '',
     street: '',
@@ -28,13 +27,31 @@ const userForm = useForm({
     phone_number: '',
     staff_number: 0,
     password: '',
-    group_id: undefined,
-    operating_site_id: undefined,
+    group_id: null as null | number,
+    operating_site_id: null as null | number,
     permissions: [] as UserPermission['name'][],
 });
 
 if (props.user) {
-    copyDataToForm(userForm, props.user);
+    userForm.first_name = props.user.first_name;
+    userForm.last_name = props.user.last_name;
+    userForm.email = props.user.email;
+    userForm.date_of_birth = props.user.date_of_birth;
+    userForm.city = props.user.city ?? '';
+    userForm.zip = props.user.zip ?? '';
+    userForm.street = props.user.street ?? '';
+    userForm.house_number = props.user.house_number ?? '';
+    userForm.address_suffix = props.user.address_suffix ?? '';
+    userForm.country = props.user.country ?? '';
+    userForm.federal_state = props.user.federal_state ?? '';
+    userForm.phone_number = props.user.phone_number ?? '';
+    userForm.staff_number = props.user.staff_number;
+    userForm.password = props.user.password;
+    userForm.group_id = props.user.group_id;
+    userForm.operating_site_id = props.user.operating_site_id;
+    for (const permission of props.permissions) {
+        userForm.permissions.push(permission.name);
+    }
 }
 
 function submit() {
@@ -74,7 +91,14 @@ function submit() {
                 <v-text-field v-model="userForm.password" label="Passwort" class="px-8" variant="underlined"></v-text-field>
             </v-col>
             <v-col cols="12" md="6">
-                <v-date-input v-model="userForm.date_of_birth" prepend-icon="" label="Geburtsdatum" class="px-8" variant="underlined"></v-date-input>
+                <v-date-input
+                    v-model="userForm.date_of_birth"
+                    prepend-icon=""
+                    label="Geburtsdatum"
+                    class="px-8"
+                    variant="underlined"
+                    required
+                ></v-date-input>
             </v-col>
         </v-row>
         <v-card-text>
