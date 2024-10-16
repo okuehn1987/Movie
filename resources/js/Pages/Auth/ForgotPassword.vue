@@ -18,7 +18,7 @@ const submit = () => {
     <GuestLayout title="Forgot Password">
         <div class="d-flex h-100 justify-center align-center flex-column">
             <div class="mb-5" v-if="!status">
-                <v-alert color="darkPrimary" variant="plain">
+                <v-alert color="primary" variant="text">
                     Passwort vergessen? Kein Problem. Geben Sie einfach Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link zum Zurücksetzen des
                     Passworts.
                 </v-alert>
