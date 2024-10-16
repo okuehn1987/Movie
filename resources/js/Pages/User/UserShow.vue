@@ -14,7 +14,7 @@ defineProps<{
     <AdminLayout title="User Show">
         <v-container>
             <v-card>
-                <UserForm :user :groups :operating_sites :submitRoute="route('user.update', { user: user.id })" :permissions mode="edit"></UserForm>
+                <UserForm :user :groups :operating_sites :permissions mode="edit"></UserForm>
             </v-card>
         </v-container>
     </AdminLayout>

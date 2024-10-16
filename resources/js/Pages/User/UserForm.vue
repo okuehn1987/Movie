@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Group, OperatingSite, User, UserPermission } from '@/types/types';
 import { useForm } from '@inertiajs/vue3';
-import { DateTime } from 'luxon';
 
 const props = defineProps<{
     user?: User;
@@ -9,7 +8,6 @@ const props = defineProps<{
     permissions: UserPermission[];
     groups: Group[];
     mode: 'create' | 'edit';
-    submitRoute: string;
 }>();
 
 const userForm = useForm({
@@ -55,14 +53,20 @@ if (props.user) {
 }
 
 function submit() {
-    userForm
-        .transform(data => ({
-            ...data,
-            date_of_birth: DateTime.fromISO(new Date(data.date_of_birth + '').toISOString()),
-        }))
-        .patch(props.submitRoute, {
+    const form = userForm.transform(data => ({
+        ...data,
+        date_of_birth: data.date_of_birth ? new Date(data.date_of_birth).toISOString() : null,
+    }));
+    if (props.mode == 'edit' && props.user)
+        form.patch(route('user.update', { user: props.user.id }), {
             onSuccess: () => userForm.reset(),
         });
+    else {
+        form.post(route('user.store'), {
+            onSuccess: () => userForm.reset(),
+            onError: e => console.log(e),
+        });
+    }
 }
 </script>
 <template>

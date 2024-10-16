@@ -38,7 +38,7 @@ defineProps<{
                         </template>
 
                         <v-card>
-                            <UserForm :groups :operating_sites :permissions :submitRoute="route('user.store')" mode="create"></UserForm>
+                            <UserForm :groups :operating_sites :permissions mode="create"></UserForm>
                         </v-card>
                     </v-dialog>
                 </template>
