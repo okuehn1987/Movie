@@ -46,7 +46,7 @@ export type User = DBObject &
         role: 'super-admin' | 'employee';
         password: string;
         operating_site_id: number;
-        group_id: Group['id'];
+        group_id: Group['id'] | null;
         supervisor_id: User['id'];
         organization_id: Organization['id'];
         staff_number: number;

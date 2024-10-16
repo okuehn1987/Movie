@@ -3,11 +3,12 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Group, User } from '@/types/types';
 import { fillNullishValues, tableHeight } from '@/utils';
 import { useForm } from '@inertiajs/vue3';
+import { DateTime } from 'luxon';
 import { ref } from 'vue';
 
 defineProps<{
-    groups: (Group & { users: User[] })[];
-    users: Pick<User, 'id'>[];
+    groups: Pick<Group, 'id' | 'name'>[];
+    users: Pick<User, 'id' | 'first_name' | 'last_name' | 'email' | 'staff_number' | 'date_of_birth' | 'group_id'>[];
 }>();
 
 const groupForm = useForm({
@@ -101,7 +102,13 @@ function submit() {
                                     },
                                     { title: 'Geburtsdatum', key: 'date_of_birth' },
                                 ]"
-                                :items="item.users.map(u => fillNullishValues(u))"
+                                :items="
+                                    users
+                                        .filter(user => user.group_id == item.id)
+                                        .map(u =>
+                                            fillNullishValues({ ...u, date_of_birth: DateTime.fromSQL(u.date_of_birth).toFormat('dd.MM.yyyy') }),
+                                        )
+                                "
                             ></v-data-table-virtual>
                         </td>
                     </tr>

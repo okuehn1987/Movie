@@ -13,7 +13,10 @@ class GroupController extends Controller
 {
     public function index()
     {
-        return Inertia::render('Group/GroupIndex', ['groups' => Group::inOrganization()->with('users')->get(), 'users' => User::inOrganization()->get()->map(fn($u) => ['name' => $u->first_name . ' ' . $u->last_name,  'id' => $u->id])]);
+        return Inertia::render('Group/GroupIndex', [
+            'groups' => Group::inOrganization()->select('id', 'name')->get(),
+            'users' => User::inOrganization()->select('id', 'first_name', 'last_name', 'email', 'staff_number', 'date_of_birth', 'group_id')->get()
+        ]);
     }
     public function store(Request $request)
     {
