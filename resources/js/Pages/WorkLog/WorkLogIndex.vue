@@ -60,7 +60,7 @@ const daysInMonth = DateTime.fromJSDate(calendarMonth.value[0]).daysInMonth ?? D
 
 const events = computed(() => {
     let users = props.users;
-    users = users.filter(user => selectedGroups.value.includes(user.group_id));
+    users = users.filter(user => selectedGroups.value.find(g => g == user.group_id));
 
     users = users.filter(user => (user.first_name + user.last_name).toLowerCase().includes(searchQuery.value.toLowerCase()));
 
