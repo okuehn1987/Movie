@@ -38,7 +38,7 @@ watch(currentPage, () => {
             page: currentPage.value,
         }),
         {
-            only: ['paginator'],
+            only: ['workLogs'],
         },
     );
 });
@@ -128,7 +128,6 @@ function retreatPatch() {
                 Korrigierung der Arbeitszeit erfolgreich beantragt.
             </v-alert>
             <v-data-table
-                v-model:page="currentPage"
                 :headers="[
                     { title: 'Start', key: 'start' },
                     { title: 'Ende', key: 'end' },
@@ -141,7 +140,6 @@ function retreatPatch() {
                         sortable: false,
                     },
                 ]"
-                :items-per-page="workLogs.per_page"
                 :items="
                     workLogs.data
                         .map(workLog => {
