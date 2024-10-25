@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Group, User } from '@/types/types';
-import { fillNullishValues, tableHeight } from '@/utils';
+import { Group, Paginator, User } from '@/types/types';
+import { fillNullishValues, usePagination } from '@/utils';
 import { useForm } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
-import { ref } from 'vue';
+import { ref, toRefs } from 'vue';
 
-defineProps<{
-    groups: Pick<Group, 'id' | 'name'>[];
+const props = defineProps<{
+    groups: Paginator<Pick<Group, 'id' | 'name'>>;
     users: Pick<User, 'id' | 'first_name' | 'last_name' | 'email' | 'staff_number' | 'date_of_birth' | 'group_id'>[];
 }>();
+
+const { currentPage, lastPage, data } = usePagination(toRefs(props), 'groups');
 
 const groupForm = useForm({
     name: '',
@@ -29,13 +31,12 @@ function submit() {
         <v-container>
             <v-data-table-virtual
                 fixed-header
-                :max-height="tableHeight(groups)"
                 :headers="[
                     { title: '#', key: 'id' },
                     { title: 'Abteilungsname', key: 'name' },
                     { title: '', key: 'data-table-expand', align: 'end' },
                 ]"
-                :items="groups"
+                :items="data"
                 v-model:expanded="expanded"
                 hover
             >
@@ -105,13 +106,17 @@ function submit() {
                                 :items="
                                     users
                                         .filter(user => user.group_id == item.id)
-                                        .map(u =>
-                                            fillNullishValues({ ...u, date_of_birth: DateTime.fromSQL(u.date_of_birth).toFormat('dd.MM.yyyy') }),
-                                        )
+                                        .map(u => ({
+                                            ...fillNullishValues(u),
+                                            date_of_birth: DateTime.fromSQL(u.date_of_birth).toFormat('dd.MM.yyyy'),
+                                        }))
                                 "
                             ></v-data-table-virtual>
                         </td>
                     </tr>
+                </template>
+                <template v-slot:bottom>
+                    <v-pagination v-if="lastPage > 1" v-model="currentPage" :length="lastPage"></v-pagination>
                 </template>
             </v-data-table-virtual>
         </v-container>

@@ -14,7 +14,7 @@ class GroupController extends Controller
     public function index()
     {
         return Inertia::render('Group/GroupIndex', [
-            'groups' => Group::inOrganization()->select('id', 'name')->get(),
+            'groups' => Group::inOrganization()->select('id', 'name')->paginate(12),
             'users' => User::inOrganization()->select('id', 'first_name', 'last_name', 'email', 'staff_number', 'date_of_birth', 'group_id')->get()
         ]);
     }

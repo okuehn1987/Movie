@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { User, WorkLog, WorkLogPatch, Paginator } from '@/types/types';
-import { useNow } from '@/utils';
+import { User, WorkLog, WorkLogPatch, Paginator, OperatingTime, TimeAccount } from '@/types/types';
 import { router, usePage } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
+import Arbeitszeit from './partial/Arbeitszeit.vue';
 
 type PatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id' | 'work_log_id'> & {
     work_log: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office'>;
@@ -14,10 +14,12 @@ type PatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 
 const props = defineProps<{
     lastWorkLog: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office'>;
     supervisor: Pick<User, 'id' | 'first_name' | 'last_name'>;
-    patches: Paginator<PatchProp[]> | null;
+    patches: Paginator<PatchProp> | null;
+    operating_times: OperatingTime[];
+    defaultTimeAccount: TimeAccount;
+    workingHours: { should: number; current: number };
 }>();
 const page = usePage();
-const now = useNow();
 
 const patchDialog = ref<PatchProp | null>(null);
 const showPatchDialog = ref(false);
@@ -25,15 +27,19 @@ const submitPatchSuccess = ref(false);
 
 const currentPage = ref(props.patches?.current_page);
 
+watch(currentPage, () => {
+    router.visit(
+        route(route('dashboard'), {
+            page: currentPage.value,
+        }),
+        {
+            only: ['patches'],
+        },
+    );
+});
+
 // TODO: momentanen überstunden ohne aktuellen Log
 // TODO: bei abwesenheit buttons disablen
-
-function changeWorkStatus(home_office = false) {
-    router.post(route('workLog.store'), {
-        is_home_office: home_office,
-        id: props.lastWorkLog.end ? null : props.lastWorkLog.id,
-    });
-}
 
 function openPatch(_: unknown, row: { item: { id: WorkLogPatch['id'] } }) {
     const patch = props.patches?.data.find(p => p.id === row.item.id);
@@ -57,54 +63,11 @@ function changePatchStatus(accepted: boolean) {
 }
 </script>
 <template>
-    <AdminLayout title="Dashboard">
+    <AdminLayout :title="'Dashboard von ' + $page.props.auth.user.first_name + ' ' + $page.props.auth.user.last_name">
         <v-container>
             <v-row>
                 <v-col cols="12" md="4">
-                    <v-card>
-                        <v-toolbar color="primary">
-                            <v-toolbar-title>Arbeitszeit</v-toolbar-title>
-                            <v-btn
-                                :href="
-                                    route('user.workLog.index', {
-                                        user: page.props.auth.user.id,
-                                    })
-                                "
-                            >
-                                <v-icon icon="mdi-eye"></v-icon>
-                            </v-btn>
-                        </v-toolbar>
-                        <v-card-text>
-                            <div>
-                                <div>
-                                    Aktuelle Stunden:
-                                    {{ now.diff(DateTime.fromSQL(lastWorkLog.start)).toFormat('hh:mm') }}
-                                </div>
-                                <div>
-                                    {{ DateTime.fromSQL(lastWorkLog.start).toFormat('dd.MM HH:mm') }}
-                                </div>
-                            </div>
-
-                            <v-alert color="danger" class="mt-2" v-if="now.diff(DateTime.fromSQL(lastWorkLog.start)).as('hours') > 16">
-                                Es fehlt eine Meldung. Bitte Zeitkorrektur.
-                                <v-btn color="primary" class="ms-2" :href="`/user/${page.props.auth.user.id}/workLogs?workLog=${lastWorkLog.id}`">
-                                    Zeitkorrektur
-                                </v-btn>
-                            </v-alert>
-                            <div v-else>
-                                <template
-                                    v-if="(page.props.auth.user.home_office && lastWorkLog.end) || (lastWorkLog.is_home_office && !lastWorkLog.end)"
-                                >
-                                    <v-btn @click.stop="changeWorkStatus(true)" color="primary" class="me-2">
-                                        {{ lastWorkLog.end ? 'Kommen Homeoffice' : 'Gehen Homeoffice' }}
-                                    </v-btn>
-                                </template>
-                                <v-btn @click.stop="changeWorkStatus()" color="primary" v-if="lastWorkLog.end || !lastWorkLog.is_home_office">
-                                    {{ lastWorkLog.end ? 'Kommen' : 'Gehen' }}
-                                </v-btn>
-                            </div>
-                        </v-card-text>
-                    </v-card>
+                    <Arbeitszeit :lastWorkLog :operating_times :defaultTimeAccount :workingHours />
                 </v-col>
                 <v-col cols="12" md="4" v-if="supervisor">
                     <v-card>

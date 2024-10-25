@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('absences', function (Blueprint $table) {
+        Schema::create('time_accounts', function (Blueprint $table) {
             $table->id();
             $table->softDeletes();
-            $table->foreignId('absence_type_id');
-            $table->foreignId('user_id');
-            $table->date("start");
-            $table->date("end");
-            $table->enum("status", ["created", "declined", "accepted"]);
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->float('balance')->default(0);
+            $table->float('balance_limit')->default(0);
+            $table->string('type')->default('default');
             $table->timestamps();
         });
     }
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('absences');
+        Schema::dropIfExists('time_accounts');
     }
 };

@@ -6,8 +6,6 @@ import { computed } from 'vue';
 const page = usePage();
 
 const user = computed(() => page.props.auth.user);
-
-console.log(route('absence.store'));
 </script>
 
 <template>
@@ -42,6 +40,7 @@ console.log(route('absence.store'));
                 <span style="font-size: xx-small">Abteilungen</span>
             </v-btn>
             <v-btn
+                v-if="$page.props.auth.user.user_administration"
                 @click="router.get(route('user.index'))"
                 :class="route().current('user.index') ? 'text-white' : 'text-grey-lighten-1'"
                 style="min-width: 0"
@@ -69,7 +68,7 @@ console.log(route('absence.store'));
                 <span style="font-size: xx-small">Betriebsorte</span>
             </v-btn>
             <v-btn
-                @click="router.get(route('organization.show', { organization: $page.props.organization }))"
+                @click="router.get(route('organization.show', { organization: $page.props.organization.id }))"
                 :class="route().current('organization.show') ? 'text-white' : 'text-grey-lighten-1'"
                 style="min-width: 0"
                 class="px-1"

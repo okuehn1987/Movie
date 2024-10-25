@@ -17,8 +17,8 @@ return new class extends Migration
             $table->foreignId('user_id');
             $table->enum("start_location_type", ["user", "operating_site", "custom_address"]);
             $table->bigInteger("start_location_id");
-            $table->dateTime("start_time");
-            $table->dateTime("end_time");
+            $table->dateTime("start");
+            $table->dateTime("end");
             $table->enum("end_location_type", ["user", "operating_site", "custom_address"]);
             $table->timestamps();
         });

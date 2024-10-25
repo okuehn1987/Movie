@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { OperatingSite } from '@/types/types';
-import { fillNullishValues } from '@/utils';
-import { useForm } from '@inertiajs/vue3';
+import { OperatingSite, Paginator } from '@/types/types';
+import { fillNullishValues, usePagination } from '@/utils';
+import { router, useForm } from '@inertiajs/vue3';
+import { toRefs } from 'vue';
 
-defineProps<{
-    operatingSites: OperatingSite[];
+const props = defineProps<{
+    operatingSites: Paginator<OperatingSite & { users_count: number }>;
     success?: string;
 }>();
+
+const { currentPage, lastPage, data } = usePagination(toRefs(props), 'operatingSites');
 
 const operatingSiteForm = useForm({
     address_suffix: '',
@@ -39,18 +42,21 @@ function submit() {
                 :headers="[
                     { title: '#', key: 'id' },
                     { title: 'Name', key: 'name' },
-                    { title: 'Straße', key: 'street' },
-                    { title: 'Hausnummer', key: 'house_number' },
-                    { title: 'Postleitzahl', key: 'zip' },
-                    { title: 'Bundesland', key: 'federal_state' },
+                    { title: 'Anschrift', key: 'streetAddress' },
+                    { title: 'Stadt', key: 'cityAddress' },
                     { title: 'Land', key: 'country' },
-                    { title: 'Hauptsitz', key: 'is_head_quarter' },
                     { title: 'Email', key: 'email' },
                     { title: 'Telefonnummer', key: 'phone_number' },
-                    { title: 'Fax', key: 'fax' },
                     { title: '', key: 'action', align: 'end' },
                 ]"
-                :items="operatingSites.map(o => fillNullishValues(o))"
+                :items="
+                    data.map(o => {
+                        const streetAddress = o.street && o.house_number ? o.street + ' ' + o.house_number : '/';
+                        const cityAddress = o.zip && o.city ? o.zip + ' ' + o.city : '/';
+
+                        return { ...fillNullishValues(o), streetAddress, cityAddress };
+                    })
+                "
             >
                 <template v-slot:header.action>
                     <v-dialog max-width="1000">
@@ -200,8 +206,48 @@ function submit() {
                             })
                         "
                     >
-                        <v-icon icon="mdi-eye"></v-icon>
+                        <v-icon icon-size="large" icon="mdi-eye"></v-icon>
                     </v-btn>
+                    <v-dialog max-width="1000" v-if="item.users_count == 0">
+                        <template v-slot:activator="{ props: activatorProps }">
+                            <v-btn v-bind="activatorProps" color="error" class="ms-2">
+                                <v-icon size="large" icon="mdi-delete"></v-icon>
+                            </v-btn>
+                        </template>
+
+                        <template v-slot:default="{ isActive }">
+                            <v-card>
+                                <v-toolbar color="primary" class="mb-4" title="Betriebsort löschen"></v-toolbar>
+                                <v-card-text>
+                                    Bist du dir sicher, dass du den Betriebsort
+                                    {{ item.name }}
+                                    entfernen möchtest?
+                                </v-card-text>
+                                <v-card-actions>
+                                    <div class="d-flex justify-end w-100">
+                                        <v-btn color="primary" variant="elevated" class="me-2" @click="isActive.value = false">Abbrechen</v-btn>
+
+                                        <v-btn
+                                            @click.stop="
+                                                router.delete(
+                                                    route('operatingSite.destroy', {
+                                                        operatingSite: item.id,
+                                                    }),
+                                                    { onSuccess: () => (isActive.value = false) },
+                                                )
+                                            "
+                                            color="error"
+                                            variant="elevated"
+                                            >Löschen</v-btn
+                                        >
+                                    </div>
+                                </v-card-actions>
+                            </v-card>
+                        </template>
+                    </v-dialog>
+                </template>
+                <template v-slot:bottom>
+                    <v-pagination v-if="lastPage > 1" v-model="currentPage" :length="lastPage"></v-pagination>
                 </template>
             </v-data-table-virtual>
         </v-container>

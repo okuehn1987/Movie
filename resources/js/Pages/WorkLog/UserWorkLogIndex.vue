@@ -1,22 +1,23 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Paginator, User, WorkLog, WorkLogPatch } from '@/types/types';
+import { usePagination } from '@/utils';
 import { router, useForm } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, toRefs } from 'vue';
 
 type PatchProp = Omit<WorkLogPatch, 'deleted_at' | 'created_at' | 'user_id'>;
 
 const props = defineProps<{
     user: User;
     workLogs: Paginator<
-        (WorkLog & {
+        WorkLog & {
             work_log_patches: PatchProp[];
-        })[]
+        }
     >;
 }>();
 
-const currentPage = ref(props.workLogs.current_page);
+const { currentPage, lastPage, data } = usePagination(toRefs(props), 'workLogs');
 
 const showDialog = ref(false);
 
@@ -31,18 +32,6 @@ onMounted(() => {
     if (workLogId) return editWorkLog(Number(workLogId));
 });
 
-watch(currentPage, () => {
-    router.visit(
-        route('user.workLog.index', {
-            user: props.user.id,
-            page: currentPage.value,
-        }),
-        {
-            only: ['workLogs'],
-        },
-    );
-});
-
 const workLogForm = useForm({
     id: -1,
     start: new Date(),
@@ -54,16 +43,16 @@ const workLogForm = useForm({
 
 function submit() {
     workLogForm
-        .transform(data => {
-            const start_time = DateTime.fromFormat(data.start_time, 'HH:mm');
-            const end_time = DateTime.fromFormat(data.end_time, 'HH:mm');
+        .transform(d => {
+            const start_time = DateTime.fromFormat(d.start_time, 'HH:mm');
+            const end_time = DateTime.fromFormat(d.end_time, 'HH:mm');
             return {
-                ...data,
-                start: DateTime.fromISO(data.start.toISOString()).set({
+                ...d,
+                start: DateTime.fromISO(d.start.toISOString()).set({
                     hour: start_time.hour,
                     minute: start_time.minute,
                 }),
-                end: DateTime.fromISO(data.end.toISOString()).set({
+                end: DateTime.fromISO(d.end.toISOString()).set({
                     hour: end_time.hour,
                     minute: end_time.minute,
                 }),
@@ -92,12 +81,18 @@ function editWorkLog(id: WorkLog['id']) {
         patchLog.value = lastPatch;
         patchMode.value = 'show';
     }
+    let start = workLog.start;
+    let end = workLog.end;
+    if (lastPatch && lastPatch.status == 'accepted') {
+        start = lastPatch.start;
+        end = lastPatch.end;
+    }
 
     workLogForm.id = id;
-    workLogForm.start = new Date(workLog.start);
-    workLogForm.end = workLog.end ? new Date(workLog.end) : new Date();
-    workLogForm.start_time = DateTime.fromSQL(workLog.start).toFormat('HH:mm');
-    workLogForm.end_time = DateTime.fromSQL(workLog.end || DateTime.now().toSQL()).toFormat('HH:mm');
+    workLogForm.start = new Date(start);
+    workLogForm.end = end ? new Date(end) : new Date();
+    workLogForm.start_time = DateTime.fromSQL(start).toFormat('HH:mm');
+    workLogForm.end_time = DateTime.fromSQL(end || DateTime.now().toSQL()).toFormat('HH:mm');
     workLogForm.is_home_office = workLog.is_home_office;
     showDialog.value = true;
 }
@@ -141,7 +136,7 @@ function retreatPatch() {
                     },
                 ]"
                 :items="
-                    workLogs.data
+                    data
                         .map(workLog => {
                             const lastAcceptedPatch = workLog.work_log_patches
                                 .filter(e => e.status === 'accepted')
@@ -178,7 +173,7 @@ function retreatPatch() {
                     </v-btn>
                 </template>
                 <template v-slot:bottom>
-                    <v-pagination v-if="workLogs.last_page > 1" v-model="currentPage" :length="workLogs.last_page"></v-pagination>
+                    <v-pagination v-if="lastPage > 1" v-model="currentPage" :length="lastPage"></v-pagination>
                 </template>
             </v-data-table>
 
@@ -212,7 +207,7 @@ function retreatPatch() {
                             </v-col>
                             <v-col cols="12" md="3">
                                 <v-date-input
-                                    :disabled="patchMode != 'fix'"
+                                    :disabled="patchMode == 'fix'"
                                     class="px-8"
                                     label="Ende"
                                     required

@@ -1,21 +1,26 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Group, OperatingSite, User, UserPermission } from '@/types/types';
-import { Link } from '@inertiajs/vue3';
+import { Group, OperatingSite, Paginator, User, UserPermission } from '@/types/types';
+import { router } from '@inertiajs/vue3';
 import UserForm from './UserForm.vue';
-import { fillNullishValues } from '@/utils';
+import { fillNullishValues, usePagination } from '@/utils';
+import { DateTime } from 'luxon';
+import { toRefs } from 'vue';
 
-defineProps<{
-    users: (User & { group: Pick<Group, 'id' | 'name'> })[];
-    groups: Group[];
-    operating_sites: OperatingSite[];
+const props = defineProps<{
+    users: Paginator<User & { group: Pick<Group, 'id' | 'name'> }>;
+    groups: Pick<Group, 'id' | 'name'>[];
+    operating_sites: Pick<OperatingSite, 'id' | 'name'>[];
     permissions: UserPermission[];
 }>();
+
+const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
 </script>
 <template>
     <AdminLayout title="Mitarbeiter">
         <v-container>
             <v-data-table-virtual
+                no-data-text="Es wurden keine Mitarbeiter gefunden"
                 :headers="[
                     { title: '#', key: 'id' },
                     { title: 'Vorname', key: 'first_name' },
@@ -26,7 +31,12 @@ defineProps<{
                     { title: 'Geburtsdatum', key: 'date_of_birth' },
                     { title: '', key: 'actions', align: 'end' },
                 ]"
-                :items="users.map(u => fillNullishValues(u))"
+                :items="
+                    data.map(u => ({
+                        ...fillNullishValues(u),
+                        date_of_birth: DateTime.fromFormat(u.date_of_birth, 'yyyy-MM-dd').toFormat('dd.MM.yyyy'),
+                    }))
+                "
                 hover
             >
                 <template v-slot:header.actions>
@@ -52,9 +62,9 @@ defineProps<{
                         color="primary"
                         class="me-2"
                     >
-                        <v-icon size="large" icon="mdi-pencil"></v-icon>
+                        <v-icon size="large" icon="mdi-eye"></v-icon>
                     </v-btn>
-                    <v-dialog>
+                    <v-dialog max-width="1000">
                         <template v-slot:activator="{ props: activatorProps }">
                             <v-btn v-bind="activatorProps" color="error">
                                 <v-icon size="large" icon="mdi-delete"></v-icon>
@@ -71,22 +81,29 @@ defineProps<{
                                 </v-card-text>
                                 <v-card-actions>
                                     <div class="d-flex justify-end w-100">
-                                        <v-btn color="error" variant="elevated" class="me-2" @click="isActive.value = false">Abbrechen</v-btn>
-                                        <Link
-                                            :href="
-                                                route('user.destroy', {
-                                                    user: item.id,
-                                                })
+                                        <v-btn color="primary" variant="elevated" class="me-2" @click="isActive.value = false">Abbrechen</v-btn>
+
+                                        <v-btn
+                                            @click.stop="
+                                                router.delete(
+                                                    route('user.destroy', {
+                                                        user: item.id,
+                                                    }),
+                                                    { onSuccess: () => (isActive.value = false) },
+                                                )
                                             "
-                                            method="delete"
+                                            color="error"
+                                            variant="elevated"
+                                            >Löschen</v-btn
                                         >
-                                            <v-btn type="submit" color="primary" variant="elevated">Löschen</v-btn>
-                                        </Link>
                                     </div>
                                 </v-card-actions>
                             </v-card>
                         </template>
                     </v-dialog>
+                </template>
+                <template v-slot:bottom>
+                    <v-pagination v-if="lastPage > 1" v-model="currentPage" :length="lastPage"></v-pagination>
                 </template>
             </v-data-table-virtual>
         </v-container>

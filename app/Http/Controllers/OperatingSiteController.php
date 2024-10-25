@@ -12,7 +12,7 @@ class OperatingSiteController extends Controller
 {
     public function index()
     {
-        return Inertia::render('OperatingSite/OperatingSiteIndex', ['operatingSites' => OperatingSite::inOrganization()->get()]);
+        return Inertia::render('OperatingSite/OperatingSiteIndex', ['operatingSites' => OperatingSite::inOrganization()->withCount('users')->paginate(12)]);
     }
     public function show(OperatingSite $operatingSite)
     {
@@ -60,6 +60,15 @@ class OperatingSiteController extends Controller
         ]);
 
         $operatingSite->update($validated);
+
+        return back();
+    }
+
+    public function destroy(OperatingSite $operatingSite)
+    {
+        if ($operatingSite->users->count() > 0) return abort(405);
+
+        $operatingSite->delete();
 
         return back();
     }

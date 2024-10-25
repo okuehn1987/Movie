@@ -16,6 +16,7 @@ return new class extends Migration
             $table->softDeletes();
             $table->foreignId('user_id');
             $table->float("weekly_working_hours");
+            $table->date('active_since');
             $table->timestamps();
         });
     }

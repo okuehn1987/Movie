@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->softDeletes();
             $table->enum("type", ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]);
-            $table->string("start");
-            $table->string("end");
+            $table->time("start");
+            $table->time("end");
             $table->foreignId('operating_site_id');
             $table->timestamps();
         });

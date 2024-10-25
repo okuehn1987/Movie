@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Middleware\HasOrganizationAccess;
+use App\Http\Middleware\HasPermission;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -16,7 +17,9 @@ Route::get('/', function () {
 
 Route::middleware(['auth', HasOrganizationAccess::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::resource('user', UserController::class)->only(['index', 'store', 'destroy', 'update', 'show']);
+
+    Route::resource('user', UserController::class)->only(['index', 'store', 'destroy', 'update', 'show'])->middleware(HasPermission::class . ':user_administration');
+
     Route::resource('organization', OrganizationController::class)->only(['index', 'store', 'destroy']);
     Route::resource('organization', OrganizationController::class)->only(['show', 'update']);
     Route::resource('absence', AbsenceController::class)->only(['update', 'store']);
