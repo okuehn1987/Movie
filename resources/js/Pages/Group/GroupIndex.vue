@@ -67,7 +67,7 @@ function submit() {
                                                 v-model="groupForm.users"
                                                 :error-messages="groupForm.errors.users"
                                                 class="px-8"
-                                                :items="users"
+                                                :items="users.map(u => ({ ...u, name: u.first_name + ' ' + u.last_name }))"
                                                 item-title="name"
                                                 item-value="id"
                                                 label="Wähle Mitarbeiter aus, die zur Abteilung gehören"
