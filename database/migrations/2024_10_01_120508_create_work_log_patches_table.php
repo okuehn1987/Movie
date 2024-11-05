@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('work_log_id');
             $table->foreignId('user_id');
             $table->dateTime("start");
-            $table->dateTime("end")->nullable();
+            $table->dateTime("end");
             $table->boolean("is_home_office")->default(false);
             $table->enum('status', ["created", "declined", "accepted"]);
             $table->timestamps();

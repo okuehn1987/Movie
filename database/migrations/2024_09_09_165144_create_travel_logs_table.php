@@ -20,6 +20,7 @@ return new class extends Migration
             $table->dateTime("start");
             $table->dateTime("end");
             $table->enum("end_location_type", ["user", "operating_site", "custom_address"]);
+            $table->bigInteger("end_location_id");
             $table->timestamps();
         });
     }
