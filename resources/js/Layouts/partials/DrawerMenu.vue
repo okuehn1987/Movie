@@ -37,7 +37,7 @@ const user = computed(() => page.props.auth.user);
                 :active="route().current('operatingSite.index')"
                 :value="route('operatingSite.index')"
                 prepend-icon="mdi-map-marker"
-                title="Betriebsorte"
+                title="Betriebsstätten"
             />
             <v-list-item
                 :active="route().current('organization.show')"

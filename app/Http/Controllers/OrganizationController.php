@@ -65,7 +65,7 @@ class OrganizationController extends Controller
         $org->owner_id = $user->id;
         $org->save();
 
-        return back();
+        return back()->with('success', 'Organisation erfolgreich erstellt.');
     }
 
     public function show(Request $request, Organization $organization)
@@ -93,12 +93,12 @@ class OrganizationController extends Controller
 
         $organization->update($validated);
 
-        return back();
+        return back()->with('success', 'Organisation erfolgreich aktualisiert.');
     }
     public function destroy(Request $request, Organization $organization)
     {
         $organization->delete();
 
-        return back();
+        return back()->with('success', 'Organisation erfolgreich gelöscht.');
     }
 }

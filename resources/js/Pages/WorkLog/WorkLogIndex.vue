@@ -130,8 +130,9 @@ function changeDateTime(add: boolean) {
 </script>
 <template>
     <AdminLayout title="Arbeitszeiten">
-        <v-container>
+        <v-card>
             <v-calendar
+                height="600"
                 class="bg-white"
                 :events
                 v-model="calendarMonth"
@@ -169,16 +170,13 @@ function changeDateTime(add: boolean) {
                         <v-text-field v-model="searchQuery" hide-details label="Suche" max-width="300" class="me-2"></v-text-field>
                         <v-btn @click.stop="showFilter = true" class="me-2"><v-icon icon="mdi-filter"></v-icon></v-btn>
                         <v-dialog max-width="1000" v-model="showFilter">
-                            <v-card>
-                                <v-toolbar color="primary" title="Filteroptionen">
-                                    <template v-slot:append><v-btn icon="mdi-close" @click.stop="showFilter = false"></v-btn></template>
-                                </v-toolbar>
+                            <v-card title="Filteroptionen">
+                                <template #append><v-btn icon="mdi-close" variant="text" @click.stop="showFilter = false"></v-btn></template>
                                 <v-card-text>
                                     <v-select
                                         label="Gruppe"
                                         v-model="selectedGroups"
                                         multiple
-                                        variant="underlined"
                                         :items="groups"
                                         item-value="id"
                                         item-title="name"
@@ -204,9 +202,13 @@ function changeDateTime(add: boolean) {
             </v-calendar>
 
             <v-dialog v-if="dialogEvent" max-width="1000" v-model="showEventDialog">
-                <v-toolbar color="primary" :title="dialogEvent.title + ' ' + dialogEvent.start.toLocaleDateString()"></v-toolbar>
-                <v-card>
-                    <v-card-text>
+                <template v-slot:default="{ isActive }">
+                    <v-card :title="dialogEvent.title + ' ' + dialogEvent.start.toLocaleDateString()">
+                        <template #append>
+                            <v-btn icon variant="text" @click="isActive.value = false">
+                                <v-icon>mdi-close</v-icon>
+                            </v-btn>
+                        </template>
                         <v-data-table-virtual
                             :headers="[
                                 { title: 'Start', key: 'start', sortable: false },
@@ -221,9 +223,15 @@ function changeDateTime(add: boolean) {
                                 }))
                             "
                         ></v-data-table-virtual>
-                    </v-card-text>
-                </v-card>
+                    </v-card>
+                </template>
             </v-dialog>
-        </v-container>
+        </v-card>
     </AdminLayout>
 </template>
+
+<style>
+.v-calendar-month__days > .v-calendar-month__day {
+    min-height: 100px; /* override the set default of 150 so the calendar fits on screen*/
+}
+</style>

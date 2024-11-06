@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Group, OperatingSite, Paginator, User, UserPermission } from '@/types/types';
-import { router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import UserForm from './UserForm.vue';
 import { fillNullishValues, usePagination } from '@/utils';
 import { DateTime } from 'luxon';
@@ -18,7 +18,7 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
 </script>
 <template>
     <AdminLayout title="Mitarbeiter">
-        <v-container>
+        <v-card>
             <v-data-table-virtual
                 no-data-text="Es wurden keine Mitarbeiter gefunden"
                 :headers="[
@@ -46,66 +46,72 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
                                 <v-icon icon="mdi-plus"></v-icon>
                             </v-btn>
                         </template>
-
-                        <v-card>
-                            <UserForm :groups :operating_sites :permissions mode="create"></UserForm>
-                        </v-card>
+                        <template v-slot:default="{ isActive }">
+                            <UserForm :groups :operating_sites :permissions mode="create">
+                                <template #append>
+                                    <v-btn icon variant="text" @click="isActive.value = false">
+                                        <v-icon>mdi-close</v-icon>
+                                    </v-btn>
+                                </template>
+                            </UserForm>
+                        </template>
                     </v-dialog>
                 </template>
                 <template v-slot:item.actions="{ item }">
-                    <v-btn
-                        :href="
-                            route('user.show', {
-                                user: item.id,
-                            })
-                        "
-                        color="primary"
-                        class="me-2"
-                    >
-                        <v-icon size="large" icon="mdi-eye"></v-icon>
-                    </v-btn>
-                    <v-dialog max-width="1000">
-                        <template v-slot:activator="{ props: activatorProps }">
-                            <v-btn v-bind="activatorProps" color="error">
-                                <v-icon size="large" icon="mdi-delete"></v-icon>
-                            </v-btn>
-                        </template>
+                    <div class="d-flex">
+                        <Link
+                            :href="
+                                route('user.show', {
+                                    user: item.id,
+                                })
+                            "
+                        >
+                            <v-btn color="primary" size="large" variant="text" icon="mdi-eye" />
+                        </Link>
+                        <v-dialog max-width="1000">
+                            <template v-slot:activator="{ props: activatorProps }">
+                                <v-btn v-bind="activatorProps" color="error" size="large" variant="text" icon="mdi-delete" />
+                            </template>
 
-                        <template v-slot:default="{ isActive }">
-                            <v-card>
-                                <v-toolbar color="primary" class="mb-4" title="Mitarbeiter löschen"></v-toolbar>
-                                <v-card-text>
-                                    Bist du dir sicher, dass du
-                                    {{ item.first_name }}
-                                    {{ item.last_name }} entfernen möchtest?
-                                </v-card-text>
-                                <v-card-actions>
-                                    <div class="d-flex justify-end w-100">
-                                        <v-btn color="primary" variant="elevated" class="me-2" @click="isActive.value = false">Abbrechen</v-btn>
-
-                                        <v-btn
-                                            @click.stop="
-                                                router.delete(
-                                                    route('user.destroy', {
-                                                        user: item.id,
-                                                    }),
-                                                    { onSuccess: () => (isActive.value = false) },
-                                                )
-                                            "
-                                            color="error"
-                                            variant="elevated"
-                                            >Löschen</v-btn
-                                        >
-                                    </div>
-                                </v-card-actions>
-                            </v-card>
-                        </template>
-                    </v-dialog>
+                            <template v-slot:default="{ isActive }">
+                                <v-card title="Mitarbeiter löschen">
+                                    <template #append>
+                                        <v-btn icon variant="text" @click="isActive.value = false">
+                                            <v-icon>mdi-close</v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <v-card-text>
+                                        <v-row>
+                                            <v-col cols="12">
+                                                Bist du dir sicher, dass du
+                                                {{ item.first_name }}
+                                                {{ item.last_name }} entfernen möchtest?
+                                            </v-col>
+                                            <v-col cols="12" class="text-end">
+                                                <v-btn
+                                                    @click.stop="
+                                                        router.delete(
+                                                            route('user.destroy', {
+                                                                user: item.id,
+                                                            }),
+                                                            { onSuccess: () => (isActive.value = false) },
+                                                        )
+                                                    "
+                                                    color="error"
+                                                    >Löschen</v-btn
+                                                >
+                                            </v-col>
+                                        </v-row>
+                                    </v-card-text>
+                                </v-card>
+                            </template>
+                        </v-dialog>
+                    </div>
                 </template>
                 <template v-slot:bottom>
                     <v-pagination v-if="lastPage > 1" v-model="currentPage" :length="lastPage"></v-pagination>
                 </template>
             </v-data-table-virtual>
-        </v-container>
+        </v-card>
     </AdminLayout>
 </template>

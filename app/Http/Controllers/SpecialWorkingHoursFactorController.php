@@ -39,7 +39,7 @@ class SpecialWorkingHoursFactorController extends Controller
         ]);
 
 
-        return back();
+        return back()->with('success', "Besonderer Arbeitszeitzuschlag erfolgreich gespeichert.");
         // $specialWorkingHoursFactor = new SpecialWorkingHoursFactor($validated);
         // $specialWorkingHoursFactor->organization_id = Organization::getCurrent()->id;
         // $specialWorkingHoursFactor->save();

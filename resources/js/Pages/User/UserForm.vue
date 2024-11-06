@@ -80,211 +80,132 @@ function submit() {
 }
 </script>
 <template>
-    <v-form @submit.prevent="submit">
-        <v-toolbar
-            color="primary"
-            class="mb-4"
-            :title="mode === 'create' ? 'Mitarbeiter hinzufügen' : userForm.first_name + ' ' + userForm.last_name"
-        ></v-toolbar>
-        <v-alert class="mb-4" v-if="userForm.wasSuccessful" closable color="success">Mitarbeiter wurde erfolgreich aktualisiert.</v-alert>
+    <v-card :title="mode === 'create' ? 'Mitarbeiter hinzufügen' : userForm.first_name + ' ' + userForm.last_name">
+        <template #append>
+            <slot name="append"></slot>
+        </template>
+        <v-divider></v-divider>
         <v-card-text>
-            <h3>Allgemeine Informationen</h3>
-            <v-divider></v-divider>
+            <v-form @submit.prevent="submit">
+                <v-row>
+                    <v-col cols="12"><h3>Allgemeine Informationen</h3></v-col>
+
+                    <v-col cols="12" md="6">
+                        <v-text-field v-model="userForm.first_name" label="Vorname" :error-messages="userForm.errors.first_name"></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field v-model="userForm.last_name" label="Nachname" :error-messages="userForm.errors.last_name"></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field v-model="userForm.email" label="Email" :error-messages="userForm.errors.email"></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6" v-if="mode == 'create'">
+                        <v-text-field v-model="userForm.password" label="Passwort" :error-messages="userForm.errors.password"></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-date-input
+                            v-model="userForm.date_of_birth"
+                            prepend-icon=""
+                            label="Geburtsdatum"
+                            required
+                            :error-messages="userForm.errors.date_of_birth"
+                        ></v-date-input>
+                    </v-col>
+
+                    <v-col cols="12"><h3>Adresse</h3></v-col>
+
+                    <v-col cols="12" md="6">
+                        <v-text-field v-model="userForm.street" label="Straße" :error-messages="userForm.errors.street"></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field
+                            v-model="userForm.house_number"
+                            label="Hausnummer"
+                            :error-messages="userForm.errors.house_number"
+                        ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field v-model="userForm.city" label="Ort" :error-messages="userForm.errors.city"></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field v-model="userForm.zip" label="Postleitzahl" :error-messages="userForm.errors.zip"></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field v-model="userForm.country" label="Land" :error-messages="userForm.errors.country"></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field
+                            v-model="userForm.federal_state"
+                            label="Bundesland"
+                            :error-messages="userForm.errors.federal_state"
+                        ></v-text-field>
+                    </v-col>
+
+                    <v-col cols="12"><h3>Abteilung</h3></v-col>
+
+                    <v-col cols="12" md="6">
+                        <v-select
+                            v-model="userForm.group_id"
+                            :items="groups.map(g => ({ title: g.name, value: g.id }))"
+                            label="Wähle eine Abteilung aus, zu die der Mitarbeiter gehören soll."
+                            :error-messages="userForm.errors.group_id"
+                        ></v-select>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-select
+                            v-model="userForm.operating_site_id"
+                            :items="operating_sites.map(o => ({ title: o.name, value: o.id }))"
+                            label="Wähle die Betriebsstätte des Mitarbeiters aus."
+                            :error-messages="userForm.errors.operating_site_id"
+                        ></v-select>
+                    </v-col>
+
+                    <v-col cols="12"><h3>Wöchentliche Arbeitszeit</h3></v-col>
+
+                    <v-col cols="12" md="6">
+                        <v-text-field
+                            v-model="userForm.userWorkingHours"
+                            label="Trage die wöchentliche Arbeitszeit des Mitarbeiters ein"
+                            :error-messages="userForm.errors.userWorkingHours"
+                        ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-date-input
+                            prepend-icon=""
+                            v-model="userForm.userWorkingHoursSince"
+                            label="seit"
+                            :error-messages="userForm.errors.userWorkingHoursSince"
+                        ></v-date-input>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-select
+                            v-model="userForm.userWorkingWeek"
+                            multiple
+                            :items="Info.weekdays().map((e, i) => ({ title: e, value: Info.weekdays('long', { locale: 'en' })[i].toLowerCase() }))"
+                            label="Wähle die Arbeitstage des Mitarbeiters aus"
+                            :error-messages="userForm.errors.userWorkingWeek"
+                        />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-date-input
+                            prepend-icon=""
+                            v-model="userForm.userWorkingWeekSince"
+                            label="seit"
+                            :error-messages="userForm.errors.userWorkingWeekSince"
+                        ></v-date-input>
+                    </v-col>
+
+                    <v-col cols="12"><h3>Berechtigungen</h3></v-col>
+
+                    <v-col cols="12" md="6" v-for="permission in permissions" :key="permission.name">
+                        <v-checkbox v-model="userForm.permissions" :value="permission.name" :label="permission.label" hide-details></v-checkbox>
+                    </v-col>
+
+                    <v-col cols="12" class="text-end">
+                        <v-btn type="submit" color="primary" :loading="userForm.processing">Speichern</v-btn>
+                    </v-col>
+                </v-row>
+            </v-form>
         </v-card-text>
-        <v-row>
-            <v-col cols="12" md="6">
-                <v-text-field
-                    v-model="userForm.first_name"
-                    label="Vorname"
-                    class="px-8"
-                    variant="underlined"
-                    :error-messages="userForm.errors.first_name"
-                ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-                <v-text-field
-                    v-model="userForm.last_name"
-                    label="Nachname"
-                    class="px-8"
-                    variant="underlined"
-                    :error-messages="userForm.errors.last_name"
-                ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-                <v-text-field
-                    v-model="userForm.email"
-                    label="Email"
-                    class="px-8"
-                    variant="underlined"
-                    :error-messages="userForm.errors.email"
-                ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6" v-if="mode == 'create'">
-                <v-text-field
-                    v-model="userForm.password"
-                    label="Passwort"
-                    class="px-8"
-                    variant="underlined"
-                    :error-messages="userForm.errors.password"
-                ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-                <v-date-input
-                    v-model="userForm.date_of_birth"
-                    prepend-icon=""
-                    label="Geburtsdatum"
-                    class="px-8"
-                    variant="underlined"
-                    required
-                    :error-messages="userForm.errors.date_of_birth"
-                ></v-date-input>
-            </v-col>
-        </v-row>
-        <v-card-text>
-            <h3>Adresse</h3>
-            <v-divider></v-divider>
-        </v-card-text>
-        <v-row>
-            <v-col cols="12" md="6">
-                <v-text-field
-                    v-model="userForm.street"
-                    label="Straße"
-                    class="px-8"
-                    variant="underlined"
-                    :error-messages="userForm.errors.street"
-                ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-                <v-text-field
-                    v-model="userForm.house_number"
-                    label="Hausnummer"
-                    class="px-8"
-                    variant="underlined"
-                    :error-messages="userForm.errors.house_number"
-                ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-                <v-text-field
-                    v-model="userForm.city"
-                    label="Ort"
-                    class="px-8"
-                    variant="underlined"
-                    :error-messages="userForm.errors.city"
-                ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-                <v-text-field
-                    v-model="userForm.zip"
-                    label="Postleitzahl"
-                    class="px-8"
-                    variant="underlined"
-                    :error-messages="userForm.errors.zip"
-                ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-                <v-text-field
-                    v-model="userForm.country"
-                    label="Land"
-                    class="px-8"
-                    variant="underlined"
-                    :error-messages="userForm.errors.country"
-                ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-                <v-text-field
-                    v-model="userForm.federal_state"
-                    label="Bundesland"
-                    class="px-8"
-                    variant="underlined"
-                    :error-messages="userForm.errors.federal_state"
-                ></v-text-field>
-            </v-col>
-        </v-row>
-        <v-card-text>
-            <h3>Abteilung</h3>
-            <v-divider></v-divider>
-        </v-card-text>
-        <v-row>
-            <v-col cols="12">
-                <v-select
-                    v-model="userForm.group_id"
-                    class="px-8"
-                    :items="groups.map(g => ({ title: g.name, value: g.id }))"
-                    label="Wähle eine Abteilung aus, zu die der Mitarbeiter gehören soll."
-                    variant="underlined"
-                    :error-messages="userForm.errors.group_id"
-                ></v-select>
-            </v-col>
-            <v-col cols="12">
-                <v-select
-                    v-model="userForm.operating_site_id"
-                    class="px-8"
-                    :items="operating_sites.map(o => ({ title: o.name, value: o.id }))"
-                    label="Wähle den Betriebsort des Mitarbeiters aus."
-                    variant="underlined"
-                    :error-messages="userForm.errors.operating_site_id"
-                ></v-select>
-            </v-col>
-        </v-row>
-        <v-card-text>
-            <h3>Wöchentliche Arbeitszeit</h3>
-            <v-divider></v-divider>
-        </v-card-text>
-        <v-row>
-            <v-col cols="12" md="6">
-                <v-text-field
-                    class="px-8"
-                    v-model="userForm.userWorkingHours"
-                    label="Trage die wöchentliche Arbeitszeit des Mitarbeiters ein"
-                    variant="underlined"
-                    :error-messages="userForm.errors.userWorkingHours"
-                ></v-text-field>
-            </v-col>
-            <v-col cols="12" md="6">
-                <v-date-input
-                    class="px-8"
-                    variant="underlined"
-                    prepend-icon=""
-                    v-model="userForm.userWorkingHoursSince"
-                    label="seit"
-                    :error-messages="userForm.errors.userWorkingHoursSince"
-                ></v-date-input>
-            </v-col>
-            <v-col cols="12" md="6">
-                <v-select
-                    v-model="userForm.userWorkingWeek"
-                    multiple
-                    class="px-8"
-                    :items="Info.weekdays().map((e, i) => ({ title: e, value: Info.weekdays('long', { locale: 'en' })[i].toLowerCase() }))"
-                    label="Wähle die Arbeitstage des Mitarbeiters aus"
-                    variant="underlined"
-                    :error-messages="userForm.errors.userWorkingWeek"
-                />
-            </v-col>
-            <v-col cols="12" md="6">
-                <v-date-input
-                    class="px-8"
-                    variant="underlined"
-                    prepend-icon=""
-                    v-model="userForm.userWorkingWeekSince"
-                    label="seit"
-                    :error-messages="userForm.errors.userWorkingWeekSince"
-                ></v-date-input>
-            </v-col>
-        </v-row>
-        <v-card-text>
-            <h3>Berechtigungen</h3>
-            <v-divider></v-divider>
-        </v-card-text>
-        <v-row>
-            <v-col cols="12" md="6" v-for="permission in permissions" :key="permission.name">
-                <v-checkbox class="px-8" v-model="userForm.permissions" :value="permission.name" :label="permission.label"></v-checkbox>
-            </v-col>
-        </v-row>
-        <v-card-actions>
-            <div class="d-flex justify-end w-100">
-                <v-btn type="submit" color="primary" variant="elevated" :loading="userForm.processing">Speichern</v-btn>
-            </div>
-        </v-card-actions>
-    </v-form>
+    </v-card>
 </template>

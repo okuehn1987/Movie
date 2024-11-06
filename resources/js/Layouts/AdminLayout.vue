@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { ref, watchEffect } from 'vue';
 import { useDisplay } from 'vuetify';
-import DrawerMenu from './partials/DrawerMenu.vue';
 import AppbarActions from './partials/AppbarActions.vue';
+import DrawerMenu from './partials/DrawerMenu.vue';
 
 defineProps<{
     title: string;
@@ -33,10 +33,10 @@ watchEffect(() => (showDrawer.value = !isMobile.value));
         </v-navigation-drawer>
 
         <v-app-bar elevation="0" color="background">
-            <v-app-bar-nav-icon v-if="isMobile" variant="text" @click.stop="showDrawer = !showDrawer"></v-app-bar-nav-icon>
+            <v-app-bar-nav-icon v-if="backurl" variant="text" icon="mdi-arrow-left" @click.stop="router.get(backurl)"></v-app-bar-nav-icon>
+            <v-app-bar-nav-icon v-else-if="isMobile" variant="text" @click.stop="showDrawer = !showDrawer"></v-app-bar-nav-icon>
 
             <v-toolbar-title>
-                <v-btn v-if="backurl" variant="plain" icon="mdi-arrow-left" @click.stop="router.get(backurl)"></v-btn>
                 {{ title }}
             </v-toolbar-title>
 
@@ -45,7 +45,15 @@ watchEffect(() => (showDrawer.value = !isMobile.value));
             <AppbarActions />
         </v-app-bar>
         <v-main>
-            <slot />
+            <v-container fluid>
+                <v-alert v-if="$page.props.flash.error" type="error" closable class="mb-6" :key="Math.random()">
+                    {{ $page.props.flash.error }}
+                </v-alert>
+                <v-alert v-if="$page.props.flash.success" type="success" closable class="mb-6" :key="Math.random()">
+                    {{ $page.props.flash.success }}
+                </v-alert>
+                <slot />
+            </v-container>
         </v-main>
     </v-app>
 </template>

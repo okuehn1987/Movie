@@ -29,7 +29,7 @@ export function usePagination<
     TKey extends keyof TProps & string,
     TData = TProps extends Record<TKey, Ref<Paginator<infer Data>>> ? Data : unknown,
 >(props: TProps, key: TKey) {
-    const currentPage = computed(() => props[key].value.current_page);
+    const currentPage = ref(props[key].value.current_page);
     const lastPage = computed(() => props[key].value.last_page);
     const data = computed(() => props[key].value.data);
 

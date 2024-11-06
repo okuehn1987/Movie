@@ -16,12 +16,12 @@ defineProps<{
                 </v-card-text>
 
                 <v-card-text v-if="$page.props.flash.error">
-                    <v-alert type="error" variant="tonal" closeable border="start">
+                    <v-alert type="error" closeable border="start" :key="Math.random()">
                         {{ $page.props.flash.error }}
                     </v-alert>
                 </v-card-text>
                 <v-card-text v-if="$page.props.flash.success">
-                    <v-alert type="success" variant="tonal" closeable border="start">
+                    <v-alert type="success" closeable border="start" :key="Math.random()">
                         {{ $page.props.flash.success }}
                     </v-alert>
                 </v-card-text>

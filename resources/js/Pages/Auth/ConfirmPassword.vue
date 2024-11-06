@@ -26,7 +26,6 @@ const submit = () => {
                         v-model="form.password"
                         :readonly="form.processing"
                         :errorMessages="form.errors.password"
-                        variant="solo"
                         required
                         type="password"
                         autocomplete="current-password"

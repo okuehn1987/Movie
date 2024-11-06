@@ -27,13 +27,13 @@ class OperatingTimeController extends Controller
             ]
         );
 
-        return back();
+        return back()->with('success', 'Betriebszeit erfolgreich hinzugefügt.');
     }
 
     public function destroy(Request $request, OperatingTime $operatingTime)
     {
         $operatingTime->delete();
 
-        return back();
+        return back()->with('success', 'Betriebszeit erfolgreich gelöscht.');
     }
 }

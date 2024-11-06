@@ -19,18 +19,11 @@ const groupForm = useForm({
 });
 
 const expanded = ref([]);
-
-function submit() {
-    groupForm.post(route('group.store'), {
-        onSuccess: () => groupForm.reset(),
-    });
-}
 </script>
 <template>
     <AdminLayout title="Abteilungen">
-        <v-container>
+        <v-card>
             <v-data-table-virtual
-                fixed-header
                 :headers="[
                     { title: '#', key: 'id' },
                     { title: 'Abteilungsname', key: 'name' },
@@ -38,7 +31,6 @@ function submit() {
                 ]"
                 :items="data"
                 v-model:expanded="expanded"
-                hover
             >
                 <template v-slot:header.data-table-expand>
                     <v-dialog max-width="1000">
@@ -49,40 +41,48 @@ function submit() {
                         </template>
 
                         <template v-slot:default="{ isActive }">
-                            <v-card>
-                                <v-form @submit.prevent="submit">
-                                    <v-toolbar color="primary" class="mb-4" title="Abteilung erstellen"></v-toolbar>
-                                    <v-row>
-                                        <v-col cols="12">
-                                            <v-text-field
-                                                v-model="groupForm.name"
-                                                :error-messages="groupForm.errors.name"
-                                                label="Abteilungsname"
-                                                class="px-8"
-                                                variant="underlined"
-                                            ></v-text-field>
-                                        </v-col>
-                                        <v-col cols="12">
-                                            <v-select
-                                                v-model="groupForm.users"
-                                                :error-messages="groupForm.errors.users"
-                                                class="px-8"
-                                                :items="users.map(u => ({ ...u, name: u.first_name + ' ' + u.last_name }))"
-                                                item-title="name"
-                                                item-value="id"
-                                                label="Wähle Mitarbeiter aus, die zur Abteilung gehören"
-                                                multiple
-                                                variant="underlined"
-                                            ></v-select>
-                                        </v-col>
-                                    </v-row>
-                                    <v-card-actions>
-                                        <div class="d-flex justify-end w-100">
-                                            <v-btn color="error" variant="elevated" class="me-2" @click="isActive.value = false">Abbrechen</v-btn>
-                                            <v-btn type="submit" color="primary" variant="elevated">Erstellen</v-btn>
-                                        </div>
-                                    </v-card-actions>
-                                </v-form>
+                            <v-card title="Abteilung erstellen">
+                                <template #append>
+                                    <v-btn icon variant="text" @click="isActive.value = false">
+                                        <v-icon>mdi-close</v-icon>
+                                    </v-btn>
+                                </template>
+                                <v-card-text>
+                                    <v-form
+                                        @submit.prevent="
+                                            groupForm.post(route('group.store'), {
+                                                onSuccess: () => {
+                                                    groupForm.reset();
+                                                    isActive.value = false;
+                                                },
+                                            })
+                                        "
+                                    >
+                                        <v-row>
+                                            <v-col cols="12" sm="6">
+                                                <v-text-field
+                                                    v-model="groupForm.name"
+                                                    :error-messages="groupForm.errors.name"
+                                                    label="Abteilungsname"
+                                                ></v-text-field>
+                                            </v-col>
+                                            <v-col cols="12" sm="6">
+                                                <v-select
+                                                    v-model="groupForm.users"
+                                                    :error-messages="groupForm.errors.users"
+                                                    :items="users.map(u => ({ ...u, name: u.first_name + ' ' + u.last_name }))"
+                                                    item-title="name"
+                                                    item-value="id"
+                                                    label="Wähle Mitarbeiter aus, die zur Abteilung gehören"
+                                                    multiple
+                                                ></v-select>
+                                            </v-col>
+                                            <v-col cols="12" class="text-end">
+                                                <v-btn :loading="groupForm.processing" type="submit" color="primary">Erstellen</v-btn>
+                                            </v-col>
+                                        </v-row>
+                                    </v-form>
+                                </v-card-text>
                             </v-card>
                         </template>
                     </v-dialog>
@@ -119,6 +119,6 @@ function submit() {
                     <v-pagination v-if="lastPage > 1" v-model="currentPage" :length="lastPage"></v-pagination>
                 </template>
             </v-data-table-virtual>
-        </v-container>
+        </v-card>
     </AdminLayout>
 </template>

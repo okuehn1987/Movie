@@ -31,7 +31,6 @@ const adminLogin = () => {
                         :readonly="adminForm.processing"
                         :errorMessages="adminForm.errors.email"
                         prepend-inner-icon="mdi-email-outline"
-                        variant="solo"
                         label="Email"
                     ></v-text-field>
 
@@ -40,7 +39,6 @@ const adminLogin = () => {
                         :readonly="adminForm.processing"
                         :errorMessages="adminForm.errors.password"
                         type="password"
-                        variant="solo"
                         prepend-inner-icon="mdi-lock-outline"
                         label="Passwort"
                         class="mt-2 mb-n3"

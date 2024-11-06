@@ -32,7 +32,6 @@ const submit = () => {
                         v-model="form.password"
                         :readonly="form.processing"
                         :errorMessages="form.errors.password"
-                        variant="solo"
                         required
                         type="password"
                         autocomplete="new-password"
@@ -42,7 +41,6 @@ const submit = () => {
                         v-model="form.password_confirmation"
                         :readonly="form.processing"
                         :errorMessages="form.errors.password_confirmation"
-                        variant="solo"
                         required
                         type="password"
                         autocomplete="new-password"

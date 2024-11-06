@@ -40,7 +40,7 @@ class OperatingSiteController extends Controller
 
         OperatingSite::create([...$validated, 'organization_id' => Organization::getCurrent()->id]);
 
-        return back()->with('success', 'Betriebsstätte wurde erfolgreich erstellt.');
+        return back()->with('success', 'Betriebsstätte erfolgreich erstellt.');
     }
     public function update(Request $request, OperatingSite $operatingSite)
     {
@@ -61,7 +61,7 @@ class OperatingSiteController extends Controller
 
         $operatingSite->update($validated);
 
-        return back();
+        return back()->with('success', 'Betriebsstätte erfolgreich aktualisiert.');
     }
 
     public function destroy(OperatingSite $operatingSite)
@@ -70,6 +70,6 @@ class OperatingSiteController extends Controller
 
         $operatingSite->delete();
 
-        return back();
+        return back()->with('success', 'Betriebsstätte erfolgreich gelöscht.');
     }
 }

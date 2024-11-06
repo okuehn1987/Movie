@@ -90,14 +90,14 @@ class UserController extends Controller
 
 
 
-        return back();
+        return back()->with('success', 'User erfolgreich angelegt.');
     }
 
     public function destroy(User $user)
     {
         $user->delete();
 
-        return back();
+        return back()->with('success', 'User erfolgreich gelöscht.');
     }
 
     public function update(Request $request, User $user)
@@ -156,6 +156,6 @@ class UserController extends Controller
 
         if ($workingWeek->isDirty()) $workingWeek->replicate()->save();
 
-        return back();
+        return back()->with("success", "Mitarbeiter erfolgreich aktualisiert.");
     }
 }

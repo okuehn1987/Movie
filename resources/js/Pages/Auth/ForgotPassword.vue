@@ -30,7 +30,6 @@ const submit = () => {
                         type="email"
                         v-model="form.email"
                         prepend-inner-icon="mdi-email-outline"
-                        variant="solo"
                         required
                         autocomplete="username"
                         class="mb-n3"

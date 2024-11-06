@@ -11,18 +11,16 @@ defineProps<{
 
 <template>
     <AdminLayout title="Profil" tooltip="Profile">
-        <v-container>
-            <v-row>
-                <v-col cols="12" sm="6">
-                    <UpdateProfileInformationForm :must-verify-email="mustVerifyEmail" :status="status" />
-                </v-col>
-                <v-col cols="12" sm="6">
-                    <UpdatePasswordForm />
-                </v-col>
-                <v-col cols="12" sm="6">
-                    <DeleteUserForm />
-                </v-col>
-            </v-row>
-        </v-container>
+        <v-row>
+            <v-col cols="12" sm="6">
+                <UpdateProfileInformationForm :must-verify-email="mustVerifyEmail" :status="status" />
+            </v-col>
+            <v-col cols="12" sm="6">
+                <UpdatePasswordForm />
+            </v-col>
+            <v-col cols="12" sm="6">
+                <DeleteUserForm />
+            </v-col>
+        </v-row>
     </AdminLayout>
 </template>

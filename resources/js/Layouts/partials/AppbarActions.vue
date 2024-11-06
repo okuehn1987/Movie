@@ -18,7 +18,7 @@ const page = usePage();
         <v-btn stacked color="black" prepend-icon="mdi-account" title="Profil" />
     </Link>
 
-    <Link method="post" :href="route('logout')">
+    <Link method="post" :href="route('logout')" as="button">
         <v-btn stacked color="black" prepend-icon="mdi-logout" title="Abmelden" />
     </Link>
 </template>
