@@ -25,25 +25,10 @@ const submit = () => {
 
 <template>
     <GuestLayout title="Passwort Zurücksetzen">
-        <div class="d-flex h-100 w-100 justify-center flex-column">
-            <v-form @submit.prevent="submit" class="w-100">
-                <div class="d-flex justify-space-between mb-3 w-100">
+        <v-form @submit.prevent="submit">
+            <v-row>
+                <v-col cols="12">
                     <v-text-field
-                        id="email"
-                        label="Email"
-                        :errorMessages="form.errors.email"
-                        type="email"
-                        class="mt-1 mb-3"
-                        v-model="form.email"
-                        variant="solo"
-                        required
-                        autocomplete="username"
-                        style="width: 100%"
-                    />
-                </div>
-                <div class="d-flex justify-space-between mb-3 w-100">
-                    <v-text-field
-                        style="width: 100%"
                         v-model="form.password"
                         :readonly="form.processing"
                         :errorMessages="form.errors.password"
@@ -53,10 +38,7 @@ const submit = () => {
                         autocomplete="new-password"
                         label="Neues Passwort"
                     ></v-text-field>
-                </div>
-                <div class="d-flex justify-space-between mb-12 w-100">
                     <v-text-field
-                        style="width: 100%"
                         v-model="form.password_confirmation"
                         :readonly="form.processing"
                         :errorMessages="form.errors.password_confirmation"
@@ -65,12 +47,14 @@ const submit = () => {
                         type="password"
                         autocomplete="new-password"
                         label="Neues Passwort bestätigen"
+                        class="mb-n3"
                     ></v-text-field>
-                </div>
-                <div class="d-flex justify-center">
-                    <v-btn type="submit" :loading="form.processing" variant="elevated" color="primary">Passwort zurücksetzen</v-btn>
-                </div>
-            </v-form>
-        </div>
+                </v-col>
+
+                <v-col cols="12">
+                    <v-btn :loading="form.processing" block color="primary" type="submit" size="large">Passwort zurücksetzen</v-btn>
+                </v-col>
+            </v-row>
+        </v-form>
     </GuestLayout>
 </template>

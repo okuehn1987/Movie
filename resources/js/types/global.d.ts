@@ -18,5 +18,10 @@ declare module 'vue' {
 }
 
 declare module '@inertiajs/core' {
-    interface PageProps extends InertiaPageProps, AppPageProps {}
+    interface PageProps extends InertiaPageProps, AppPageProps {
+        flash: {
+            error: string | null;
+            success: string | null;
+        };
+    }
 }

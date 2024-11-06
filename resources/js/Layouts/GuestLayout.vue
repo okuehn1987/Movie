@@ -9,28 +9,28 @@ defineProps<{
 <template>
     <v-app>
         <Head :title="title"></Head>
-        <div class="h-100 d-flex align-center flex-column text-white">
-            <div class="w-100 d-flex flex-column align-center justify-center" style="flex: 1; height: 0">
-                <div
-                    class="w-100 px-6 d-flex justify-center"
-                    style="flex: 1; height: 0; overflow: auto; max-width: 600px; padding-top: calc(8vh + 10px); margin-top: -8vh"
-                >
+        <div class="d-flex align-center justify-center pa-4" style="min-height: 100vh">
+            <v-card class="pa-4 pt-7" width="448">
+                <v-card-text>
+                    <h1 class="text-center font-weight-medium">ShiftButler</h1>
+                </v-card-text>
+
+                <v-card-text v-if="$page.props.flash.error">
+                    <v-alert type="error" variant="tonal" closeable border="start">
+                        {{ $page.props.flash.error }}
+                    </v-alert>
+                </v-card-text>
+                <v-card-text v-if="$page.props.flash.success">
+                    <v-alert type="success" variant="tonal" closeable border="start">
+                        {{ $page.props.flash.success }}
+                    </v-alert>
+                </v-card-text>
+
+                <v-card-text>
                     <slot />
-                </div>
-            </div>
-            <slot name="bottom" />
+                </v-card-text>
+            </v-card>
+            <img lass="d-none d-md-block" src="/img/auth-mask.png" style="position: absolute; bottom: 0; width: 100%; height: 172px" />
         </div>
     </v-app>
 </template>
-
-<style>
-.v-application__wrap {
-    height: 100dvh;
-}
-.v-bottom-navigation {
-    position: absolute !important;
-}
-#app {
-    height: 100%;
-}
-</style>

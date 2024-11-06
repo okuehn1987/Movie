@@ -25,7 +25,8 @@ class HasOrganizationAccess
                 $instanceObject instanceof \App\Models\Absence => $instanceObject->absenceType()->select('organization_id')->get()->organization_id,
                 $instanceObject instanceof \App\Models\OperatingTime, $instanceObject instanceof \App\Models\User =>  $instanceObject->operatingSite()->select('organization_id')->first()->organization_id,
                 $instanceObject instanceof \App\Models\TravelLog,  $instanceObject instanceof \App\Models\WorkLog, $instanceObject instanceof \App\Models\WorkLogPatch => $instanceObject->user->operatingSite()->select('organization_id')->first()->organization_id,
-                $instanceObject instanceof \App\Models\Organization => $instanceObject->id
+                $instanceObject instanceof \App\Models\Organization => $instanceObject->id,
+                default => null
             };
             if ($targetOrgId != $organization->id)
                 return abort(app()->environment('local') ? 403 : 404);
