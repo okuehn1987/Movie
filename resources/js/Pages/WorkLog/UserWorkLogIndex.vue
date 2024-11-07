@@ -118,10 +118,7 @@ function retreatPatch() {
 </script>
 <template>
     <AdminLayout :title="user.first_name + ' ' + user.last_name" :backurl="route('dashboard')">
-        <v-container>
-            <v-alert class="mb-4" color="primary" v-if="workLogForm.wasSuccessful" closable>
-                Korrigierung der Arbeitszeit erfolgreich beantragt.
-            </v-alert>
+        <v-card>
             <v-data-table
                 :headers="[
                     { title: 'Start', key: 'start' },
@@ -162,14 +159,15 @@ function retreatPatch() {
                 "
             >
                 <template v-slot:item.action="{ item }">
-                    <v-btn color="primary" v-if="editableWorkLogs.find(e => e.id === item.id)" @click.stop="editWorkLog(item.id)">
-                        <v-icon
-                            :icon="
-                                workLogs.data.find(log => log.id === item.id)?.work_log_patches.at(-1)?.status === 'created'
-                                    ? 'mdi-eye'
-                                    : 'mdi-pencil'
-                            "
-                        ></v-icon>
+                    <v-btn
+                        color="primary"
+                        v-if="editableWorkLogs.find(e => e.id === item.id)"
+                        @click.stop="editWorkLog(item.id)"
+                        :icon="
+                            workLogs.data.find(log => log.id === item.id)?.work_log_patches.at(-1)?.status === 'created' ? 'mdi-eye' : 'mdi-pencil'
+                        "
+                        variant="text"
+                    >
                     </v-btn>
                 </template>
                 <template v-slot:bottom>
@@ -178,81 +176,85 @@ function retreatPatch() {
             </v-data-table>
 
             <v-dialog max-width="1000" v-model="showDialog">
-                <v-card title="Zeitkorrektur">
-                    <v-form @submit.prevent="submit">
-                        <v-row no-gutters>
-                            <v-col cols="12" md="3">
-                                <v-date-input
-                                    :disabled="patchMode == 'fix'"
-                                    class="px-8"
-                                    label="Start"
-                                    required
-                                    :error-messages="workLogForm.errors.start"
-                                    v-model="workLogForm.start"
-                                    :variant="inputVariant"
-                                    style="height: 73px"
-                                ></v-date-input>
-                            </v-col>
-                            <v-col cols="12" md="3">
-                                <v-text-field
-                                    :disabled="patchMode == 'fix'"
-                                    type="time"
-                                    class="px-8"
-                                    label="Start"
-                                    required
-                                    :error-messages="workLogForm.errors.start_time"
-                                    v-model="workLogForm.start_time"
-                                    :variant="inputVariant"
-                                ></v-text-field>
-                            </v-col>
-                            <v-col cols="12" md="3">
-                                <v-date-input
-                                    :disabled="patchMode == 'fix'"
-                                    class="px-8"
-                                    label="Ende"
-                                    required
-                                    :error-messages="workLogForm.errors.end"
-                                    v-model="workLogForm.end"
-                                    :variant="inputVariant"
-                                    style="height: 73px"
-                                ></v-date-input>
-                            </v-col>
-                            <v-col cols="12" md="3">
-                                <v-text-field
-                                    :disabled="!!patchLog"
-                                    type="time"
-                                    class="px-8"
-                                    label="Ende"
-                                    required
-                                    :error-messages="workLogForm.errors.end_time"
-                                    v-model="workLogForm.end_time"
-                                    :variant="inputVariant"
-                                ></v-text-field>
-                            </v-col>
+                <template v-slot:default="{ isActive }">
+                    <v-card title="Zeitkorrektur">
+                        <template #append>
+                            <v-btn icon variant="text" @click="isActive.value = false">
+                                <v-icon>mdi-close</v-icon>
+                            </v-btn>
+                        </template>
+                        <v-card-text>
+                            <v-form @submit.prevent="submit">
+                                <v-row>
+                                    <v-col cols="12" md="3">
+                                        <v-date-input
+                                            :disabled="patchMode == 'fix'"
+                                            label="Start"
+                                            required
+                                            :error-messages="workLogForm.errors.start"
+                                            v-model="workLogForm.start"
+                                            :variant="inputVariant"
+                                            style="height: 73px"
+                                        ></v-date-input>
+                                    </v-col>
+                                    <v-col cols="12" md="3">
+                                        <v-text-field
+                                            :disabled="patchMode == 'fix'"
+                                            type="time"
+                                            label="Start"
+                                            required
+                                            :error-messages="workLogForm.errors.start_time"
+                                            v-model="workLogForm.start_time"
+                                            :variant="inputVariant"
+                                        ></v-text-field>
+                                    </v-col>
+                                    <v-col cols="12" md="3">
+                                        <v-date-input
+                                            :disabled="patchMode == 'fix'"
+                                            label="Ende"
+                                            required
+                                            :error-messages="workLogForm.errors.end"
+                                            v-model="workLogForm.end"
+                                            :variant="inputVariant"
+                                            style="height: 73px"
+                                        ></v-date-input>
+                                    </v-col>
+                                    <v-col cols="12" md="3">
+                                        <v-text-field
+                                            :disabled="!!patchLog"
+                                            type="time"
+                                            label="Ende"
+                                            required
+                                            :error-messages="workLogForm.errors.end_time"
+                                            v-model="workLogForm.end_time"
+                                            :variant="inputVariant"
+                                        ></v-text-field>
+                                    </v-col>
 
-                            <v-col cols="12" md="3">
-                                <v-checkbox
-                                    :disabled="!!patchLog"
-                                    class="px-8 ms-n2"
-                                    label="Homeoffice"
-                                    required
-                                    :error-messages="workLogForm.errors.is_home_office"
-                                    v-model="workLogForm.is_home_office"
-                                    :variant="inputVariant"
-                                ></v-checkbox>
-                            </v-col>
-                        </v-row>
+                                    <v-col cols="12" md="3">
+                                        <v-checkbox
+                                            :disabled="!!patchLog"
+                                            label="Homeoffice"
+                                            required
+                                            :error-messages="workLogForm.errors.is_home_office"
+                                            v-model="workLogForm.is_home_office"
+                                            :variant="inputVariant"
+                                            hide-details
+                                        ></v-checkbox>
+                                    </v-col>
 
-                        <v-card-actions>
-                            <div class="d-flex justify-end w-100">
-                                <v-btn color="error" class="me-2" variant="elevated" @click="showDialog = false">Abbrechen</v-btn>
-                                <v-btn v-if="patchLog" @click.stop="retreatPatch" color="primary" variant="elevated">Antrag zurückziehen</v-btn>
-                                <v-btn v-else type="submit" color="primary" variant="elevated">Korrektur beantragen</v-btn>
-                            </div>
-                        </v-card-actions>
-                    </v-form>
-                </v-card>
+                                    <v-col cols="12" class="text-end">
+                                        <v-btn v-if="patchLog" :loading="workLogForm.processing" @click.stop="retreatPatch" color="primary"
+                                            >Antrag zurückziehen</v-btn
+                                        >
+                                        <v-btn v-else :loading="workLogForm.processing" type="submit" color="primary">Korrektur beantragen</v-btn>
+                                    </v-col>
+                                </v-row>
+                            </v-form>
+                        </v-card-text>
+                    </v-card>
+                </template>
             </v-dialog>
-        </v-container>
+        </v-card>
     </AdminLayout>
 </template>

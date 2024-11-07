@@ -35,7 +35,7 @@ const closeModal = () => {
 </script>
 
 <template>
-    <v-card>
+    <v-card class="h-100">
         <v-card-title>Account löschen</v-card-title>
         <v-card-text>
             Wenn Ihr Konto gelöscht wird, werden alle Ressourcen und Daten dauerhaft gelöscht. Bevor Sie Ihr Konto löschen, laden Sie bitte alle Daten
@@ -53,8 +53,8 @@ const closeModal = () => {
                 </v-card-text>
                 <v-text-field :errorMessage="form.errors.password" v-model="form.password" label="Passwort" type="password"></v-text-field>
                 <div class="d-flex justify-space-between">
-                    <v-btn :loading="form.processing" color="secondary" variant="elevated" @click.stop="closeModal">Abbrechen</v-btn>
-                    <v-btn :loading="form.processing" color="error" variant="elevated" type="submit">Account löschen</v-btn>
+                    <v-btn :loading="form.processing" color="secondary" @click.stop="closeModal">Abbrechen</v-btn>
+                    <v-btn :loading="form.processing" color="error" type="submit">Account löschen</v-btn>
                 </div>
             </v-form>
         </Modal>

@@ -1,71 +1,61 @@
 <script setup lang="ts">
-import { Head, router, usePage } from '@inertiajs/vue3';
-import Menu from '@/Layouts/partials/Menu.vue';
+import { Head, router } from '@inertiajs/vue3';
+import { ref, watchEffect } from 'vue';
+import { useDisplay } from 'vuetify';
+import AppbarActions from './partials/AppbarActions.vue';
+import DrawerMenu from './partials/DrawerMenu.vue';
 
 defineProps<{
     title: string;
     backurl?: string;
 }>();
 
-const page = usePage();
+const isMobile = useDisplay().smAndDown;
+const showDrawer = ref(true);
+watchEffect(() => (showDrawer.value = !isMobile.value));
 </script>
 
 <template>
     <v-app>
         <Head :title="title"></Head>
-        <div class="h-100 d-flex flex-column">
-            <v-app-bar :elevation="2" color="layout">
-                <div class="w-100" style="display: grid; grid-template-columns: 1fr auto 1fr">
-                    <div class="d-flex align-center">
-                        <v-btn v-if="backurl" variant="plain" icon="mdi-arrow-left" @click.stop="router.get(backurl)"></v-btn>
-                    </div>
-                    <div class="d-flex align-center text-center">
-                        <v-toolbar-title class="font-weight-bold text-h5">
-                            <div class="d-flex align-center">
-                                {{ title }}
-                            </div>
-                        </v-toolbar-title>
-                    </div>
-                    <div class="d-flex justify-end">
-                        <v-btn :href="route('dashboard')" stacked>
-                            <v-badge
-                                v-if="page.props.auth.user.notificationCount > 0"
-                                color="error"
-                                :content="page.props.auth.user.notificationCount"
-                            >
-                                <v-icon icon="mdi-bell"></v-icon>
-                            </v-badge>
-                            <v-icon v-else icon="mdi-bell"></v-icon>
-                        </v-btn>
-                        <v-btn class="me-4" stacked>
-                            <v-icon icon="mdi-menu" size="x-large"></v-icon>
-                            <v-menu activator="parent">
-                                <v-list min-width="200">
-                                    <v-list-item @click.stop="router.get(route('profile.edit'))" prepend-icon="mdi-account">Profil</v-list-item>
-                                    <v-list-item @click.stop="router.post(route('logout'))" prepend-icon="mdi-logout">Abmelden</v-list-item>
-                                </v-list>
-                            </v-menu>
-                        </v-btn>
-                    </div>
-                    <slot name="appbarActions" />
-                </div>
-            </v-app-bar>
-            <v-spacer style="flex-basis: 64px; flex-grow: 0; flex-shrink: 0" />
-            <slot name="beforeScrollContainer" />
-            <div id="scrollContainer" class="d-flex flex-column" style="height: 0; flex: 1; overflow-y: auto">
+
+        <v-navigation-drawer color="background" style="border: none" v-model="showDrawer" image="/img/loggedin-background.png" :permanent="!isMobile">
+            <v-list>
+                <v-list-item @click="router.get('/')" class="d-flex flex-row">
+                    <h1 class="text-center font-weight-medium">
+                        <v-icon icon="mdi-timer-lock" />
+                        <span class="ms-3">ShiftButler</span>
+                    </h1>
+                </v-list-item>
+            </v-list>
+            <v-divider />
+            <DrawerMenu />
+        </v-navigation-drawer>
+
+        <v-app-bar elevation="0" color="background">
+            <v-app-bar-nav-icon v-if="backurl" variant="text" icon="mdi-arrow-left" @click.stop="router.get(backurl)"></v-app-bar-nav-icon>
+            <v-app-bar-nav-icon v-else-if="isMobile" variant="text" @click.stop="showDrawer = !showDrawer"></v-app-bar-nav-icon>
+
+            <v-toolbar-title>
+                {{ title }}
+            </v-toolbar-title>
+
+            <slot name="appbarActions" />
+
+            <AppbarActions />
+        </v-app-bar>
+        <v-main>
+            <v-container fluid>
+                <v-alert v-if="$page.props.flash.error" type="error" closable class="mb-6" :key="Math.random()">
+                    {{ $page.props.flash.error }}
+                </v-alert>
+                <v-alert v-if="$page.props.flash.success" type="success" closable class="mb-6" :key="Math.random()">
+                    {{ $page.props.flash.success }}
+                </v-alert>
                 <slot />
-            </div>
-            <Menu />
-        </div>
+            </v-container>
+        </v-main>
     </v-app>
 </template>
 
-<style>
-.v-application__wrap {
-    height: 100dvh;
-}
-
-#app {
-    height: 100%;
-}
-</style>
+<style></style>

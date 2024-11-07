@@ -29,7 +29,7 @@ class WorkLogPatchController extends Controller
             'user_id' => $workLog->user_id
         ]);
 
-        return back();
+        return back()->with('success',  'Korrektur der Arbeitszeit erfolgreich beantragt.');
     }
 
     public function update(Request $request, WorkLogPatch $workLogPatch)
@@ -40,13 +40,13 @@ class WorkLogPatchController extends Controller
 
         $workLogPatch->update(['status' => $validated['accepted'] ? 'accepted' : 'declined']);
 
-        return back();
+        return back()->with('success',  "Zeitkorrektur erfolgreich " . ($validated['accepted'] ? 'akzeptiert' : 'abgelehnt') . ".");
     }
 
     public function destroy(WorkLogPatch $workLogPatch)
     {
         $workLogPatch->delete();
 
-        return back();
+        return back()->with('success',  "Antrag auf Zeitkorrektur erfolgreich zurückgezogen.");
     }
 }

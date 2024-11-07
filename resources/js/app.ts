@@ -4,6 +4,7 @@ import { createApp, h, DefineComponent } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from 'ziggy-js';
+import { de } from 'vuetify/locale';
 
 const appName = import.meta.env['VITE_APP_NAME'] || 'Laravel';
 
@@ -19,6 +20,13 @@ import { VCalendar } from 'vuetify/labs/VCalendar';
 import { VDateInput } from 'vuetify/labs/components';
 
 const vuetify = createVuetify({
+    defaults: {
+        VTextField: { variant: 'underlined' },
+        VFileInput: { variant: 'underlined' },
+        VSelect: { variant: 'underlined' },
+        VDateInput: { variant: 'underlined' },
+        VAlert: { variant: 'tonal' },
+    },
     theme: {
         defaultTheme: 'lightTheme',
         themes: {
@@ -39,6 +47,9 @@ const vuetify = createVuetify({
     locale: {
         locale: 'de',
         fallback: 'en',
+        messages: {
+            de,
+        },
     },
     date: {
         locale: {

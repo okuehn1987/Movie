@@ -30,13 +30,13 @@ class AbsenceTypeController extends Controller
         $absenceType->organization_id = Organization::getCurrent()->id;
         $absenceType->save();
 
-        return back();
+        return back()->with('success', "Abwesenheitstyp erfolgreich gespeichert.");
     }
 
     public function destroy(Request $request, AbsenceType $absenceType)
     {
         $absenceType->delete();
 
-        return back();
+        return back()->with('success', "Abwesenheitstyp erfolgreich gelöscht.");
     }
 }

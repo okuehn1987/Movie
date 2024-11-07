@@ -29,6 +29,6 @@ class GroupController extends Controller
         $group = Group::create(['organization_id' => Organization::getCurrent()->id, 'name' => $validated['name']]);
         User::inOrganization()->whereIn('id', $validated['users'])->update(['group_id' => $group->id]);
 
-        return back();
+        return back()->with('success', 'Gruppe erfolgreich erstellt.');
     }
 }

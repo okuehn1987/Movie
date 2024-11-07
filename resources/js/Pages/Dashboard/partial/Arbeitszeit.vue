@@ -33,50 +33,96 @@ const currentWorkingHours = computed(() =>
 );
 </script>
 <template>
-    <v-card>
-        <v-toolbar color="primary">
-            <v-toolbar-title>Arbeitszeit</v-toolbar-title>
+    <v-card title="Arbeitszeit">
+        <template #append>
             <v-btn
-                :href="
-                    route('user.workLog.index', {
-                        user: page.props.auth.user.id,
-                    })
+                icon="mdi-eye"
+                variant="text"
+                @click="
+                    router.get(
+                        route('user.workLog.index', {
+                            user: page.props.auth.user.id,
+                        }),
+                    )
                 "
-            >
-                <v-icon icon="mdi-eye"></v-icon>
-            </v-btn>
-        </v-toolbar>
-
+            />
+        </template>
         <v-card-text>
-            <div>Woche Soll: {{ workingHours.should }}</div>
-            <div>Woche Ist: {{ Math.floor(currentWorkingHours) }}:{{ Math.floor((currentWorkingHours % 1) * 60) }}</div>
-            <div>Momentane Überstunden: {{ defaultTimeAccount.balance }}</div>
-            <div v-if="lastWorkLog.end == null">
-                <div>
-                    Hier seit:
-                    {{ DateTime.fromSQL(lastWorkLog.start).toFormat('HH:mm') }} Uhr
-                </div>
-            </div>
-            <v-alert
-                color="danger"
-                class="mt-2"
-                v-if="currentOperatingTime && now.diff(DateTime.fromFormat(currentOperatingTime.end, 'HH:mm')).as('minutes') > 0"
-            >
-                Es fehlt eine Meldung. Bitte Zeitkorrektur.
-                <v-btn color="primary" class="ms-2" :href="`/user/${page.props.auth.user.id}/workLogs?workLog=${lastWorkLog.id}`">
-                    Zeitkorrektur
-                </v-btn>
-            </v-alert>
-            <div v-else>
-                <template v-if="(page.props.auth.user.home_office && lastWorkLog.end) || (lastWorkLog.is_home_office && !lastWorkLog.end)">
-                    <v-btn @click.stop="changeWorkStatus(true)" color="primary" class="me-2">
-                        {{ lastWorkLog.end ? 'Kommen Homeoffice' : 'Gehen Homeoffice' }}
+            <v-row>
+                <v-col cols="12" sm="6">
+                    <div class="d-flex align-center ga-3">
+                        <v-avatar color="blue-grey" rounded size="40" class="elevation-2">
+                            <v-icon size="24" icon="mdi-clock" />
+                        </v-avatar>
+
+                        <div class="d-flex flex-column">
+                            Woche Soll
+                            <div class="text-h6">
+                                {{ workingHours.should }}
+                            </div>
+                        </div>
+                    </div>
+                </v-col>
+                <v-col cols="12" sm="6">
+                    <div class="d-flex align-center ga-3">
+                        <v-avatar color="green" rounded size="40" class="elevation-2">
+                            <v-icon size="24" icon="mdi-clock-check" />
+                        </v-avatar>
+
+                        <div class="d-flex flex-column">
+                            Woche Ist
+                            <div class="text-h6">{{ Math.floor(currentWorkingHours) }}:{{ Math.floor((currentWorkingHours % 1) * 60) }}</div>
+                        </div>
+                    </div>
+                </v-col>
+                <v-col cols="12" sm="6">
+                    <div class="d-flex align-center ga-3">
+                        <v-avatar color="orange" rounded size="40" class="elevation-2 text-white">
+                            <v-icon size="24" icon="mdi-clock-plus" />
+                        </v-avatar>
+
+                        <div class="d-flex flex-column">
+                            Überstunden
+                            <div class="text-h6">
+                                {{ defaultTimeAccount.balance }}
+                            </div>
+                        </div>
+                    </div>
+                </v-col>
+                <v-col cols="12" sm="6" v-if="lastWorkLog.end == null">
+                    <div class="d-flex align-center ga-3">
+                        <v-avatar color="blue" rounded size="40" class="elevation-2">
+                            <v-icon size="24" icon="mdi-timer" />
+                        </v-avatar>
+
+                        <div class="d-flex flex-column">
+                            Hier seit
+                            <div class="text-h6">{{ DateTime.fromSQL(lastWorkLog.start).toFormat('HH:mm') }} Uhr</div>
+                        </div>
+                    </div>
+                </v-col>
+
+                <v-col cols="12">
+                    <v-alert
+                        color="error"
+                        v-if="currentOperatingTime && now.diff(DateTime.fromFormat(currentOperatingTime.end, 'HH:mm')).as('minutes') > 0"
+                    >
+                        Es fehlt eine Meldung. Bitte Zeitkorrektur.
+                        <v-btn color="error" :href="`/user/${page.props.auth.user.id}/workLogs?workLog=${lastWorkLog.id}`"> Zeitkorrektur </v-btn>
+                    </v-alert>
+                    <div v-else-if="(page.props.auth.user.home_office && lastWorkLog.end) || (lastWorkLog.is_home_office && !lastWorkLog.end)">
+                        <v-btn block size="large" @click.stop="changeWorkStatus(true)" color="primary" class="me-2">
+                            {{ lastWorkLog.end ? 'Kommen Homeoffice' : 'Gehen Homeoffice' }}
+                        </v-btn>
+                    </div>
+                </v-col>
+
+                <v-col cols="12">
+                    <v-btn block size="large" @click.stop="changeWorkStatus()" color="primary" v-if="lastWorkLog.end || !lastWorkLog.is_home_office">
+                        {{ lastWorkLog.end ? 'Kommen' : 'Gehen' }}
                     </v-btn>
-                </template>
-                <v-btn @click.stop="changeWorkStatus()" color="primary" v-if="lastWorkLog.end || !lastWorkLog.is_home_office">
-                    {{ lastWorkLog.end ? 'Kommen' : 'Gehen' }}
-                </v-btn>
-            </div>
+                </v-col>
+            </v-row>
         </v-card-text>
     </v-card>
 </template>

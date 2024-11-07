@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { User, WorkLog, WorkLogPatch, Paginator, OperatingTime, TimeAccount } from '@/types/types';
-import { router, usePage } from '@inertiajs/vue3';
-import { DateTime } from 'luxon';
-import { ref, watch } from 'vue';
+import { OperatingTime, Paginator, TimeAccount, User, WorkLog, WorkLogPatch } from '@/types/types';
+import { usePage } from '@inertiajs/vue3';
 import Arbeitszeit from './partial/Arbeitszeit.vue';
+import Zeitkorrekturen from './partial/Zeitkorrekturen.vue';
 
 type PatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id' | 'work_log_id'> & {
     work_log: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office'>;
     user: Pick<User, 'id' | 'first_name' | 'last_name'>;
 };
 
-const props = defineProps<{
+defineProps<{
     lastWorkLog: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office'>;
     supervisor: Pick<User, 'id' | 'first_name' | 'last_name'>;
     patches: Paginator<PatchProp> | null;
@@ -20,138 +19,34 @@ const props = defineProps<{
     workingHours: { should: number; current: number };
 }>();
 const page = usePage();
-
-const patchDialog = ref<PatchProp | null>(null);
-const showPatchDialog = ref(false);
-const submitPatchSuccess = ref(false);
-
-const currentPage = ref(props.patches?.current_page);
-
-watch(currentPage, () => {
-    router.visit(
-        route(route('dashboard'), {
-            page: currentPage.value,
-        }),
-        {
-            only: ['patches'],
-        },
-    );
-});
-
-// TODO: momentanen überstunden ohne aktuellen Log
-// TODO: bei abwesenheit buttons disablen
-
-function openPatch(_: unknown, row: { item: { id: WorkLogPatch['id'] } }) {
-    const patch = props.patches?.data.find(p => p.id === row.item.id);
-    if (!patch) return;
-    patchDialog.value = patch;
-    showPatchDialog.value = true;
-}
-
-function changePatchStatus(accepted: boolean) {
-    if (!patchDialog.value) return;
-    router.patch(
-        route('workLogPatch.update', { workLogPatch: patchDialog.value.id }),
-        { accepted: accepted },
-        {
-            onSuccess: () => {
-                showPatchDialog.value = false;
-                submitPatchSuccess.value = true;
-            },
-        },
-    );
-}
 </script>
+
 <template>
     <AdminLayout :title="'Dashboard von ' + $page.props.auth.user.first_name + ' ' + $page.props.auth.user.last_name">
-        <v-container>
-            <v-row>
-                <v-col cols="12" md="4">
-                    <Arbeitszeit :lastWorkLog :operating_times :defaultTimeAccount :workingHours />
-                </v-col>
-                <v-col cols="12" md="4" v-if="supervisor">
-                    <v-card>
-                        <v-toolbar color="primary" title="Vorgesetzter"></v-toolbar>
-                        <v-card-text>
-                            {{ supervisor.first_name }}
-                            {{ supervisor.last_name }}
-                        </v-card-text>
-                    </v-card>
-                </v-col>
-                <v-col cols="12" md="4">
-                    <v-card>
-                        <v-toolbar color="primary" title="Informationen"></v-toolbar>
-                        <v-card-text>text</v-card-text>
-                    </v-card>
-                </v-col>
-                <v-col cols="12" md="4" v-if="page.props.auth.user.work_log_patching">
-                    <v-card>
-                        <v-toolbar color="primary" title="Zeitkorrekturen"></v-toolbar>
-                        <v-card-text>
-                            <div>
-                                <v-alert v-if="submitPatchSuccess" color="success" closable class="mb-4">
-                                    Die Zeitkorrektur wurde erfolgreich angepasst.
-                                </v-alert>
-                            </div>
-                            <div v-if="patches == null || patches.data.length < 1">keine Zeitkorrekturen vorhanden.</div>
-                            <div v-else>
-                                <v-data-table
-                                    hover
-                                    v-model:page="currentPage"
-                                    :items-per-page="patches.per_page"
-                                    item-value="id"
-                                    @click:row="openPatch"
-                                    :items="
-                                        patches.data.map(patch => ({
-                                            id: patch.id,
-                                            user: patch.user.first_name + ' ' + patch.user.last_name,
-                                            date: DateTime.fromSQL(patch.start).toFormat('dd.MM.yyyy'),
-                                        }))
-                                    "
-                                    :headers="[
-                                        { title: 'Mitarbeiter', key: 'user' },
-                                        { title: 'Datum', key: 'date' },
-                                    ]"
-                                >
-                                    <template v-slot:bottom>
-                                        <v-pagination v-if="patches.last_page > 1" v-model="currentPage" :length="patches.last_page"></v-pagination>
-                                    </template>
-                                </v-data-table>
-                            </div>
-                        </v-card-text>
-                        <v-dialog v-if="patchDialog" v-model="showPatchDialog" max-width="1000">
-                            <v-card>
-                                <v-toolbar color="primary" :title="patchDialog.user.first_name + ' ' + patchDialog.user.last_name"></v-toolbar>
-                                <v-card-text>
-                                    <v-data-table-virtual
-                                        :headers="[
-                                            { title: '', key: 'version', sortable: false },
-                                            { title: 'Start', key: 'start', sortable: false },
-                                            { title: 'Ende', key: 'end', sortable: false },
-                                            { title: 'Homeoffice', key: 'is_home_office', sortable: false },
-                                        ]"
-                                        :items="
-                                            [patchDialog.work_log, patchDialog].map((p, i) => ({
-                                                version: i == 0 ? 'Alter Stand:' : 'Neuer Stand:',
-                                                start: DateTime.fromSQL(p.start).toFormat('dd.MM.yyyy HH:mm'),
-                                                end: p.end ? DateTime.fromSQL(p.end).toFormat('dd.MM.yyyy HH:mm') : 'kein Ende',
-                                                is_home_office: p.is_home_office ? 'Ja' : 'Nein',
-                                            }))
-                                        "
-                                    ></v-data-table-virtual>
-                                    <div class="d-flex justify-space-between mt-4">
-                                        <v-btn color="primary" @click="showPatchDialog = false">Abbrechen</v-btn>
-                                        <div>
-                                            <v-btn color="error me-2" @click.stop="changePatchStatus(false)">Ablehnen</v-btn>
-                                            <v-btn color="primary" @click.stop="changePatchStatus(true)">Akzeptieren</v-btn>
-                                        </div>
-                                    </div>
-                                </v-card-text>
-                            </v-card>
-                        </v-dialog>
-                    </v-card>
-                </v-col>
-            </v-row>
-        </v-container>
+        <v-row>
+            <v-col cols="12" sm="6" lg="4">
+                <Arbeitszeit :lastWorkLog :operating_times :defaultTimeAccount :workingHours />
+            </v-col>
+
+            <v-col cols="12" sm="6" lg="4" v-if="supervisor">
+                <v-card title="Vorgesetzter">
+                    <v-card-text>
+                        {{ supervisor?.first_name }}
+                        {{ supervisor?.last_name }}
+                    </v-card-text>
+                </v-card>
+            </v-col>
+
+            <v-col cols="12" sm="6" lg="4">
+                <v-card>
+                    <v-card-title>Informationen</v-card-title>
+                    <v-card-item>TODO: to be implemented</v-card-item>
+                </v-card>
+            </v-col>
+
+            <v-col cols="12" sm="6" lg="4" v-if="page.props.auth.user.work_log_patching">
+                <Zeitkorrekturen :patches="patches" />
+            </v-col>
+        </v-row>
     </AdminLayout>
 </template>

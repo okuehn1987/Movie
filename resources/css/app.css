@@ -1,7 +1,14 @@
+/* vuetify has set overflow-y: scroll and we dont want that */
 html {
     overflow-y: auto !important;
 }
 
+/* it wasnt clear if the input was disabled or not. so we make it more obvious by setting the opactiy */
 .v-theme--lightTheme {
     --v-disabled-opacity: 0.6 !important;
+}
+
+/* FIXME: for some reason table header arent bold but have the same computed styles as in the vuetify docs */
+.v-data-table-header__content {
+    font-weight: bold;
 }

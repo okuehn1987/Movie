@@ -11,11 +11,7 @@ defineProps<{
 }>();
 </script>
 <template>
-    <AdminLayout title="User Show">
-        <v-container>
-            <v-card>
-                <UserForm :user :groups :operating_sites :permissions mode="edit"></UserForm>
-            </v-card>
-        </v-container>
+    <AdminLayout title="User Show" :backurl="route('user.index')">
+        <UserForm :user :groups :operating_sites :permissions mode="edit"></UserForm>
     </AdminLayout>
 </template>

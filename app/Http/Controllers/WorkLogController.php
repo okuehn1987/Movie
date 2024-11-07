@@ -59,7 +59,7 @@ class WorkLogController extends Controller
             'user_id' => Auth::id()
         ]);
 
-        return back();
+        return back()->with('success', 'Arbeitsstatus erfolgreich eingetragen.');
     }
     public function userWorkLogs(Request $request, User $user)
     {
