@@ -80,7 +80,7 @@ function submit() {
 }
 </script>
 <template>
-    <v-card :title="mode === 'create' ? 'Mitarbeiter hinzufügen' : userForm.first_name + ' ' + userForm.last_name">
+    <v-card :title="mode === 'create' ? 'Mitarbeiter hinzufügen' : props.user?.first_name + ' ' + props.user?.last_name">
         <template #append>
             <slot name="append"></slot>
         </template>

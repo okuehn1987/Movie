@@ -58,7 +58,7 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
                     </v-dialog>
                 </template>
                 <template v-slot:item.actions="{ item }">
-                    <div class="d-flex">
+                    <div class="d-flex justify-end">
                         <Link
                             :href="
                                 route('user.show', {
