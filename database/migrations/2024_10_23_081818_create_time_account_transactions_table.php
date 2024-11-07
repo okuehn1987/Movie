@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('to_id')->constrained('time_accounts')->cascadeOnDelete();
             $table->boolean('is_system_generated')->default(false);
             $table->foreignId('modified_by')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->string('amount');
             $table->string('description')->nullable();
             $table->timestamps();
         });
