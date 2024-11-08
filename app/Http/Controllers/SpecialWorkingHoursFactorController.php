@@ -44,4 +44,12 @@ class SpecialWorkingHoursFactorController extends Controller
         // $specialWorkingHoursFactor->organization_id = Organization::getCurrent()->id;
         // $specialWorkingHoursFactor->save();
     }
+
+    
+    public function destroy(Request $request, SpecialWorkingHoursFactor $specialWorkingHoursFactor)
+    {
+        $specialWorkingHoursFactor->delete();
+
+        return back()->with('success', 'Arbeitszuschlag erfolgreich gelöscht.');
+    }
 }

@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { OperatingSite, Paginator } from '@/types/types';
 import { fillNullishValues, usePagination } from '@/utils';
-import { Link, router, useForm } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
 import { toRefs } from 'vue';
 
 const props = defineProps<{
@@ -181,45 +182,16 @@ function submit() {
                             <v-btn color="primary" size="large" variant="text" icon="mdi-eye" />
                         </Link>
 
-                        <v-dialog v-if="item.users_count == 0" max-width="1000">
-                            <template v-slot:activator="{ props: activatorProps }">
-                                <v-btn v-bind="activatorProps" color="error" size="large" variant="text" icon="mdi-delete" />
-                            </template>
-
-                            <template v-slot:default="{ isActive }">
-                                <v-card title="Betriebsstätte löschen">
-                                    <template #append>
-                                        <v-btn icon variant="text" @click="isActive.value = false">
-                                            <v-icon>mdi-close</v-icon>
-                                        </v-btn>
-                                    </template>
-                                    <v-card-text>
-                                        <v-row>
-                                            <v-col cols="12">
-                                                Bist du dir sicher, dass du die Betriebsstätte
-                                                {{ item.name }}
-                                                entfernen möchtest?
-                                            </v-col>
-                                            <v-col cols="12" class="text-end">
-                                                <v-btn
-                                                    @click.stop="
-                                                        router.delete(
-                                                            route('operatingSite.destroy', {
-                                                                operatingSite: item.id,
-                                                            }),
-                                                            { onSuccess: () => (isActive.value = false) },
-                                                        )
-                                                    "
-                                                    color="error"
-                                                >
-                                                    Löschen
-                                                </v-btn>
-                                            </v-col>
-                                        </v-row>
-                                    </v-card-text>
-                                </v-card>
-                            </template>
-                        </v-dialog>
+                        <ConfirmDelete
+                            v-if="item.users_count == 0"
+                            :content="'Bist du dir sicher, dass du die Betriebsstätte ' + item.name + ' entfernen möchtest?'"
+                            :route="
+                                route('operatingSite.destroy', {
+                                    operatingSite: item.id,
+                                })
+                            "
+                            title="Betriebsstätte löschen"
+                        ></ConfirmDelete>
                     </div>
                 </template>
                 <template v-slot:bottom>
