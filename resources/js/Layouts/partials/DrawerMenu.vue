@@ -34,6 +34,12 @@ const user = computed(() => page.props.auth.user);
                 title="Arbeitszeiten"
             />
             <v-list-item
+                :active="route().current('users.workLogs')"
+                :value="route('users.workLogs')"
+                prepend-icon="mdi-clock-outline"
+                title="Arbeitszeiten"
+            />
+            <v-list-item
                 :active="route().current('operatingSite.index')"
                 :value="route('operatingSite.index')"
                 prepend-icon="mdi-map-marker"

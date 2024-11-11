@@ -34,7 +34,7 @@ const vuetify = createVuetify({
                 dark: false,
                 colors: {
                     primary: '#47545D',
-                    success: '#2C632C',
+                    success: '#198754',
                     secondary: 'hsl(206, 7%, 90%)',
                     accent: '#c09762',
                     error: '#dc2626',

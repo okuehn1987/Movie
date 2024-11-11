@@ -45,7 +45,7 @@ watchEffect(() => (showDrawer.value = !isMobile.value));
             <AppbarActions />
         </v-app-bar>
         <v-main>
-            <v-container fluid>
+            <v-container class="pt-0" fluid>
                 <v-alert v-if="$page.props.flash.error" type="error" closable class="mb-6" :key="Math.random()">
                     {{ $page.props.flash.error }}
                 </v-alert>

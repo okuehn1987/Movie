@@ -58,6 +58,10 @@ class User extends Authenticatable
     {
         return $this->belongsTo(User::class);
     }
+    public function supervises()
+    {
+        return $this->hasMany(User::class, 'supervisor_id');
+    }
     public function isSubstitutedBy()
     {
         return $this->belongsToMany(User::class, 'substitutes', 'user_id', 'substitute_id');

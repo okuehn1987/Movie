@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Group;
 use App\Models\User;
 use App\Models\WorkLog;
-use App\Models\WorkLogPatch;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -69,6 +68,18 @@ class WorkLogController extends Controller
                 ->with('workLogPatches:id,work_log_id,updated_at,status,start,end,is_home_office')
                 ->orderBy('start', 'DESC')
                 ->paginate(12),
+        ]);
+    }
+
+    public function workLogs()
+    {
+
+        return Inertia::render('WorkLog/UsersWorkLogs', [
+            'users' => User::find(Auth::id())->supervises()->get(['id', 'first_name', 'last_name'])->map(fn($u) => [
+                ...$u->toArray(),
+                'isPresent' => $u->workLogs()->latest()->first()->end ? true : false,
+                'latestWorkLog' => $u->workLogs()->latest()->first()
+            ])
         ]);
     }
 }
