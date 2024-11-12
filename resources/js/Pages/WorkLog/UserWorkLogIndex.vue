@@ -17,7 +17,7 @@ const props = defineProps<{
     >;
 }>();
 
-const { currentPage, lastPage, data } = usePagination(toRefs(props), 'workLogs');
+const { currentPage, lastPage, data } = usePagination(toRefs(props), 'workLogs', { user: props.user.id });
 
 const showDialog = ref(false);
 
@@ -117,7 +117,10 @@ function retreatPatch() {
 }
 </script>
 <template>
-    <AdminLayout :title="user.first_name + ' ' + user.last_name" :backurl="route('dashboard')">
+    <AdminLayout
+        :title="user.first_name + ' ' + user.last_name"
+        :backurl="route().params['fromUserWorkLogs'] ? route('users.workLogs') : route('dashboard')"
+    >
         <v-card>
             <v-data-table
                 :headers="[

@@ -27,17 +27,23 @@ const user = computed(() => page.props.auth.user);
                 prepend-icon="mdi-account-group"
                 title="Mitarbeiter"
             />
-            <v-list-item
+            <!-- <v-list-item
                 :active="route().current('workLog.index')"
                 :value="route('workLog.index')"
                 prepend-icon="mdi-clock-outline"
                 title="Arbeitszeiten"
-            />
+            /> -->
             <v-list-item
                 :active="route().current('users.workLogs')"
                 :value="route('users.workLogs')"
                 prepend-icon="mdi-clock-outline"
                 title="Arbeitszeiten"
+            />
+            <v-list-item
+                :active="route().current('absence.index')"
+                :value="route('absence.index')"
+                prepend-icon="mdi-timer-cancel-outline"
+                title="Abwesenheiten"
             />
             <v-list-item
                 :active="route().current('operatingSite.index')"

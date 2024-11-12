@@ -113,7 +113,7 @@ export type OperatingTime = DBObject &
 
 export type Absence = DBObject &
     SoftDelete & {
-        absence_type_id: AbsenceType['id'];
+        absence_type_id?: AbsenceType['id'];
         user_id: User['id'];
         start: Date;
         end: Date;

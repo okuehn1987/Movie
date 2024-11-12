@@ -2,14 +2,25 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { User, WorkLog } from '@/types/types';
 import { DateTime } from 'luxon';
+import { router } from '@inertiajs/vue3';
 
 defineProps<{
     users: (Pick<User, 'first_name' | 'last_name'> & { latestWorkLog: WorkLog; isPresent: boolean })[];
 }>();
+
+function getUserWorkLogs(_: unknown, row: { item: { id: User['id'] } }) {
+    router.get(
+        route('user.workLog.index', {
+            user: row.item.id,
+            fromUserWorkLogs: true,
+        }),
+    );
+}
 </script>
 <template>
-    <AdminLayout title="Heutige Arbeitszeiten">
+    <AdminLayout title="Arbeitszeiten">
         <v-data-table-virtual
+            hover
             :items="
                 users.map(u => ({
                     ...u,
@@ -24,6 +35,7 @@ defineProps<{
                 { title: 'Letzte Buchung', key: 'lastAction' },
                 { title: 'Uhrzeit', key: 'time' },
             ]"
+            @click:row="getUserWorkLogs"
         >
             <template v-slot:item.isPresent="{ item }">
                 <v-icon icon="mdi-circle" :color="item.isPresent ? 'success' : 'error'" size="md"></v-icon>

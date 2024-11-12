@@ -18,6 +18,11 @@ class UserWorkingWeekFactory extends Factory
     {
         return [
             "active_since" => $this->faker->date(),
+            "monday" => 1,
+            "tuesday" => 1,
+            "wednesday" => 1,
+            "thursday" => 1,
+            "friday" => 1,
         ];
     }
 }

@@ -85,5 +85,6 @@ class DatabaseSeeder extends Seeder
             $user->group_id = $group->id;
             $user->save();
         }
+        WorkLog::factory(30, ['user_id' => $admin->id])->create();
     }
 }
