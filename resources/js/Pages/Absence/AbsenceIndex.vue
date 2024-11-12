@@ -6,13 +6,13 @@ import { DateTime } from 'luxon';
 import { ref } from 'vue';
 
 type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'> & {
-    absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status'> & { absence_type?: AbsenceType })[];
+    absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status'> & { absence_type?: Pick<AbsenceType, 'id' | 'abbreviation'> })[];
     user_working_weeks: Pick<UserWorkingWeek, 'id' | Weekday>[];
 };
 
 const props = defineProps<{
     users: UserProp[];
-    absence_types: AbsenceType[];
+    absence_types: Pick<AbsenceType, 'id' | 'name'>[];
 }>();
 
 const page = usePage();
@@ -31,7 +31,6 @@ function getDaysInMonth() {
 
 function getUserStatus(user: UserProp, day: DateTime) {
     const absence = user.absences.find(a => DateTime.fromSQL(a.start) <= day && day <= DateTime.fromSQL(a.end));
-    console.log(absence);
     if (absence && absence.status === 'accepted') return absence.absence_type?.abbreviation || '❌';
 
     if (user.user_working_weeks.find(e => e[day.setLocale('en-US').weekdayLong?.toLowerCase() as Weekday])) return '✔️';
@@ -82,6 +81,9 @@ function createAbsenceModal(day: string, user_id: number) {
                             <v-icon>mdi-close</v-icon>
                         </v-btn>
                     </template>
+                    <v-card-text v-if="absenceForm.errors.user_id">
+                        <v-alert color="error" closable>{{ absenceForm.errors.user_id }}</v-alert>
+                    </v-card-text>
                     <v-card-text>
                         <v-form
                             @submit.prevent="
@@ -99,13 +101,14 @@ function createAbsenceModal(day: string, user_id: number) {
                                         label="Abwesenheitsgrund angeben"
                                         :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
                                         v-model="absenceForm.absence_type_id"
+                                        :error-messages="absenceForm.errors.absence_type_id"
                                     ></v-select>
                                 </v-col>
                                 <v-col cols="12" md="6">
-                                    <v-date-input label="Von" v-model="absenceForm.start"></v-date-input>
+                                    <v-date-input label="Von" v-model="absenceForm.start" :error-messages="absenceForm.errors.start"></v-date-input>
                                 </v-col>
                                 <v-col cols="12" md="6">
-                                    <v-date-input label="Bis" v-model="absenceForm.end"></v-date-input>
+                                    <v-date-input label="Bis" v-model="absenceForm.end" :error-messages="absenceForm.errors.end"></v-date-input>
                                 </v-col>
                                 <v-col cols="12" class="text-end">
                                     <v-btn :loading="absenceForm.processing" type="submit" color="primary">beantragen</v-btn>
@@ -147,8 +150,8 @@ function createAbsenceModal(day: string, user_id: number) {
                         :key="header.key + ''"
                         :style="
                         {backgroundColor: !item[header.key as keyof typeof item]?'lightgray':''}"
-                        class="text-center"
                         :class="{ 'editable-cell': isUserEditable(page.props.auth.user.id, item) }"
+                        :role="isUserEditable(page.props.auth.user.id, item) ? 'button' : 'cell'"
                         @click="createAbsenceModal(header.key + '', item.id)"
                     >
                         {{ item[header.key as keyof typeof item] }}
@@ -162,6 +165,7 @@ function createAbsenceModal(day: string, user_id: number) {
 /* so that the table wont overflow on full hd for 31 days - the dates can get less padding  */
 #absence-table tr *:not(:first-child) {
     padding-inline: 4px;
+    text-align: center;
 }
 .editable-cell:not(:first-child):hover {
     background-color: darkgray !important;
