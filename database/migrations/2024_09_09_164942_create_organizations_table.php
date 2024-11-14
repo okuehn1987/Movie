@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->foreignId('owner_id')->nullable()->references('id')->on('users')->onDelete('set null');
             $table->string("tax_registration_id")->nullable();
+            $table->integer("balance_truncation_day")->default(1);
             $table->string("commercial_registration_id")->nullable();
             $table->string("website")->nullable();
             $table->string("logo")->nullable();
