@@ -37,7 +37,7 @@ class AbsenceController extends Controller
             'end' => 'required|date',
             'absence_type_id' => 'exists:absence_types,id',
             'user_id' => ['required', 'exists:users,id', function (string $attribute, mixed $value, Closure $fail) {
-                if (Auth::id() !== $value || User::find($value)->supervisor_id !== Auth::id()) {
+                if (Auth::id() !== $value && User::find($value)->supervisor_id !== Auth::id()) {
                     $fail('Du bist nicht berechtigt dazu, diese Abwesenheit zu beantragen'); // TODO: middleware
                 }
             }]
@@ -51,5 +51,16 @@ class AbsenceController extends Controller
         ]);
 
         return back()->with('success', 'Abwesenheit beantragt.');
+    }
+
+    public function update(Request $request, Absence $absence)
+    {
+        $validated = $request->validate([
+            'accepted' => 'required|boolean'
+        ]);
+
+        $absence->update(['status' => $validated['accepted'] ? 'accepted' : 'declined']);
+
+        return back()->with('success',  "Abwesenheit erfolgreich " . ($validated['accepted'] ? 'akzeptiert' : 'abgelehnt') . ".");
     }
 }

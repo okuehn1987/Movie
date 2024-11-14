@@ -5,7 +5,6 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -36,14 +35,9 @@ class User extends Authenticatable
         ];
     }
 
-    public function getNotificationCountAttribute()
+    public function getNameAttribute()
     {
-        $count = 0;
-
-        if ($this->work_log_patching) {
-            $count += WorkLog::inOrganization()->whereHas('workLogPatches', fn(Builder $q) => $q->where('status', 'created'))->count();
-        }
-        return $count;
+        return $this->first_name . ' ' . $this->last_name;
     }
 
     public function workLogs()

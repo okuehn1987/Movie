@@ -36,6 +36,7 @@ Route::middleware(['auth', HasOrganizationAccess::class])->group(function () {
     Route::resource('operatingSite', OperatingSiteController::class)->only(['index', 'store', 'destroy', 'update', 'show']);
     Route::resource('operatingTime', OperatingTimeController::class)->only(['store', 'update', 'destroy']);
 
+    Route::post('notifications/{notification}/update', [NotificationController::class, 'update'])->name('notification.update');
 
     Route::singleton('profile', ProfileController::class)->only(['edit', 'update', 'destroy'])->destroyable();
 });

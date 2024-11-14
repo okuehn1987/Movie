@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Paginator, User, WorkLog, WorkLogPatch } from '@/types/types';
+import { User, WorkLog, WorkLogPatch } from '@/types/types';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 
 type PatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id' | 'work_log_id'> & {
     work_log: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office'>;
@@ -10,31 +10,20 @@ type PatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 
 };
 
 const props = defineProps<{
-    patches: Paginator<PatchProp> | null;
+    patches: PatchProp[];
 }>();
 
-const patchDialog = ref<PatchProp | null>(null);
-const showPatchDialog = ref(false);
+const patchDialog = ref<PatchProp | null>(props.patches?.find(patch => patch.id == Number(route().params['open'])) ?? null);
+const showPatchDialog = ref(!!patchDialog.value);
 const submitPatchSuccess = ref(false);
 
-const currentPage = ref(props.patches?.current_page);
-
-watch(currentPage, () => {
-    router.visit(
-        route(route('dashboard'), {
-            page: currentPage.value,
-        }),
-        {
-            only: ['patches'],
-        },
-    );
-});
+const currentPage = ref(1);
 
 // TODO: momentanen überstunden ohne aktuellen Log
 // TODO: bei abwesenheit buttons disablen
 
 function openPatch(_: unknown, row: { item: { id: WorkLogPatch['id'] } }) {
-    const patch = props.patches?.data.find(p => p.id === row.item.id);
+    const patch = props.patches?.find(p => p.id === row.item.id);
     if (!patch) return;
     patchDialog.value = patch;
     showPatchDialog.value = true;
@@ -56,16 +45,14 @@ function changePatchStatus(accepted: boolean) {
 </script>
 <template>
     <v-card title="Zeitkorrekturen">
-        <v-card-text v-if="patches == null || patches.data.length < 1"> keine Zeitkorrekturen vorhanden. </v-card-text>
         <v-data-table
-            v-else
             hover
+            items-per-page="5"
             v-model:page="currentPage"
-            :items-per-page="patches.per_page"
-            item-value="id"
+            no-data-text="keine Zeitkorrekturen vorhanden."
             @click:row="openPatch"
             :items="
-                patches.data.map(patch => ({
+                patches.map(patch => ({
                     id: patch.id,
                     user: patch.user.first_name + ' ' + patch.user.last_name,
                     date: DateTime.fromSQL(patch.start).toFormat('dd.MM.yyyy'),
@@ -75,14 +62,13 @@ function changePatchStatus(accepted: boolean) {
                 { title: 'Mitarbeiter', key: 'user' },
                 { title: 'Datum', key: 'date' },
             ]"
-        >
-            <template v-slot:bottom>
-                <v-pagination v-if="patches.last_page > 1" v-model="currentPage" :length="patches.last_page"></v-pagination>
+            ><template v-slot:bottom>
+                <v-pagination v-if="patches.length > 5" v-model="currentPage" :length="Math.ceil(patches.length / 5)"></v-pagination>
             </template>
         </v-data-table>
 
         <v-dialog v-if="patchDialog" v-model="showPatchDialog" max-width="1000">
-            <v-card :title="patchDialog.user.first_name + ' ' + patchDialog.user.last_name">
+            <v-card :title="'Zeitkorrektur von ' + patchDialog.user.first_name + ' ' + patchDialog.user.last_name">
                 <template #append>
                     <v-btn icon variant="text" @click="showPatchDialog = false">
                         <v-icon>mdi-close</v-icon>

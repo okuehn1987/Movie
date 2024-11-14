@@ -1,18 +1,49 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
+import { Notification } from '@/types/types';
+import { Link, router } from '@inertiajs/vue3';
 
-const page = usePage();
+function readNotification(notification: Notification) {
+    router.post(
+        route('notification.update', {
+            notification: notification.id,
+        }),
+        {},
+        {
+            onSuccess: () =>
+                router.get(
+                    route('dashboard', {
+                        open: notification.data.patch_id,
+                    }),
+                ),
+        },
+    );
+}
 </script>
 
 <template>
-    <Link :href="route('dashboard')">
-        <v-btn stacked color="black" title="Notifications">
-            <v-badge v-if="page.props.auth.user.notificationCount > 0" color="error" :content="page.props.auth.user.notificationCount">
-                <v-icon class="mdi mdi-bell"></v-icon>
-            </v-badge>
-            <v-icon v-else icon="mdi-bell"></v-icon>
-        </v-btn>
-    </Link>
+    <v-menu v-if="$page.props.auth.user.unread_notifications.length > 0">
+        <template v-slot:activator="{ props }">
+            <v-btn color="primary" v-bind="props" stacked>
+                <v-badge
+                    v-if="$page.props.auth.user.unread_notifications.length > 0"
+                    :content="$page.props.auth.user.unread_notifications.length"
+                    color="error"
+                >
+                    <v-icon icon="mdi-bell"></v-icon>
+                </v-badge>
+                <v-icon v-else icon="mdi-bell"></v-icon>
+            </v-btn>
+        </template>
+        <v-list>
+            <v-list-item
+                @click.stop="readNotification(notification)"
+                v-for="notification in $page.props.auth.user.unread_notifications"
+                :key="notification.id"
+            >
+                <v-list-item-title> {{ notification.data.title }} </v-list-item-title>
+            </v-list-item>
+        </v-list>
+    </v-menu>
 
     <Link :href="route('profile.edit')">
         <v-btn stacked color="black" prepend-icon="mdi-account" title="Profil" />

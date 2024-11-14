@@ -59,9 +59,21 @@ export type User = DBObject &
         home_office_ratio: number | null;
         phone_number: string | null;
         email_verified_at: string | null;
-        notificationCount: number;
         weekly_working_hours: number;
     } & Record<Permission, boolean>;
+
+export type Notification = Omit<DBObject, 'id'> & {
+    id: string;
+    notifiable_type: 'App\\Models\\User';
+    notifiable_id: User['id'];
+    read_at: Timestamp;
+} & {
+    type: 'App\\Notifications\\PatchNotification';
+    data: {
+        title: `${User['first_name']} ${User['last_name']} hat eine Zeitkorrektur beantragt`;
+        patch_id: WorkLogPatch['id'];
+    };
+};
 
 export type UserWorkingHours = DBObject &
     SoftDelete & {

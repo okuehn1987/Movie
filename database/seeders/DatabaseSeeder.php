@@ -36,7 +36,7 @@ class DatabaseSeeder extends Seeder
         Organization::factory(3)
             ->has(
                 OperatingSite::factory(3)->has($users)
-                    ->has(OperatingTime::factory(7, ['start' => '9', 'end' => '17'])->sequence(fn(Sequence $sequence) => ['type' => [
+                    ->has(OperatingTime::factory(7, ['start' => '09:00:00', 'end' => '17:00:00'])->sequence(fn(Sequence $sequence) => ['type' => [
                         'monday',
                         'tuesday',
                         'wednesday',

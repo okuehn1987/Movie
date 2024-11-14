@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
+use App\Notifications\PatchNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -20,7 +21,7 @@ class WorkLogPatchController extends Controller
 
         $workLog = WorkLog::find($validated['workLog']);
 
-        WorkLogPatch::create([
+        $patch = WorkLogPatch::create([
             'is_home_office' => $validated['is_home_office'],
             'start' => Carbon::parse($validated['start']),
             'end' => Carbon::parse($validated['end']),
@@ -28,6 +29,10 @@ class WorkLogPatchController extends Controller
             'work_log_id' => $workLog->id,
             'user_id' => $workLog->user_id
         ]);
+
+        $supervisor = $workLog->user->supervisor;
+        if ($supervisor) $supervisor->notify(new PatchNotification($workLog->user, $patch));
+        else $patch->update(['status' => 'accepted']);
 
         return back()->with('success',  'Korrektur der Arbeitszeit erfolgreich beantragt.');
     }

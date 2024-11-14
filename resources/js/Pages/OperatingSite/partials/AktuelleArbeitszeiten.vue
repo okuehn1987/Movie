@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { OperatingSite, OperatingTime } from '@/types/types';
 import { Link, useForm } from '@inertiajs/vue3';
+import { DateTime } from 'luxon';
 
 const props = defineProps<{
     operatingSiteId: OperatingSite['id'];
@@ -42,7 +43,13 @@ function submitOperatingTime() {
                             v-for="operatingTime in operatingTimes"
                             :key="operatingTime.id"
                             :title="WEEKDAYS.find(e => e.key === operatingTime.type)?.value"
-                            :subtitle="operatingTime.start + ' Uhr' + ' - ' + operatingTime.end + ' Uhr'"
+                            :subtitle="
+                                DateTime.fromFormat(operatingTime.start, 'HH:mm:ss').toFormat('HH:mm') +
+                                ' Uhr' +
+                                ' - ' +
+                                DateTime.fromFormat(operatingTime.end, 'HH:mm:ss').toFormat('HH:mm') +
+                                ' Uhr'
+                            "
                         >
                             <template #append>
                                 <Link
