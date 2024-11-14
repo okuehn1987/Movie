@@ -13,14 +13,8 @@ Artisan::command('inspire', function () {
 
 
 Schedule::call(function () {
-    $organizations = Organization::where('balance_truncation_day', Carbon::now()->day)->get();
-    $timeAccounts = TimeAccount::whereHas('user', function ($query) use ($organizations) {
-        $query->whereHas(
-            'operatingSite',
-            fn($q) =>
-            $q->whereIn('organization_id', $organizations->pluck('id'))
-        );
-    })->get();
+    $organizations = Organization::where('balance_truncation_day', Carbon::now()->day)->with('users')->get();
+    $timeAccounts = $organizations->flatMap(fn($o) => $o->users->flatMap(fn($u) => $u->timeAccounts));
 
     foreach ($timeAccounts as $timeAccount) {
         if ($timeAccount->balance > $timeAccount->balance_limit)
