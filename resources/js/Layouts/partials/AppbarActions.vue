@@ -9,12 +9,20 @@ function readNotification(notification: Notification) {
         }),
         {},
         {
-            onSuccess: () =>
-                router.get(
-                    route('dashboard', {
-                        open: notification.data.patch_id,
-                    }),
-                ),
+            onSuccess: () => {
+                if (notification.type == 'App\\Notifications\\PatchNotification')
+                    return router.get(
+                        route('dashboard', {
+                            openPatch: notification.data.patch_id,
+                        }),
+                    );
+                if (notification.type == 'App\\Notifications\\AbsenceNotification')
+                    return router.get(
+                        route('dashboard', {
+                            openAbsence: notification.data.absence_id,
+                        }),
+                    );
+            },
         },
     );
 }

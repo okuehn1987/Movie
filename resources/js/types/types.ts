@@ -67,13 +67,22 @@ export type Notification = Omit<DBObject, 'id'> & {
     notifiable_type: 'App\\Models\\User';
     notifiable_id: User['id'];
     read_at: Timestamp;
-} & {
-    type: 'App\\Notifications\\PatchNotification';
-    data: {
-        title: `${User['first_name']} ${User['last_name']} hat eine Zeitkorrektur beantragt`;
-        patch_id: WorkLogPatch['id'];
-    };
-};
+} & (
+        | {
+              type: 'App\\Notifications\\PatchNotification';
+              data: {
+                  title: `${User['first_name']} ${User['last_name']} hat eine Zeitkorrektur beantragt.`;
+                  patch_id: WorkLogPatch['id'];
+              };
+          }
+        | {
+              type: 'App\\Notifications\\AbsenceNotification';
+              data: {
+                  title: `${User['first_name']} ${User['last_name']} hat eine Abwesenheit beantragt.`;
+                  absence_id: Absence['id'];
+              };
+          }
+    );
 
 export type UserWorkingHours = DBObject &
     SoftDelete & {

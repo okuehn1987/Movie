@@ -46,7 +46,7 @@ const openModal = ref(false);
 const absenceForm = useForm({
     absence_type_id: null,
     start: new Date(),
-    end: null,
+    end: new Date(),
     user_id: page.props.auth.user.id,
 });
 
@@ -59,6 +59,7 @@ function createAbsenceModal(day: string, user_id: number) {
         .startOf('month')
         .plus({ day: +day - 1 })
         .toJSDate();
+    absenceForm.end = DateTime.now().startOf('month').plus({ day: +day }).toJSDate();
 
     openModal.value = true;
 }
@@ -87,12 +88,18 @@ function createAbsenceModal(day: string, user_id: number) {
                     <v-card-text>
                         <v-form
                             @submit.prevent="
-                                absenceForm.post(route('absence.store'), {
-                                    onSuccess: () => {
-                                        absenceForm.reset();
-                                        isActive.value = false;
-                                    },
-                                })
+                                absenceForm
+                                    .transform(data => ({
+                                        ...data,
+                                        start: data.start.toLocaleDateString(),
+                                        end: data.end.toLocaleDateString(),
+                                    }))
+                                    .post(route('absence.store'), {
+                                        onSuccess: () => {
+                                            absenceForm.reset();
+                                            isActive.value = false;
+                                        },
+                                    })
                             "
                         >
                             <v-row>

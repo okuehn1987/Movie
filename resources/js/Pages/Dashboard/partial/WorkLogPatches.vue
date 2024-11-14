@@ -13,7 +13,7 @@ const props = defineProps<{
     patches: PatchProp[];
 }>();
 
-const patchDialog = ref<PatchProp | null>(props.patches?.find(patch => patch.id == Number(route().params['open'])) ?? null);
+const patchDialog = ref<PatchProp | null>(props.patches?.find(patch => patch.id == Number(route().params['openPatch'])) ?? null);
 const showPatchDialog = ref(!!patchDialog.value);
 const submitPatchSuccess = ref(false);
 

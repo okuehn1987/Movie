@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Absence;
 use App\Models\AbsenceType;
 use App\Models\User;
+use App\Notifications\AbsenceNotification;
 use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
@@ -43,12 +44,18 @@ class AbsenceController extends Controller
             }]
         ]);
 
-        Absence::create([
+        $user = User::find(Auth::id());
+
+        $requires_approval =  true || $user->supervisor_id && $user->supervisor_id != Auth::id() && AbsenceType::find($validated['absence_type_id'])->requires_aproval;
+
+        $absence = Absence::create([
             ...$validated,
-            'start' => Carbon::parse($validated['start']),
+            'start' => Carbon::parse($validated['start'], 'UTC'),
             'end' => Carbon::parse($validated['end']),
-            'status' => AbsenceType::find($validated['absence_type_id'])->requires_aproval ? 'created' : 'accepted',
+            'status' => $requires_approval ? 'created' : 'accepted',
         ]);
+
+        if ($requires_approval) $user->supervisor->notify(new AbsenceNotification($user, $absence));
 
         return back()->with('success', 'Abwesenheit beantragt.');
     }

@@ -9,7 +9,8 @@ defineProps<{
 const user = usePage().props.auth.user;
 
 const form = useForm({
-    name: user.first_name,
+    first_name: user.first_name,
+    last_name: user.last_name,
     email: user.email,
 });
 </script>
@@ -23,27 +24,14 @@ const form = useForm({
                         <p>Aktualisieren Sie die Profilinformationen und die E-Mail-Adresse Ihres Kontos.</p>
                     </v-col>
 
-                    <v-col cols="12">
-                        <v-text-field
-                            id="name"
-                            type="text"
-                            v-model="form.name"
-                            label="Name"
-                            required
-                            autocomplete="name"
-                            :error-messages="form.errors.name"
-                        />
+                    <v-col cols="12" md="6">
+                        <v-text-field v-model="form.first_name" label="Vorname" required :error-messages="form.errors.first_name" />
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field v-model="form.last_name" label="Nachname" required :error-messages="form.errors.last_name" />
                     </v-col>
                     <v-col cols="12">
-                        <v-text-field
-                            id="email"
-                            type="email"
-                            v-model="form.email"
-                            label="Email"
-                            required
-                            autocomplete="username"
-                            :error-messages="form.errors.email"
-                        />
+                        <v-text-field type="email" v-model="form.email" label="Email" required :error-messages="form.errors.email" />
                     </v-col>
 
                     <v-col cols="12">
@@ -62,7 +50,6 @@ const form = useForm({
                     <v-col cols="12">
                         <div class="text-end">
                             <v-btn type="submit" color="primary" :loading="form.processing">Speichern</v-btn>
-                            <v-snackbar v-model="form.recentlySuccessful">Gespeichert</v-snackbar>
                         </div>
                     </v-col>
                 </v-row>

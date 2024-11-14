@@ -13,7 +13,7 @@ const props = defineProps<{
     absences: AbsenceProp[];
 }>();
 
-const absenceDialog = ref<AbsenceProp | null>(props.absences?.find(absence => absence.id == Number(route().params['open'])) ?? null);
+const absenceDialog = ref<AbsenceProp | null>(props.absences?.find(absence => absence.id == Number(route().params['openAbsence'])) ?? null);
 const showAbsenceDialog = ref(!!absenceDialog.value);
 const submitAbsenceSuccess = ref(false);
 
@@ -79,10 +79,18 @@ function changeAbsenceStatus(accepted: boolean) {
                             ><v-text-field label="Abwesenheitsgrund" v-model="absenceDialog.absence_type.name" readonly></v-text-field
                         ></v-col>
                         <v-col cols="12" md="6">
-                            <v-text-field label="Von:" v-model="absenceDialog.start" readonly></v-text-field>
+                            <v-text-field
+                                label="Von:"
+                                :model-value="DateTime.fromSQL(absenceDialog.start).toFormat('dd.MM.yyyy')"
+                                readonly
+                            ></v-text-field>
                         </v-col>
                         <v-col cols="12" md="6">
-                            <v-text-field label="Bis:" v-model="absenceDialog.end" readonly></v-text-field>
+                            <v-text-field
+                                label="Bis:"
+                                :model-value="DateTime.fromSQL(absenceDialog.end).toFormat('dd.MM.yyyy')"
+                                readonly
+                            ></v-text-field>
                         </v-col>
                     </v-row>
                 </v-card-text>

@@ -69,7 +69,6 @@ const updatePassword = () => {
                     <v-col cols="12">
                         <div class="text-end">
                             <v-btn type="submit" color="primary" :loading="form.processing">Speichern</v-btn>
-                            <v-snackbar v-model="form.recentlySuccessful">Gespeichert</v-snackbar>
                         </div>
                     </v-col>
                 </v-row>
