@@ -17,7 +17,7 @@ defineProps<{
         <template v-slot:default="{ isActive }">
             <v-card :title="title">
                 <template #append>
-                    <v-btn icon variant="text" @click="isActive.value = false">
+                    <v-btn icon variant="text" @click.stop="isActive.value = false">
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>
