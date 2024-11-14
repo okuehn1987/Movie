@@ -2,7 +2,7 @@ type Date = string & { __date__: void };
 type Time = string & { __time__: void };
 type Timestamp = string & { __datetime__: void };
 
-type DBObject = {
+export type DBObject = {
     id: number;
     created_at: Timestamp;
     updated_at: Timestamp;

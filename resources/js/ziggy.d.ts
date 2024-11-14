@@ -55,7 +55,8 @@ declare module 'ziggy-js' {
     "absence.update": [
         {
             "name": "absence",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "absenceType.store": [],
@@ -169,10 +170,13 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "timeAccount.index": [],
+    "timeAccount.store": [],
     "notification.update": [
         {
             "name": "notification",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "profile.edit": [],
