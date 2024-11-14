@@ -13,6 +13,8 @@ class TimeAccount extends Model
 
     protected $guarded = [];
 
+    //TODO: add balance_truncation_day to timeaccount instead of organization 
+
     public function user()
     {
         return $this->belongsTo(User::class);
