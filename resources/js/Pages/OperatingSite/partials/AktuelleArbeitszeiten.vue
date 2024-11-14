@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { OperatingSite, OperatingTime } from '@/types/types';
 import { Link, useForm } from '@inertiajs/vue3';
-import { DateTime } from 'luxon';
+import { DateTime, Info } from 'luxon';
 
 const props = defineProps<{
     operatingSiteId: OperatingSite['id'];
@@ -40,7 +40,9 @@ function submitOperatingTime() {
 
                     <v-list item-props hover>
                         <v-list-item
-                            v-for="operatingTime in operatingTimes"
+                            v-for="operatingTime in operatingTimes.toSorted(
+                                (a, b) => WEEKDAYS.findIndex(w => a.type === w.key) - WEEKDAYS.findIndex(w => b.type === w.key),
+                            )"
                             :key="operatingTime.id"
                             :title="WEEKDAYS.find(e => e.key === operatingTime.type)?.value"
                             :subtitle="
