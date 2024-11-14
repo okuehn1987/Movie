@@ -18,12 +18,12 @@ Schedule::call(function () {
         $query->whereHas(
             'operatingSite',
             fn($q) =>
-            $q->whereIn('organization_id', $organizations->map(fn($o) => $o->id))
+            $q->whereIn('organization_id', $organizations->pluck('id'))
         );
     })->get();
 
     foreach ($timeAccounts as $timeAccount) {
         if ($timeAccount->balance > $timeAccount->balance_limit)
-            $timeAccount->updateBalance(- ($timeAccount->balance - $timeAccount->balance_limit), 'monthly balance truncation', true);
+            $timeAccount->updateBalance(- ($timeAccount->balance - $timeAccount->balance_limit), 'Monatsabrechnung', true);
     }
 })->name('monthlyBalanceTruncation')->daily();
