@@ -49,16 +49,16 @@ export type User = DBObject &
         email: string;
         role: 'super-admin' | 'employee';
         password: string;
-        operating_site_id: number;
+        operating_site_id: OperatingSite['id'];
         group_id: Group['id'] | null;
-        supervisor_id: User['id'];
-        organization_id: Organization['id'];
-        staff_number: number;
+        supervisor_id: User['id'] | null;
+        organization_id: Organization['id'] | null;
+        staff_number: number | null;
         date_of_birth: Date;
         home_office: boolean;
         home_office_ratio: number | null;
         phone_number: string | null;
-        email_verified_at: string;
+        email_verified_at: string | null;
         notificationCount: number;
         weekly_working_hours: number;
     } & Record<Permission, boolean>;
@@ -85,7 +85,7 @@ export type Organization = DBObject &
     SoftDelete &
     Flags & {
         name: string;
-        owner_id: User['id'];
+        owner_id: User['id'] | null;
         tax_registration_id: string | null;
         commercial_registration_id: string | null;
         website: string | null;
@@ -95,7 +95,7 @@ export type Organization = DBObject &
 export type OperatingSite = DBObject &
     Address &
     SoftDelete & {
-        name: string | null;
+        name: string;
         email: string | null;
         phone_number: string | null;
         fax: string | null;
@@ -159,10 +159,12 @@ export type Substitute = DBObject &
 export type TravelLog = DBObject &
     SoftDelete & {
         user_id: User['id'];
-        start_location: User['id'] | OperatingSite['id'] | CustomAddress['id'];
+        start_location_id: User['id'] | OperatingSite['id'] | CustomAddress['id'];
+        start_location_type: 'user' | 'operating_site' | 'custom_address';
         start: Timestamp;
         end: Timestamp;
-        end_location: User['id'] | OperatingSite['id'] | CustomAddress['id'];
+        end_location_type: 'user' | 'operating_site' | 'custom_address';
+        end_location_id: User['id'] | OperatingSite['id'] | CustomAddress['id'];
     };
 
 export type CustomAddress = DBObject &
