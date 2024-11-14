@@ -10,12 +10,7 @@ use Inertia\Inertia;
 
 class SpecialWorkingHoursFactorController extends Controller
 {
-    // public function index()
-    // {
-    //     return Inertia::render('SWHF/SWHFIndex', ['specialWorkingHoursFactor' => SpecialWorkingHoursFactor::inOrganization()->get()]);
-    // }
-
-    public function show(Request $request, SpecialWorkingHoursFactor $specialWorkingHoursFactor)
+    public function show(SpecialWorkingHoursFactor $specialWorkingHoursFactor)
     {
         return Inertia::render('SWHF/SWHFShow', ['specialWorkingHoursFactor' => $specialWorkingHoursFactor]);
     }
@@ -40,8 +35,13 @@ class SpecialWorkingHoursFactorController extends Controller
 
 
         return back()->with('success', "Besonderer Arbeitszeitzuschlag erfolgreich gespeichert.");
-        // $specialWorkingHoursFactor = new SpecialWorkingHoursFactor($validated);
-        // $specialWorkingHoursFactor->organization_id = Organization::getCurrent()->id;
-        // $specialWorkingHoursFactor->save();
+    }
+
+    
+    public function destroy(Request $request, SpecialWorkingHoursFactor $specialWorkingHoursFactor)
+    {
+        $specialWorkingHoursFactor->delete();
+
+        return back()->with('success', 'Arbeitszuschlag erfolgreich gelöscht.');
     }
 }

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Group, OperatingSite, Paginator, User, UserPermission } from '@/types/types';
-import { Link, router } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import UserForm from './UserForm.vue';
 import { fillNullishValues, usePagination } from '@/utils';
 import { DateTime } from 'luxon';
 import { toRefs } from 'vue';
+import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 
 const props = defineProps<{
     users: Paginator<User & { group: Pick<Group, 'id' | 'name'> }>;
@@ -68,44 +69,15 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
                         >
                             <v-btn color="primary" size="large" variant="text" icon="mdi-eye" />
                         </Link>
-                        <v-dialog max-width="1000">
-                            <template v-slot:activator="{ props: activatorProps }">
-                                <v-btn v-bind="activatorProps" color="error" size="large" variant="text" icon="mdi-delete" />
-                            </template>
-
-                            <template v-slot:default="{ isActive }">
-                                <v-card title="Mitarbeiter löschen">
-                                    <template #append>
-                                        <v-btn icon variant="text" @click="isActive.value = false">
-                                            <v-icon>mdi-close</v-icon>
-                                        </v-btn>
-                                    </template>
-                                    <v-card-text>
-                                        <v-row>
-                                            <v-col cols="12">
-                                                Bist du dir sicher, dass du
-                                                {{ item.first_name }}
-                                                {{ item.last_name }} entfernen möchtest?
-                                            </v-col>
-                                            <v-col cols="12" class="text-end">
-                                                <v-btn
-                                                    @click.stop="
-                                                        router.delete(
-                                                            route('user.destroy', {
-                                                                user: item.id,
-                                                            }),
-                                                            { onSuccess: () => (isActive.value = false) },
-                                                        )
-                                                    "
-                                                    color="error"
-                                                    >Löschen</v-btn
-                                                >
-                                            </v-col>
-                                        </v-row>
-                                    </v-card-text>
-                                </v-card>
-                            </template>
-                        </v-dialog>
+                        <ConfirmDelete
+                            :content="'Bist du dir sicher, dass du ' + item.first_name + ' ' + item.last_name + ' entfernen möchtest?'"
+                            :route="
+                                route('user.destroy', {
+                                    user: item.id,
+                                })
+                            "
+                            title="Mitarbeiter löschen"
+                        ></ConfirmDelete>
                     </div>
                 </template>
                 <template v-slot:bottom>

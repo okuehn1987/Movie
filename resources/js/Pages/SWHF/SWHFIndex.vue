@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 import { SpecialWorkingHoursFactor, Weekday } from '@/types/types';
-import { router, useForm } from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 defineProps<{
@@ -110,41 +111,15 @@ function submit() {
             <template v-slot:item.actions="{ item }">
                 <v-btn @click.stop="edit(item)" color="primary" size="large" variant="text" icon="mdi-pencil" />
 
-                <v-dialog max-width="1000">
-                    <template v-slot:activator="{ props: activatorProps }">
-                        <v-btn v-bind="activatorProps" color="error" size="large" variant="text" icon="mdi-delete" />
-                    </template>
-
-                    <template v-slot:default="{ isActive }">
-                        <v-card title="Betriebsstätte löschen">
-                            <template #append>
-                                <v-btn icon variant="text" @click="isActive.value = false">
-                                    <v-icon>mdi-close</v-icon>
-                                </v-btn>
-                            </template>
-                            <v-card-text>
-                                <v-row>
-                                    <v-col cols="12"> Bist du dir sicher, dass du diesen Arbeitszeitzuschlag entfernen möchtest? </v-col>
-                                    <v-col cols="12" class="text-end">
-                                        <v-btn
-                                            @click.stop="
-                                                router.delete(
-                                                    route('specialWorkingHoursFactor.destroy', {
-                                                        specialWorkingHoursFactor: item.id,
-                                                    }),
-                                                    { onSuccess: () => (isActive.value = false) },
-                                                )
-                                            "
-                                            color="error"
-                                        >
-                                            Löschen
-                                        </v-btn>
-                                    </v-col>
-                                </v-row>
-                            </v-card-text>
-                        </v-card>
-                    </template>
-                </v-dialog>
+                <ConfirmDelete
+                    content="Bist du dir sicher, dass du diesen Arbeitszeitzuschlag entfernen möchtest?"
+                    :route="
+                        route('specialWorkingHoursFactor.destroy', {
+                            specialWorkingHoursFactor: item.id,
+                        })
+                    "
+                    title="Arbeitszuschlag löschen"
+                ></ConfirmDelete>
             </template>
         </v-data-table-virtual>
     </v-card>
