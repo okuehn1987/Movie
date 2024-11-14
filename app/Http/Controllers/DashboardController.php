@@ -31,7 +31,7 @@ class DashboardController extends Controller
             'supervisor' => User::select('id', 'first_name', 'last_name')->find($user->supervisor_id),
             'patches' => $patches,
             'operating_times' => $user->operatingSite->operatingTimes,
-            'defaultTimeAccount' => $user->timeAccounts()->where('type', 'default')->first(),
+            'overtime' => $user->overtime,
             'workingHours' => [
                 'should' => $user->userWorkingHours()->where('active_since', '<=', Carbon::now()->format('Y-m-d'))->orderBy('active_since', 'Desc')->first()['weekly_working_hours'],
                 'current' => User::getCurrentWeekWorkingHours($user)

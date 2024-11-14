@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { OperatingTime, TimeAccount, WorkLog } from '@/types/types';
+import { OperatingTime, WorkLog } from '@/types/types';
 import { useNow } from '@/utils';
 import { router, usePage } from '@inertiajs/vue3';
 import { DateTime, Info } from 'luxon';
@@ -8,7 +8,7 @@ import { computed } from 'vue';
 const props = defineProps<{
     lastWorkLog: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office'>;
     operating_times: OperatingTime[];
-    defaultTimeAccount: TimeAccount;
+    overtime: number;
     workingHours: { should: number; current: number };
 }>();
 
@@ -84,7 +84,7 @@ const currentWorkingHours = computed(() =>
                         <div class="d-flex flex-column">
                             Überstunden
                             <div class="text-h6">
-                                {{ defaultTimeAccount.balance }}
+                                {{ overtime }}
                             </div>
                         </div>
                     </div>

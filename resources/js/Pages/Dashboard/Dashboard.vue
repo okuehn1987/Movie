@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { OperatingTime, Paginator, TimeAccount, User, WorkLog, WorkLogPatch } from '@/types/types';
+import { OperatingTime, Paginator, User, WorkLog, WorkLogPatch } from '@/types/types';
 import { usePage } from '@inertiajs/vue3';
 import Arbeitszeit from './partial/Arbeitszeit.vue';
 import Zeitkorrekturen from './partial/Zeitkorrekturen.vue';
@@ -15,7 +15,7 @@ defineProps<{
     supervisor: Pick<User, 'id' | 'first_name' | 'last_name'>;
     patches: Paginator<PatchProp> | null;
     operating_times: OperatingTime[];
-    defaultTimeAccount: TimeAccount;
+    overtime: number;
     workingHours: { should: number; current: number };
 }>();
 const page = usePage();
@@ -25,7 +25,7 @@ const page = usePage();
     <AdminLayout :title="'Dashboard von ' + $page.props.auth.user.first_name + ' ' + $page.props.auth.user.last_name">
         <v-row>
             <v-col cols="12" sm="6" lg="4">
-                <Arbeitszeit :lastWorkLog :operating_times :defaultTimeAccount :workingHours />
+                <Arbeitszeit :lastWorkLog :operating_times :overtime :workingHours />
             </v-col>
 
             <v-col cols="12" sm="6" lg="4" v-if="supervisor">

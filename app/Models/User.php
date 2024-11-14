@@ -109,6 +109,11 @@ class User extends Authenticatable
         return $this->hasMany(UserWorkingWeek::class);
     }
 
+    public function getOvertimeAttribute()
+    {
+        return TimeAccount::where('user_id', $this->id)->sum('balance');
+    }
+
     public static function getCurrentWeekWorkingHours(User $user)
     {
         //all logs that could be applicable
