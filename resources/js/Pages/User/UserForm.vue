@@ -24,7 +24,7 @@ const userForm = useForm({
     country: '',
     federal_state: '',
     phone_number: '',
-    staff_number: 0,
+    staff_number: 0 as null | number,
     password: '',
     group_id: null as null | number,
     operating_site_id: null as null | number,
