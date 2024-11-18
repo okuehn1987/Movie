@@ -18,6 +18,7 @@ const organizationForm = useForm({
     organization_city: '',
     organization_zip: '',
     organization_federal_state: '',
+    head_quarter_name: '',
     first_name: '',
     last_name: '',
     email: '',
@@ -72,13 +73,20 @@ function submit() {
                                             <v-form @submit.prevent="submit">
                                                 <v-row>
                                                     <v-col cols="12"><h3>Adresse</h3></v-col>
-
                                                     <v-col cols="12">
                                                         <v-text-field
                                                             label="Firmenname"
                                                             required
                                                             :error-messages="organizationForm.errors.organization_name"
                                                             v-model="organizationForm.organization_name"
+                                                        ></v-text-field>
+                                                    </v-col>
+                                                    <v-col cols="12">
+                                                        <v-text-field
+                                                            label="Standortname"
+                                                            required
+                                                            :error-messages="organizationForm.errors.head_quarter_name"
+                                                            v-model="organizationForm.head_quarter_name"
                                                         ></v-text-field>
                                                     </v-col>
                                                     <v-col cols="12" sm="6">
