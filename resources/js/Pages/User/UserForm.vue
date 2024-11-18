@@ -11,6 +11,10 @@ const props = defineProps<{
     mode: 'create' | 'edit';
 }>();
 
+const emit = defineEmits<{
+    success: [];
+}>();
+
 const userForm = useForm({
     first_name: '',
     last_name: '',
@@ -73,7 +77,10 @@ function submit() {
     if (props.mode == 'edit' && props.user) form.patch(route('user.update', { user: props.user.id }), {});
     else {
         form.post(route('user.store'), {
-            onSuccess: () => userForm.reset(),
+            onSuccess: () => {
+                userForm.reset();
+                emit('success');
+            },
             onError: e => console.log(e),
         });
     }
