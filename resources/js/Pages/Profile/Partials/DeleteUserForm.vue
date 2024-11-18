@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
-import { nextTick, ref } from 'vue';
-import Modal from '@/Components/Modal.vue';
+import { ref } from 'vue';
 
 const confirmingUserDeletion = ref(false);
-const passwordInput = ref<HTMLInputElement | null>(null);
 
 const form = useForm({
     password: '',
@@ -12,15 +10,12 @@ const form = useForm({
 
 const confirmUserDeletion = () => {
     confirmingUserDeletion.value = true;
-
-    nextTick(() => passwordInput.value?.focus());
 };
 
 const deleteUser = () => {
     form.delete(route('profile.destroy'), {
         preserveScroll: true,
         onSuccess: () => closeModal(),
-        onError: () => passwordInput.value?.focus(),
         onFinish: () => {
             form.reset();
         },
@@ -45,18 +40,33 @@ const closeModal = () => {
             <v-btn :loading="form.processing" type="submit" color="error" @click="confirmUserDeletion">Account löschen</v-btn>
         </div>
 
-        <Modal v-model="confirmingUserDeletion" title="Account löschen">
-            <v-form @submit.prevent="deleteUser">
-                <v-card-text>
-                    Sobald Ihr Konto gelöscht ist, werden alle Ihre Ressourcen und Daten dauerhaft gelöscht. Bitte geben Sie Ihr Passwort erneut ein,
-                    um zu bestätigen, dass Sie Ihr Konto dauerhaft löschen möchten.
-                </v-card-text>
-                <v-text-field :errorMessage="form.errors.password" v-model="form.password" label="Passwort" type="password"></v-text-field>
-                <div class="d-flex justify-space-between">
-                    <v-btn :loading="form.processing" color="secondary" @click.stop="closeModal">Abbrechen</v-btn>
-                    <v-btn :loading="form.processing" color="error" type="submit">Account löschen</v-btn>
-                </div>
-            </v-form>
-        </Modal>
+        <v-dialog max-width="1000" v-model="confirmingUserDeletion">
+            <v-card title="Account löschen">
+                <v-form @submit.prevent="deleteUser">
+                    <v-card-text>
+                        <v-row>
+                            <v-col cols="12">
+                                Sobald Ihr Konto gelöscht ist, werden alle Ihre Ressourcen und Daten dauerhaft gelöscht. Bitte geben Sie Ihr Passwort
+                                erneut ein, um zu bestätigen, dass Sie Ihr Konto dauerhaft löschen möchten.
+                            </v-col>
+                            <v-col cols="12">
+                                <v-text-field
+                                    :error-messages="form.errors.password"
+                                    v-model="form.password"
+                                    label="Passwort"
+                                    type="password"
+                                ></v-text-field>
+                            </v-col>
+                            <v-col cols="12">
+                                <div class="d-flex justify-space-between">
+                                    <v-btn :loading="form.processing" color="secondary" @click.stop="closeModal">Abbrechen</v-btn>
+                                    <v-btn :loading="form.processing" color="error" type="submit">Account löschen</v-btn>
+                                </div>
+                            </v-col>
+                        </v-row>
+                    </v-card-text>
+                </v-form>
+            </v-card>
+        </v-dialog>
     </v-card>
 </template>
