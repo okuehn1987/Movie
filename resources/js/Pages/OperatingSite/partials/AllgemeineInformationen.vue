@@ -6,7 +6,7 @@ const props = defineProps<{
     operatingSite: OperatingSite;
 }>();
 
-const siteForm = useForm({
+const operatingSiteForm = useForm({
     email: props.operatingSite.email,
     fax: props.operatingSite.fax,
     phone_number: props.operatingSite.phone_number,
@@ -22,12 +22,12 @@ const siteForm = useForm({
 });
 
 function submit() {
-    siteForm.patch(
+    operatingSiteForm.patch(
         route('operatingSite.update', {
             operatingSite: props.operatingSite.id,
         }),
         {
-            onSuccess: () => siteForm.reset(),
+            onSuccess: () => operatingSiteForm.reset(),
         },
     );
 }
@@ -40,63 +40,78 @@ function submit() {
                     <v-col cols="12"><h3>Kontaktinformationen</h3></v-col>
 
                     <v-col cols="12" md="6">
-                        <v-text-field label="Name" v-model="siteForm.name" :error-messages="siteForm.errors.name"></v-text-field>
+                        <v-text-field label="Name" v-model="operatingSiteForm.name" :error-messages="operatingSiteForm.errors.name"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-text-field label="Email" v-model="siteForm.email" :error-messages="siteForm.errors.email"></v-text-field>
+                        <v-text-field label="Email" v-model="operatingSiteForm.email" :error-messages="operatingSiteForm.errors.email"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-text-field
                             label="Telefonnummer"
-                            v-model="siteForm.phone_number"
-                            :error-messages="siteForm.errors.phone_number"
+                            v-model="operatingSiteForm.phone_number"
+                            :error-messages="operatingSiteForm.errors.phone_number"
                         ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-text-field label="Fax" v-model="siteForm.fax" :error-messages="siteForm.errors.fax"></v-text-field>
+                        <v-text-field label="Fax" v-model="operatingSiteForm.fax" :error-messages="operatingSiteForm.errors.fax"></v-text-field>
                     </v-col>
 
                     <v-col cols="12"><h3>Adresse</h3></v-col>
 
                     <v-col cols="12" md="4">
-                        <v-text-field label="Straße" v-model="siteForm.street" :error-messages="siteForm.errors.street"></v-text-field>
+                        <v-text-field
+                            label="Straße"
+                            v-model="operatingSiteForm.street"
+                            :error-messages="operatingSiteForm.errors.street"
+                        ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="4">
                         <v-text-field
                             label="Hausnummer"
-                            v-model="siteForm.house_number"
-                            :error-messages="siteForm.errors.house_number"
+                            v-model="operatingSiteForm.house_number"
+                            :error-messages="operatingSiteForm.errors.house_number"
                         ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="4">
                         <v-text-field
                             label="Adresszusatz"
-                            v-model="siteForm.address_suffix"
-                            :error-messages="siteForm.errors.address_suffix"
+                            v-model="operatingSiteForm.address_suffix"
+                            :error-messages="operatingSiteForm.errors.address_suffix"
                         ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-text-field label="Postleitzahl" v-model="siteForm.zip" :error-messages="siteForm.errors.zip"></v-text-field>
+                        <v-text-field
+                            label="Postleitzahl"
+                            v-model="operatingSiteForm.zip"
+                            :error-messages="operatingSiteForm.errors.zip"
+                        ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-text-field label="Ort" v-model="siteForm.city" :error-messages="siteForm.errors.city"></v-text-field>
+                        <v-text-field label="Ort" v-model="operatingSiteForm.city" :error-messages="operatingSiteForm.errors.city"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-text-field
                             label="Bundesland"
-                            v-model="siteForm.federal_state"
-                            :error-messages="siteForm.errors.federal_state"
+                            v-model="operatingSiteForm.federal_state"
+                            :error-messages="operatingSiteForm.errors.federal_state"
+                        ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field
+                            label="Land"
+                            :error-messages="operatingSiteForm.errors.country"
+                            v-model="operatingSiteForm.country"
                         ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-checkbox
                             label="Hauptsitz?"
-                            v-model="siteForm.is_head_quarter"
-                            :error-messages="siteForm.errors.is_head_quarter"
+                            v-model="operatingSiteForm.is_head_quarter"
+                            :error-messages="operatingSiteForm.errors.is_head_quarter"
                         ></v-checkbox>
                     </v-col>
                     <v-col cols="12" class="text-end">
-                        <v-btn :loading="siteForm.processing" type="submit" color="primary">Aktualisieren</v-btn>
+                        <v-btn :loading="operatingSiteForm.processing" type="submit" color="primary">Aktualisieren</v-btn>
                     </v-col>
                 </v-row>
             </v-form>

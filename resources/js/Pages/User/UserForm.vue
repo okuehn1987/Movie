@@ -125,13 +125,10 @@ function submit() {
                         ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-text-field v-model="userForm.city" label="Ort" :error-messages="userForm.errors.city"></v-text-field>
-                    </v-col>
-                    <v-col cols="12" md="6">
                         <v-text-field v-model="userForm.zip" label="Postleitzahl" :error-messages="userForm.errors.zip"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-text-field v-model="userForm.country" label="Land" :error-messages="userForm.errors.country"></v-text-field>
+                        <v-text-field v-model="userForm.city" label="Ort" :error-messages="userForm.errors.city"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-text-field
@@ -139,6 +136,9 @@ function submit() {
                             label="Bundesland"
                             :error-messages="userForm.errors.federal_state"
                         ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field v-model="userForm.country" label="Land" :error-messages="userForm.errors.country"></v-text-field>
                     </v-col>
 
                     <v-col cols="12"><h3>Abteilung</h3></v-col>

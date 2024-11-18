@@ -104,20 +104,20 @@ function submit() {
                                                             v-model="organizationForm.organization_address_suffix"
                                                         ></v-text-field>
                                                     </v-col>
-                                                    <v-col cols="12" sm="9">
-                                                        <v-text-field
-                                                            label="Ort"
-                                                            required
-                                                            :error-messages="organizationForm.errors.organization_city"
-                                                            v-model="organizationForm.organization_city"
-                                                        ></v-text-field>
-                                                    </v-col>
                                                     <v-col cols="12" sm="3">
                                                         <v-text-field
                                                             label="PLZ"
                                                             required
                                                             :error-messages="organizationForm.errors.organization_zip"
                                                             v-model="organizationForm.organization_zip"
+                                                        ></v-text-field>
+                                                    </v-col>
+                                                    <v-col cols="12" sm="9">
+                                                        <v-text-field
+                                                            label="Ort"
+                                                            required
+                                                            :error-messages="organizationForm.errors.organization_city"
+                                                            v-model="organizationForm.organization_city"
                                                         ></v-text-field>
                                                     </v-col>
                                                     <v-col cols="12" sm="6">
