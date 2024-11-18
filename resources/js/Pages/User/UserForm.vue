@@ -11,6 +11,10 @@ const props = defineProps<{
     mode: 'create' | 'edit';
 }>();
 
+const emit = defineEmits<{
+    success: [];
+}>();
+
 const userForm = useForm({
     first_name: '',
     last_name: '',
@@ -73,7 +77,10 @@ function submit() {
     if (props.mode == 'edit' && props.user) form.patch(route('user.update', { user: props.user.id }), {});
     else {
         form.post(route('user.store'), {
-            onSuccess: () => userForm.reset(),
+            onSuccess: () => {
+                userForm.reset();
+                emit('success');
+            },
             onError: e => console.log(e),
         });
     }
@@ -103,13 +110,13 @@ function submit() {
                         <v-text-field v-model="userForm.password" label="Passwort" :error-messages="userForm.errors.password"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-date-input
+                        <v-text-field
+                            type="date"
                             v-model="userForm.date_of_birth"
-                            prepend-icon=""
                             label="Geburtsdatum"
                             required
                             :error-messages="userForm.errors.date_of_birth"
-                        ></v-date-input>
+                        ></v-text-field>
                     </v-col>
 
                     <v-col cols="12"><h3>Adresse</h3></v-col>
@@ -125,13 +132,10 @@ function submit() {
                         ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-text-field v-model="userForm.city" label="Ort" :error-messages="userForm.errors.city"></v-text-field>
-                    </v-col>
-                    <v-col cols="12" md="6">
                         <v-text-field v-model="userForm.zip" label="Postleitzahl" :error-messages="userForm.errors.zip"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-text-field v-model="userForm.country" label="Land" :error-messages="userForm.errors.country"></v-text-field>
+                        <v-text-field v-model="userForm.city" label="Ort" :error-messages="userForm.errors.city"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-text-field
@@ -139,6 +143,9 @@ function submit() {
                             label="Bundesland"
                             :error-messages="userForm.errors.federal_state"
                         ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field v-model="userForm.country" label="Land" :error-messages="userForm.errors.country"></v-text-field>
                     </v-col>
 
                     <v-col cols="12"><h3>Abteilung</h3></v-col>

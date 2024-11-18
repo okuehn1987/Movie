@@ -48,7 +48,7 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
                             </v-btn>
                         </template>
                         <template v-slot:default="{ isActive }">
-                            <UserForm :groups :operating_sites :permissions mode="create">
+                            <UserForm :groups :operating_sites :permissions mode="create" @success="isActive.value = false">
                                 <template #append>
                                     <v-btn icon variant="text" @click="isActive.value = false">
                                         <v-icon>mdi-close</v-icon>

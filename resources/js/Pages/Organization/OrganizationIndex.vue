@@ -18,6 +18,7 @@ const organizationForm = useForm({
     organization_city: '',
     organization_zip: '',
     organization_federal_state: '',
+    head_quarter_name: '',
     first_name: '',
     last_name: '',
     email: '',
@@ -72,13 +73,20 @@ function submit() {
                                             <v-form @submit.prevent="submit">
                                                 <v-row>
                                                     <v-col cols="12"><h3>Adresse</h3></v-col>
-
                                                     <v-col cols="12">
                                                         <v-text-field
                                                             label="Firmenname"
                                                             required
                                                             :error-messages="organizationForm.errors.organization_name"
                                                             v-model="organizationForm.organization_name"
+                                                        ></v-text-field>
+                                                    </v-col>
+                                                    <v-col cols="12">
+                                                        <v-text-field
+                                                            label="Standortname"
+                                                            required
+                                                            :error-messages="organizationForm.errors.head_quarter_name"
+                                                            v-model="organizationForm.head_quarter_name"
                                                         ></v-text-field>
                                                     </v-col>
                                                     <v-col cols="12" sm="6">
@@ -104,20 +112,20 @@ function submit() {
                                                             v-model="organizationForm.organization_address_suffix"
                                                         ></v-text-field>
                                                     </v-col>
-                                                    <v-col cols="12" sm="9">
-                                                        <v-text-field
-                                                            label="Ort"
-                                                            required
-                                                            :error-messages="organizationForm.errors.organization_city"
-                                                            v-model="organizationForm.organization_city"
-                                                        ></v-text-field>
-                                                    </v-col>
                                                     <v-col cols="12" sm="3">
                                                         <v-text-field
                                                             label="PLZ"
                                                             required
                                                             :error-messages="organizationForm.errors.organization_zip"
                                                             v-model="organizationForm.organization_zip"
+                                                        ></v-text-field>
+                                                    </v-col>
+                                                    <v-col cols="12" sm="9">
+                                                        <v-text-field
+                                                            label="Ort"
+                                                            required
+                                                            :error-messages="organizationForm.errors.organization_city"
+                                                            v-model="organizationForm.organization_city"
                                                         ></v-text-field>
                                                     </v-col>
                                                     <v-col cols="12" sm="6">

@@ -30,6 +30,7 @@ class OrganizationController extends Controller
             'organization_city' => "required|string",
             'organization_zip' => "required|string",
             'organization_federal_state' => "required|string",
+            'head_quarter_name' => "required|string",
             'first_name' => "required|string",
             'last_name' => "required|string",
             'email' => "required|string",
@@ -42,6 +43,7 @@ class OrganizationController extends Controller
         ]);
 
         $operating_site = OperatingSite::create([
+            'name' => $validated['head_quarter_name'],
             'street' => $validated['organization_street'],
             'house_number' => $validated['organization_house_number'],
             'address_suffix' => $validated['organization_address_suffix'],

@@ -131,18 +131,18 @@ function submit() {
                                             </v-col>
                                             <v-col cols="12" md="6">
                                                 <v-text-field
-                                                    label="Ort"
-                                                    required
-                                                    :error-messages="operatingSiteForm.errors.city"
-                                                    v-model="operatingSiteForm.city"
-                                                ></v-text-field>
-                                            </v-col>
-                                            <v-col cols="12" md="6">
-                                                <v-text-field
                                                     label="PLZ"
                                                     required
                                                     :error-messages="operatingSiteForm.errors.zip"
                                                     v-model="operatingSiteForm.zip"
+                                                ></v-text-field>
+                                            </v-col>
+                                            <v-col cols="12" md="6">
+                                                <v-text-field
+                                                    label="Ort"
+                                                    required
+                                                    :error-messages="operatingSiteForm.errors.city"
+                                                    v-model="operatingSiteForm.city"
                                                 ></v-text-field>
                                             </v-col>
                                             <v-col cols="12" md="6">
