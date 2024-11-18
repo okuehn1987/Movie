@@ -36,6 +36,11 @@ class Organization extends Model
         return $this->hasMany(SpecialWorkingHoursFactor::class);
     }
 
+    public function timeAccountSettings()
+    {
+        return $this->hasMany(TimeAccountSetting::class);
+    }
+
     public function owner()
     {
         return $this->hasOne(User::class, 'owner_id');

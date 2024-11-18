@@ -52,12 +52,6 @@ const user = computed(() => page.props.auth.user);
                 title="Betriebsstätten"
             />
             <v-list-item
-                :active="route().current('timeAccount.index')"
-                :value="route('timeAccount.index')"
-                prepend-icon="mdi-timer"
-                title="Arbeitszeitkonten"
-            />
-            <v-list-item
                 :active="route().current('organization.show')"
                 :value="route('organization.show', { organization: $page.props.organization.id })"
                 prepend-icon="mdi-domain"

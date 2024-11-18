@@ -6,7 +6,7 @@ import { DateTime } from 'luxon';
 import { ref } from 'vue';
 
 type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'> & {
-    absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status'> & { absence_type?: Pick<AbsenceType, 'id' | 'abbreviation'> })[];
+    absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id'> & { absence_type?: Pick<AbsenceType, 'id' | 'abbreviation'> })[];
     user_working_weeks: Pick<UserWorkingWeek, 'id' | Weekday>[];
 };
 
@@ -44,7 +44,7 @@ function isUserEditable(user_id: User['id'], editable: Pick<User, 'id' | 'superv
 
 const openModal = ref(false);
 const absenceForm = useForm({
-    absence_type_id: null,
+    absence_type_id: undefined as undefined | number,
     start: new Date(),
     end: new Date(),
     user_id: page.props.auth.user.id,
@@ -53,6 +53,10 @@ const absenceForm = useForm({
 function createAbsenceModal(day: string, user_id: number) {
     const absentUser = props.users.find(u => u.id === user_id);
     if (!absentUser || !isUserEditable(page.props.auth.user.id, absentUser)) return;
+
+    const dayInDaytime = DateTime.now().startOf('month').plus({ day: +day });
+    const absenceToEdit = absentUser.absences.find(a => DateTime.fromSQL(a.start) <= dayInDaytime && dayInDaytime <= DateTime.fromSQL(a.end));
+    if (absenceToEdit) absenceForm.absence_type_id = absenceToEdit.absence_type_id;
 
     absenceForm.user_id = user_id;
     absenceForm.start = DateTime.now()
@@ -155,8 +159,7 @@ function createAbsenceModal(day: string, user_id: number) {
                     <td
                         v-for="header in columns"
                         :key="header.key + ''"
-                        :style="
-                        {backgroundColor: !item[header.key as keyof typeof item]?'lightgray':''}"
+                        :style="{ backgroundColor: !item[header.key as keyof typeof item] ? 'lightgray' : '' }"
                         :class="{ 'editable-cell': isUserEditable(page.props.auth.user.id, item) }"
                         :role="isUserEditable(page.props.auth.user.id, item) ? 'button' : 'cell'"
                         @click="createAbsenceModal(header.key + '', item.id)"

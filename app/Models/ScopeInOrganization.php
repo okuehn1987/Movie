@@ -24,7 +24,7 @@ trait ScopeInOrganization
         }
         if (
             new self instanceof \App\Models\OperatingSite || new self instanceof \App\Models\AbsenceType ||
-            new self instanceof \App\Models\Group ||  new self instanceof \App\Models\SpecialWorkingHoursFactor
+            new self instanceof \App\Models\Group ||  new self instanceof \App\Models\SpecialWorkingHoursFactor || new self instanceof \App\Models\TimeAccountSetting
         ) {
             return $builder->where('organization_id', $org->id);
         }

@@ -208,12 +208,19 @@ export type WorkLogPatch = Omit<WorkLog, 'end'> & {
     work_log_id: WorkLog['id'];
 };
 
+export type TimeAccountSetting = DBObject &
+    SoftDelete & {
+        organization_id: Organization['id'];
+        type: string;
+        truncation_cycle_length: 0 | 1 | 3 | 6 | 12;
+    };
+
 export type TimeAccount = DBObject &
     SoftDelete & {
         user_id: User['id'];
         balance: number;
         balance_limit: number;
-        type: string;
+        time_account_setting_id: TimeAccountSetting['id'];
     };
 
 type Permission = 'work_log_patching' | 'user_administration';
