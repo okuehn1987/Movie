@@ -79,7 +79,7 @@ class DatabaseSeeder extends Seeder
         $admin->isSubstitutedBy()->attach(User::find(1));
         $admin->isSubstitutionFor()->attach(User::find(6));
 
-        foreach (User::all() as $user) {
+        foreach (User::with(['organization', 'organization.groups'])->get() as $user) {
             // get random group of organization
             $group = $user->organization->groups->random();
             $user->group_id = $group->id;
