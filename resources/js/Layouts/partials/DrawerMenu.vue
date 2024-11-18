@@ -25,7 +25,7 @@ const user = computed(() => page.props.auth.user);
                 :active="route().current('user.index')"
                 :value="route('user.index')"
                 prepend-icon="mdi-account-group"
-                title="Mitarbeiter"
+                title="Mitarbeitende"
             />
             <!-- <v-list-item
                 :active="route().current('workLog.index')"
