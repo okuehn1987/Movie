@@ -25,7 +25,11 @@ class AbsenceController extends Controller
                 ->inOrganization()
                 ->where('group_id', $user->group_id)
                 ->orWhere('supervisor_id', $user->id)
-                ->with('absences:id,start,end,absence_type_id,user_id,status', 'absences.absenceType:id,abbreviation', "userWorkingWeeks:id,user_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday")
+                ->with([
+                    'absences' => fn($absence) => $absence->where('status', 'accepted')->select(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status']),
+                    'absences.absenceType:id,abbreviation',
+                    "userWorkingWeeks:id,user_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday"
+                ])
                 ->get(),
             'absence_types' => AbsenceType::inOrganization()->get(['id', 'name'])
         ]);
@@ -46,11 +50,11 @@ class AbsenceController extends Controller
 
         $user = User::find(Auth::id());
 
-        $requires_approval =  true || $user->supervisor_id && $user->supervisor_id != Auth::id() && AbsenceType::find($validated['absence_type_id'])->requires_aproval;
+        $requires_approval =  $user->supervisor_id && $user->supervisor_id != Auth::id() && AbsenceType::find($validated['absence_type_id'])->requires_aproval;
 
         $absence = Absence::create([
             ...$validated,
-            'start' => Carbon::parse($validated['start'], 'UTC'),
+            'start' => Carbon::parse($validated['start']),
             'end' => Carbon::parse($validated['end']),
             'status' => $requires_approval ? 'created' : 'accepted',
         ]);

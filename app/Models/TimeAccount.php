@@ -30,6 +30,11 @@ class TimeAccount extends Model
         return $this->hasMany(TimeAccountTransaction::class, 'to_id');
     }
 
+    public function timeAccountSetting()
+    {
+        return $this->belongsTo(TimeAccountSetting::class);
+    }
+
     public function updateBalance(float $balance, string $description, ?bool $is_system_generated = false)
     {
         DB::transaction(function () use ($balance, $description, $is_system_generated) {

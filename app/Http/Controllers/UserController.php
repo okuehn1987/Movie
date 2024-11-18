@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Group;
 use App\Models\OperatingSite;
+use App\Models\TimeAccount;
+use App\Models\TimeAccountSetting;
 use App\Models\User;
 use App\Models\UserWorkingHour;
 use App\Models\UserWorkingWeek;
@@ -31,6 +33,8 @@ class UserController extends Controller
         $user['userWorkingWeek'] = $user->userWorkingWeeks()->latest()->first();
         return Inertia::render('User/UserShow', [
             'user' => $user,
+            'time_accounts' => $user->timeAccounts()->with(['timeAccountSetting'])->get(["id", "user_id", "balance", "balance_limit", "time_account_setting_id"]),
+            'time_account_settings' => TimeAccountSetting::inOrganization()->get(['id', 'type', 'truncation_cycle_length']),
             'groups' => Group::inOrganization()->get(),
             'operating_sites' => OperatingSite::inOrganization()->get(),
             'permissions' => User::$PERMISSIONS,

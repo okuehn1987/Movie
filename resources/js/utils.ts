@@ -76,3 +76,8 @@ export function fillNullishValues<T extends Record<string, unknown>, Default ext
             : T[K];
     };
 }
+
+export function getMaxScrollHeight(extraHeight: number) {
+    //  80px = toolbar height + padding-bottom
+    return `calc(100vh - ${80 + extraHeight}px)`;
+}
