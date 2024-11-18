@@ -33,7 +33,7 @@ function getUserStatus(user: UserProp, day: DateTime) {
     const absence = user.absences.find(a => DateTime.fromSQL(a.start) <= day && day <= DateTime.fromSQL(a.end));
     if (absence && absence.status === 'accepted') return absence.absence_type?.abbreviation || '❌';
 
-    if (user.user_working_weeks.find(e => e[day.setLocale('en-US').weekdayLong?.toLowerCase() as Weekday])) return '✔️';
+    if (user.user_working_weeks.find(e => e[day.setLocale('en-US').weekdayLong?.toLowerCase() as Weekday])) return ' ';
 
     return '';
 }

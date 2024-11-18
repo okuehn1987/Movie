@@ -50,7 +50,7 @@ class AbsenceController extends Controller
 
         $user = User::find(Auth::id());
 
-        $requires_approval =  $user->supervisor_id && $user->supervisor_id != Auth::id() && AbsenceType::find($validated['absence_type_id'])->requires_aproval;
+        $requires_approval = $user->supervisor_id && $user->supervisor_id != Auth::id() && AbsenceType::find($validated['absence_type_id'])->requires_aproval;
 
         $absence = Absence::create([
             ...$validated,
