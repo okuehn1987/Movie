@@ -103,13 +103,13 @@ function submit() {
                         <v-text-field v-model="userForm.password" label="Passwort" :error-messages="userForm.errors.password"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-date-input
+                        <v-text-field
+                            type="date"
                             v-model="userForm.date_of_birth"
-                            prepend-icon=""
                             label="Geburtsdatum"
                             required
                             :error-messages="userForm.errors.date_of_birth"
-                        ></v-date-input>
+                        ></v-text-field>
                     </v-col>
 
                     <v-col cols="12"><h3>Adresse</h3></v-col>
