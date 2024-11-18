@@ -47,8 +47,8 @@ const user = computed(() => page.props.auth.user);
             />
 
             <v-list-item
-                :active="route().current('timeAccount.index')"
-                :value="route('timeAccount.index')"
+                :active="route().current('timeAccountSetting.index')"
+                :value="route('timeAccountSetting.index')"
                 prepend-icon="mdi-timer"
                 title="Arbeitszeitkonten"
             />

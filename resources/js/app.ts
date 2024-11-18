@@ -6,7 +6,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from 'ziggy-js';
 import { de } from 'vuetify/locale';
 
-const appName = import.meta.env['VITE_APP_NAME'] || 'Laravel';
+const appName = import.meta.env['VITE_APP_NAME'];
 
 import { Settings } from 'luxon';
 Settings.defaultLocale = 'de';

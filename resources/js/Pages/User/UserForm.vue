@@ -4,7 +4,7 @@ import { useForm } from '@inertiajs/vue3';
 import { DateTime, Info } from 'luxon';
 
 const props = defineProps<{
-    user?: User & { lastWorkingHours: UserWorkingHours; userWorkingWeek: UserWorkingWeek };
+    user?: User & { currentWorkingHours: UserWorkingHours; userWorkingWeek: UserWorkingWeek };
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];
     permissions: UserPermission[];
     groups: Pick<Group, 'id' | 'name'>[];
@@ -56,8 +56,8 @@ if (props.user) {
     userForm.password = props.user.password;
     userForm.group_id = props.user.group_id;
     userForm.operating_site_id = props.user.operating_site_id;
-    userForm.userWorkingHours = props.user.lastWorkingHours?.weekly_working_hours ?? 0;
-    userForm.userWorkingHoursSince = new Date(props.user.lastWorkingHours.active_since);
+    userForm.userWorkingHours = props.user.currentWorkingHours?.weekly_working_hours ?? 0;
+    userForm.userWorkingHoursSince = new Date(props.user.currentWorkingHours.active_since);
     for (const weekday of Info.weekdays('long', { locale: 'en' }).map(e => e.toLowerCase()) as Weekday[]) {
         if (props.user.userWorkingWeek[weekday]) userForm.userWorkingWeek.push(weekday);
     }
@@ -188,7 +188,7 @@ function submit() {
                         <v-select
                             v-model="userForm.userWorkingWeek"
                             multiple
-                            :items="Info.weekdays().map((e, i) => ({ title: e, value: Info.weekdays('long', { locale: 'en' })[i].toLowerCase() }))"
+                            :items="Info.weekdays().map((e, i) => ({ title: e, value: Info.weekdays('long', { locale: 'en' })[i]?.toLowerCase() }))"
                             label="Wähle die Arbeitstage des Mitarbeiters aus"
                             :error-messages="userForm.errors.userWorkingWeek"
                         />

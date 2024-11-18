@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('time_account_settings', function (Blueprint $table) {
             $table->id();
             $table->softDeletes();
-            $table->string('type')->default('default');
-            $table->enum('truncation_cycle_length', [0, 1, 3, 6, 12])->default(1); // how often the truncation triggers (0 means never, 12 means end of year)
+            $table->string('type')->nullable();
+            $table->enum('truncation_cycle_length_in_months', [1, 3, 6, 12])->nullable(); // how often the truncation triggers (null means never, 12 means end of year)
             $table->foreignId('organization_id');
             $table->timestamps();
         });

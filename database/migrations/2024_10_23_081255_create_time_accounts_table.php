@@ -15,9 +15,10 @@ return new class extends Migration
             $table->id();
             $table->softDeletes();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('time_account_setting_id');
+            $table->string('name');
             $table->float('balance')->default(0);
             $table->float('balance_limit')->default(0);
-            $table->foreignId('time_account_setting_id');
             $table->timestamps();
         });
     }

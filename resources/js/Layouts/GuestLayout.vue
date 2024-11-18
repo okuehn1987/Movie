@@ -4,6 +4,8 @@ import { Head } from '@inertiajs/vue3';
 defineProps<{
     title: string;
 }>();
+
+const appname = import.meta.env['VITE_APP_NAME'];
 </script>
 
 <template>
@@ -12,7 +14,9 @@ defineProps<{
         <div class="d-flex align-center justify-center pa-4" style="min-height: 100vh">
             <v-card class="pa-4 pt-7" width="448">
                 <v-card-text>
-                    <h1 class="text-center font-weight-medium"><v-icon icon="mdi-timer-lock" /><span class="ms-3">ShiftButler</span></h1>
+                    <h1 class="text-center font-weight-medium">
+                        <v-icon icon="mdi-timer-lock" /><span class="ms-3">{{ appname }} - {{ $page.props.organization.name }}</span>
+                    </h1>
                 </v-card-text>
 
                 <v-card-text v-if="$page.props.flash.error">

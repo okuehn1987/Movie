@@ -29,12 +29,12 @@ class UserController extends Controller
 
     public function show(User $user)
     {
-        $user['lastWorkingHours'] = $user->userWorkingHours()->latest()->first();
+        $user['currentWorkingHours'] = $user->userWorkingHours()->latest()->first();
         $user['userWorkingWeek'] = $user->userWorkingWeeks()->latest()->first();
         return Inertia::render('User/UserShow', [
             'user' => $user,
-            'time_accounts' => $user->timeAccounts()->with(['timeAccountSetting'])->get(["id", "user_id", "balance", "balance_limit", "time_account_setting_id"]),
-            'time_account_settings' => TimeAccountSetting::inOrganization()->get(['id', 'type', 'truncation_cycle_length']),
+            'time_accounts' => $user->timeAccounts()->with(['timeAccountSetting'])->get(["id", "user_id", "balance", "balance_limit", "time_account_setting_id", "name"]),
+            'time_account_settings' => TimeAccountSetting::inOrganization()->get(['id', 'type', 'truncation_cycle_length_in_months']),
             'groups' => Group::inOrganization()->get(),
             'operating_sites' => OperatingSite::inOrganization()->get(),
             'permissions' => User::$PERMISSIONS,
@@ -57,13 +57,16 @@ class UserController extends Controller
             "phone_number" => "nullable|string",
             "staff_number" => "nullable|integer",
             "password" => "required|string",
-            "group_id" => "nullable|integer",
-            'operating_site_id' => 'required|integer',
+            "group_id" => "nullable|integer", //TODO: add validation for group_id
+            'operating_site_id' => 'required|integer', // TODO: add validation for operating_site_id
+
             'userWorkingHours' => 'required|decimal:0,2',
             'userWorkingHoursSince' => 'required|date',
+
             'userWorkingWeek' => 'required|array',
             'userWorkingWeek.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'userWorkingWeekSince' => 'required|date',
+
             'permissions' => 'nullable|array',
             'permissions.*' => ['required', Rule::in(collect(User::$PERMISSIONS)->map(fn($p) => $p['name']))]
         ]);

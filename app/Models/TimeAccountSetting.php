@@ -10,6 +10,8 @@ class TimeAccountSetting extends Model
 {
     use HasFactory, ScopeInOrganization, SoftDeletes;
 
+    protected $guarded = [];
+
     public function organization()
     {
         return $this->belongsTo(Organization::class);

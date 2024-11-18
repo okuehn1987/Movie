@@ -1,7 +1,7 @@
-import { DateTime } from 'luxon';
-import { computed, onMounted, onUnmounted, ref, watch, Ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Paginator } from './types/types';
+import { DateTime } from 'luxon';
+import { computed, onMounted, onUnmounted, ref, Ref, watch } from 'vue';
+import { Paginator, TimeAccountSetting } from './types/types';
 
 export function useNow() {
     const now = ref(DateTime.now());
@@ -80,4 +80,12 @@ export function fillNullishValues<T extends Record<string, unknown>, Default ext
 export function getMaxScrollHeight(extraHeight: number) {
     //  80px = toolbar height + padding-bottom
     return `calc(100vh - ${80 + extraHeight}px)`;
+}
+
+export function getTruncationCylceDisplayName(cycleLength: TimeAccountSetting['truncation_cycle_length_in_months']) {
+    return ({ 'null': 'Unbegrenzt', '1': 'Monatlich', '3': 'Quartalsweise', '6': 'Halbjährlich', '12': 'Jährlich' } as const)[cycleLength ?? 'null'];
+}
+
+export function accountType(type: TimeAccountSetting['type']) {
+    return type ?? 'Standard';
 }

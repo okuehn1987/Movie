@@ -13,6 +13,7 @@ defineProps<{
 const isMobile = useDisplay().smAndDown;
 const showDrawer = ref(true);
 watchEffect(() => (showDrawer.value = !isMobile.value));
+const appname = import.meta.env['VITE_APP_NAME'];
 </script>
 
 <template>
@@ -24,7 +25,7 @@ watchEffect(() => (showDrawer.value = !isMobile.value));
                 <v-list-item @click="router.get('/')" class="d-flex flex-row">
                     <h1 class="text-center font-weight-medium">
                         <v-icon icon="mdi-timer-lock" />
-                        <span class="ms-3">ShiftButler</span>
+                        <span class="ms-3">{{ appname }}</span>
                     </h1>
                 </v-list-item>
             </v-list>

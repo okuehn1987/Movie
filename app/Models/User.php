@@ -82,7 +82,7 @@ class User extends Authenticatable
     }
     public function owns()
     {
-        return $this->hasOne(Organization::class, 'organization_id');
+        return $this->hasOne(Organization::class, 'owner_id', 'organization_id');
     }
     public function userWorkingHours()
     {

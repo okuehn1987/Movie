@@ -170,8 +170,16 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
-    "timeAccount.index": [],
-    "timeAccount.store": [],
+    "user.timeAccount.store": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "timeAccountTransaction.store": [],
+    "timeAccountSetting.index": [],
+    "timeAccountSetting.store": [],
     "notification.update": [
         {
             "name": "notification",
