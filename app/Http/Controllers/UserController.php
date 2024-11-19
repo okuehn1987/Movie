@@ -6,6 +6,7 @@ use App\Models\Group;
 use App\Models\OperatingSite;
 use App\Models\TimeAccount;
 use App\Models\TimeAccountSetting;
+use App\Models\TimeAccountTransaction;
 use App\Models\User;
 use App\Models\UserWorkingHour;
 use App\Models\UserWorkingWeek;
@@ -31,6 +32,8 @@ class UserController extends Controller
     {
         $user['currentWorkingHours'] = $user->userWorkingHours()->latest()->first();
         $user['userWorkingWeek'] = $user->userWorkingWeeks()->latest()->first();
+
+        $allTimeAccountsWithTransactions = $user->timeAccounts()->withTrashed()->with(['fromTransactions', 'toTransactions'])->paginate(15);
         return Inertia::render('User/UserShow', [
             'user' => $user,
             'time_accounts' => $user->timeAccounts()->with(['timeAccountSetting'])->get(["id", "user_id", "balance", "balance_limit", "time_account_setting_id", "name"]),
@@ -38,6 +41,7 @@ class UserController extends Controller
             'groups' => Group::inOrganization()->get(),
             'operating_sites' => OperatingSite::inOrganization()->get(),
             'permissions' => User::$PERMISSIONS,
+            'time_account_transactions' => $allTimeAccountsWithTransactions
         ]);
     }
     public function store(Request $request)

@@ -89,3 +89,7 @@ export function getTruncationCylceDisplayName(cycleLength: TimeAccountSetting['t
 export function accountType(type: TimeAccountSetting['type']) {
     return type ?? 'Standard';
 }
+
+export function roundTo(value: number, decimalPlaces: number) {
+    return Math.round(value * 10 ** decimalPlaces) / 10 ** decimalPlaces;
+}

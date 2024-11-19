@@ -33,4 +33,17 @@ class TimeAccountController extends Controller
 
         return back()->with('success', 'Arbeitszeitkonto erfolgreich erstellt.');
     }
+
+    public function update(Request $request, TimeAccount $timeAccount)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string',
+            'balance_limit' => 'required|numeric',
+            'time_account_setting_id' => ['required', Rule::exists('time_account_settings', 'id')->where('organization_id', Organization::getCurrent()->id)],
+        ]);
+
+        $timeAccount->update($validated);
+
+        return back()->with('success', 'Arbeitszeitkonto erfolgreich aktualisiert.');
+    }
 }

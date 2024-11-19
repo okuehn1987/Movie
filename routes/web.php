@@ -30,6 +30,7 @@ Route::middleware(['auth', HasOrganizationAccess::class])->group(function () {
     Route::resource('operatingTime', OperatingTimeController::class)->only(['store', 'update', 'destroy']);
 
     Route::resource('user.timeAccount', TimeAccountController::class)->shallow()->only(['store']);
+    Route::resource('timeAccount', TimeAccountController::class)->only(['update', 'destroy']);
     Route::resource('timeAccountTransaction', TimeAccountTransactionController::class)->only(['store']);
     Route::resource('timeAccountSetting', TimeAccountSettingsController::class)->only(['index', 'store']);
 
