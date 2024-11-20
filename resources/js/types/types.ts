@@ -211,6 +211,15 @@ export type TimeAccount = DBObject<'TimeAccount'> &
         name: string;
     };
 
+export type TimeAccountTransaction = DBObject<'TimeAccountTransaction'> &
+    SoftDelete & {
+        from_id: TimeAccount['id'] | null;
+        to_id: TimeAccount['id'] | null;
+        modified_by: User['id'] | null;
+        amount: number;
+        description: string;
+    };
+
 type Permission = 'work_log_patching' | 'user_administration';
 
 export type UserPermission = { name: Permission; label: string };

@@ -38,7 +38,7 @@ class DatabaseSeeder extends Seeder
                 ->has(
                     OperatingSite::factory(3)
                         ->has($users
-                            ->has(TimeAccount::factory(1, ['time_account_setting_id' => $n])))
+                            ->has(TimeAccount::factory(1, ['time_account_setting_id' => $n, 'balance_limit' => random_int(20, 100), 'balance' => random_int(0, 20)])))
                         ->has(OperatingTime::factory(7, ['start' => '09:00:00', 'end' => '17:00:00'])
                             ->sequence(fn(Sequence $sequence) => ['type' => [
                                 'monday',
@@ -84,10 +84,10 @@ class DatabaseSeeder extends Seeder
         $admin->isSubstitutedBy()->attach(User::find(1));
         $admin->isSubstitutionFor()->attach(User::find(6));
 
-        foreach (User::with(['organization', 'organization.groups'])->get() as $user) {
-            // get random group of organization
+        foreach (User::with(['organization', 'organization.groups', 'timeAccounts'])->get() as $user) {
             $group = $user->organization->groups->random();
             $user->group_id = $group->id;
+            $user->timeAccounts()->first()->addBalance(100, 'seeder balance');
             $user->save();
         }
         WorkLog::factory(30, ['user_id' => $admin->id])->create();

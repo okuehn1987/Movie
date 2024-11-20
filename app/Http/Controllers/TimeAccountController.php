@@ -23,13 +23,7 @@ class TimeAccountController extends Controller
 
         $timeAccount = TimeAccount::create([...$validated, 'user_id' => $user->id]);
 
-        TimeAccountTransaction::create([
-            'to_id' => $timeAccount->id,
-            'modified_by' => Auth::id(),
-            'amount' => $validated['balance'],
-            'is_system_generated' => true,
-            'description' => 'Initialer Kontostand',
-        ]);
+        $timeAccount->addBalance($validated['balance'], 'Initialer Kontostand');
 
         return back()->with('success', 'Arbeitszeitkonto erfolgreich erstellt.');
     }

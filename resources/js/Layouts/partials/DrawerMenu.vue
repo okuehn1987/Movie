@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// import { useOrganizationSettings } from "@/OrganizationTemplates";
 import { router, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
@@ -9,66 +8,65 @@ const user = computed(() => page.props.auth.user);
 </script>
 
 <template>
-    <v-list nav :selected="''" @update:selected="([route]) => router.get(route)">
-        <template v-if="user">
-            <v-list-item :active="route().current('dashboard')" :value="route('dashboard')" prepend-icon="mdi-view-dashboard" title="Dashboard" />
-            <v-list-item
-                :active="route().current('organization.show')"
-                :value="route('organization.show', { organization: $page.props.organization.id })"
-                prepend-icon="mdi-domain"
-                title="Organisation"
-            />
-            <v-list-item
-                :active="route().current('operatingSite.index')"
-                :value="route('operatingSite.index')"
-                prepend-icon="mdi-map-marker"
-                title="Betriebsstätten"
-            />
-            <v-list-item :active="route().current('group.index')" :value="route('group.index')" prepend-icon="mdi-dots-circle" title="Abteilungen" />
-            <v-list-item
-                v-if="$page.props.auth.user.user_administration"
-                :active="route().current('user.index')"
-                :value="route('user.index')"
-                prepend-icon="mdi-account-group"
-                title="Mitarbeitende"
-            />
-            <!-- <v-list-item
-                :active="route().current('workLog.index')"
-                :value="route('workLog.index')"
-                prepend-icon="mdi-clock-outline"
-                title="Arbeitszeiten"
-            /> -->
-
-            <v-list-item
-                :active="route().current('absence.index')"
-                :value="route('absence.index')"
-                prepend-icon="mdi-timer-cancel-outline"
-                title="Abwesenheiten"
-            />
-
-            <v-list-item
-                :active="route().current('timeAccountSetting.index')"
-                :value="route('timeAccountSetting.index')"
-                prepend-icon="mdi-timer"
-                title="Arbeitszeitkonten"
-            />
-            <v-list-item
-                :active="route().current('users.workLogs')"
-                :value="route('users.workLogs')"
-                prepend-icon="mdi-clock-outline"
-                title="Arbeitszeiten"
-            />
-            <template v-if="user.role === 'super-admin'">
-                <v-divider></v-divider>
-                <v-list-item
-                    :active="route().current('organization.index')"
-                    :value="route('organization.index')"
-                    prepend-icon="mdi-security"
-                    title="Organisationen"
-                />
-            </template>
-        </template>
-    </v-list>
+    <v-list
+        nav
+        @click:select="route => router.get(route.id as string)"
+        :items="
+            [
+                { props: { active: route().current('dashboard'), prependIcon: 'mdi-view-dashboard' }, value: route('dashboard'), title: 'Dashboard' },
+                {
+                    title: 'Organisation',
+                    subtitle: 'test',
+                    value: route('organization.show', { organization: $page.props.organization.id }),
+                    props: { prependIcon: 'mdi-domain', active: route().current('organization.show') },
+                },
+                {
+                    props: { active: route().current('operatingSite.index'), prependIcon: 'mdi-map-marker' },
+                    value: route('operatingSite.index'),
+                    title: 'Betriebsstätten',
+                },
+                {
+                    props: { active: route().current('group.index'), prependIcon: 'mdi-dots-circle' },
+                    value: route('group.index'),
+                    title: 'Abteilungen',
+                },
+                $page.props.auth.user.user_administration && {
+                    props: { active: route().current('user.index'), prependIcon: 'mdi-account-group' },
+                    value: route('user.index'),
+                    title: 'Mitarbeitende',
+                },
+                {
+                    props: { active: route().current('absence.index'), prependIcon: 'mdi-timer-cancel-outline' },
+                    value: route('absence.index'),
+                    title: 'Abwesenheiten',
+                },
+                {
+                    props: {
+                        active: route().current('timeAccountSetting.index'),
+                        prependIcon: 'mdi-timer',
+                    },
+                    value: route('timeAccountSetting.index'),
+                    title: 'Arbeitszeitkonten',
+                },
+                {
+                    props: { active: route().current('users.workLogs'), prependIcon: 'mdi-clock-outline' },
+                    value: route('users.workLogs'),
+                    title: 'Arbeitszeiten',
+                },
+                ...(user.role === 'super-admin'
+                    ? [
+                          { type: 'divider' },
+                          { type: 'subheader', title: 'Super-Admin' },
+                          {
+                              props: { prependIcon: 'mdi-security', active: route().current('organization.index') },
+                              value: route('organization.index'),
+                              title: 'Organisationen',
+                          },
+                      ]
+                    : []),
+            ].filter(Boolean)
+        "
+    />
 </template>
 
 <style scoped>

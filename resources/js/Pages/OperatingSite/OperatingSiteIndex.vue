@@ -177,11 +177,10 @@ function submit() {
                     </v-dialog>
                 </template>
                 <template v-slot:item.action="{ item }">
-                    <div class="d-flex">
+                    <div class="d-flex" :class="{ 'justify-end': data.every(o => o.users_count != 0) }">
                         <Link :href="route('operatingSite.show', { operatingSite: item.id })">
                             <v-btn color="primary" size="large" variant="text" icon="mdi-eye" />
                         </Link>
-
                         <ConfirmDelete
                             v-if="item.users_count == 0"
                             :content="'Bist du dir sicher, dass du die Betriebsstätte ' + item.name + ' entfernen möchtest?'"

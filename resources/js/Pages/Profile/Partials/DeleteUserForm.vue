@@ -59,7 +59,7 @@ const closeModal = () => {
                             </v-col>
                             <v-col cols="12">
                                 <div class="d-flex justify-space-between">
-                                    <v-btn :loading="form.processing" color="secondary" @click.stop="closeModal">Abbrechen</v-btn>
+                                    <v-btn :loading="form.processing" color="primary" @click.stop="closeModal">Abbrechen</v-btn>
                                     <v-btn :loading="form.processing" color="error" type="submit">Account löschen</v-btn>
                                 </div>
                             </v-col>

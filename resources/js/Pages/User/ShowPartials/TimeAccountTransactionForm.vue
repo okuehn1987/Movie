@@ -7,17 +7,18 @@ defineProps<{
 }>();
 
 const timeAccountTransactionForm = useForm({
+    from_id: null as null | TimeAccount['id'],
     to_id: null as null | TimeAccount['id'],
     amount: 0,
     description: '',
-    signed_value: 1 as 1 | -1,
+    addOrSub: 'ADD' as 'ADD' | 'SUB',
 });
 </script>
 <template>
     <v-dialog @after-leave="timeAccountTransactionForm.reset()" max-width="1000">
         <template v-slot:activator="{ props: activatorProps }">
             <v-btn v-bind="activatorProps" color="primary" icon variant="text" class="me-2">
-                <v-icon icon="mdi-pen"></v-icon>
+                <v-icon icon="mdi-plus-minus"></v-icon>
             </v-btn>
         </template>
         <template v-slot:default="{ isActive }">
@@ -28,8 +29,9 @@ const timeAccountTransactionForm = useForm({
                             timeAccountTransactionForm
                                 .transform(data => ({
                                     ...data,
-                                    amount: data.signed_value * data.amount,
-                                    to_id: item.id,
+                                    amount: data.amount,
+                                    from_id: data.addOrSub == 'ADD' ? null : item.id,
+                                    to_id: data.addOrSub == 'ADD' ? item.id : null,
                                 }))
                                 .post(route('timeAccountTransaction.store'), {
                                     onSuccess: () => {
@@ -43,15 +45,16 @@ const timeAccountTransactionForm = useForm({
                             ><v-col cols="12" md="6">
                                 <v-select
                                     :items="[
-                                        { title: 'Stunden hinzufügen', value: 1 },
-                                        { title: 'Stunden abziehen', value: -1 },
+                                        { title: 'Stunden hinzufügen', value: 'ADD' },
+                                        { title: 'Stunden abziehen', value: 'SUB' },
                                     ]"
                                     label="Vorgang"
-                                    v-model="timeAccountTransactionForm.signed_value"
+                                    v-model="timeAccountTransactionForm.addOrSub"
                                 ></v-select>
                             </v-col>
                             <v-col cols="12" md="6">
                                 <v-text-field
+                                    type="number"
                                     label="Stunden"
                                     v-model="timeAccountTransactionForm.amount"
                                     :error-messages="timeAccountTransactionForm.errors.amount"

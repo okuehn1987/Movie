@@ -18,6 +18,7 @@ import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 import { VCalendar } from 'vuetify/labs/VCalendar';
 import { VDateInput, VNumberInput } from 'vuetify/labs/components';
+import colors from 'vuetify/util/colors';
 
 const vuetify = createVuetify({
     defaults: {
@@ -33,13 +34,12 @@ const vuetify = createVuetify({
             lightTheme: {
                 dark: false,
                 colors: {
-                    primary: '#47545D',
-                    success: '#198754',
-                    secondary: 'hsl(206, 7%, 90%)',
-                    accent: '#c09762',
-                    error: '#dc2626',
-                    background: '#EDEEEF',
-                    layout: '#47545D',
+                    primary: colors.blueGrey.darken2,
+                    success: '#198754', // ~colors.green.darken3
+                    secondary: colors.deepPurple.lighten1,
+                    error: colors.red.darken3,
+                    background: colors.grey.lighten3,
+                    layout: colors.grey.darken2,
                 },
             },
         },

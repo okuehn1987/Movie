@@ -86,8 +86,9 @@ export function getTruncationCylceDisplayName(cycleLength: TimeAccountSetting['t
     return ({ 'null': 'Unbegrenzt', '1': 'Monatlich', '3': 'Quartalsweise', '6': 'Halbjährlich', '12': 'Jährlich' } as const)[cycleLength ?? 'null'];
 }
 
-export function accountType(type: TimeAccountSetting['type']) {
-    return type ?? 'Standard';
+export const DEFAULT_ACCOUNTYPE_NAME = 'Standard';
+export function accountType(type: TimeAccountSetting['type']): typeof DEFAULT_ACCOUNTYPE_NAME | (string & NonNullable<unknown>) {
+    return type ?? DEFAULT_ACCOUNTYPE_NAME;
 }
 
 export function roundTo(value: number, decimalPlaces: number) {

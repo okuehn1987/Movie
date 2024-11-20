@@ -216,3 +216,10 @@ function submit() {
         </v-card-text>
     </v-card>
 </template>
+<style scoped>
+/** we have so many fields, we want to condense it down a lil */
+.v-col-md-6,
+.v-col-md-12 {
+    padding-block: 4px;
+}
+</style>

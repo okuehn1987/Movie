@@ -15,7 +15,7 @@ const timeAccountTransferForm = useForm({
 <template>
     <v-dialog @after-leave="timeAccountTransferForm.reset()" max-width="1000">
         <template v-slot:activator="{ props: activatorProps }">
-            <v-btn v-bind="activatorProps" color="primary" class="me-2">
+            <v-btn v-bind="activatorProps" color="secondary" class="me-2">
                 <v-icon icon="mdi-transfer"></v-icon>
             </v-btn>
         </template>
@@ -45,6 +45,7 @@ const timeAccountTransferForm = useForm({
                                     "
                                     label="Von"
                                     v-model="timeAccountTransferForm.from_id"
+                                    :error-messages="timeAccountTransferForm.errors.from_id"
                                 ></v-select>
                             </v-col>
                             <v-col cols="12" md="4">
@@ -59,16 +60,22 @@ const timeAccountTransferForm = useForm({
                                     "
                                     label="Nach"
                                     v-model="timeAccountTransferForm.to_id"
+                                    :error-messages="timeAccountTransferForm.errors.to_id"
                                 ></v-select>
                             </v-col>
                             <v-col cols="12" md="4">
-                                <v-text-field label="Stunden" v-model="timeAccountTransferForm.amount"></v-text-field>
+                                <v-text-field
+                                    label="Stunden"
+                                    v-model="timeAccountTransferForm.amount"
+                                    :error-messages="timeAccountTransferForm.errors.amount"
+                                ></v-text-field>
                             </v-col>
                             <v-col cols="12">
                                 <v-text-field
                                     label="Beschreibung"
                                     hint="Die Beschreibung ist für die Darstellung der Historie"
                                     v-model="timeAccountTransferForm.description"
+                                    :error-messages="timeAccountTransferForm.errors.description"
                                 ></v-text-field>
                             </v-col>
                             <v-col cols="12" class="text-end">

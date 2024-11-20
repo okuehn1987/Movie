@@ -16,36 +16,33 @@ class TimeAccountTransactionController extends Controller
         $validated = $request->validate([
             'from_id' => [
                 'nullable',
+                'required_if:to_id,null',
                 Rule::exists('time_accounts', 'id')
                     ->whereIn(
-                        'time_account_settings_id',
+                        'time_account_setting_id',
                         TimeAccountSetting::where('organization_id', Organization::getCurrent()->id)->get(['id'])
                     )
             ],
             'to_id' => [
-                'required',
+                'nullable',
+                'required_if:from_id,null',
                 Rule::exists('time_accounts', 'id')
                     ->whereIn(
-                        'time_account_settings_id',
+                        'time_account_setting_id',
                         TimeAccountSetting::where('organization_id', Organization::getCurrent()->id)->get(['id'])
                     )
             ],
-            'amount' => 'required|numeric',
+            'amount' => "required|numeric|min:0",
             'description' => 'required|string',
         ]);
 
-        $fromAccount = array_key_exists('from_id', $validated) ? TimeAccount::find($validated['from_id']) : null;
-        $toAccount = TimeAccount::find($validated['to_id']);
+        TimeAccount::transferBalanceFromTo(
+            $validated["amount"],
+            $validated["description"],
+            TimeAccount::find($validated["from_id"]),
+            TimeAccount::find($validated['to_id'])
+        );
 
-        if ($fromAccount) {
-            $fromAccount->balance -= $validated['amount'];
-            $fromAccount->save();
-        }
-
-        $toAccount->balance += $validated['amount'];
-        $toAccount->save();
-
-        TimeAccountTransaction::create($validated);
 
         return back()->with('success', 'Transaktion erfolgreich durchgeführt.');
     }

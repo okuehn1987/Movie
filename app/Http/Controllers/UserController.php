@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Group;
 use App\Models\OperatingSite;
+use App\Models\Organization;
 use App\Models\TimeAccount;
 use App\Models\TimeAccountSetting;
 use App\Models\TimeAccountTransaction;
@@ -33,15 +34,18 @@ class UserController extends Controller
         $user['currentWorkingHours'] = $user->userWorkingHours()->latest()->first();
         $user['userWorkingWeek'] = $user->userWorkingWeeks()->latest()->first();
 
-        $allTimeAccountsWithTransactions = $user->timeAccounts()->withTrashed()->with(['fromTransactions', 'toTransactions'])->paginate(15);
+        $timeAccounts =  $user->timeAccounts()->with(['timeAccountSetting'])->get(["id", "user_id", "balance", "balance_limit", "time_account_setting_id", "name"]);
+
+        $userTransactions = TimeAccountTransaction::forUser($user)->with('user:id,first_name,last_name')->latest()->paginate(15);
+
         return Inertia::render('User/UserShow', [
             'user' => $user,
-            'time_accounts' => $user->timeAccounts()->with(['timeAccountSetting'])->get(["id", "user_id", "balance", "balance_limit", "time_account_setting_id", "name"]),
+            'time_accounts' => $timeAccounts,
             'time_account_settings' => TimeAccountSetting::inOrganization()->get(['id', 'type', 'truncation_cycle_length_in_months']),
             'groups' => Group::inOrganization()->get(),
             'operating_sites' => OperatingSite::inOrganization()->get(),
             'permissions' => User::$PERMISSIONS,
-            'time_account_transactions' => $allTimeAccountsWithTransactions
+            'time_account_transactions' => $userTransactions,
         ]);
     }
     public function store(Request $request)
@@ -61,8 +65,14 @@ class UserController extends Controller
             "phone_number" => "nullable|string",
             "staff_number" => "nullable|integer",
             "password" => "required|string",
-            "group_id" => "nullable|integer", //TODO: add validation for group_id
-            'operating_site_id' => 'required|integer', // TODO: add validation for operating_site_id
+            "group_id" => [
+                "nullable",
+                Rule::exists('groups', 'id')->where('organization_id', Organization::getCurrent()->id)
+            ],
+            'operating_site_id' => [
+                "required",
+                Rule::exists('operating_sites', 'id')->where('organization_id', Organization::getCurrent()->id)
+            ],
 
             'userWorkingHours' => 'required|decimal:0,2',
             'userWorkingHoursSince' => 'required|date',
@@ -95,6 +105,10 @@ class UserController extends Controller
             'date_of_birth' => Carbon::parse($validated['date_of_birth']),
             'email_verified_at' => now(),
         ]);
+
+        foreach ($validated['permissions'] as $permission) {
+            $user[$permission] = true;
+        }
         $user->password = Hash::make($validated['password']);
         $user->save();
 
@@ -110,11 +124,13 @@ class UserController extends Controller
             'active_since' => Carbon::parse($validated['userWorkingWeekSince'])
         ]);
 
-        foreach ($validated['permissions'] as $permission) {
-            $user[$permission] = true;
-        }
-
-
+        TimeAccount::create([
+            'name' => 'Standardkonto',
+            'balance' => 0,
+            'balance_limit' => $validated['userWorkingHours'] * 2,
+            'time_account_setting_id' => TimeAccountSetting::inOrganization()->whereNull('type')->first()->id,
+            'user_id' => $user->id
+        ]);
 
         return back()->with('success', 'Mitarbeitenden erfolgreich angelegt.');
     }

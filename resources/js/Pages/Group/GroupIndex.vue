@@ -91,7 +91,7 @@ const expanded = ref([]);
                     <tr>
                         <td :colspan="columns.length" style="padding: 0">
                             <v-data-table-virtual
-                                class="bg-secondary"
+                                class="bg-grey-lighten-4"
                                 :headers="[
                                     { title: '#', key: 'id' },
                                     { title: 'Vorname', key: 'first_name' },
