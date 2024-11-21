@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Middleware\HasOrganizationAccess;
 use App\Http\Middleware\HasPermission;
+use App\Http\Middleware\HasRole;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard')->name('home');
@@ -13,7 +14,10 @@ Route::middleware(['auth', HasOrganizationAccess::class])->group(function () {
 
     Route::resource('user', UserController::class)->only(['index', 'store', 'destroy', 'update', 'show'])->middleware(HasPermission::class . ':user_administration');
 
-    Route::resource('organization', OrganizationController::class)->only(['index', 'store', 'destroy']);
+    Route::middleware(HasRole::class . ':super-admin')->group(function () {
+        Route::resource('organization', OrganizationController::class)->only(['index', 'store', 'destroy']);
+        Route::get('/organization/tree', [OrganizationController::class, 'organigram'])->name('organization.tree');
+    });
     Route::resource('organization', OrganizationController::class)->only(['show', 'update']);
     Route::resource('absence', AbsenceController::class)->only(['index', 'update', 'store']);
     Route::resource('absenceType', AbsenceTypeController::class)->only(['store', 'update', 'destroy']);

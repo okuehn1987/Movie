@@ -10,6 +10,7 @@ import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 
 const props = defineProps<{
     users: Paginator<User & { group: Pick<Group, 'id' | 'name'> }>;
+    supervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
     groups: Pick<Group, 'id' | 'name'>[];
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];
     permissions: UserPermission[];
@@ -48,7 +49,7 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
                             </v-btn>
                         </template>
                         <template v-slot:default="{ isActive }">
-                            <UserForm :groups :operating_sites :permissions mode="create" @success="isActive.value = false">
+                            <UserForm :supervisors :groups :operating_sites :permissions mode="create" @success="isActive.value = false">
                                 <template #append>
                                     <v-btn icon variant="text" @click="isActive.value = false">
                                         <v-icon>mdi-close</v-icon>

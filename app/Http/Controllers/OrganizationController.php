@@ -70,7 +70,7 @@ class OrganizationController extends Controller
         return back()->with('success', 'Organisation erfolgreich erstellt.');
     }
 
-    public function show(Request $request, Organization $organization)
+    public function show(Organization $organization)
     {
         return Inertia::render('Organization/OrganizationShow', [
             'organization' => $organization,
@@ -97,10 +97,19 @@ class OrganizationController extends Controller
 
         return back()->with('success', 'Organisation erfolgreich aktualisiert.');
     }
-    public function destroy(Request $request, Organization $organization)
+    public function destroy(Organization $organization)
     {
         $organization->delete();
 
         return back()->with('success', 'Organisation erfolgreich gelöscht.');
+    }
+
+    public function organigram()
+    {
+        return Inertia::render('Organization/OrganizationOrganigram', [
+            'users' => User::whereNull('supervisor_id')
+                ->with('allSupervisees:id,first_name,last_name,supervisor_id,email')
+                ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'email']),
+        ]);
     }
 }

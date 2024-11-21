@@ -75,7 +75,7 @@ class WorkLogController extends Controller
     {
 
         return Inertia::render('WorkLog/UsersWorkLogs', [
-            'users' => User::find(Auth::id())->supervises()->get(['id', 'first_name', 'last_name'])->map(fn($u) => [
+            'users' => User::find(Auth::id())->supervisees()->get(['id', 'first_name', 'last_name'])->map(fn($u) => [
                 ...$u->toArray(),
                 'isPresent' => $u->workLogs()->latest()->first()->end ? true : false,
                 'latestWorkLog' => $u->workLogs()->latest()->first()

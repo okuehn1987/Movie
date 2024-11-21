@@ -5,6 +5,7 @@ import { DateTime, Info } from 'luxon';
 
 const props = defineProps<{
     user?: User & { currentWorkingHours: UserWorkingHours; userWorkingWeek: UserWorkingWeek };
+    supervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];
     permissions: UserPermission[];
     groups: Pick<Group, 'id' | 'name'>[];
@@ -30,8 +31,10 @@ const userForm = useForm({
     phone_number: '',
     staff_number: 0 as null | number,
     password: '',
-    group_id: null as null | number,
-    operating_site_id: null as null | number,
+    group_id: null as null | Group['id'],
+    operating_site_id: null as null | OperatingSite['id'],
+    supervisor_id: null as null | User['id'],
+    is_supervisor: false,
     userWorkingHours: 0,
     userWorkingHoursSince: new Date(),
     userWorkingWeek: [] as Weekday[],
@@ -56,6 +59,7 @@ if (props.user) {
     userForm.password = props.user.password;
     userForm.group_id = props.user.group_id;
     userForm.operating_site_id = props.user.operating_site_id;
+    userForm.supervisor_id = props.user.supervisor_id;
     userForm.userWorkingHours = props.user.currentWorkingHours?.weekly_working_hours ?? 0;
     userForm.userWorkingHoursSince = new Date(props.user.currentWorkingHours.active_since);
     for (const weekday of Info.weekdays('long', { locale: 'en' }).map(e => e.toLowerCase()) as Weekday[]) {
@@ -148,8 +152,15 @@ function submit() {
                         <v-text-field v-model="userForm.country" label="Land" :error-messages="userForm.errors.country"></v-text-field>
                     </v-col>
 
-                    <v-col cols="12"><h3>Abteilung</h3></v-col>
-
+                    <v-col cols="12"><h3>Struktur</h3></v-col>
+                    <v-col cols="12" md="6">
+                        <v-select
+                            v-model="userForm.operating_site_id"
+                            :items="operating_sites.map(o => ({ title: o.name, value: o.id }))"
+                            label="Wähle die Betriebsstätte des Mitarbeiters aus."
+                            :error-messages="userForm.errors.operating_site_id"
+                        ></v-select>
+                    </v-col>
                     <v-col cols="12" md="6">
                         <v-select
                             v-model="userForm.group_id"
@@ -160,13 +171,15 @@ function submit() {
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-select
-                            v-model="userForm.operating_site_id"
-                            :items="operating_sites.map(o => ({ title: o.name, value: o.id }))"
-                            label="Wähle die Betriebsstätte des Mitarbeiters aus."
-                            :error-messages="userForm.errors.operating_site_id"
+                            v-model="userForm.supervisor_id"
+                            :items="supervisors.map(s => ({ title: s.first_name + ' ' + s.last_name, value: s.id }))"
+                            label="Wähle einen Vorgesetzten"
+                            :error-messages="userForm.errors.supervisor_id"
                         ></v-select>
                     </v-col>
-
+                    <v-col cols="12" md="6">
+                        <v-checkbox v-model="userForm.is_supervisor" label="Ist ein Vorgesetzter"></v-checkbox>
+                    </v-col>
                     <v-col cols="12"><h3>Wöchentliche Arbeitszeit</h3></v-col>
 
                     <v-col cols="12" md="6">

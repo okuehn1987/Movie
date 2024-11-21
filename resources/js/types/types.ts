@@ -14,6 +14,13 @@ type SoftDelete = {
     deleted_at: Timestamp;
 };
 
+export type Prettify<T> = {
+    [K in keyof T]: T[K];
+} & NonNullable<unknown>;
+
+type _Tree<T, K extends string> = T & { [x in K]: _Tree<T, K>[] };
+export type Tree<T, K extends string> = Prettify<_Tree<T, K>>;
+
 export type Paginator<T> = {
     total: number;
     per_page: number;
@@ -62,6 +69,7 @@ export type User = DBObject<'User'> &
         phone_number: string | null;
         email_verified_at: string | null;
         weekly_working_hours: number;
+        is_supervisor: boolean;
     } & Record<Permission, boolean>;
 
 export type UserWorkingHours = DBObject<'UserWorkingHours'> &

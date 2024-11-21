@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
 
 class User extends Authenticatable
 {
@@ -52,9 +53,17 @@ class User extends Authenticatable
     {
         return $this->belongsTo(User::class);
     }
-    public function supervises()
+    public function supervisees()
     {
         return $this->hasMany(User::class, 'supervisor_id');
+    }
+    public function allSupervisees()
+    {
+        return $this->supervisees()->with('allSupervisees:id,supervisor_id,first_name,last_name,email');
+    }
+    public function allSuperviseesFlat(): Collection
+    {
+        return $this->allSupervisees()->get()->flatMap(fn($u) => $u->allSuperviseesFlat()->push($u))->push($this);
     }
     public function isSubstitutedBy()
     {

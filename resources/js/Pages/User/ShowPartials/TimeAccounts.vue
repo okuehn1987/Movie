@@ -1,0 +1,73 @@
+<script setup lang="ts">
+import { TimeAccount, TimeAccountSetting, User, UserWorkingHours, UserWorkingWeek } from '@/types/types';
+import { accountType, DEFAULT_ACCOUNTYPE_NAME, fillNullishValues, getTruncationCylceDisplayName } from '@/utils';
+import NewTimeAccountForm from './NewTimeAccountForm.vue';
+import TimeAccountSettingsForm from './TimeAccountSettingsForm.vue';
+import TimeAccountTransactionForm from './TimeAccountTransactionForm.vue';
+import TimeAccountTransferForm from './TimeAccountTransferForm.vue';
+
+defineProps<{
+    user: User & {
+        currentWorkingHours: UserWorkingHours;
+        userWorkingWeek: UserWorkingWeek;
+    };
+    time_accounts: (TimeAccount & { time_account_setting: TimeAccountSetting })[];
+    time_account_settings: TimeAccountSetting[];
+}>();
+</script>
+<template>
+    <v-data-table-virtual
+        :items="
+            time_accounts.map(account =>
+                fillNullishValues({
+                    ...account,
+                    type: accountType(account.time_account_setting.type),
+                    truncation_cycle_length_in_months: getTruncationCylceDisplayName(account.time_account_setting.truncation_cycle_length_in_months),
+                }),
+            )
+        "
+        :headers="[
+            { title: 'Name', key: 'name' },
+            {
+                title: 'Überstunden',
+                key: 'balance',
+            },
+            {
+                title: 'Limit',
+                key: 'balance_limit',
+            },
+            {
+                title: 'Typ',
+                key: 'type',
+            },
+            {
+                title: 'Berechnungszeitraum',
+                key: 'truncation_cycle_length_in_months',
+            },
+            {
+                title: '',
+                key: 'actions',
+                align: 'end',
+            },
+        ]"
+    >
+        <template v-slot:header.actions>
+            <TimeAccountTransferForm :time_accounts />
+            <NewTimeAccountForm :user :time_account_settings />
+        </template>
+        <template v-slot:item.actions="{ item }">
+            <TimeAccountTransactionForm :item />
+            <TimeAccountSettingsForm :item :time_account_settings :user />
+        </template>
+        <template v-slot:item.balance="{ item }">
+            <v-chip color="success" v-if="item.balance > 0">{{ item.balance }}</v-chip>
+            <v-chip color="error" v-if="item.balance < 0">{{ item.balance }}</v-chip>
+            <v-chip color="black" v-if="item.balance == 0">{{ item.balance }}</v-chip>
+        </template>
+        <template v-slot:item.type="{ item }">
+            <v-chip color="purple-darken-1" v-if="item.type == DEFAULT_ACCOUNTYPE_NAME">{{ item.type }}</v-chip>
+            <span v-else>{{ item.type }}</span>
+        </template>
+    </v-data-table-virtual>
+</template>
+<style lang="scss" scoped></style>

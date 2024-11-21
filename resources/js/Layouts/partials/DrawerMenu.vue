@@ -15,6 +15,18 @@ const user = computed(() => page.props.auth.user);
             [
                 { props: { active: route().current('dashboard'), prependIcon: 'mdi-view-dashboard' }, value: route('dashboard'), title: 'Dashboard' },
                 {
+                    props: { active: route().current('absence.index'), prependIcon: 'mdi-timer-cancel-outline' },
+                    value: route('absence.index'),
+                    title: 'Abwesenheiten',
+                },
+                {
+                    props: { active: route().current('users.workLogs'), prependIcon: 'mdi-clock-outline' },
+                    value: route('users.workLogs'),
+                    title: 'Arbeitszeiten',
+                },
+                { type: 'divider' },
+                { type: 'subheader', title: 'Admin' },
+                {
                     title: 'Organisation',
                     subtitle: 'test',
                     value: route('organization.show', { organization: $page.props.organization.id }),
@@ -36,11 +48,6 @@ const user = computed(() => page.props.auth.user);
                     title: 'Mitarbeitende',
                 },
                 {
-                    props: { active: route().current('absence.index'), prependIcon: 'mdi-timer-cancel-outline' },
-                    value: route('absence.index'),
-                    title: 'Abwesenheiten',
-                },
-                {
                     props: {
                         active: route().current('timeAccountSetting.index'),
                         prependIcon: 'mdi-timer',
@@ -49,9 +56,9 @@ const user = computed(() => page.props.auth.user);
                     title: 'Arbeitszeitkonten',
                 },
                 {
-                    props: { active: route().current('users.workLogs'), prependIcon: 'mdi-clock-outline' },
-                    value: route('users.workLogs'),
-                    title: 'Arbeitszeiten',
+                    props: { prependIcon: 'mdi-tree', active: route().current('organization.tree') },
+                    value: route('organization.tree'),
+                    title: 'Organigramm',
                 },
                 ...(user.role === 'super-admin'
                     ? [

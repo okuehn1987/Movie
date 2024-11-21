@@ -1,7 +1,7 @@
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { computed, onMounted, onUnmounted, ref, Ref, watch } from 'vue';
-import { Paginator, TimeAccountSetting } from './types/types';
+import { Paginator, TimeAccountSetting, Tree } from './types/types';
 
 export function useNow() {
     const now = ref(DateTime.now());
@@ -94,3 +94,24 @@ export function accountType(type: TimeAccountSetting['type']): typeof DEFAULT_AC
 export function roundTo(value: number, decimalPlaces: number) {
     return Math.round(value * 10 ** decimalPlaces) / 10 ** decimalPlaces;
 }
+
+export function filterTree<K extends keyof T, T extends { [x in K]?: T[] }>(tree: T[], k: K, fn: (e: Omit<T, K>) => boolean): T[] {
+    return tree
+        .map(e => {
+            if (e[k] && e[k].length === 0) return { ...e, [k]: undefined };
+            if (e[k]) {
+                const children = filterTree(e[k], k, fn);
+                return children.length > 0 ? { ...e, [k]: children } : null;
+            }
+            return fn(e) ? e : null;
+        })
+        .filter(e => e != null);
+}
+
+export const mapTree = <K extends string & keyof T, T extends { [x in K]?: T[] }, MappedType>(
+    tree: T[],
+    k: K,
+    fn: (e: Omit<T, K>) => MappedType,
+): Tree<MappedType, K>[] => {
+    return tree.map(e => ({ ...fn(e), [k]: e[k] ? mapTree(e[k], k, fn) : [] } as Tree<MappedType, K>));
+};

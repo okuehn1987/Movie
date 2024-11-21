@@ -23,6 +23,7 @@ return new class extends Migration
             $table->foreignId('operating_site_id');
             $table->foreignId('group_id')->nullable();
             $table->foreignId('supervisor_id')->nullable()->references('id')->on('users');
+            $table->boolean('is_supervisor')->default(false);
             $table->foreignId('organization_id')->nullable();
             $table->string("staff_number")->nullable();
             $table->date("date_of_birth");

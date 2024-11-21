@@ -23,6 +23,7 @@ class UserController extends Controller
     {
         return Inertia::render('User/UserIndex', [
             'users' => User::inOrganization()->with('group:id,name')->paginate(12),
+            'supervisors' => User::inOrganization()->where('is_supervisor', true)->get(['id', 'first_name', 'last_name']),
             'permissions' => User::$PERMISSIONS,
             'groups' => Group::inOrganization()->get(['id', 'name']),
             'operating_sites' => OperatingSite::inOrganization()->get(['id', 'name'])
@@ -40,14 +41,27 @@ class UserController extends Controller
 
         return Inertia::render('User/UserShow', [
             'user' => $user,
+            'supervisors' => User::inOrganization()
+                ->where('is_supervisor', true)
+                ->whereNotIn('id', $user->allSuperviseesFlat()->pluck('id'))
+                ->get(['id', 'first_name', 'last_name']),
             'time_accounts' => $timeAccounts,
             'time_account_settings' => TimeAccountSetting::inOrganization()->get(['id', 'type', 'truncation_cycle_length_in_months']),
             'groups' => Group::inOrganization()->get(),
             'operating_sites' => OperatingSite::inOrganization()->get(),
             'permissions' => User::$PERMISSIONS,
             'time_account_transactions' => $userTransactions,
+            'organigramUsers' => ($user->supervisor ?: $user)->allSupervisees()->get([
+                'id',
+                'first_name',
+                'last_name',
+                'supervisor_id',
+                'email'
+            ]),
+            'supervisor' => $user->supervisor()->first(['id', 'first_name', 'last_name', 'email']),
         ]);
     }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -73,6 +87,15 @@ class UserController extends Controller
                 "required",
                 Rule::exists('operating_sites', 'id')->where('organization_id', Organization::getCurrent()->id)
             ],
+
+            'supervisor_id' => [
+                'nullable',
+                Rule::exists('users', 'id')
+                    ->where('is_supervisor', true)
+                    ->whereIn('operating_site_id', OperatingSite::inOrganization()->pluck('id'))
+            ],
+
+            'is_supervisor' => 'required|boolean',
 
             'userWorkingHours' => 'required|decimal:0,2',
             'userWorkingHoursSince' => 'required|date',
@@ -101,6 +124,8 @@ class UserController extends Controller
             'staff_number' => $validated['staff_number'],
             'password' => $validated['password'],
             'group_id' => $validated['group_id'],
+            'is_supervisor' => $validated['is_supervisor'],
+            'supervisor_id' => $validated['supervisor_id'],
             'operating_site_id' => $validated['operating_site_id'],
             'date_of_birth' => Carbon::parse($validated['date_of_birth']),
             'email_verified_at' => now(),
@@ -160,6 +185,14 @@ class UserController extends Controller
             "staff_number" => "nullable|integer",
             "group_id" => "nullable|integer",
             'operating_site_id' => 'required|integer',
+            'supervisor_id' => [
+                'nullable',
+                Rule::exists('users', 'id')
+                    ->where('is_supervisor', true)
+                    ->whereIn('operating_site_id', OperatingSite::inOrganization()->pluck('id'))
+                    ->whereNotIn('id', $user->allSuperviseesFlat()->pluck('id'))
+            ],
+            'is_supervisor' => 'required|boolean',
             'userWorkingHours' => 'required|decimal:0,2',
             'userWorkingHoursSince' => 'required|date',
             'userWorkingWeek' => 'required|array',
@@ -185,6 +218,8 @@ class UserController extends Controller
             'staff_number' => $validated['staff_number'],
             'group_id' => $validated['group_id'],
             'operating_site_id' => $validated['operating_site_id'],
+            'supervisor_id' => $validated['supervisor_id'],
+            'is_supervisor' => $validated['is_supervisor'],
             'date_of_birth' => Carbon::parse(Carbon::parse($validated['date_of_birth'])->format('d-m-Y')),
             ...collect(User::$PERMISSIONS)->flatMap(fn($p) => [$p['name'] => in_array($p['name'], $validated['permissions'])])
         ]);

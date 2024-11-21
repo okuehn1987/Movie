@@ -88,6 +88,9 @@ class DatabaseSeeder extends Seeder
             $group = $user->organization->groups->random();
             $user->group_id = $group->id;
             $user->timeAccounts()->first()->addBalance(100, 'seeder balance');
+            $user->supervisor_id = User::where('id', '!=', $user->id)
+                ->whereNotIn('id', $user->allSuperviseesFlat()->pluck('id'))
+                ->inRandomOrder()->first()?->id;
             $user->save();
         }
         WorkLog::factory(30, ['user_id' => $admin->id])->create();

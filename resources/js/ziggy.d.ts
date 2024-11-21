@@ -2,6 +2,9 @@
 declare module 'ziggy-js' {
   interface RouteList {
     "sanctum.csrf-cookie": [],
+    "ignition.healthCheck": [],
+    "ignition.executeSolution": [],
+    "ignition.updateConfig": [],
     "home": [],
     "dashboard": [],
     "user.index": [],
@@ -34,6 +37,12 @@ declare module 'ziggy-js' {
             "name": "organization",
             "required": true,
             "binding": "id"
+        }
+    ],
+    "organization.tree": [
+        {
+            "name": "organization",
+            "required": true
         }
     ],
     "organization.show": [
@@ -175,6 +184,19 @@ declare module 'ziggy-js' {
             "name": "user",
             "required": true,
             "binding": "id"
+        }
+    ],
+    "timeAccount.update": [
+        {
+            "name": "timeAccount",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "timeAccount.destroy": [
+        {
+            "name": "timeAccount",
+            "required": true
         }
     ],
     "timeAccountTransaction.store": [],
