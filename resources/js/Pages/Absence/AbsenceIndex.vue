@@ -50,7 +50,7 @@ const absenceForm = useForm({
     user_id: page.props.auth.user.id,
 });
 
-function createAbsenceModal(day: string, user_id: number) {
+function createAbsenceModal(day: string, user_id: User['id']) {
     const absentUser = props.users.find(u => u.id === user_id);
     if (!absentUser || !isUserEditable(page.props.auth.user.id, absentUser)) return;
 
