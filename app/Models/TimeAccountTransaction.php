@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
 
 class TimeAccountTransaction extends Model
 {
@@ -18,8 +17,8 @@ class TimeAccountTransaction extends Model
     {
         return $query->where(
             fn($q) => $q
-                ->whereIn('from_id', $user->timeAccounts->pluck('id'))
-                ->orWhereIn('to_id', $user->timeAccounts->pluck('id'))
+                ->whereIn('from_id', $user->timeAccounts()->withTrashed()->get()->pluck('id'))
+                ->orWhereIn('to_id', $user->timeAccounts()->withTrashed()->get()->pluck('id'))
         );
     }
 

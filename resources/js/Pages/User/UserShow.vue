@@ -26,9 +26,13 @@ defineProps<{
         userWorkingWeek: UserWorkingWeek;
     };
     supervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
-    time_accounts: (TimeAccount & { time_account_setting: TimeAccountSetting })[];
+
+    time_accounts: (Pick<TimeAccount, 'id' | 'user_id' | 'balance' | 'balance_limit' | 'time_account_setting_id' | 'name' | 'deleted_at'> & {
+        time_account_setting: TimeAccountSetting;
+    })[];
     time_account_settings: TimeAccountSetting[];
     time_account_transactions: Paginator<TimeAccountTransaction & { user: Pick<User, 'id' | 'first_name' | 'last_name'> }>;
+    defaultTimeAccountId: TimeAccount['id'];
 
     groups: Group[];
     operating_sites: OperatingSite[];
@@ -55,7 +59,7 @@ const tab = ref('generalInformation');
                 </v-tabs-window-item>
 
                 <v-tabs-window-item style="overflow-y: auto" value="timeAccounts">
-                    <TimeAccounts :user :time_accounts :time_account_settings />
+                    <TimeAccounts :user :time_accounts :time_account_settings :defaultTimeAccountId />
                 </v-tabs-window-item>
 
                 <v-tabs-window-item style="overflow-y: auto" value="timeAccountTransactions">

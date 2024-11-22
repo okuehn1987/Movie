@@ -40,4 +40,15 @@ class TimeAccountController extends Controller
 
         return back()->with('success', 'Arbeitszeitkonto erfolgreich aktualisiert.');
     }
+
+    public function destroy(TimeAccount $timeAccount)
+    {
+        if ($timeAccount->balance != 0 || $timeAccount->id == $timeAccount->user->defaultTimeAccount()->id) {
+            return back()->with('error', 'Das Arbeitszeitkonto kann nicht gelöscht werden');
+        }
+
+        $timeAccount->delete();
+
+        return back()->with('success', 'Arbeitszeitkonto erfolgreich gelöscht.');
+    }
 }

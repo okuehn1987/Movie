@@ -2,7 +2,9 @@
 import { TimeAccount, TimeAccountSetting } from '@/types/types';
 import { useForm } from '@inertiajs/vue3';
 defineProps<{
-    time_accounts: (TimeAccount & { time_account_setting: TimeAccountSetting })[];
+    time_accounts: (Pick<TimeAccount, 'id' | 'user_id' | 'balance' | 'balance_limit' | 'time_account_setting_id' | 'name' | 'deleted_at'> & {
+        time_account_setting: TimeAccountSetting;
+    })[];
 }>();
 
 const timeAccountTransferForm = useForm({

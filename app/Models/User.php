@@ -107,6 +107,11 @@ class User extends Authenticatable
         return $this->hasMany(TimeAccount::class);
     }
 
+    public function defaultTimeAccount()
+    {
+        return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->whereNull('type'))->first();
+    }
+
     public function userWorkingWeeks()
     {
         return $this->hasMany(UserWorkingWeek::class);

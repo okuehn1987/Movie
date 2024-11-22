@@ -3,7 +3,9 @@ import { TimeAccount, TimeAccountSetting } from '@/types/types';
 import { useForm } from '@inertiajs/vue3';
 
 defineProps<{
-    item: TimeAccount & { time_account_setting: TimeAccountSetting };
+    item: Pick<TimeAccount, 'id' | 'user_id' | 'balance' | 'balance_limit' | 'time_account_setting_id' | 'name' | 'deleted_at'> & {
+        time_account_setting: TimeAccountSetting;
+    };
 }>();
 
 const timeAccountTransactionForm = useForm({
@@ -17,7 +19,7 @@ const timeAccountTransactionForm = useForm({
 <template>
     <v-dialog @after-leave="timeAccountTransactionForm.reset()" max-width="1000">
         <template v-slot:activator="{ props: activatorProps }">
-            <v-btn v-bind="activatorProps" color="primary" icon variant="text" class="me-2">
+            <v-btn v-bind="activatorProps" color="primary" icon variant="text">
                 <v-icon icon="mdi-plus-minus"></v-icon>
             </v-btn>
         </template>

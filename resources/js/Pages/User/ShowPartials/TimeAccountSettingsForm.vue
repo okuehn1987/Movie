@@ -9,7 +9,9 @@ defineProps<{
         currentWorkingHours: UserWorkingHours;
         userWorkingWeek: UserWorkingWeek;
     };
-    item: TimeAccount & { time_account_setting: TimeAccountSetting };
+    item: Pick<TimeAccount, 'id' | 'user_id' | 'balance' | 'balance_limit' | 'time_account_setting_id' | 'name' | 'deleted_at'> & {
+        time_account_setting: TimeAccountSetting;
+    };
     time_account_settings: TimeAccountSetting[];
 }>();
 

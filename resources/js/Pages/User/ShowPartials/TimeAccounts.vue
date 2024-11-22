@@ -1,30 +1,35 @@
 <script setup lang="ts">
 import { TimeAccount, TimeAccountSetting, User, UserWorkingHours, UserWorkingWeek } from '@/types/types';
-import { accountType, DEFAULT_ACCOUNTYPE_NAME, fillNullishValues, getTruncationCylceDisplayName } from '@/utils';
+import { accountType, getTruncationCylceDisplayName } from '@/utils';
 import NewTimeAccountForm from './NewTimeAccountForm.vue';
+import TimeAccountDeleteForm from './TimeAccountDeleteForm.vue';
 import TimeAccountSettingsForm from './TimeAccountSettingsForm.vue';
 import TimeAccountTransactionForm from './TimeAccountTransactionForm.vue';
 import TimeAccountTransferForm from './TimeAccountTransferForm.vue';
+import { computed } from 'vue';
 
-defineProps<{
+const props = defineProps<{
     user: User & {
         currentWorkingHours: UserWorkingHours;
         userWorkingWeek: UserWorkingWeek;
     };
-    time_accounts: (TimeAccount & { time_account_setting: TimeAccountSetting })[];
+    time_accounts: (Pick<TimeAccount, 'id' | 'user_id' | 'balance' | 'balance_limit' | 'time_account_setting_id' | 'name' | 'deleted_at'> & {
+        time_account_setting: TimeAccountSetting;
+    })[];
     time_account_settings: TimeAccountSetting[];
+    defaultTimeAccountId: TimeAccount['id'];
 }>();
+
+const timeAccounts = computed(() => props.time_accounts.filter(t => t.deleted_at == null));
 </script>
 <template>
     <v-data-table-virtual
         :items="
-            time_accounts.map(account =>
-                fillNullishValues({
-                    ...account,
-                    type: accountType(account.time_account_setting.type),
-                    truncation_cycle_length_in_months: getTruncationCylceDisplayName(account.time_account_setting.truncation_cycle_length_in_months),
-                }),
-            )
+            timeAccounts.map(account => ({
+                ...account,
+                type: accountType(account.time_account_setting.type),
+                truncation_cycle_length_in_months: getTruncationCylceDisplayName(account.time_account_setting.truncation_cycle_length_in_months),
+            }))
         "
         :headers="[
             { title: 'Name', key: 'name' },
@@ -56,8 +61,12 @@ defineProps<{
             <NewTimeAccountForm :user :time_account_settings />
         </template>
         <template v-slot:item.actions="{ item }">
-            <TimeAccountTransactionForm :item />
-            <TimeAccountSettingsForm :item :time_account_settings :user />
+            <div class="d-flex justify-end">
+                <TimeAccountTransactionForm :item />
+                <TimeAccountSettingsForm :item :time_account_settings :user />
+                <TimeAccountDeleteForm :item v-if="item.id !== defaultTimeAccountId" />
+                <div v-else-if="timeAccounts.length > 1" style="width: 48px"></div>
+            </div>
         </template>
         <template v-slot:item.balance="{ item }">
             <v-chip color="success" v-if="item.balance > 0">{{ item.balance }}</v-chip>
@@ -65,7 +74,7 @@ defineProps<{
             <v-chip color="black" v-if="item.balance == 0">{{ item.balance }}</v-chip>
         </template>
         <template v-slot:item.type="{ item }">
-            <v-chip color="purple-darken-1" v-if="item.type == DEFAULT_ACCOUNTYPE_NAME">{{ item.type }}</v-chip>
+            <v-chip color="purple-darken-1" v-if="item.id == defaultTimeAccountId">{{ item.type }}</v-chip>
             <span v-else>{{ item.type }}</span>
         </template>
     </v-data-table-virtual>

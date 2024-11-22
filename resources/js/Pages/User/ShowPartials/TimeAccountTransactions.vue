@@ -5,7 +5,9 @@ import { DateTime } from 'luxon';
 import { toRefs } from 'vue';
 
 const props = defineProps<{
-    time_accounts: (TimeAccount & { time_account_setting: TimeAccountSetting })[];
+    time_accounts: (Pick<TimeAccount, 'id' | 'user_id' | 'balance' | 'balance_limit' | 'time_account_setting_id' | 'name' | 'deleted_at'> & {
+        time_account_setting: TimeAccountSetting;
+    })[];
     time_account_transactions: Paginator<TimeAccountTransaction & { user: Pick<User, 'id' | 'first_name' | 'last_name'> }>;
 }>();
 
@@ -16,6 +18,12 @@ function getTransactionType(t: TimeAccountTransaction): 'positive' | 'negative' 
     if (t.to_id) return 'positive';
     return 'negative';
 }
+
+function getAccountName(id: TimeAccountTransaction['from_id'] | TimeAccountTransaction['to_id']) {
+    const account = props.time_accounts.find(ta => ta.id == id);
+    if (!account) return '';
+    return account?.name + (account?.deleted_at ? ' (gelöscht)' : '');
+}
 </script>
 <template>
     <v-data-table-virtual
@@ -25,8 +33,8 @@ function getTransactionType(t: TimeAccountTransaction): 'positive' | 'negative' 
                 ...t,
                 created_at: DateTime.fromISO(t.created_at).toFormat('dd.MM.yyyy HH:ii'),
                 transactionType: getTransactionType(t),
-                from: time_accounts.find(ta => ta.id == t.from_id)?.name,
-                to: time_accounts.find(ta => ta.id == t.to_id)?.name,
+                from: getAccountName(t.from_id),
+                to: getAccountName(t.to_id),
                 amount: roundTo(t.amount, 2),
             }))
         "

@@ -35,7 +35,7 @@ class UserController extends Controller
         $user['currentWorkingHours'] = $user->userWorkingHours()->latest()->first();
         $user['userWorkingWeek'] = $user->userWorkingWeeks()->latest()->first();
 
-        $timeAccounts =  $user->timeAccounts()->with(['timeAccountSetting'])->get(["id", "user_id", "balance", "balance_limit", "time_account_setting_id", "name"]);
+        $timeAccounts =  $user->timeAccounts()->withTrashed()->with(['timeAccountSetting'])->get(["id", "user_id", "balance", "balance_limit", "time_account_setting_id", "name", "deleted_at"]);
 
         $userTransactions = TimeAccountTransaction::forUser($user)->with('user:id,first_name,last_name')->latest()->paginate(15);
 
@@ -47,6 +47,7 @@ class UserController extends Controller
                 ->get(['id', 'first_name', 'last_name']),
             'time_accounts' => $timeAccounts,
             'time_account_settings' => TimeAccountSetting::inOrganization()->get(['id', 'type', 'truncation_cycle_length_in_months']),
+            'defaultTimeAccountId' => $user->defaultTimeAccount()->id,
             'groups' => Group::inOrganization()->get(),
             'operating_sites' => OperatingSite::inOrganization()->get(),
             'permissions' => User::$PERMISSIONS,
