@@ -11,6 +11,8 @@ class OrganizationPolicy
     /** Authorize all actions for super-admins */
     public function before(User $user)
     {
+        header('authorized-by-gate: ' . self::class);
+
         if ($user->role === 'super-admin') return true;
         return null;
     }
