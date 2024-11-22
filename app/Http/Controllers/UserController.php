@@ -13,6 +13,7 @@ use App\Models\UserWorkingHour;
 use App\Models\UserWorkingWeek;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -21,6 +22,8 @@ class UserController extends Controller
 {
     public function index()
     {
+        Gate::authorize('viewIndex', User::class);
+
         return Inertia::render('User/UserIndex', [
             'users' => User::inOrganization()->with('group:id,name')->paginate(12),
             'supervisors' => User::inOrganization()->where('is_supervisor', true)->get(['id', 'first_name', 'last_name']),
@@ -32,6 +35,8 @@ class UserController extends Controller
 
     public function show(User $user)
     {
+        Gate::authorize('viewShow', $user);
+
         $user['currentWorkingHours'] = $user->userWorkingHours()->latest()->first();
         $user['userWorkingWeek'] = $user->userWorkingWeeks()->latest()->first();
 
@@ -65,6 +70,8 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
+        Gate::authorize('create', User::class);
+
         $validated = $request->validate([
             "first_name" => "required|string",
             "last_name" => "required|string",
@@ -163,6 +170,14 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        Gate::authorize('delete', $user);
+
+        if ($user->is_supervisor) {
+            return back()->with('error', 'Mitarbeitende mit unterstellten Mitarbeitenden können nicht gelöscht werden.');
+        }
+        if ($user->organization->owner_id === $user->id) {
+            return back()->with('error', 'Organisationsinhaber kann nicht gelöscht werden.');
+        }
         $user->delete();
 
         return back()->with('success', 'Mitarbeitenden erfolgreich gelöscht.');
@@ -170,6 +185,8 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
+        Gate::authorize('update', $user);
+
         $validated = $request->validate([
             "first_name" => "required|string",
             "last_name" => "required|string",
