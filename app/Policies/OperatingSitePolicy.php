@@ -2,21 +2,26 @@
 
 namespace App\Policies;
 
+use App\Models\OperatingSite;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class OrganizationPolicy
+class OperatingSitePolicy
 {
     /** Authorize all actions for super-admins */
     public function before(User $user)
     {
         header('authorized-by-gate: ' . self::class);
 
-        if ($user->role === 'super-admin') return true;
+        if (
+            $user->role === 'super-admin' ||
+            $user->organization->owner->id === Organization::getCurrent()->id
+        ) return true;
 
         return null; // only if this is returned, the other methods are checked
     }
+
     /**
      * Determine whether the user can view any models.
      */
@@ -28,9 +33,9 @@ class OrganizationPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function viewShow(User $user, Organization $organization): bool
+    public function viewShow(User $user, OperatingSite $operatingSite): bool
     {
-        return $user->organization->id === $organization->id;
+        return $user->operatingSite_id === $operatingSite->id;
     }
 
     /**
@@ -44,15 +49,15 @@ class OrganizationPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Organization $organization): bool
+    public function update(User $user, OperatingSite $operatingSite): bool
     {
-        return $user->id === $organization->owner->user_id;
+        return false;
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Organization $organization): bool
+    public function delete(User $user, OperatingSite $operatingSite): bool
     {
         return false;
     }

@@ -17,7 +17,7 @@ class OrganizationController extends Controller
 {
     public function index()
     {
-        Gate::authorize('index', Organization::class);
+        Gate::authorize('viewIndex', Organization::class);
 
         return Inertia::render('Organization/OrganizationIndex', ['organizations' => Organization::all()]);
     }
@@ -77,7 +77,7 @@ class OrganizationController extends Controller
 
     public function show(Organization $organization)
     {
-        Gate::authorize('show', $organization);
+        Gate::authorize('viewShow', $organization);
 
         return Inertia::render('Organization/OrganizationShow', [
             'organization' => $organization,
@@ -117,7 +117,7 @@ class OrganizationController extends Controller
 
     public function organigram(Organization $organization)
     {
-        Gate::authorize('show', $organization);
+        Gate::authorize('viewShow', $organization);
 
         return Inertia::render('Organization/OrganizationOrganigram', [
             'users' => User::whereNull('supervisor_id')

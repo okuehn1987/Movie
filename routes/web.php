@@ -32,7 +32,7 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::resource('travelLog', TravelLogController::class)->only(['store', 'update']);
 
     Route::resource('operatingSite', OperatingSiteController::class)->only(['index', 'store', 'destroy', 'update', 'show']);
-    Route::resource('operatingTime', OperatingTimeController::class)->only(['store', 'update', 'destroy']);
+    Route::resource('operatingTime', OperatingTimeController::class)->only(['store', 'destroy']);
 
     Route::resource('user.timeAccount', TimeAccountController::class)->shallow()->only(['store']);
     Route::resource('timeAccount', TimeAccountController::class)->only(['update', 'destroy']);

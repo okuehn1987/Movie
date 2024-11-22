@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\OperatingTime;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class OperatingTimeController extends Controller
 {
     public function store(Request $request)
     {
+        Gate::authorize('create', OperatingTime::class);
+
         $validated = $request->validate([
             "start" => 'required|string',
             "end" => 'required|string',
@@ -30,8 +33,10 @@ class OperatingTimeController extends Controller
         return back()->with('success', 'Betriebszeit erfolgreich hinzugefügt.');
     }
 
-    public function destroy(Request $request, OperatingTime $operatingTime)
+    public function destroy(OperatingTime $operatingTime)
     {
+        Gate::authorize('delete', $operatingTime);
+
         $operatingTime->delete();
 
         return back()->with('success', 'Betriebszeit erfolgreich gelöscht.');
