@@ -3,7 +3,6 @@
 namespace App\Policies;
 
 use App\Models\OperatingSite;
-use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
@@ -16,7 +15,7 @@ class OperatingSitePolicy
 
         if (
             $user->role === 'super-admin' ||
-            $user->organization->owner->id === Organization::getCurrent()->id
+            $user->organization->owner_id === $user->id
         ) return true;
 
         return null; // only if this is returned, the other methods are checked
