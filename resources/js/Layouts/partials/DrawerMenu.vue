@@ -57,7 +57,7 @@ const user = computed(() => page.props.auth.user);
                 },
                 {
                     props: { prependIcon: 'mdi-tree', active: route().current('organization.tree') },
-                    value: route('organization.tree'),
+                    value: route('organization.tree', { organization: $page.props.organization.id }),
                     title: 'Organigramm',
                 },
                 ...(user.role === 'super-admin'

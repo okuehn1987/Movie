@@ -42,7 +42,8 @@ declare module 'ziggy-js' {
     "organization.tree": [
         {
             "name": "organization",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "organization.show": [
@@ -196,7 +197,8 @@ declare module 'ziggy-js' {
     "timeAccount.destroy": [
         {
             "name": "timeAccount",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "timeAccountTransaction.store": [],

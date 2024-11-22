@@ -16,7 +16,7 @@ Route::middleware(['auth', HasOrganizationAccess::class])->group(function () {
 
     Route::middleware(HasRole::class . ':super-admin')->group(function () {
         Route::resource('organization', OrganizationController::class)->only(['index', 'store', 'destroy']);
-        Route::get('/organization/tree', [OrganizationController::class, 'organigram'])->name('organization.tree');
+        Route::get('/organization/{organization}/tree', [OrganizationController::class, 'organigram'])->name('organization.tree');
     });
     Route::resource('organization', OrganizationController::class)->only(['show', 'update']);
     Route::resource('absence', AbsenceController::class)->only(['index', 'update', 'store']);

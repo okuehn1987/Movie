@@ -8,6 +8,7 @@ use App\Models\OperatingTime;
 use App\Models\Organization;
 use App\Models\SpecialWorkingHoursFactor;
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
@@ -16,11 +17,15 @@ class OrganizationController extends Controller
 {
     public function index()
     {
+        Gate::authorize('index', Organization::class);
+
         return Inertia::render('Organization/OrganizationIndex', ['organizations' => Organization::all()]);
     }
 
     public function store(Request $request)
     {
+        Gate::authorize('create', Organization::class);
+
         $validated = $request->validate([
             'organization_name' => "required|string|unique:organizations,name",
             'organization_street' => "required|string",
@@ -72,6 +77,8 @@ class OrganizationController extends Controller
 
     public function show(Organization $organization)
     {
+        Gate::authorize('show', $organization);
+
         return Inertia::render('Organization/OrganizationShow', [
             'organization' => $organization,
             'operating_sites' => OperatingSite::inOrganization()->get(),
@@ -83,6 +90,8 @@ class OrganizationController extends Controller
 
     public function update(Request $request, Organization $organization)
     {
+        Gate::authorize('update', $organization);
+
         $validated = $request->validate([
             'name' => "required|string",
             'tax_registration_id' => "nullable|string",
@@ -99,13 +108,17 @@ class OrganizationController extends Controller
     }
     public function destroy(Organization $organization)
     {
+        Gate::authorize('delete', $organization);
+
         $organization->delete();
 
         return back()->with('success', 'Organisation erfolgreich gelöscht.');
     }
 
-    public function organigram()
+    public function organigram(Organization $organization)
     {
+        Gate::authorize('show', $organization);
+
         return Inertia::render('Organization/OrganizationOrganigram', [
             'users' => User::whereNull('supervisor_id')
                 ->with('allSupervisees:id,first_name,last_name,supervisor_id,email')
