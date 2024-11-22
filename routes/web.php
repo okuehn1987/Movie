@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\CheckIfGateWasUsedToAuthorizeRequest;
 use App\Http\Middleware\HasOrganizationAccess;
 use App\Http\Middleware\HasPermission;
 use App\Http\Middleware\HasRole;
@@ -9,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard')->name('home');
 
-Route::middleware(['auth', HasOrganizationAccess::class])->group(function () {
+Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAuthorizeRequest::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('user', UserController::class)->only(['index', 'store', 'destroy', 'update', 'show'])->middleware(HasPermission::class . ':user_administration');
