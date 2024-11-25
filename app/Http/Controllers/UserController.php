@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Group;
+use App\Models\GroupUser;
 use App\Models\OperatingSite;
+use App\Models\OperatingSiteUser;
 use App\Models\Organization;
+use App\Models\OrganizationUser;
 use App\Models\TimeAccount;
 use App\Models\TimeAccountSetting;
 use App\Models\TimeAccountTransaction;
@@ -163,6 +166,21 @@ class UserController extends Controller
             'balance_limit' => $validated['userWorkingHours'] * 2,
             'time_account_setting_id' => TimeAccountSetting::inOrganization()->whereNull('type')->first()->id,
             'user_id' => $user->id
+        ]);
+
+        OrganizationUser::create([
+            "user_id" => $user->id,
+            "organization_id" => Organization::getCurrent()->id,
+        ]);
+
+        GroupUser::create([
+            "user_id" => $user->id,
+            "group_id" => $user->group_id,
+        ]);
+
+        OperatingSiteUser::create([
+            "user_id" => $user->id,
+            "operating_site_id" => $user->operating_site_id,
         ]);
 
         return back()->with('success', 'Mitarbeitenden erfolgreich angelegt.');

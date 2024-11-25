@@ -70,7 +70,7 @@ export type User = DBObject<'User'> &
         email_verified_at: string | null;
         weekly_working_hours: number;
         is_supervisor: boolean;
-    } & Record<Permission, boolean>;
+    };
 
 export type UserWorkingHours = DBObject<'UserWorkingHours'> &
     SoftDelete & {
@@ -228,8 +228,6 @@ export type TimeAccountTransaction = DBObject<'TimeAccountTransaction'> &
         description: string;
     };
 
-type Permission = 'work_log_patching' | 'user_administration';
-
 export type UserPermission = { name: Permission; label: string };
 
 export type UserWorkingWeek = DBObject<'UserWorkingWeek'> &
@@ -260,3 +258,36 @@ export type Notification = Omit<DBObject<'Notification'>, 'id'> & {
               };
           }
     );
+
+type PermissionValue = 'read' | 'write' | null;
+
+type Permission = {
+    all:
+        | 'user_permission'
+        | 'workLogPatch_permission'
+        | 'absence_permission'
+        | 'timeAccount_permission'
+        | 'timeAccountSetting_permission'
+        | 'timeAccountTransaction_permission';
+    organization: 'absenceType_permission' | 'specialWorkingHoursFactor_permission' | 'organization_permission';
+    operatingSite: 'operatingSite_permission';
+    group: 'group_permission';
+};
+
+export type OrganizationUser = DBObject<'OrganizationUser'> &
+    SoftDelete & {
+        organization_id: Organization['id'];
+        user_id: User['id'];
+    } & Record<Permission['all'] & Permission['organization'] & Permission['group'] & Permission['operatingSite'], PermissionValue>;
+
+export type OperatingSiteUser = DBObject<'OperatingSiteUser'> &
+    SoftDelete & {
+        operating_site_id: OperatingSite['id'];
+        user_id: User['id'];
+    } & Record<Permission['all'] & Permission['operatingSite'], PermissionValue>;
+
+export type GroupUser = DBObject<'GroupUser'> &
+    SoftDelete & {
+        group_id: Group['id'];
+        user_id: User['id'];
+    } & Record<Permission['all'] & Permission['group'], PermissionValue>;

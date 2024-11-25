@@ -21,6 +21,12 @@ class Organization extends Model
     {
         return $this->hasManyThrough(User::class, OperatingSite::class);
     }
+
+    public function organizationUsers()
+    {
+        return $this->hasMany(OrganizationUser::class);
+    }
+
     public function absenceTypes()
     {
         return $this->hasMany(AbsenceType::class);

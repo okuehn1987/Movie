@@ -117,6 +117,21 @@ class User extends Authenticatable
         return $this->hasMany(UserWorkingWeek::class);
     }
 
+    public function organizationUser()
+    {
+        return $this->hasOne(OrganizationUser::class);
+    }
+
+    public function groupUser()
+    {
+        return $this->hasOne(GroupUser::class);
+    }
+
+    public function operatingSiteUser()
+    {
+        return $this->hasOne(OperatingSiteUser::class);
+    }
+
     public function getOvertimeAttribute()
     {
         return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->where('type', 'default'))->sum('balance');
