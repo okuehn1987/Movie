@@ -7,12 +7,15 @@ use App\Models\TimeAccount;
 use App\Models\TimeAccountSetting;
 use App\Models\TimeAccountTransaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class TimeAccountTransactionController extends Controller
 {
     public function store(Request $request)
     {
+        Gate::authorize('create', TimeAccountSetting::class);
+
         $validated = $request->validate([
             'from_id' => [
                 'nullable',

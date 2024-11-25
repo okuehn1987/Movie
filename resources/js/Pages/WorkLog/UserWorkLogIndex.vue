@@ -29,7 +29,7 @@ const editableWorkLogs = computed(() => props.workLogs.data.filter((_, i) => i <
 
 onMounted(() => {
     const workLogId = route().params['workLog'];
-    if (workLogId) return editWorkLog(Number(workLogId));
+    if (workLogId) return editWorkLog(Number(workLogId) as WorkLog['id']);
 });
 
 const workLogForm = useForm({
@@ -119,7 +119,7 @@ function retreatPatch() {
 <template>
     <AdminLayout
         :title="user.first_name + ' ' + user.last_name"
-        :backurl="route().params['fromUserWorkLogs'] ? route('users.workLogs') : route('dashboard')"
+        :backurl="route().params['fromUserWorkLogs'] ? route('workLog.index') : route('dashboard')"
     >
         <v-card>
             <v-data-table

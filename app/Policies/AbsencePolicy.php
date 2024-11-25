@@ -2,11 +2,11 @@
 
 namespace App\Policies;
 
-use App\Models\Group;
+use App\Models\Absence;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class GroupPolicy
+class AbsencePolicy
 {
     /** Authorize all actions for super-admins */
     public function before(User $user)
@@ -23,26 +23,21 @@ class GroupPolicy
 
     public function viewIndex(User $user): bool
     {
-        return false;
+        return true;
     }
 
-    public function viewShow(User $user, Group $group): bool
+    public function create(User $authUser, User $user): bool
     {
-        return $user->group_id === $group->id;
+        return $authUser->id === $user->id || $authUser->supervisor_id === $user->id;
     }
 
-    public function create(User $user): bool
+    public function update(User $user, Absence $absence): bool
     {
-        return false;
+        return $absence->user->supervisor_id === $user->id;
     }
 
-    public function update(User $user, Group $group): bool
+    public function delete(User $user, Absence $absence): bool
     {
-        return false;
-    }
-
-    public function delete(User $user, Group $group): bool
-    {
-        return false;
+        return $absence->user->supervisor_id === $user->id;
     }
 }

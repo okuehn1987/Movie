@@ -8,12 +8,15 @@ use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
     public function index()
     {
+        Gate::authorize('publicAuth', User::class);
+
         $user = User::find(Auth::id());
         $isSupervisor = User::where('supervisor_id', $user->id)->exists();
 

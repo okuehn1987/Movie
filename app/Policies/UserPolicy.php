@@ -20,17 +20,11 @@ class UserPolicy
         return null; // only if this is returned, the other methods are checked
     }
 
-    /**
-     * Determine whether the user can view any models.
-     */
     public function viewIndex(User $authUser): bool
     {
         return $authUser->user_administration;
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
     public function viewShow(User $authUser, User $user): bool
     {
         return
@@ -39,17 +33,11 @@ class UserPolicy
             $authUser->user_administration;
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
     public function create(User $authUser): bool
     {
         return $authUser->user_administration;
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
     public function update(User $authUser, User $user): bool
     {
         return
@@ -57,11 +45,13 @@ class UserPolicy
             $authUser->user_administration;
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
     public function delete(User $authUser, User $user): bool
     {
         return $authUser->user_administration;
+    }
+
+    public function publicAuth(User $authUser)
+    {
+        return true;
     }
 }

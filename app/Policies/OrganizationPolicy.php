@@ -17,41 +17,27 @@ class OrganizationPolicy
 
         return null; // only if this is returned, the other methods are checked
     }
-    /**
-     * Determine whether the user can view any models.
-     */
+
     public function viewIndex(User $user): bool
     {
         return false;
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
     public function viewShow(User $user, Organization $organization): bool
     {
         return $user->organization->id === $organization->id;
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
     public function create(User $user): bool
     {
         return false;
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
     public function update(User $user, Organization $organization): bool
     {
         return $user->id === $organization->owner->user_id;
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
     public function delete(User $user, Organization $organization): bool
     {
         return false;

@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class AbsenceController extends Controller
@@ -17,6 +18,8 @@ class AbsenceController extends Controller
 
     public function index()
     {
+        Gate::authorize('publicAuth', User::class);
+
         $user = Auth::user();
 
         return Inertia::render('Absence/AbsenceIndex', [
@@ -37,6 +40,8 @@ class AbsenceController extends Controller
 
     public function store(Request $request)
     {
+        Gate::authorize('create', [Absence::class, User::find($request['user_id'])]);
+
         $validated = $request->validate([
             'start' => 'required|date',
             'end' => 'required|date',
@@ -66,6 +71,8 @@ class AbsenceController extends Controller
 
     public function update(Request $request, Absence $absence)
     {
+        Gate::authorize('update', $absence);
+
         $validated = $request->validate([
             'accepted' => 'required|boolean'
         ]);
@@ -73,5 +80,11 @@ class AbsenceController extends Controller
         $absence->update(['status' => $validated['accepted'] ? 'accepted' : 'declined']);
 
         return back()->with('success',  "Abwesenheit erfolgreich " . ($validated['accepted'] ? 'akzeptiert' : 'abgelehnt') . ".");
+    }
+
+    public function destroy(Absence $absence)
+    {
+        Gate::authorize('delete', $absence);
+        // TODO: 
     }
 }

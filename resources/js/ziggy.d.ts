@@ -135,7 +135,6 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
-    "users.workLogs": [],
     "travelLog.store": [],
     "travelLog.update": [
         {
@@ -167,12 +166,6 @@ declare module 'ziggy-js' {
         }
     ],
     "operatingTime.store": [],
-    "operatingTime.update": [
-        {
-            "name": "operatingTime",
-            "required": true
-        }
-    ],
     "operatingTime.destroy": [
         {
             "name": "operatingTime",

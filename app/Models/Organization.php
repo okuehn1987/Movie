@@ -11,9 +11,7 @@ class Organization extends Model
 {
     use HasFactory, SoftDeletes, ScopeInOrganization;
 
-    protected $fillable = [
-        'name'
-    ];
+    protected $guarded = [];
 
     public function operatingSites()
     {

@@ -20,8 +20,8 @@ const user = computed(() => page.props.auth.user);
                     title: 'Abwesenheiten',
                 },
                 {
-                    props: { active: route().current('users.workLogs'), prependIcon: 'mdi-clock-outline' },
-                    value: route('users.workLogs'),
+                    props: { active: route().current('workLog.index'), prependIcon: 'mdi-clock-outline' },
+                    value: route('workLog.index'),
                     title: 'Arbeitszeiten',
                 },
                 { type: 'divider' },

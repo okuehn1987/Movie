@@ -2,20 +2,20 @@
 
 namespace App\Policies;
 
-use App\Models\Group;
+use App\Models\TimeAccountSetting;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class GroupPolicy
+class TimeAccountSettingPolicy
 {
     /** Authorize all actions for super-admins */
-    public function before(User $user)
+    public function before(User $authUser)
     {
         header('authorized-by-gate: ' . self::class);
 
         if (
-            $user->role === 'super-admin' ||
-            $user->organization->owner_id === $user->id
+            $authUser->role === 'super-admin' ||
+            $authUser->organization->owner_id === $authUser->id
         ) return true;
 
         return null; // only if this is returned, the other methods are checked
@@ -26,22 +26,17 @@ class GroupPolicy
         return false;
     }
 
-    public function viewShow(User $user, Group $group): bool
-    {
-        return $user->group_id === $group->id;
-    }
-
     public function create(User $user): bool
     {
         return false;
     }
 
-    public function update(User $user, Group $group): bool
+    public function update(User $user, TimeAccountSetting $timeAccountSetting): bool
     {
         return false;
     }
 
-    public function delete(User $user, Group $group): bool
+    public function delete(User $user, TimeAccountSetting $timeAccountSetting): bool
     {
         return false;
     }
