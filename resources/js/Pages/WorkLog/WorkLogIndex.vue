@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<!-- <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Group, User, WorkLog } from '@/types/types';
 import { DateTime } from 'luxon';
@@ -234,4 +234,4 @@ function changeDateTime(add: boolean) {
 .v-calendar-month__days > .v-calendar-month__day {
     min-height: 100px; /* override the set default of 150 so the calendar fits on screen*/
 }
-</style>
+</style> -->

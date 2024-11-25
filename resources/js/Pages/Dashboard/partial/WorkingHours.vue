@@ -23,7 +23,7 @@ function changeWorkStatus(is_home_office = false) {
 }
 
 const currentOperatingTime = props.operating_times.find(
-    t => t.type == Info.weekdays('long', { locale: 'en' })[DateTime.now().weekday - 1].toLowerCase(),
+    t => t.type == Info.weekdays('long', { locale: 'en' })[DateTime.now().weekday - 1]?.toLowerCase(),
 );
 
 const currentWorkingHours = computed(() =>
