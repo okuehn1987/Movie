@@ -29,7 +29,7 @@ const editableWorkLogs = computed(() => props.workLogs.data.filter((_, i) => i <
 
 onMounted(() => {
     const workLogId = route().params['workLog'];
-    if (workLogId) return editWorkLog(Number(workLogId));
+    if (workLogId) return editWorkLog(Number(workLogId) as WorkLog['id']);
 });
 
 const workLogForm = useForm({
