@@ -38,9 +38,6 @@ return new class extends Migration
             $table->string("zip")->nullable();
             $table->string("federal_state")->nullable();
 
-            $table->boolean('work_log_patching')->default(false);
-            $table->boolean('user_administration')->default(false);
-
             $table->rememberToken();
             $table->timestamps();
         });

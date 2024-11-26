@@ -28,11 +28,11 @@ class WorkLogPatchPolicy
 
     public function update(User $user, WorkLogPatch $workLogPatch): bool
     {
-        return $workLogPatch->user->supervisor_id === $user->id;
+        return $user->hasPermission($workLogPatch->user, 'workLogPatch_permission', 'write') || $workLogPatch->user->supervisor_id === $user->id;
     }
 
     public function delete(User $user, WorkLogPatch $workLogPatch): bool
     {
-        return $workLogPatch->user->supervisor_id === $user->id;
+        return $user->hasPermission($workLogPatch->user, 'workLogPatch_permission', 'write') || $workLogPatch->user->supervisor_id === $user->id;
     }
 }

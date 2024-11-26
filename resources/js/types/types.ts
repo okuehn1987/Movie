@@ -228,8 +228,6 @@ export type TimeAccountTransaction = DBObject<'TimeAccountTransaction'> &
         description: string;
     };
 
-export type UserPermission = { name: Permission; label: string };
-
 export type UserWorkingWeek = DBObject<'UserWorkingWeek'> &
     SoftDelete &
     Record<Weekday, boolean> & {
@@ -272,6 +270,10 @@ type Permission = {
     organization: 'absenceType_permission' | 'specialWorkingHoursFactor_permission' | 'organization_permission';
     operatingSite: 'operatingSite_permission';
     group: 'group_permission';
+};
+
+export type UserPermission = {
+    [key in keyof Permission]: { name: Permission[key]; label: string };
 };
 
 export type OrganizationUser = DBObject<'OrganizationUser'> &

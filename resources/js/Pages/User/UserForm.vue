@@ -7,7 +7,7 @@ const props = defineProps<{
     user?: User & { currentWorkingHours: UserWorkingHours; userWorkingWeek: UserWorkingWeek };
     supervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];
-    permissions: UserPermission[];
+    permissions: UserPermission;
     groups: Pick<Group, 'id' | 'name'>[];
     mode: 'create' | 'edit';
 }>();
@@ -39,7 +39,6 @@ const userForm = useForm({
     userWorkingHoursSince: new Date(),
     userWorkingWeek: [] as Weekday[],
     userWorkingWeekSince: new Date(),
-    permissions: [] as UserPermission['name'][],
 });
 
 if (props.user) {
@@ -66,9 +65,9 @@ if (props.user) {
         if (props.user.userWorkingWeek[weekday]) userForm.userWorkingWeek.push(weekday);
     }
     userForm.userWorkingWeekSince = new Date(props.user.userWorkingWeek.active_since);
-    for (const permission of props.permissions) {
-        if (props.user[permission.name]) userForm.permissions.push(permission.name);
-    }
+    // for (const permission of props.permissions) {
+    //     if (props.user[permission.name]) userForm.permissions.push(permission.name);
+    // }
 }
 
 function submit() {
@@ -217,9 +216,10 @@ function submit() {
 
                     <v-col cols="12"><h3>Berechtigungen</h3></v-col>
 
-                    <v-col cols="12" md="6" v-for="permission in permissions" :key="permission.name">
+                    {{ permissions }}
+                    <!-- <v-col cols="12" md="6" v-for="permission in permissions" :key="permission.name">
                         <v-checkbox v-model="userForm.permissions" :value="permission.name" :label="permission.label" hide-details></v-checkbox>
-                    </v-col>
+                    </v-col> -->
 
                     <v-col cols="12" class="text-end">
                         <v-btn type="submit" color="primary" :loading="userForm.processing">Speichern</v-btn>

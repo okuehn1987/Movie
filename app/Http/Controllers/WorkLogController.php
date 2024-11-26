@@ -53,6 +53,7 @@ class WorkLogController extends Controller
     }
     public function userWorkLogs(Request $request, User $user)
     {
+        Gate::authorize('viewShow', $user);
         Gate::authorize('viewShow', [WorkLog::class, $user]);
 
         return Inertia::render('WorkLog/UserWorkLogIndex', [

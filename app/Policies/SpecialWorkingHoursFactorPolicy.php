@@ -23,16 +23,16 @@ class SpecialWorkingHoursFactorPolicy
 
     public function view(User $user, SpecialWorkingHoursFactor $specialWorkingHoursFactor): bool
     {
-        return false; // maybe make swhf accesable for users?
+        return $user->hasPermission(null, 'specialWorkingHoursFactor_permission', 'read');
     }
 
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasPermission(null, 'specialWorkingHoursFactor_permission', 'write');
     }
 
     public function delete(User $user, SpecialWorkingHoursFactor $specialWorkingHoursFactor): bool
     {
-        return false;
+        return $user->hasPermission(null, 'specialWorkingHoursFactor_permission', 'write');
     }
 }

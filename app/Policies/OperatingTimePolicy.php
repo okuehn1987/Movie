@@ -24,11 +24,11 @@ class OperatingTimePolicy
 
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasPermission(null, 'operatingTime_permission', 'write');
     }
 
     public function delete(User $user, OperatingTime $operatingTime): bool
     {
-        return false;
+        return $user->hasPermission(null, 'operatingTime_permission', 'write');
     }
 }

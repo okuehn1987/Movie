@@ -23,6 +23,6 @@ class TimeAccountTransactionPolicy
 
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasPermission(null, 'timeAccountTransaction', 'write');
     }
 }

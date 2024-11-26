@@ -4,9 +4,12 @@ namespace Database\Seeders;
 
 use App\Models\AbsenceType;
 use App\Models\Group;
+use App\Models\GroupUser;
 use App\Models\OperatingSite;
+use App\Models\OperatingSiteUser;
 use App\Models\OperatingTime;
 use App\Models\Organization;
+use App\Models\OrganizationUser;
 use App\Models\TimeAccount;
 use App\Models\TimeAccountSetting;
 use App\Models\User;
@@ -37,8 +40,13 @@ class DatabaseSeeder extends Seeder
                 ->has(TimeAccountSetting::factory(1))
                 ->has(
                     OperatingSite::factory(3)
-                        ->has($users
-                            ->has(TimeAccount::factory(1, ['time_account_setting_id' => $n, 'balance_limit' => random_int(20, 100), 'balance' => random_int(0, 20)])))
+                        ->has(
+                            $users->has(TimeAccount::factory(1, [
+                                'time_account_setting_id' => $n,
+                                'balance_limit' => random_int(20, 100),
+                                'balance' => random_int(0, 20)
+                            ]))
+                        )
                         ->has(OperatingTime::factory(7, ['start' => '09:00:00', 'end' => '17:00:00'])
                             ->sequence(fn(Sequence $sequence) => ['type' => [
                                 'monday',
@@ -64,7 +72,6 @@ class DatabaseSeeder extends Seeder
         }
 
         $admin = User::factory([
-            ...collect(User::$PERMISSIONS)->flatMap(fn($p) => [$p['name'] => true])->toArray(),
             'operating_site_id' => 1,
             'password' => Hash::make('admin'),
             'email' => 'admin@admin.com',
@@ -84,7 +91,7 @@ class DatabaseSeeder extends Seeder
         $admin->isSubstitutedBy()->attach(User::find(1));
         $admin->isSubstitutionFor()->attach(User::find(6));
 
-        foreach (User::with(['organization', 'organization.groups', 'timeAccounts'])->get() as $user) {
+        foreach (User::with(['organization', 'organization.groups', 'timeAccounts', 'operatingSite'])->get() as $user) {
             $group = $user->organization->groups->random();
             $user->group_id = $group->id;
             $user->timeAccounts()->first()->addBalance(100, 'seeder balance');
@@ -93,6 +100,27 @@ class DatabaseSeeder extends Seeder
                 ->inRandomOrder()->first()?->id;
             $user->save();
             User::find($user->supervisor_id)?->update(['is_supervisor' => true]);
+
+            OrganizationUser::create([
+                "user_id" => $user->id,
+                "organization_id" => $user->operatingSite->organization_id,
+                ...($user->id === $admin->id ?
+                    collect(array_keys(User::$PERMISSIONS))->flatMap(fn($key) =>
+                    collect(User::$PERMISSIONS[$key])
+                        ->flatMap(fn($g) => [$g['name'] => 'write'])->toArray())
+                    ->toArray()
+                    : [])
+            ]);
+
+            GroupUser::create([
+                "user_id" => $user->id,
+                "group_id" => $user->group_id,
+            ]);
+
+            OperatingSiteUser::create([
+                "user_id" => $user->id,
+                "operating_site_id" => $user->operating_site_id,
+            ]);
         }
         WorkLog::factory(30, ['user_id' => $admin->id])->create();
     }

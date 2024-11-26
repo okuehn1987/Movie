@@ -23,21 +23,21 @@ class TimeAccountSettingPolicy
 
     public function viewIndex(User $user): bool
     {
-        return false;
+        return $user->hasPermission(null, 'timeAccountSetting_permission', 'read');
     }
 
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasPermission(null, 'timeAccountSetting_permission', 'write');
     }
 
     public function update(User $user, TimeAccountSetting $timeAccountSetting): bool
     {
-        return false;
+        return $user->hasPermission(null, 'timeAccountSetting_permission', 'write');
     }
 
     public function delete(User $user, TimeAccountSetting $timeAccountSetting): bool
     {
-        return false;
+        return $user->hasPermission(null, 'timeAccountSetting_permission', 'write');
     }
 }

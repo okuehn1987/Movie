@@ -21,7 +21,7 @@ class DashboardController extends Controller
         $isSupervisor = User::where('supervisor_id', $user->id)->exists();
 
         $patches = null;
-        if ($user->work_log_patching && $isSupervisor) {
+        if ($user->hasPermission(null, 'workLogPatch_permission', 'write') && $isSupervisor) {
             $patches = WorkLogPatch::select(['id', 'start', 'end', 'is_home_office', 'user_id', 'work_log_id'])->inOrganization()
                 ->where('status', 'created')
                 ->with(['workLog:id,start,end,is_home_office', 'user:id,first_name,last_name'])->get();

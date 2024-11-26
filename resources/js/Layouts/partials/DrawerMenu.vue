@@ -42,7 +42,7 @@ const user = computed(() => page.props.auth.user);
                     value: route('group.index'),
                     title: 'Abteilungen',
                 },
-                $page.props.auth.user.user_administration && {
+                {
                     props: { active: route().current('user.index'), prependIcon: 'mdi-account-group' },
                     value: route('user.index'),
                     title: 'Mitarbeitende',

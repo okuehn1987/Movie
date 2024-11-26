@@ -13,7 +13,7 @@ const props = defineProps<{
     supervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
     groups: Pick<Group, 'id' | 'name'>[];
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];
-    permissions: UserPermission[];
+    permissions: UserPermission;
 }>();
 
 const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');

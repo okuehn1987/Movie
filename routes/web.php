@@ -13,7 +13,7 @@ Route::redirect('/', '/dashboard')->name('home');
 Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAuthorizeRequest::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::resource('user', UserController::class)->only(['index', 'store', 'destroy', 'update', 'show'])->middleware(HasPermission::class . ':user_administration');
+    Route::resource('user', UserController::class)->only(['index', 'store', 'destroy', 'update', 'show']);
 
     Route::middleware(HasRole::class . ':super-admin')->group(function () {
         Route::resource('organization', OrganizationController::class)->only(['index', 'store', 'destroy']);

@@ -11,15 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('operating_site_user', function (Blueprint $table) {
+        Schema::create('organization_users', function (Blueprint $table) {
             $table->id();
             $table->softDeletes();
-            $table->foreignId('operating_site_id');
+            $table->foreignId('organization_id');
             $table->foreignId('user_id');
             $table->enum('user_permission', ['read', 'write'])->nullable();
             $table->enum('workLogPatch_permission', ['read', 'write'])->nullable();
             $table->enum('absence_permission', ['read', 'write'])->nullable();
+            $table->enum('absenceType_permission', ['read', 'write'])->nullable();
+            $table->enum('specialWorkingHoursFactor_permission', ['read', 'write'])->nullable();
+            $table->enum('group_permission', ['read', 'write'])->nullable();
             $table->enum('operatingSite_permission', ['read', 'write'])->nullable();
+            $table->enum('organization_permission', ['read', 'write'])->nullable();
             $table->enum('timeAccount_permission', ['read', 'write'])->nullable();
             $table->enum('timeAccountSetting_permission', ['read', 'write'])->nullable();
             $table->enum('timeAccountTransaction_permission', ['read', 'write'])->nullable();
@@ -32,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('operating_site_user');
+        Schema::dropIfExists('organization_users');
     }
 };

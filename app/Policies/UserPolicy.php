@@ -22,32 +22,27 @@ class UserPolicy
 
     public function viewIndex(User $authUser): bool
     {
-        return $authUser->user_administration;
+        return $authUser->hasPermission(null, 'user_permission', 'read');
     }
 
     public function viewShow(User $authUser, User $user): bool
     {
-        return
-            $authUser->id === $user->supervisor_id ||
-            $authUser->id === $user->id ||
-            $authUser->user_administration;
+        return $authUser->hasPermission($user, 'user_permission', 'read') || $authUser->id === $user->id;
     }
 
     public function create(User $authUser): bool
     {
-        return $authUser->user_administration;
+        return $authUser->hasPermission(null, 'user_permission', 'write');
     }
 
     public function update(User $authUser, User $user): bool
     {
-        return
-            $authUser->id === $user->supervisor_id ||
-            $authUser->user_administration;
+        return $authUser->hasPermission($user, 'user_permission', 'write');
     }
 
     public function delete(User $authUser, User $user): bool
     {
-        return $authUser->user_administration;
+        return $authUser->hasPermission($user, 'user_permission', 'write');
     }
 
     public function publicAuth(User $authUser)

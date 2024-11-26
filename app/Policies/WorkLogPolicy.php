@@ -21,23 +21,13 @@ class WorkLogPolicy
         return null; // only if this is returned, the other methods are checked
     }
 
-    public function viewShow(User $user, WorkLog $workLog): bool
+    public function viewShow(User $authUser, User $user): bool
     {
-        return $user->id === $workLog->user_id || $workLog->user->supervisor_id === $user->id;
+        return $user->hasPermission($user, 'workLog_permission', 'read') || $user->supervisor_id === $authUser->id || $authUser->id === $user->id;
     }
 
     public function create(User $user): bool
     {
         return true;
-    }
-
-    public function createPatch(User $user, WorkLog $workLog): bool
-    {
-        return $user->id === $workLog->user_id || $workLog->user->supervisor_id === $user->id;
-    }
-
-    public function updatePatch(User $user, WorkLog $workLog, WorkLogPatch $workLogPatch)
-    {
-        return $workLogPatch->user->supervisor_id === $user->id;
     }
 }

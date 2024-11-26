@@ -23,16 +23,16 @@ class TimeAccountPolicy
 
     public function create(User $authUser, User $user): bool
     {
-        return $authUser->id === $user->supervisor_id;
+        return $user->hasPermission(null, 'timeAccount_permission', 'write');
     }
 
     public function update(User $user, TimeAccount $timeAccount): bool
     {
-        return $user->id === $timeAccount->user->supervisor_id;
+        return $user->hasPermission($timeAccount->user, 'timeAccount_permission', 'write');
     }
 
     public function delete(User $user, TimeAccount $timeAccount): bool
     {
-        return $user->id === $timeAccount->user->supervisor_id;
+        return $user->hasPermission($timeAccount->user, 'timeAccount_permission', 'write');
     }
 }

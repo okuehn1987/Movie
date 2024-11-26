@@ -23,26 +23,26 @@ class GroupPolicy
 
     public function viewIndex(User $user): bool
     {
-        return false;
+        return $user->hasPermission(null, 'group_permission', 'read');
     }
 
     public function viewShow(User $user, Group $group): bool
     {
-        return $user->group_id === $group->id;
+        return $user->hasPermission(null, 'group_permission', 'read');
     }
 
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasPermission(null, 'group_permission', 'write');
     }
 
     public function update(User $user, Group $group): bool
     {
-        return false;
+        return $user->hasPermission(null, 'group_permission', 'write');
     }
 
     public function delete(User $user, Group $group): bool
     {
-        return false;
+        return $user->hasPermission(null, 'group_permission', 'write');
     }
 }

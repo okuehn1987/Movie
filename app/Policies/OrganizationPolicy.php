@@ -25,21 +25,21 @@ class OrganizationPolicy
 
     public function viewShow(User $user, Organization $organization): bool
     {
-        return $user->organization->id === $organization->id;
+        return $user->hasPermission(null, 'organization_permission', 'read');
     }
 
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasPermission(null, 'organization_permission', 'write');
     }
 
     public function update(User $user, Organization $organization): bool
     {
-        return $user->id === $organization->owner->user_id;
+        return $user->hasPermission(null, 'organization_permission', 'write');
     }
 
     public function delete(User $user, Organization $organization): bool
     {
-        return false;
+        return false; // never should anyone besides mbd be able to delete a org 
     }
 }

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Absence, AbsenceType, OperatingTime, User, WorkLog, WorkLogPatch } from '@/types/types';
-import { usePage } from '@inertiajs/vue3';
 import WorkingHours from './partial/WorkingHours.vue';
 import WorkLogPatches from './partial/WorkLogPatches.vue';
 import Absences from './partial/Absences.vue';
@@ -25,7 +24,6 @@ defineProps<{
     workingHours: { should: number; current: number };
     absences: AbsenceProp[] | null;
 }>();
-const page = usePage();
 </script>
 
 <template>
@@ -50,8 +48,8 @@ const page = usePage();
                     <v-card-item>TODO: to be implemented</v-card-item>
                 </v-card>
             </v-col>
-
-            <v-col cols="12" sm="6" lg="4" v-if="page.props.auth.user.work_log_patching && patches">
+            <!-- TODO: add worklog patch permission in FE -->
+            <v-col cols="12" sm="6" lg="4" v-if="patches">
                 <WorkLogPatches :patches="patches" />
             </v-col>
             <v-col cols="12" sm="6" lg="4" v-if="absences">

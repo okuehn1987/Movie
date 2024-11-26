@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('group_user', function (Blueprint $table) {
+        Schema::create('operating_site_users', function (Blueprint $table) {
             $table->id();
             $table->softDeletes();
-            $table->foreignId("group_id");
-            $table->foreignId("user_id");
+            $table->foreignId('operating_site_id');
+            $table->foreignId('user_id');
             $table->enum('user_permission', ['read', 'write'])->nullable();
             $table->enum('workLogPatch_permission', ['read', 'write'])->nullable();
             $table->enum('absence_permission', ['read', 'write'])->nullable();
-            $table->enum('group_permission', ['read', 'write'])->nullable();
+            $table->enum('operatingSite_permission', ['read', 'write'])->nullable();
             $table->enum('timeAccount_permission', ['read', 'write'])->nullable();
             $table->enum('timeAccountSetting_permission', ['read', 'write'])->nullable();
             $table->enum('timeAccountTransaction_permission', ['read', 'write'])->nullable();
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('group_user');
+        Schema::dropIfExists('operating_site_users');
     }
 };

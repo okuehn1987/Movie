@@ -23,26 +23,26 @@ class OperatingSitePolicy
 
     public function viewIndex(User $user): bool
     {
-        return false;
+        return $user->hasPermission(null, 'operatingSite_permission', 'read');
     }
 
     public function viewShow(User $user, OperatingSite $operatingSite): bool
     {
-        return $user->operatingSite_id === $operatingSite->id;
+        return $user->hasPermission(null, 'operatingSite_permission', 'read') && $user->operatingSite_id === $operatingSite->id;
     }
 
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasPermission(null, 'operatingSite_permission', 'write');
     }
 
     public function update(User $user, OperatingSite $operatingSite): bool
     {
-        return false;
+        return $user->hasPermission(null, 'operatingSite_permission', 'write');
     }
 
     public function delete(User $user, OperatingSite $operatingSite): bool
     {
-        return false;
+        return $user->hasPermission(null, 'operatingSite_permission', 'write');
     }
 }

@@ -23,16 +23,16 @@ class AbsenceTypePolicy
 
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasPermission(null, 'absenceType_permission', 'write');
     }
 
     public function update(User $user, AbsenceType $absenceType): bool
     {
-        return false;
+        return $user->hasPermission($absenceType->user, 'absenceType_permission', 'write');
     }
 
     public function delete(User $user, AbsenceType $absenceType): bool
     {
-        return false;
+        return $user->hasPermission($absenceType->user, 'absenceType_permission', 'write');
     }
 }
