@@ -71,7 +71,13 @@ const currentWorkingHours = computed(() =>
 
                         <div class="d-flex flex-column">
                             Woche Ist
-                            <div class="text-h6">{{ Math.floor(currentWorkingHours) }}:{{ Math.floor((currentWorkingHours % 1) * 60) }}</div>
+                            <div class="text-h6">
+                                {{ Math.floor(currentWorkingHours) }}:{{
+                                    Math.floor((currentWorkingHours % 1) * 60)
+                                        .toString()
+                                        .padStart(2, '0')
+                                }}
+                            </div>
                         </div>
                     </div>
                 </v-col>

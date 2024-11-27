@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { TimeAccount, TimeAccountSetting, User, UserWorkingHours, UserWorkingWeek } from '@/types/types';
-import { accountType, getTruncationCylceDisplayName } from '@/utils';
+import { accountType, getTruncationCylceDisplayName, roundTo } from '@/utils';
 import NewTimeAccountForm from './NewTimeAccountForm.vue';
 import TimeAccountDeleteForm from './TimeAccountDeleteForm.vue';
 import TimeAccountSettingsForm from './TimeAccountSettingsForm.vue';
@@ -27,6 +27,7 @@ const timeAccounts = computed(() => props.time_accounts.filter(t => t.deleted_at
         :items="
             timeAccounts.map(account => ({
                 ...account,
+                balance: roundTo(account.balance, 2),
                 type: accountType(account.time_account_setting.type),
                 truncation_cycle_length_in_months: getTruncationCylceDisplayName(account.time_account_setting.truncation_cycle_length_in_months),
             }))
