@@ -42,7 +42,7 @@ defineProps<{
     supervisor: Pick<User, 'id' | 'first_name' | 'last_name' | 'email'>;
 }>();
 
-const tab = ref('generalInformation');
+const tab = ref(route().params['tab'] ?? 'generalInformation');
 </script>
 <template>
     <AdminLayout :title="user.first_name + ' ' + user.last_name + ' bearbeiten'" :backurl="route('user.index')">

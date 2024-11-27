@@ -11,7 +11,11 @@ const props = defineProps<{
     time_account_transactions: Paginator<TimeAccountTransaction & { user: Pick<User, 'id' | 'first_name' | 'last_name'> }>;
 }>();
 
-const { currentPage, data: timeAccountTransactions, lastPage } = usePagination(toRefs(props), 'time_account_transactions');
+const {
+    currentPage,
+    data: timeAccountTransactions,
+    lastPage,
+} = usePagination(toRefs(props), 'time_account_transactions', { tab: 'timeAccountTransactions' });
 
 function getTransactionType(t: TimeAccountTransaction): 'positive' | 'negative' | 'transfer' {
     if (t.from_id && t.to_id) return 'transfer';

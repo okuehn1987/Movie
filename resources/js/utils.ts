@@ -38,6 +38,7 @@ export function usePagination<
         if (!currentRoute) return;
         router.visit(
             route(currentRoute, {
+                ...route().params,
                 page: currentPage.value,
                 ...routeProps,
             }),
