@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -135,6 +136,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserWorkingHour::class);
     }
+
+    public function userWorkingHoursForDate(CarbonInterface $date): UserWorkingHour | null
+    {
+        return $this->userWorkingHours()->where('active_since', '<=', $date->format('Y-m-d'))
+            ->latest('active_since')
+            ->first();
+    }
+
     public function userLeaveDays()
     {
         return $this->hasMany(UserLeaveDay::class);
@@ -145,7 +154,7 @@ class User extends Authenticatable
         return $this->hasMany(TimeAccount::class);
     }
 
-    public function defaultTimeAccount()
+    public function defaultTimeAccount(): TimeAccount
     {
         return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->whereNull('type'))->first();
     }
@@ -170,12 +179,24 @@ class User extends Authenticatable
         return $this->hasOne(OperatingSiteUser::class);
     }
 
+    public function userWorkingWeekForDate(CarbonInterface $date): UserWorkingWeek | null
+    {
+        return $this->userWorkingWeeks()->where('active_since', '<=', $date->format('Y-m-d'))
+            ->latest('active_since')
+            ->first();
+    }
+
+    public function latestWorkLog()
+    {
+        return $this->hasOne(WorkLog::class)->latestOfMany('start');
+    }
+
     public function getOvertimeAttribute()
     {
         return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->where('type', 'default'))->sum('balance');
     }
 
-    public static function getCurrentWeekWorkingHours(User $user)
+    public static function getCurrentWeekWorkingHours(User $user): float
     {
         //all logs that could be applicable
         $currentWeekWorkLogs = $user->workLogs()

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -19,5 +20,19 @@ class WorkLog extends Model
     public function workLogPatches()
     {
         return $this->hasMany(WorkLogPatch::class);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne<\App\Models\WorkLogPatch, \App\Models\WorkLog>
+     */
+    public function currentAccountedPatch()
+    {
+        return $this->hasOne(WorkLogPatch::class)->latest('updated_at')->where('status', 'accepted')->where('is_accounted', true);
+    }
+
+    public function getDurationAttribute(): int | float
+    {
+        if ($this->end == null) return 0;
+        return Carbon::parse($this->start)->floatDiffInHours($this->end);
     }
 }

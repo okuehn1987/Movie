@@ -199,6 +199,8 @@ export type WorkLogPatch = DBObject<'WorkLogPatch'> &
         end: Timestamp;
         status: Status;
         work_log_id: WorkLog['id'];
+        accepted_at: Timestamp;
+        is_accounted: boolean;
     };
 
 export const TRUNCATION_CYCLES = [null, '1', '3', '6', '12'] as const;

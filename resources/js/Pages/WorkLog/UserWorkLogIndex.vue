@@ -17,7 +17,7 @@ const props = defineProps<{
     >;
 }>();
 
-const { currentPage, lastPage, data } = usePagination(toRefs(props), 'workLogs', { user: props.user.id });
+const { currentPage, lastPage, data } = usePagination(toRefs(props), 'workLogs');
 
 const showDialog = ref(false);
 

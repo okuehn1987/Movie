@@ -36,10 +36,7 @@ class DashboardController extends Controller
         }
 
         return Inertia::render('Dashboard/Dashboard', [
-            'lastWorkLog' => WorkLog::select('id', 'start', 'end', 'is_home_office')
-                ->inOrganization()
-                ->where('user_id', Auth::id())
-                ->latest('start')->first(),
+            'lastWorkLog' => $user->latestWorkLog()->first(['id', 'start', 'end', 'is_home_office']),
             'supervisor' => User::select('id', 'first_name', 'last_name')->find($user->supervisor_id),
             'patches' => $patches,
             'operating_times' => $user->operatingSite->operatingTimes,

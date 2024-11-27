@@ -19,7 +19,7 @@ class WorkLogPatchController extends Controller
             'start' => 'required|date',
             'end' => 'required|date',
             'is_home_office' => 'required|boolean',
-            'workLog' => 'required|integer'
+            'workLog' => 'required|exists:work_logs,id'
         ]);
 
         $workLog = WorkLog::find($validated['workLog']);
@@ -35,7 +35,7 @@ class WorkLogPatchController extends Controller
 
         $supervisor = $workLog->user->supervisor;
         if ($supervisor) $supervisor->notify(new PatchNotification($workLog->user, $patch));
-        else $patch->update(['status' => 'accepted']);
+        else $patch->accept();
 
         return back()->with('success',  'Korrektur der Arbeitszeit erfolgreich beantragt.');
     }
@@ -48,7 +48,11 @@ class WorkLogPatchController extends Controller
             'accepted' => 'required|boolean'
         ]);
 
-        $workLogPatch->update(['status' => $validated['accepted'] ? 'accepted' : 'declined']);
+        if ($validated['accepted']) $workLogPatch->accept();
+        else
+            $workLogPatch->update([
+                'status' => 'declined',
+            ]);
 
         return back()->with('success',  "Zeitkorrektur erfolgreich " . ($validated['accepted'] ? 'akzeptiert' : 'abgelehnt') . ".");
     }

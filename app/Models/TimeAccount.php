@@ -76,6 +76,7 @@ class TimeAccount extends Model
             throw new Exception('Cannot transfer balance to the same account.');
 
         DB::transaction(function () use ($amount, $description, $from, $to) {
+            TimeAccount::whereIn('id', [$from?->id, $to?->id])->lockForUpdate()->get();
             $from?->forceFill([
                 'balance' => DB::raw("balance - ($amount)")
             ])->saveQuietly();
