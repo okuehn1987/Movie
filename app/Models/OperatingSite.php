@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\HolidayService;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -25,5 +27,13 @@ class OperatingSite extends Model
     public function users()
     {
         return $this->hasMany(User::class);
+    }
+
+    public function hasHoliday(CarbonInterface $date)
+    {
+        if (!$this->country || !$this->federal_state) {
+            return false;
+        }
+        return HolidayService::isHoliday($this->country, $this->federal_state, $date);
     }
 }

@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
 
         $users = User::factory(10)
             ->has(WorkLog::factory(3))
-            ->has(WorkLog::factory(1, ['end' => null, 'start' => now()->subHour()]))
+            ->has(WorkLog::factory(1, ['end' => null, 'start' => now()->subDay()]))
             ->has(UserWorkingHour::factory(1))
             ->has(UserWorkingWeek::factory(1));
 
@@ -93,6 +93,5 @@ class DatabaseSeeder extends Seeder
                 ->inRandomOrder()->first()?->id;
             $user->save();
         }
-        WorkLog::factory(30, ['user_id' => $admin->id])->create();
     }
 }

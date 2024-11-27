@@ -20,6 +20,8 @@ return new class extends Migration
             $table->dateTime("end");
             $table->boolean("is_home_office")->default(false);
             $table->enum('status', ["created", "declined", "accepted"]);
+            $table->dateTime('accepted_at')->nullable();
+            $table->boolean("is_accounted")->default(false);
             $table->timestamps();
         });
     }
