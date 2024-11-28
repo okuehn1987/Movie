@@ -4,6 +4,14 @@ type Timestamp = string & { __datetime__: void };
 
 type Branded<T, Brand extends string> = T & { [x in `__${Brand}__`]: void };
 
+export type Model = 'organization' | 'operatingSite' | 'group' | 'user' | 'timeAccountSetting' | 'absence' | (string & NonNullable<unknown>);
+export type CanMethod = 'viewIndex' | 'viewShow' | 'create' | 'update' | 'delete' | (string & NonNullable<unknown>);
+
+export type Can = {
+    /**can the auth user execute this action in the current scope */
+    can: Record<Model, Record<CanMethod, boolean>>;
+};
+
 export type DBObject<Brand extends string> = {
     id: Branded<number, Brand>;
     created_at: Timestamp;

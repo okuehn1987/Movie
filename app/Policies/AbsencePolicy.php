@@ -3,9 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Absence;
-use App\Models\OrganizationUser;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class AbsencePolicy
 {
@@ -22,25 +20,37 @@ class AbsencePolicy
         return null; // only if this is returned, the other methods are checked
     }
 
+    public function viewShow(User $authUser, Absence $absence): bool
+    {
+        return
+            $authUser->hasPermission($absence->user, 'absence_permission', 'read') ||
+            $authUser->id === $absence->user_id ||
+            $authUser->supervisor_id === $absence->user_id ||
+            $authUser->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($absence->user, 'absence_permission', 'read'));
+    }
+
     public function create(User $authUser, User $user): bool
     {
         return
             $authUser->hasPermission($user, 'absence_permission', 'write') ||
             $authUser->id === $user->id ||
-            $authUser->supervisor_id === $user->id;
+            $authUser->supervisor_id === $user->id ||
+            $authUser->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($user, 'absence_permission', 'write'));
     }
 
     public function update(User $user, Absence $absence): bool
     {
         return
             $user->hasPermission($absence->user, 'absence_permission', 'write') ||
-            $absence->user->supervisor_id === $user->id;
+            $absence->user->supervisor_id === $user->id ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($absence->user, 'absence_permission', 'write'));
     }
 
     public function delete(User $user, Absence $absence): bool
     {
         return
             $user->hasPermission($absence->user, 'absence_permission', 'write') ||
-            $absence->user->supervisor_id === $user->id;
+            $absence->user->supervisor_id === $user->id ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($absence->user, 'absence_permission', 'write'));
     }
 }

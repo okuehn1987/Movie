@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Absence, AbsenceType, User, UserWorkingWeek, Weekday } from '@/types/types';
+import { Absence, AbsenceType, Can, User, UserWorkingWeek, Weekday } from '@/types/types';
+import { getMaxScrollHeight } from '@/utils';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { ref } from 'vue';
 
-type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'> & {
-    absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id'> & { absence_type?: Pick<AbsenceType, 'id' | 'abbreviation'> })[];
-    user_working_weeks: Pick<UserWorkingWeek, 'id' | Weekday>[];
-};
+type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'> &
+    Can & {
+        absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id'> & {
+            absence_type?: Pick<AbsenceType, 'id' | 'abbreviation'>;
+        })[];
+        user_working_weeks: Pick<UserWorkingWeek, 'id' | Weekday>[];
+    };
 
 const props = defineProps<{
     users: UserProp[];
@@ -38,8 +42,12 @@ function getUserStatus(user: UserProp, day: DateTime) {
     return '';
 }
 
-function isUserEditable(user_id: User['id'], editable: Pick<User, 'id' | 'supervisor_id'>) {
-    return editable.supervisor_id === user_id || editable.id == user_id;
+function isUserEditable(user: Pick<User, 'id'>) {
+    return can(
+        'absence',
+        'create',
+        props.users.find(u => u.id === user.id),
+    );
 }
 
 const openModal = ref(false);
@@ -52,7 +60,7 @@ const absenceForm = useForm({
 
 function createAbsenceModal(day: string, user_id: User['id']) {
     const absentUser = props.users.find(u => u.id === user_id);
-    if (!absentUser || !isUserEditable(page.props.auth.user.id, absentUser)) return;
+    if (!absentUser || !isUserEditable(absentUser)) return;
 
     const dayInDaytime = DateTime.now().startOf('month').plus({ day: +day });
     const absenceToEdit = absentUser.absences.find(a => DateTime.fromSQL(a.start) <= dayInDaytime && dayInDaytime <= DateTime.fromSQL(a.end));
@@ -132,7 +140,9 @@ function createAbsenceModal(day: string, user_id: User['id']) {
         </v-dialog>
 
         <v-data-table-virtual
+            fixed-header
             style="white-space: pre"
+            :style="{ maxHeight: getMaxScrollHeight(0) }"
             id="absence-table"
             :items="
                 users.map(u => ({
@@ -160,8 +170,8 @@ function createAbsenceModal(day: string, user_id: User['id']) {
                         v-for="header in columns"
                         :key="header.key + ''"
                         :style="{ backgroundColor: !item[header.key as keyof typeof item] ? 'lightgray' : '' }"
-                        :class="{ 'editable-cell': isUserEditable(page.props.auth.user.id, item) }"
-                        :role="isUserEditable(page.props.auth.user.id, item) ? 'button' : 'cell'"
+                        :class="{ 'editable-cell': isUserEditable(item) }"
+                        :role="isUserEditable(item) ? 'button' : 'cell'"
                         @click="createAbsenceModal(header.key + '', item.id)"
                     >
                         {{ item[header.key as keyof typeof item] }}

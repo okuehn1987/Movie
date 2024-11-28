@@ -2,8 +2,13 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Group;
+use App\Models\OperatingSite;
 use App\Models\Organization;
+use App\Models\TimeAccountSetting;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 
@@ -41,12 +46,28 @@ class HandleInertiaRequests extends Middleware
                 'location' => $request->url(),
             ]),
             'organization' => Organization::getCurrent(),
-            'flash' => function () use ($request) {
-                return [
-                    'success' => $request->session()->get('success'),
-                    'error' => $request->session()->get('error'),
-                ];
-            },
+            'flash' => [
+                'success' => $request->session()->get('success'),
+                'error' => $request->session()->get('error'),
+            ],
+            'canMenu' => [
+                'organization' => [
+                    'viewIndex' => Gate::allows('viewIndex', Organization::class),
+                    'viewShow' => Gate::allows('viewShow', Organization::class),
+                ],
+                'operatingSite' => [
+                    'viewIndex' => Gate::allows('viewIndex', OperatingSite::class),
+                ],
+                'group' => [
+                    'viewIndex' => Gate::allows('viewIndex', Group::class),
+                ],
+                'user' => [
+                    'viewIndex' => Gate::allows('viewIndex', User::class),
+                ],
+                'timeAccountSetting' => [
+                    'viewIndex' => Gate::allows('viewIndex', TimeAccountSetting::class),
+                ],
+            ]
         ];
     }
 }

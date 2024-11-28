@@ -20,21 +20,30 @@ class AbsenceController extends Controller
     {
         Gate::authorize('publicAuth', User::class);
 
-        $user = Auth::user();
+        $user = User::find(Auth::id());
 
         return Inertia::render('Absence/AbsenceIndex', [
             'users' =>
             User::select('id', 'first_name', 'last_name', 'supervisor_id')
                 ->inOrganization()
-                ->where('group_id', $user->group_id)
-                ->orWhere('supervisor_id', $user->id)
                 ->with([
                     'absences' => fn($absence) => $absence->where('status', 'accepted')->select(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status']),
                     'absences.absenceType:id,abbreviation',
                     "userWorkingWeeks:id,user_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday"
                 ])
-                ->get(),
-            'absence_types' => AbsenceType::inOrganization()->get(['id', 'name'])
+                ->get()->filter(fn($u) => $user->can('viewShow', $u))->map(fn($u) => [
+                    ...$u->toArray(),
+                    'absences' => $u->absences->filter(fn($a) => $user->can('viewShow', $a))->map(fn($a) => [
+                        ...$a->toArray(),
+                        'absence_type' => $user->can('viewShow', [AbsenceType::class, $u]) ? $a->absenceType : null,
+                    ]),
+                    'can' => [
+                        'absence' => [
+                            'create' => $user->can('create', [Absence::class, $u]),
+                        ]
+                    ]
+                ]),
+            'absence_types' => AbsenceType::inOrganization()->get(['id', 'name']),
         ]);
     }
 
