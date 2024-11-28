@@ -45,22 +45,30 @@ class User extends Authenticatable
         'group' =>  [['name' => 'group_permission', 'label' => 'Abteilungen verwalten']],
     ];
 
+    /** 
+     * @param User | null $user
+     * @param string $permissionName 
+     * @param 'read'|'write' $permissionLevel
+     *   */
     public function hasPermission(User | null $user, string $permissionName, string $permissionLevel)
     {
         if ($permissionLevel != 'read' && $permissionLevel != 'write') abort(404);
 
         if (
-            array_key_exists($permissionName, $this->organizationUser->toArray()) && ($this->organizationUser->{$permissionName} == 'write' || $this->organizationUser->{$permissionName} == $permissionLevel) &&
+            array_key_exists($permissionName, $this->organizationUser->toArray()) &&
+            ($this->organizationUser->{$permissionName} == 'write' || $this->organizationUser->{$permissionName} == $permissionLevel) &&
             (!$user || $user->organizationUser->organization_id == $this->organizationUser->organization_id)
         ) return true;
 
         if (
-            array_key_exists($permissionName, $this->groupUser->toArray()) && ($this->groupUser->{$permissionName} == 'write' || $this->groupUser->{$permissionName} == $permissionLevel) &&
+            array_key_exists($permissionName, $this->groupUser->toArray()) &&
+            ($this->groupUser->{$permissionName} == 'write' || $this->groupUser->{$permissionName} == $permissionLevel) &&
             (!$user || $user->group_id == $this->groupUser->group_id)
         ) return true;
 
         if (
-            array_key_exists($permissionName, $this->operatingSiteUser->toArray()) && ($this->operatingSiteUser?->{$permissionName} == 'write' || $this->operatingSiteUser->{$permissionName} == $permissionLevel) &&
+            array_key_exists($permissionName, $this->operatingSiteUser->toArray()) &&
+            ($this->operatingSiteUser?->{$permissionName} == 'write' || $this->operatingSiteUser->{$permissionName} == $permissionLevel) &&
             (!$user || $user->operating_site_id == $this->operatingSiteUser->operating_site_id)
         ) return true;
 

@@ -22,27 +22,39 @@ class UserPolicy
 
     public function viewIndex(User $authUser): bool
     {
-        return $authUser->hasPermission(null, 'user_permission', 'read');
+        return
+            $authUser->hasPermission(null, 'user_permission', 'read') ||
+            $authUser->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'user_permission', 'read'));
     }
 
     public function viewShow(User $authUser, User $user): bool
     {
-        return $authUser->hasPermission($user, 'user_permission', 'read') || $authUser->id === $user->id;
+        return
+            $authUser->id === $user->id ||
+            $authUser->hasPermission($user, 'user_permission', 'read') ||
+            $authUser->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($user, 'user_permission', 'read'));
     }
 
     public function create(User $authUser): bool
     {
-        return $authUser->hasPermission(null, 'user_permission', 'write');
+        return
+            $authUser->hasPermission(null, 'user_permission', 'write') ||
+            $authUser->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'user_permission', 'write'));
     }
 
     public function update(User $authUser, User $user): bool
     {
-        return $authUser->hasPermission($user, 'user_permission', 'write');
+        return
+            $authUser->id === $user->id ||
+            $authUser->hasPermission($user, 'user_permission', 'write') ||
+            $authUser->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($user, 'user_permission', 'write'));
     }
 
     public function delete(User $authUser, User $user): bool
     {
-        return $authUser->hasPermission($user, 'user_permission', 'write');
+        return
+            $authUser->hasPermission($user, 'user_permission', 'write') ||
+            $authUser->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($user, 'user_permission', 'write'));
     }
 
     public function publicAuth(User $authUser)
