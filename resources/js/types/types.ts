@@ -80,6 +80,10 @@ export type User = DBObject<'User'> &
         is_supervisor: boolean;
     };
 
+export type UserAppends = {
+    readonly name: string;
+    };
+
 export type UserWorkingHours = DBObject<'UserWorkingHours'> &
     SoftDelete & {
         user_id: User['id'];

@@ -6,4 +6,4 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     };
     organization: Organization;
     canMenu: Canable['can'];
-} & Canable;
+} & Partial<Canable>;

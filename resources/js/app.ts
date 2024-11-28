@@ -71,11 +71,11 @@ createInertiaApp({
             if (context) {
                 value = context.can[model]?.[method];
             } else {
-                value = page.props.can?.[model]?.[method] || page.props.canMenu[model]?.[method];
+                value = page.props.can?.[model]?.[method] ?? page.props.canMenu[model]?.[method];
             }
             if (value === undefined)
                 throw new Error(
-                    `cannot read ability ${model}.${method} in page.props.can || context, did you forget to provide the ability in the controller?`,
+                    `cannot read ability ${model}.${method} in page.props.can || context.can, did you forget to provide the ability in the controller?`,
                 );
             return value;
         };

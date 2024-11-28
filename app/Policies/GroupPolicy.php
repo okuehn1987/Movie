@@ -23,26 +23,36 @@ class GroupPolicy
 
     public function viewIndex(User $user): bool
     {
-        return $user->hasPermission(null, 'group_permission', 'read');
+        return
+            $user->hasPermission(null, 'group_permission', 'read') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'group_permission', 'read'));
     }
 
     public function viewShow(User $user, Group $group): bool
     {
-        return $user->hasPermission(null, 'group_permission', 'read');
+        return
+            $user->hasPermission(null, 'group_permission', 'read') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'group_permission', 'read'));
     }
 
     public function create(User $user): bool
     {
-        return $user->hasPermission(null, 'group_permission', 'write');
+        return
+            $user->hasPermission(null, 'group_permission', 'write') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'group_permission', 'write'));
     }
 
     public function update(User $user, Group $group): bool
     {
-        return $user->hasPermission(null, 'group_permission', 'write');
+        return
+            $user->hasPermission(null, 'group_permission', 'write') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'group_permission', 'write'));
     }
 
     public function delete(User $user, Group $group): bool
     {
-        return $user->hasPermission(null, 'group_permission', 'write');
+        return
+            $user->hasPermission(null, 'group_permission', 'write') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'group_permission', 'write'));
     }
 }

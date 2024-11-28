@@ -17,8 +17,13 @@ class GroupController extends Controller
         Gate::authorize('viewIndex', Group::class);
 
         return Inertia::render('Group/GroupIndex', [
-            'groups' => Group::inOrganization()->select('id', 'name')->paginate(12),
-            'users' => User::inOrganization()->select('id', 'first_name', 'last_name', 'email', 'staff_number', 'date_of_birth', 'group_id')->get()
+            'groups' => Group::inOrganization()->select('id', 'name')->withCount('users')->paginate(12),
+            'users' => User::inOrganization()->get(['id', 'first_name', 'last_name'])->map(fn($user) => [...$user->toArray(), 'name' => $user->name]),
+            'can' => [
+                'group' => [
+                    'create' => Gate::allows('create', Group::class)
+                ]
+            ]
         ]);
     }
     public function store(Request $request)
@@ -28,7 +33,7 @@ class GroupController extends Controller
         $validated = $request->validate([
             'name' => 'required|string',
             'users' => 'nullable|array',
-            'users.*' => ['required', 'exists:users,id', Rule::in(User::inOrganization()->select('id')->get()->pluck('id'))]
+            'users.*' => ['required', 'exists:users,id', Rule::in(User::inOrganization()->get(['id'])->pluck('id'))]
         ]);
 
         $group = Group::create(['organization_id' => Organization::getCurrent()->id, 'name' => $validated['name']]);
