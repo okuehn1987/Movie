@@ -26,7 +26,7 @@ function submit() {
 <template>
     <v-card>
         <v-card-text>
-            <v-form @submit.prevent="submit">
+            <v-form @submit.prevent="submit" :disabled="!can('organization', 'update')">
                 <v-row>
                     <v-col cols="12" md="6">
                         <v-text-field v-model="organizationForm.name" label="Firmenname"></v-text-field>
@@ -51,7 +51,7 @@ function submit() {
                         <v-checkbox label="Verjährungsfrist bei Urlaubstagen?" v-model="organizationForm.vacation_limitation_period"></v-checkbox>
                     </v-col>
 
-                    <v-col cols="12" class="text-end">
+                    <v-col cols="12" class="text-end" v-if="can('organization', 'update')">
                         <v-btn type="submit" color="primary">Aktualisieren</v-btn>
                     </v-col>
                 </v-row>

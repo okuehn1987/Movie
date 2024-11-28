@@ -84,7 +84,22 @@ class OrganizationController extends Controller
             'operating_sites' => OperatingSite::inOrganization()->get(),
             'operating_times' => OperatingTime::inOrganization()->get(),
             'absence_types' => AbsenceType::inOrganization()->get(),
-            'special_working_hours_factors' => SpecialWorkingHoursFactor::inOrganization()->get()
+            'special_working_hours_factors' => SpecialWorkingHoursFactor::inOrganization()->get(),
+            'can' => [
+                'organization' => [
+                    'update' => Gate::allows('update', $organization),
+                ],
+                'specialWorkingHoursFactors' => [
+                    'viewIndex' => Gate::allows('viewIndex', SpecialWorkingHoursFactor::class),
+                    'create' => Gate::allows('create', SpecialWorkingHoursFactor::class),
+                    'update' => Gate::allows('update', SpecialWorkingHoursFactor::class),
+                    'delete' => Gate::allows('delete', SpecialWorkingHoursFactor::class),
+                ],
+                'absenceType' => [
+                    'viewIndex' => Gate::allows('viewIndex', AbsenceType::class),
+                    'create' => Gate::allows('create', AbsenceType::class),
+                ]
+            ]
         ]);
     }
 
@@ -117,7 +132,7 @@ class OrganizationController extends Controller
 
     public function organigram(Organization $organization)
     {
-        Gate::authorize('viewShow', $organization);
+        Gate::authorize('viewShow', $organization) && Gate::authorize('viewIndex', User::class);
 
         return Inertia::render('Organization/OrganizationOrganigram', [
             'users' => User::whereNull('supervisor_id')

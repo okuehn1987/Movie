@@ -25,21 +25,25 @@ class OrganizationPolicy
 
     public function viewShow(User $user, Organization $organization): bool
     {
-        return $user->hasPermission(null, 'organization_permission', 'read');
+        return
+            $user->hasPermission(null, 'organization_permission', 'read') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'organization_permission', 'read'));
     }
 
     public function create(User $user): bool
     {
-        return $user->hasPermission(null, 'organization_permission', 'write');
+        return false; // never should anyone besides mbd be able to create an org 
     }
 
     public function update(User $user, Organization $organization): bool
     {
-        return $user->hasPermission(null, 'organization_permission', 'write');
+        return
+            $user->hasPermission(null, 'organization_permission', 'write') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'organization_permission', 'write'));
     }
 
     public function delete(User $user, Organization $organization): bool
     {
-        return false; // never should anyone besides mbd be able to delete a org 
+        return false; // never should anyone besides mbd be able to delete an org 
     }
 }

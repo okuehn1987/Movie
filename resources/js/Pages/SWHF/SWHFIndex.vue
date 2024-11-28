@@ -104,14 +104,22 @@ function submit() {
             ]"
         >
             <template v-slot:header.actions>
-                <v-btn @click.stop="create()" color="primary">
+                <v-btn @click.stop="create()" color="primary" v-if="can('specialWorkingHoursFactors', 'create')">
                     <v-icon icon="mdi-plus"></v-icon>
                 </v-btn>
             </template>
             <template v-slot:item.actions="{ item }">
-                <v-btn @click.stop="edit(item)" color="primary" size="large" variant="text" icon="mdi-pencil" />
+                <v-btn
+                    v-if="can('specialWorkingHoursFactors', 'update')"
+                    @click.stop="edit(item)"
+                    color="primary"
+                    size="large"
+                    variant="text"
+                    icon="mdi-pencil"
+                />
 
                 <ConfirmDelete
+                    v-if="can('specialWorkingHoursFactors', 'delete')"
                     content="Bist du dir sicher, dass du diesen Arbeitszeitzuschlag entfernen möchtest?"
                     :route="
                         route('specialWorkingHoursFactor.destroy', {

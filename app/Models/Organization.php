@@ -54,14 +54,14 @@ class Organization extends Model
         return $this->hasMany(CustomAddress::class);
     }
 
-    public static function getCurrent()
+    public static function getCurrent(): Organization
     {
         if (Auth::check()) return Auth::user()->organization;
         return Organization::find(1);
     }
 
 
-    public static function getOrganizationNameByDomain()
+    public static function getOrganizationNameByDomain(): string
     {
         if (app()->environment('local')) {
             if (request()->organization) session(['org' => request()->organization]);
