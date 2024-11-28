@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Absence, AbsenceType, Can, User, UserWorkingWeek, Weekday } from '@/types/types';
+import { Absence, AbsenceType, Canable, User, UserWorkingWeek, Weekday } from '@/types/types';
 import { getMaxScrollHeight } from '@/utils';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { ref } from 'vue';
 
 type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'> &
-    Can & {
+    Canable & {
         absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id'> & {
             absence_type?: Pick<AbsenceType, 'id' | 'abbreviation'>;
         })[];
