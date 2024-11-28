@@ -22,13 +22,25 @@ class OperatingTimePolicy
         return null; // only if this is returned, the other methods are checked
     }
 
-    public function create(User $user): bool
+    public function viewIndex(User $user): bool
     {
-        return $user->hasPermission(null, 'operatingTime_permission', 'write');
+        return
+            $user->hasPermission(null, 'operatingTime_permission', 'read') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'operatingTime_permission', 'read'));
     }
 
-    public function delete(User $user, OperatingTime $operatingTime): bool
+
+    public function create(User $user): bool
     {
-        return $user->hasPermission(null, 'operatingTime_permission', 'write');
+        return
+            $user->hasPermission(null, 'operatingTime_permission', 'write') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'operatingTime_permission', 'write'));
+    }
+
+    public function delete(User $user): bool
+    {
+        return
+            $user->hasPermission(null, 'operatingTime_permission', 'write') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'operatingTime_permission', 'write'));
     }
 }

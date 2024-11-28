@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Group, Paginator, User, UserAppends } from '@/types/types';
+import { Count, Group, Paginator, User, UserAppends } from '@/types/types';
 import { getMaxScrollHeight, usePagination } from '@/utils';
 import { useForm } from '@inertiajs/vue3';
 import { toRefs } from 'vue';
 
 const props = defineProps<{
-    groups: Paginator<Pick<Group, 'id' | 'name'> & { users_count: number }>;
+    groups: Paginator<Pick<Group, 'id' | 'name'> & Count<User>>;
     users: (Pick<User, 'id' | 'first_name' | 'last_name'> & UserAppends)[];
 }>();
 

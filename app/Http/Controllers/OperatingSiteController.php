@@ -15,15 +15,41 @@ class OperatingSiteController extends Controller
     {
         Gate::authorize('viewIndex', OperatingSite::class);
 
-        return Inertia::render('OperatingSite/OperatingSiteIndex', ['operatingSites' => OperatingSite::inOrganization()->withCount('users')->paginate(12)]);
+        return Inertia::render('OperatingSite/OperatingSiteIndex', [
+            'operatingSites' => OperatingSite::inOrganization()->withCount('users')->paginate(12)->through(
+                fn($operatingSite) => [
+                    ...$operatingSite->toArray(),
+                    'can' => [
+                        'operatingSite' => [
+                            'viewShow' => Gate::allows('viewShow', $operatingSite),
+                            'delete' => Gate::allows('delete', $operatingSite),
+                        ]
+                    ]
+                ]
+            ),
+            'can' => [
+                'operatingSite' => [
+                    'create' => Gate::allows('create', OperatingSite::class),
+                ]
+            ]
+        ]);
     }
     public function show(OperatingSite $operatingSite)
     {
         Gate::authorize('viewShow', $operatingSite);
 
         return Inertia::render('OperatingSite/OperatingSiteShow', [
-            'operatingSite' => $operatingSite,
-            'operatingTimes' => OperatingTime::inOrganization()->where('operating_site_id', $operatingSite->id)->get()
+            'operatingSite' => $operatingSite->load('operatingTimes'),
+            'can' => [
+                'operatingSite' => [
+                    'update' => false && Gate::allows('update', $operatingSite),
+                ],
+                'operatingTime' => [
+                    'viewIndex' => Gate::allows('viewIndex', OperatingTime::class),
+                    'create' => Gate::allows('create', OperatingTime::class),
+                    'delete' => Gate::allows('delete', OperatingTime::class),
+                ]
+            ]
         ]);
     }
     public function store(Request $request)

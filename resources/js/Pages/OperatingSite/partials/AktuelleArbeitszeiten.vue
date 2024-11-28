@@ -4,8 +4,7 @@ import { Link, useForm } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 
 const props = defineProps<{
-    operatingSiteId: OperatingSite['id'];
-    operatingTimes: OperatingTime[];
+    operatingSite: OperatingSite & { operating_times: OperatingTime[] };
 }>();
 
 const WEEKDAYS = [
@@ -22,7 +21,7 @@ const operatingTimeForm = useForm({
     start: '',
     end: '',
     type: 'monday',
-    operating_site_id: props.operatingSiteId,
+    operating_site_id: props.operatingSite.id,
 });
 
 function submitOperatingTime() {
@@ -34,40 +33,43 @@ function submitOperatingTime() {
 <template>
     <v-card>
         <v-card-text>
-            <v-form @submit.prevent="submitOperatingTime">
+            <v-row>
+                <v-col cols="12"><h3>Aktuelle Arbeitszeiten</h3></v-col>
+
+                <v-list item-props hover>
+                    <v-list-item
+                        v-for="operatingTime in operatingSite.operating_times.toSorted(
+                            (a, b) => WEEKDAYS.findIndex(w => a.type === w.key) - WEEKDAYS.findIndex(w => b.type === w.key),
+                        )"
+                        :key="operatingTime.id"
+                        :title="WEEKDAYS.find(e => e.key === operatingTime.type)?.value"
+                        :subtitle="
+                            DateTime.fromFormat(operatingTime.start, 'HH:mm:ss').toFormat('HH:mm') +
+                            ' Uhr' +
+                            ' - ' +
+                            DateTime.fromFormat(operatingTime.end, 'HH:mm:ss').toFormat('HH:mm') +
+                            ' Uhr'
+                        "
+                    >
+                        <template #append v-if="can('operatingTime', 'delete')">
+                            <Link
+                                method="delete"
+                                :href="
+                                    route('operatingTime.destroy', {
+                                        operatingTime: operatingTime.id,
+                                    })
+                                "
+                            >
+                                <v-btn color="error" class="ms-2 mt-1" size="small" variant="text" icon="mdi-delete"></v-btn>
+                            </Link>
+                        </template>
+                    </v-list-item>
+                </v-list>
+            </v-row>
+        </v-card-text>
+        <v-card-text>
+            <v-form @submit.prevent="submitOperatingTime" v-if="can('operatingTime', 'create')">
                 <v-row>
-                    <v-col cols="12"><h3>Aktuelle Arbeitszeiten</h3></v-col>
-
-                    <v-list item-props hover>
-                        <v-list-item
-                            v-for="operatingTime in operatingTimes.toSorted(
-                                (a, b) => WEEKDAYS.findIndex(w => a.type === w.key) - WEEKDAYS.findIndex(w => b.type === w.key),
-                            )"
-                            :key="operatingTime.id"
-                            :title="WEEKDAYS.find(e => e.key === operatingTime.type)?.value"
-                            :subtitle="
-                                DateTime.fromFormat(operatingTime.start, 'HH:mm:ss').toFormat('HH:mm') +
-                                ' Uhr' +
-                                ' - ' +
-                                DateTime.fromFormat(operatingTime.end, 'HH:mm:ss').toFormat('HH:mm') +
-                                ' Uhr'
-                            "
-                        >
-                            <template #append>
-                                <Link
-                                    method="delete"
-                                    :href="
-                                        route('operatingTime.destroy', {
-                                            operatingTime: operatingTime.id,
-                                        })
-                                    "
-                                >
-                                    <v-btn color="error" class="ms-2 mt-1" size="small" variant="text" icon="mdi-delete"></v-btn>
-                                </Link>
-                            </template>
-                        </v-list-item>
-                    </v-list>
-
                     <v-col cols="12"><h3>Arbeitszeiten hinzufügen</h3></v-col>
 
                     <v-col cols="12" md="4">

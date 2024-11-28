@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { OperatingSite, Paginator } from '@/types/types';
+import { Canable, Count, OperatingSite, Paginator, User } from '@/types/types';
 import { fillNullishValues, usePagination } from '@/utils';
 import { Link, useForm } from '@inertiajs/vue3';
 import { toRefs } from 'vue';
 
 const props = defineProps<{
-    operatingSites: Paginator<OperatingSite & { users_count: number }>;
-    success?: string;
+    operatingSites: Paginator<OperatingSite & Canable & Count<User>>;
 }>();
 
 const { currentPage, lastPage, data } = usePagination(toRefs(props), 'operatingSites');
@@ -47,7 +46,7 @@ function submit() {
                     { title: 'Land', key: 'country' },
                     { title: 'Email', key: 'email' },
                     { title: 'Telefonnummer', key: 'phone_number' },
-                    { title: '', key: 'action', align: 'end' },
+                    { title: '', key: 'action', align: 'end', width: 0 },
                 ]"
                 :items="
                     data.map(o => {
@@ -59,7 +58,7 @@ function submit() {
                 "
             >
                 <template v-slot:header.action>
-                    <v-dialog max-width="1000">
+                    <v-dialog v-if="can('operatingSite', 'create')" max-width="1000">
                         <template v-slot:activator="{ props: activatorProps }">
                             <v-btn v-bind="activatorProps" color="primary">
                                 <v-icon icon="mdi-plus"></v-icon>
@@ -177,12 +176,12 @@ function submit() {
                     </v-dialog>
                 </template>
                 <template v-slot:item.action="{ item }">
-                    <div class="d-flex" :class="{ 'justify-end': data.every(o => o.users_count != 0) }">
-                        <Link :href="route('operatingSite.show', { operatingSite: item.id })">
+                    <div class="d-flex" :class="{ 'justify-end': data.some(o => o.users_count == 0 && !can('operatingSite', 'delete', o)) }">
+                        <Link :href="route('operatingSite.show', { operatingSite: item.id })" v-if="can('operatingSite', 'viewShow', item)">
                             <v-btn color="primary" size="large" variant="text" icon="mdi-eye" />
                         </Link>
                         <ConfirmDelete
-                            v-if="item.users_count == 0"
+                            v-if="item.users_count == 0 && can('operatingSite', 'delete', item)"
                             :content="'Bist du dir sicher, dass du die Betriebsstätte ' + item.name + ' entfernen möchtest?'"
                             :route="
                                 route('operatingSite.destroy', {

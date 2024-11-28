@@ -35,7 +35,7 @@ function submit() {
 <template>
     <v-card>
         <v-card-text>
-            <v-form @submit.prevent="submit">
+            <v-form @submit.prevent="submit" :disabled="!can('operatingSite', 'update')">
                 <v-row>
                     <v-col cols="12"><h3>Kontaktinformationen</h3></v-col>
 
@@ -110,7 +110,7 @@ function submit() {
                             :error-messages="operatingSiteForm.errors.is_head_quarter"
                         ></v-checkbox>
                     </v-col>
-                    <v-col cols="12" class="text-end">
+                    <v-col cols="12" class="text-end" v-if="can('operatingSite', 'update')">
                         <v-btn :loading="operatingSiteForm.processing" type="submit" color="primary">Aktualisieren</v-btn>
                     </v-col>
                 </v-row>

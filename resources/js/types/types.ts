@@ -4,14 +4,6 @@ type Timestamp = string & { __datetime__: void };
 
 type Branded<T, Brand extends string> = T & { [x in `__${Brand}__`]: void };
 
-export type Model = 'organization' | 'operatingSite' | 'group' | 'user' | 'timeAccountSetting' | 'absence' | (string & NonNullable<unknown>);
-export type CanMethod = 'viewIndex' | 'viewShow' | 'create' | 'update' | 'delete' | (string & NonNullable<unknown>);
-
-export type Canable = {
-    /**can the auth user execute this action in the current scope */
-    can: Record<Model, Record<CanMethod, boolean>>;
-};
-
 export type DBObject<Brand extends string> = {
     id: Branded<number, Brand>;
     created_at: Timestamp;
@@ -21,6 +13,24 @@ export type DBObject<Brand extends string> = {
 type SoftDelete = {
     deleted_at: Timestamp;
 };
+
+export type Model =
+    | 'organization'
+    | 'operatingSite'
+    | 'group'
+    | 'user'
+    | 'timeAccountSetting'
+    | 'absence'
+    | 'operatingTime'
+    | (string & NonNullable<unknown>);
+export type CanMethod = 'viewIndex' | 'viewShow' | 'create' | 'update' | 'delete' | (string & NonNullable<unknown>);
+
+export type Canable = {
+    /**can the auth user execute this action in the current scope */
+    can: Record<Model, Record<CanMethod, boolean>>;
+};
+
+export type Count<T extends Branded<Record<string, unknown>, string>> = T extends DBObject<infer B> ? { [x in B as `${x}s_count`]: number } : never;
 
 export type Prettify<T> = {
     [K in keyof T]: T[K];
@@ -58,7 +68,7 @@ type Address = {
 
 export type Status = 'created' | 'declined' | 'accepted';
 
-export type User = DBObject<'User'> &
+export type User = DBObject<'user'> &
     SoftDelete &
     Address & {
         first_name: string;
@@ -82,16 +92,16 @@ export type User = DBObject<'User'> &
 
 export type UserAppends = {
     readonly name: string;
-    };
+};
 
-export type UserWorkingHours = DBObject<'UserWorkingHours'> &
+export type UserWorkingHours = DBObject<'userWorkingHours'> &
     SoftDelete & {
         user_id: User['id'];
         weekly_working_hours: number;
         active_since: Date;
     };
 
-export type UserLeaveDays = DBObject<'UserLeaveDays'> &
+export type UserLeaveDays = DBObject<'userLeaveDays'> &
     SoftDelete & {
         user_id: User['id'];
         leave_days: number;
@@ -102,7 +112,7 @@ type Flags = {
     vacation_limitation_period: boolean; // verjährungsfrist bei urlaub
 };
 
-export type Organization = DBObject<'Organization'> &
+export type Organization = DBObject<'organization'> &
     SoftDelete &
     Flags & {
         name: string;
@@ -113,7 +123,7 @@ export type Organization = DBObject<'Organization'> &
         logo: string | null;
     };
 
-export type OperatingSite = DBObject<'OperatingSite'> &
+export type OperatingSite = DBObject<'operatingSite'> &
     Address &
     SoftDelete & {
         name: string;
@@ -124,7 +134,7 @@ export type OperatingSite = DBObject<'OperatingSite'> &
         is_head_quarter: boolean;
     };
 
-export type OperatingTime = DBObject<'OperatingTime'> &
+export type OperatingTime = DBObject<'operatingTime'> &
     SoftDelete & {
         type: Weekday;
         start: Time;
@@ -132,7 +142,7 @@ export type OperatingTime = DBObject<'OperatingTime'> &
         operating_site_id: OperatingSite['id'];
     };
 
-export type Absence = DBObject<'Absence'> &
+export type Absence = DBObject<'absence'> &
     SoftDelete & {
         absence_type_id?: AbsenceType['id'];
         user_id: User['id'];
@@ -141,7 +151,7 @@ export type Absence = DBObject<'Absence'> &
         status: Status;
     };
 
-export type AbsenceType = DBObject<'AbsenceType'> &
+export type AbsenceType = DBObject<'absenceType'> &
     SoftDelete & {
         name: string;
         abbreviation: string;
@@ -158,26 +168,26 @@ export type AbsenceType = DBObject<'AbsenceType'> &
         organization_id: Organization['id'];
     };
 
-export type Group = DBObject<'Group'> &
+export type Group = DBObject<'group'> &
     SoftDelete & {
         name: string;
         organization_id: Organization['id'];
     };
 
-export type SpecialWorkingHoursFactor = DBObject<'SpecialWorkingHoursFactor'> &
+export type SpecialWorkingHoursFactor = DBObject<'specialWorkingHoursFactor'> &
     SoftDelete & {
         organization_id: Organization['id'];
         type: Weekday | 'holiday' | 'nightshift';
         extra_charge: number;
     };
 
-export type Substitute = DBObject<'Substitute'> &
+export type Substitute = DBObject<'substitute'> &
     SoftDelete & {
         user_id: User['id'];
         substitute_id: User['id'];
     };
 
-export type TravelLog = DBObject<'TravelLog'> &
+export type TravelLog = DBObject<'travelLog'> &
     SoftDelete & {
         user_id: User['id'];
         start_location_id: User['id'] | OperatingSite['id'] | CustomAddress['id'];
@@ -188,13 +198,13 @@ export type TravelLog = DBObject<'TravelLog'> &
         end_location_id: User['id'] | OperatingSite['id'] | CustomAddress['id'];
     };
 
-export type CustomAddress = DBObject<'CustomAddress'> &
+export type CustomAddress = DBObject<'customAddress'> &
     SoftDelete &
     Address & {
         organization_id: Organization['id'];
     };
 
-export type WorkLog = DBObject<'WorkLog'> &
+export type WorkLog = DBObject<'workLog'> &
     SoftDelete & {
         user_id: User['id'];
         start: Timestamp;
@@ -202,7 +212,7 @@ export type WorkLog = DBObject<'WorkLog'> &
         is_home_office: boolean;
     };
 
-export type WorkLogPatch = DBObject<'WorkLogPatch'> &
+export type WorkLogPatch = DBObject<'workLogPatch'> &
     SoftDelete & {
         user_id: User['id'];
         start: Timestamp;
@@ -217,14 +227,14 @@ export type WorkLogPatch = DBObject<'WorkLogPatch'> &
 
 export const TRUNCATION_CYCLES = [null, '1', '3', '6', '12'] as const;
 
-export type TimeAccountSetting = DBObject<'TimeAccountSetting'> &
+export type TimeAccountSetting = DBObject<'timeAccountSetting'> &
     SoftDelete & {
         organization_id: Organization['id'];
         type: string | null;
         truncation_cycle_length_in_months: (typeof TRUNCATION_CYCLES)[number];
     };
 
-export type TimeAccount = DBObject<'TimeAccount'> &
+export type TimeAccount = DBObject<'timeAccount'> &
     SoftDelete & {
         user_id: User['id'];
         balance: number;
@@ -233,7 +243,7 @@ export type TimeAccount = DBObject<'TimeAccount'> &
         name: string;
     };
 
-export type TimeAccountTransaction = DBObject<'TimeAccountTransaction'> &
+export type TimeAccountTransaction = DBObject<'timeAccountTransaction'> &
     SoftDelete & {
         from_id: TimeAccount['id'] | null;
         to_id: TimeAccount['id'] | null;
@@ -242,15 +252,15 @@ export type TimeAccountTransaction = DBObject<'TimeAccountTransaction'> &
         description: string;
     };
 
-export type UserWorkingWeek = DBObject<'UserWorkingWeek'> &
+export type UserWorkingWeek = DBObject<'userWorkingWeek'> &
     SoftDelete &
     Record<Weekday, boolean> & {
         user_id: User['id'];
         active_since: Date;
     };
 
-export type Notification = Omit<DBObject<'Notification'>, 'id'> & {
-    id: Branded<string, 'Notification'>;
+export type Notification = Omit<DBObject<'notification'>, 'id'> & {
+    id: Branded<string, 'notification'>;
     notifiable_type: 'App\\Models\\User';
     notifiable_id: User['id'];
     read_at: Timestamp;
@@ -290,19 +300,19 @@ export type UserPermission = {
     [key in keyof Permission]: { name: Permission[key]; label: string };
 };
 
-export type OrganizationUser = DBObject<'OrganizationUser'> &
+export type OrganizationUser = DBObject<'organizationUser'> &
     SoftDelete & {
         organization_id: Organization['id'];
         user_id: User['id'];
     } & Record<Permission['all'] & Permission['organization'] & Permission['group'] & Permission['operatingSite'], PermissionValue>;
 
-export type OperatingSiteUser = DBObject<'OperatingSiteUser'> &
+export type OperatingSiteUser = DBObject<'operatingSiteUser'> &
     SoftDelete & {
         operating_site_id: OperatingSite['id'];
         user_id: User['id'];
     } & Record<Permission['all'] & Permission['operatingSite'], PermissionValue>;
 
-export type GroupUser = DBObject<'GroupUser'> &
+export type GroupUser = DBObject<'groupUser'> &
     SoftDelete & {
         group_id: Group['id'];
         user_id: User['id'];
