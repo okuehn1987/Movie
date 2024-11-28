@@ -23,16 +23,22 @@ class TimeAccountPolicy
 
     public function create(User $authUser, User $user): bool
     {
-        return $user->hasPermission(null, 'timeAccount_permission', 'write');
+        return
+            $authUser->hasPermission($user, 'timeAccount_permission', 'write') ||
+            $authUser->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($user, 'timeAccount_permission', 'write'));
     }
 
     public function update(User $user, TimeAccount $timeAccount): bool
     {
-        return $user->hasPermission($timeAccount->user, 'timeAccount_permission', 'write');
+        return
+            $user->hasPermission($timeAccount->user, 'timeAccount_permission', 'write') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($timeAccount->user, 'timeAccount_permission', 'write'));
     }
 
     public function delete(User $user, TimeAccount $timeAccount): bool
     {
-        return $user->hasPermission($timeAccount->user, 'timeAccount_permission', 'write');
+        return
+            $user->hasPermission($timeAccount->user, 'timeAccount_permission', 'write') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($timeAccount->user, 'timeAccount_permission', 'write'));
     }
 }
