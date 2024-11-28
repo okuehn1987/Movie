@@ -7,7 +7,7 @@ type Branded<T, Brand extends string> = T & { [x in `__${Brand}__`]: void };
 export type Model = 'organization' | 'operatingSite' | 'group' | 'user' | 'timeAccountSetting' | 'absence' | (string & NonNullable<unknown>);
 export type CanMethod = 'viewIndex' | 'viewShow' | 'create' | 'update' | 'delete' | (string & NonNullable<unknown>);
 
-export type Can = {
+export type Canable = {
     /**can the auth user execute this action in the current scope */
     can: Record<Model, Record<CanMethod, boolean>>;
 };

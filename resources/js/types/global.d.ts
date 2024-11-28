@@ -2,24 +2,24 @@ import { PageProps as InertiaPageProps } from '@inertiajs/core';
 import { route as routeFn } from 'ziggy-js';
 import { ZiggyConfig } from '../ziggy';
 import { PageProps as AppPageProps } from './';
-import { Can, CanMethod, Model } from './types';
+import { Canable, CanMethod, Model } from './types';
 
-type CanCan = (model: Model, method: CanMethod, context?: Can) => boolean;
+type Can = (model: Model, method: CanMethod, canContext?: Canable) => boolean;
 
 declare global {
     interface Window {
         Ziggy: ZiggyConfig;
-        can: CanCan;
+        can: Can;
     }
 
-    const can: CanCan;
+    const can: Can;
     const route: typeof routeFn;
 }
 
 declare module 'vue' {
     interface ComponentCustomProperties {
         route: typeof routeFn;
-        can: CanCan;
+        can: Can;
     }
 }
 
