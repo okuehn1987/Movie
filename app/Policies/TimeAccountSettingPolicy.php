@@ -23,21 +23,29 @@ class TimeAccountSettingPolicy
 
     public function viewIndex(User $user): bool
     {
-        return $user->hasPermission(null, 'timeAccountSetting_permission', 'read');
+        return
+            $user->hasPermission(null, 'timeAccountSetting_permission', 'read') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'timeAccountSetting_permission', 'read'));
     }
 
     public function create(User $user): bool
     {
-        return $user->hasPermission(null, 'timeAccountSetting_permission', 'write');
+        return
+            $user->hasPermission(null, 'timeAccountSetting_permission', 'write') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'timeAccountSetting_permission', 'write'));
     }
 
     public function update(User $user, TimeAccountSetting $timeAccountSetting): bool
     {
-        return $user->hasPermission(null, 'timeAccountSetting_permission', 'write');
+        return
+            $user->hasPermission(null, 'timeAccountSetting_permission', 'write') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'timeAccountSetting_permission', 'write'));
     }
 
     public function delete(User $user, TimeAccountSetting $timeAccountSetting): bool
     {
-        return $user->hasPermission(null, 'timeAccountSetting_permission', 'write');
+        return
+            $user->hasPermission(null, 'timeAccountSetting_permission', 'write') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'timeAccountSetting_permission', 'write'));
     }
 }

@@ -16,6 +16,11 @@ class TimeAccountSettingsController extends Controller
 
         return Inertia::render('TimeAccount/TimeAccountSettingsIndex', [
             'timeAccountSettings' => TimeAccountSetting::inOrganization()->get(),
+            'can' => [
+                'timeAccountSetting' => [
+                    'create' => Gate::allows('create', TimeAccountSetting::class),
+                ]
+            ]
         ]);
     }
 

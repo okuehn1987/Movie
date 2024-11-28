@@ -31,7 +31,7 @@ const timeAccountSettingForm = useForm({
                         ]"
                     >
                         <template v-slot:header.actions>
-                            <v-dialog max-width="1000">
+                            <v-dialog max-width="1000" v-if="can('timeAccountSetting', 'create')">
                                 <template v-slot:activator="{ props: activatorProps }">
                                     <v-btn v-bind="activatorProps" color="primary">
                                         <v-icon icon="mdi-plus"></v-icon>
