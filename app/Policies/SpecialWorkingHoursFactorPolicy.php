@@ -21,18 +21,31 @@ class SpecialWorkingHoursFactorPolicy
         return null; // only if this is returned, the other methods are checked
     }
 
-    public function view(User $user, SpecialWorkingHoursFactor $specialWorkingHoursFactor): bool
+    public function viewIndex(User $user): bool
     {
-        return $user->hasPermission(null, 'specialWorkingHoursFactor_permission', 'read');
+        return
+            $user->hasPermission(null, 'specialWorkingHoursFactor_permission', 'read') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'specialWorkingHoursFactor_permission', 'read'));
     }
 
     public function create(User $user): bool
     {
-        return $user->hasPermission(null, 'specialWorkingHoursFactor_permission', 'write');
+        return
+            $user->hasPermission(null, 'specialWorkingHoursFactor_permission', 'write') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'specialWorkingHoursFactor_permission', 'write'));
     }
 
-    public function delete(User $user, SpecialWorkingHoursFactor $specialWorkingHoursFactor): bool
+    public function update(User $user): bool
     {
-        return $user->hasPermission(null, 'specialWorkingHoursFactor_permission', 'write');
+        return
+            $user->hasPermission(null, 'specialWorkingHoursFactor_permission', 'write') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'specialWorkingHoursFactor_permission', 'write'));
+    }
+
+    public function delete(User $user): bool
+    {
+        return
+            $user->hasPermission(null, 'specialWorkingHoursFactor_permission', 'write') ||
+            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'specialWorkingHoursFactor_permission', 'write'));
     }
 }

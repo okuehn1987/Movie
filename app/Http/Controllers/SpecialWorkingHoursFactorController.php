@@ -7,17 +7,9 @@ use App\Models\SpecialWorkingHoursFactor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
-use Inertia\Inertia;
 
 class SpecialWorkingHoursFactorController extends Controller
 {
-    public function show(SpecialWorkingHoursFactor $specialWorkingHoursFactor)
-    {
-        Gate::authorize('view', SpecialWorkingHoursFactor::class);
-
-        return Inertia::render('SWHF/SWHFShow', ['specialWorkingHoursFactor' => $specialWorkingHoursFactor]);
-    }
-
     public function store(Request $request)
     {
         Gate::authorize('create', SpecialWorkingHoursFactor::class);
@@ -30,7 +22,6 @@ class SpecialWorkingHoursFactorController extends Controller
             'type.in' => 'Muss in ' . join(', ', SpecialWorkingHoursFactor::$TYPES) . ' vorhanden sein'
         ]);
 
-
         SpecialWorkingHoursFactor::updateOrCreate([
             'id' => $validated['id']
         ], [
@@ -38,12 +29,10 @@ class SpecialWorkingHoursFactorController extends Controller
             'organization_id' => Organization::getCurrent()->id
         ]);
 
-
         return back()->with('success', "Besonderer Arbeitszeitzuschlag erfolgreich gespeichert.");
     }
 
-
-    public function destroy(Request $request, SpecialWorkingHoursFactor $specialWorkingHoursFactor)
+    public function destroy(SpecialWorkingHoursFactor $specialWorkingHoursFactor)
     {
         Gate::authorize('delete', $specialWorkingHoursFactor);
 
