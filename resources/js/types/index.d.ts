@@ -5,5 +5,5 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
         user: User & { unread_notifications: Notification[] };
     };
     organization: Organization;
-    canMenu: Canable['can'];
+    globalCan: Canable['can'];
 } & Partial<Canable>;

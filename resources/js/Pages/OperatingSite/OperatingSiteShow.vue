@@ -9,12 +9,12 @@ defineProps<{
     operatingSite: OperatingSite & { operating_times: OperatingTime[] };
 }>();
 
-const tab = ref('Allgemeine Informationen' as 'Allgemeine Informationen' | 'Betriebszeiten');
+const tab = ref('Allgemeine Informationen');
 </script>
 
 <template>
     <AdminLayout :title="'Betriebsstätte ' + operatingSite.name" :backurl="route('operatingSite.index')">
-        <v-tabs v-model="tab" color="primary">
+        <v-tabs v-model="tab">
             <v-tab prepend-icon="mdi-account" text="Allgemeine Informationen" value="Allgemeine Informationen"></v-tab>
             <v-tab v-if="can('operatingTime', 'viewIndex')" prepend-icon="mdi-clock-outline" text="Betriebszeiten" value="Betriebszeiten"></v-tab>
         </v-tabs>

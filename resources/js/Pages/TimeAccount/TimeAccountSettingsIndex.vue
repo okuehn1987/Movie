@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { TimeAccountSetting, TRUNCATION_CYCLES } from '@/types/types';
-import { accountType, getTruncationCylceDisplayName } from '@/utils';
+import { accountType, getTruncationCycleDisplayName } from '@/utils';
 import { useForm } from '@inertiajs/vue3';
 
 defineProps<{ timeAccountSettings: TimeAccountSetting[] }>();
@@ -21,7 +21,7 @@ const timeAccountSettingForm = useForm({
                             timeAccountSettings.map(s => ({
                                 ...s,
                                 type: accountType(s.type),
-                                truncation_cycle_length_in_months: getTruncationCylceDisplayName(s.truncation_cycle_length_in_months),
+                                truncation_cycle_length_in_months: getTruncationCycleDisplayName(s.truncation_cycle_length_in_months),
                             }))
                         "
                         :headers="[
@@ -54,7 +54,7 @@ const timeAccountSettingForm = useForm({
                                                     <v-col cols="12" md="6">
                                                         <v-select
                                                             :items="
-                                                                TRUNCATION_CYCLES.map(e => ({ title: getTruncationCylceDisplayName(e), value: e }))
+                                                                TRUNCATION_CYCLES.map(e => ({ title: getTruncationCycleDisplayName(e), value: e }))
                                                             "
                                                             label="Berechnungszeitraum"
                                                             v-model="timeAccountSettingForm.truncation_cycle_length_in_months"

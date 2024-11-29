@@ -14,7 +14,7 @@ class TimeAccountTransactionController extends Controller
 {
     public function store(Request $request)
     {
-        Gate::authorize('create', TimeAccountSetting::class);
+        Gate::authorize('create', [TimeAccountTransaction::class, (TimeAccount::find($request['from_id']) ?? TimeAccount::find($request['to_id']))->user]);
 
         $validated = $request->validate([
             'from_id' => [

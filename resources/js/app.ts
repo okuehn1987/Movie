@@ -71,7 +71,7 @@ createInertiaApp({
             if (context) {
                 value = context.can[model]?.[method];
             } else {
-                value = page.props.can?.[model]?.[method] ?? page.props.canMenu[model]?.[method];
+                value = page.props.can?.[model]?.[method] ?? page.props.globalCan[model]?.[method];
             }
             if (value === undefined)
                 throw new Error(

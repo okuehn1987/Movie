@@ -50,9 +50,9 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
-            'canMenu' => [
+            'globalCan' => [
                 'organization' => [
-                    'viewIndex' => Gate::allows('viewIndex', Organization::class),
+                    'viewIndex' =>  Gate::allows('viewIndex', Organization::class),
                     'viewShow' => Gate::allows('viewShow', Organization::class),
                 ],
                 'operatingSite' => [

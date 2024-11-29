@@ -21,6 +21,13 @@ class TimeAccountPolicy
         return null; // only if this is returned, the other methods are checked
     }
 
+    public function viewIndex(User $authUser, User $user): bool
+    {
+        return
+            $authUser->hasPermission($user, 'timeAccount_permission', 'read') ||
+            $authUser->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($user, 'timeAccount_permission', 'read'));;
+    }
+
     public function create(User $authUser, User $user): bool
     {
         return
@@ -28,17 +35,17 @@ class TimeAccountPolicy
             $authUser->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($user, 'timeAccount_permission', 'write'));
     }
 
-    public function update(User $user, TimeAccount $timeAccount): bool
+    public function update(User $authUser, User $user): bool
     {
         return
-            $user->hasPermission($timeAccount->user, 'timeAccount_permission', 'write') ||
-            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($timeAccount->user, 'timeAccount_permission', 'write'));
+            $authUser->hasPermission($user, 'timeAccount_permission', 'write') ||
+            $authUser->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($user, 'timeAccount_permission', 'write'));
     }
 
-    public function delete(User $user, TimeAccount $timeAccount): bool
+    public function delete(User $authUser, User $user): bool
     {
         return
-            $user->hasPermission($timeAccount->user, 'timeAccount_permission', 'write') ||
-            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($timeAccount->user, 'timeAccount_permission', 'write'));
+            $authUser->hasPermission($user, 'timeAccount_permission', 'write') ||
+            $authUser->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($user, 'timeAccount_permission', 'write'));
     }
 }

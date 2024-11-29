@@ -16,11 +16,11 @@ use Inertia\Inertia;
 class AbsenceController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         Gate::authorize('publicAuth', User::class);
 
-        $user = User::find(Auth::id());
+        $user = $request->user();
 
         return Inertia::render('Absence/AbsenceIndex', [
             'users' =>

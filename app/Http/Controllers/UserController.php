@@ -28,11 +28,25 @@ class UserController extends Controller
         Gate::authorize('viewIndex', User::class);
 
         return Inertia::render('User/UserIndex', [
-            'users' => User::inOrganization()->with('group:id,name')->paginate(12),
+            'users' => User::inOrganization()->with('group:id,name')->paginate(12)->through(fn($u) => [
+                ...$u->toArray(),
+                'can' => [
+                    'user' => [
+                        'viewShow' => Gate::allows('viewShow', $u),
+                        'delete' => Gate::allows('delete', $u),
+                    ],
+
+                ]
+            ]),
             'supervisors' => User::inOrganization()->where('is_supervisor', true)->get(['id', 'first_name', 'last_name']),
             'permissions' => User::$PERMISSIONS,
             'groups' => Group::inOrganization()->get(['id', 'name']),
-            'operating_sites' => OperatingSite::inOrganization()->get(['id', 'name'])
+            'operating_sites' => OperatingSite::inOrganization()->get(['id', 'name']),
+            'can' => [
+                'user' => [
+                    'create' => Gate::allows('create', User::class),
+                ]
+            ]
         ]);
     }
 
@@ -68,6 +82,21 @@ class UserController extends Controller
                 'email'
             ]),
             'supervisor' => $user->supervisor()->first(['id', 'first_name', 'last_name', 'email']),
+            'can' => [
+                'timeAccount' => [
+                    'viewIndex' => Gate::allows('viewIndex', [TimeAccount::class, $user]),
+                    'create' => Gate::allows('create', [TimeAccount::class, $user]),
+                    'update' => Gate::allows('update', [TimeAccount::class, $user]),
+                    'delete' => Gate::allows('delete', [TimeAccount::class, $user]),
+                ],
+                'timeAccountTransaction' => [
+                    'viewIndex' => Gate::allows('viewIndex', [TimeAccountTransaction::class, $user]),
+                    'create' => Gate::allows('create', [TimeAccountTransaction::class, $user]),
+                ],
+                'user' => [
+                    'viewIndex' => Gate::allows('viewIndex', User::class),
+                ]
+            ]
         ]);
     }
 

@@ -17,7 +17,13 @@ export function usePageIsLoading() {
 
     router.on('start', e => {
         if (!page.value) return;
-        if (route(page.value) == e.detail.visit.url.origin + e.detail.visit.url.pathname) loading.value = true;
+        if (
+            route(page.value, {
+                ...route().params,
+            }) ==
+            e.detail.visit.url.origin + e.detail.visit.url.pathname
+        )
+            loading.value = true;
     });
     router.on('finish', () => (loading.value = false));
 
@@ -83,7 +89,7 @@ export function getMaxScrollHeight(extraHeight: number) {
     return `calc(100vh - ${80 + extraHeight}px)`;
 }
 
-export function getTruncationCylceDisplayName(cycleLength: TimeAccountSetting['truncation_cycle_length_in_months']) {
+export function getTruncationCycleDisplayName(cycleLength: TimeAccountSetting['truncation_cycle_length_in_months']) {
     return ({ 'null': 'Unbegrenzt', '1': 'Monatlich', '3': 'Quartalsweise', '6': 'Halbjährlich', '12': 'Jährlich' } as const)[cycleLength ?? 'null'];
 }
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Group, OperatingSite, Paginator, User, UserPermission } from '@/types/types';
+import { Canable, Group, OperatingSite, Paginator, User, UserPermission } from '@/types/types';
 import { Link } from '@inertiajs/vue3';
 import UserForm from './UserForm.vue';
 import { fillNullishValues, usePagination } from '@/utils';
@@ -9,7 +9,7 @@ import { toRefs } from 'vue';
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 
 const props = defineProps<{
-    users: Paginator<User & { group: Pick<Group, 'id' | 'name'> }>;
+    users: Paginator<User & Canable & { group: Pick<Group, 'id' | 'name'> }>;
     supervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
     groups: Pick<Group, 'id' | 'name'>[];
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];
@@ -34,15 +34,17 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
                     { title: '', key: 'actions', align: 'end' },
                 ]"
                 :items="
-                    data.map(u => ({
-                        ...fillNullishValues(u),
-                        date_of_birth: DateTime.fromFormat(u.date_of_birth, 'yyyy-MM-dd').toFormat('dd.MM.yyyy'),
-                    }))
+                    data
+                        .map(u => ({
+                            ...fillNullishValues(u),
+                            date_of_birth: DateTime.fromFormat(u.date_of_birth, 'yyyy-MM-dd').toFormat('dd.MM.yyyy'),
+                        }))
+                        .toSorted((a, b) => +can('user', 'viewShow', b) - +can('user', 'viewShow', a))
                 "
                 hover
             >
                 <template v-slot:header.actions>
-                    <v-dialog max-width="1000">
+                    <v-dialog max-width="1000" v-if="can('user', 'create')">
                         <template v-slot:activator="{ props: activatorProps }">
                             <v-btn v-bind="activatorProps" color="primary">
                                 <v-icon icon="mdi-plus"></v-icon>
@@ -62,15 +64,17 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
                 <template v-slot:item.actions="{ item }">
                     <div class="d-flex justify-end">
                         <Link
+                            v-if="can('user', 'viewShow', item)"
                             :href="
                                 route('user.show', {
                                     user: item.id,
                                 })
                             "
                         >
-                            <v-btn color="primary" size="large" variant="text" icon="mdi-eye" />
+                            <v-btn color="primary" variant="text" icon="mdi-eye" />
                         </Link>
                         <ConfirmDelete
+                            v-if="can('user', 'delete', item)"
                             :content="'Bist du dir sicher, dass du ' + item.first_name + ' ' + item.last_name + ' entfernen möchtest?'"
                             :route="
                                 route('user.destroy', {
@@ -79,6 +83,7 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
                             "
                             title="Mitarbeiter löschen"
                         ></ConfirmDelete>
+                        <div style="width: 48px" v-else></div>
                     </div>
                 </template>
                 <template v-slot:bottom>

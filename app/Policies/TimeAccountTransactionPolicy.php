@@ -21,8 +21,17 @@ class TimeAccountTransactionPolicy
         return null; // only if this is returned, the other methods are checked
     }
 
-    public function create(User $user): bool
+    public function viewIndex(User $authUser, User $user): bool
     {
-        return $user->hasPermission(null, 'timeAccountTransaction', 'write');
+        return
+            $authUser->hasPermission($user, 'timeAccountTransaction', 'read') ||
+            $authUser->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($user, 'timeAccountTransaction', 'read'));;
+    }
+
+    public function create(User $authUser, User $user): bool
+    {
+        return
+            $authUser->hasPermission($user, 'timeAccountTransaction', 'write') ||
+            $authUser->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($user, 'timeAccountTransaction', 'write'));
     }
 }

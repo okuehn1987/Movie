@@ -24,6 +24,8 @@ export type Model =
     | 'absenceType'
     | 'operatingTime'
     | 'specialWorkingHoursFactors'
+    | 'timeAccount'
+    | 'timeAccountTransaction'
     | (string & NonNullable<unknown>);
 export type CanMethod = 'viewIndex' | 'viewShow' | 'create' | 'update' | 'delete' | (string & NonNullable<unknown>);
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { TimeAccount, TimeAccountSetting, User, UserWorkingHours, UserWorkingWeek } from '@/types/types';
-import { accountType, getTruncationCylceDisplayName, roundTo } from '@/utils';
+import { accountType, getTruncationCycleDisplayName, roundTo } from '@/utils';
 import { useForm } from '@inertiajs/vue3';
 import { watch } from 'vue';
 
@@ -76,7 +76,7 @@ watch(
                                     label="Typ"
                                     :items="
                                         time_account_settings.map(s => ({
-                                            title: `${accountType(s.type)} (${getTruncationCylceDisplayName(s.truncation_cycle_length_in_months)})`,
+                                            title: `${accountType(s.type)} (${getTruncationCycleDisplayName(s.truncation_cycle_length_in_months)})`,
                                             value: s.id,
                                         }))
                                     "

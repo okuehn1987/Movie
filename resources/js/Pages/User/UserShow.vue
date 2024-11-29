@@ -48,9 +48,9 @@ const tab = ref(route().params['tab'] ?? 'generalInformation');
     <AdminLayout :title="user.first_name + ' ' + user.last_name + ' bearbeiten'" :backurl="route('user.index')">
         <v-tabs v-model="tab">
             <v-tab value="generalInformation">Allgemeine Informationen</v-tab>
-            <v-tab value="timeAccounts">Arbeitszeitkonten</v-tab>
-            <v-tab value="timeAccountTransactions">Transaktionen</v-tab>
-            <v-tab value="userOrganigram">Organigramm</v-tab>
+            <v-tab v-if="can('timeAccount', 'viewIndex')" value="timeAccounts">Arbeitszeitkonten</v-tab>
+            <v-tab v-if="can('timeAccountTransaction', 'viewIndex')" value="timeAccountTransactions">Transaktionen</v-tab>
+            <v-tab v-if="can('user', 'viewIndex')" value="userOrganigram">Organigramm</v-tab>
         </v-tabs>
         <v-card>
             <v-tabs-window v-model="tab">
@@ -58,15 +58,15 @@ const tab = ref(route().params['tab'] ?? 'generalInformation');
                     <UserForm :supervisors :user :groups :operating_sites :permissions mode="edit"></UserForm>
                 </v-tabs-window-item>
 
-                <v-tabs-window-item style="overflow-y: auto" value="timeAccounts">
+                <v-tabs-window-item v-if="can('timeAccount', 'viewIndex')" style="overflow-y: auto" value="timeAccounts">
                     <TimeAccounts :user :time_accounts :time_account_settings :defaultTimeAccountId />
                 </v-tabs-window-item>
 
-                <v-tabs-window-item style="overflow-y: auto" value="timeAccountTransactions">
+                <v-tabs-window-item v-if="can('timeAccountTransaction', 'viewIndex')" style="overflow-y: auto" value="timeAccountTransactions">
                     <TimeAccountTransactions :time_accounts :time_account_transactions />
                 </v-tabs-window-item>
 
-                <v-tabs-window-item style="overflow-y: auto" value="userOrganigram">
+                <v-tabs-window-item v-if="can('user', 'viewIndex')" style="overflow-y: auto" value="userOrganigram">
                     <UserOrganigram :users="organigramUsers" :supervisor :currentUser="user" />
                 </v-tabs-window-item>
             </v-tabs-window>

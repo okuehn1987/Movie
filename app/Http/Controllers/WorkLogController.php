@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Group;
 use App\Models\User;
 use App\Models\WorkLog;
 use Carbon\Carbon;

@@ -46,7 +46,7 @@ class TimeAccountController extends Controller
 
     public function destroy(TimeAccount $timeAccount)
     {
-        Gate::authorize('delete', $timeAccount);
+        Gate::authorize('delete', [TimeAccount::class, $timeAccount->user]);
 
         if ($timeAccount->balance != 0 || $timeAccount->id == $timeAccount->user->defaultTimeAccount()->id) {
             return back()->with('error', 'Das Arbeitszeitkonto kann nicht gelöscht werden');
