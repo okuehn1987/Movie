@@ -14,9 +14,9 @@ class HasRole
      * @param  \Closure  $next
      * @return mixed
      */
-    public static function handle($request, Closure $next, string ...$roles)
+    public static function handle($request, Closure $next, string $role)
     {
-        if (Auth::check() && in_array(Auth::user()->role, $roles))
+        if (Auth::check() && Auth::user()->role == $role)
             return $next($request);
         return redirect(route('home'));
     }

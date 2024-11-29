@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Middleware\CheckIfGateWasUsedToAuthorizeRequest;
 use App\Http\Middleware\HasOrganizationAccess;
-use App\Http\Middleware\HasPermission;
 use App\Http\Middleware\HasRole;
 use Illuminate\Support\Facades\Route;
 

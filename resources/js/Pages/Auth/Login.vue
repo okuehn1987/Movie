@@ -29,7 +29,7 @@ const adminLogin = () => {
                     <v-text-field
                         v-model="adminForm.email"
                         :readonly="adminForm.processing"
-                        :errorMessages="adminForm.errors.email"
+                        :error-messages="adminForm.errors.email"
                         prepend-inner-icon="mdi-email-outline"
                         label="Email"
                     ></v-text-field>
@@ -37,7 +37,7 @@ const adminLogin = () => {
                     <v-text-field
                         v-model="adminForm.password"
                         :readonly="adminForm.processing"
-                        :errorMessages="adminForm.errors.password"
+                        :error-messages="adminForm.errors.password"
                         type="password"
                         prepend-inner-icon="mdi-lock-outline"
                         label="Passwort"
