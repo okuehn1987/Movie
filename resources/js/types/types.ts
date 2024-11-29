@@ -26,6 +26,7 @@ export type Model =
     | 'specialWorkingHoursFactors'
     | 'timeAccount'
     | 'timeAccountTransaction'
+    | 'workLogPatch'
     | (string & NonNullable<unknown>);
 export type CanMethod = 'viewIndex' | 'viewShow' | 'create' | 'update' | 'delete' | (string & NonNullable<unknown>);
 

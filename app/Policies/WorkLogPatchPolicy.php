@@ -26,13 +26,19 @@ class WorkLogPatchPolicy
         return true;
     }
 
-    public function update(User $user, WorkLogPatch $workLogPatch): bool
+    public function update(User $authUser, User $user): bool
     {
-        return $user->hasPermission($workLogPatch->user, 'workLogPatch_permission', 'write') || $workLogPatch->user->supervisor_id === $user->id;
+        return
+            $user->supervisor_id === $authUser->id ||
+            $authUser->hasPermission($user, 'workLogPatch_permission', 'write') ||
+            $authUser->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($user, 'workLogPatch_permission', 'write'));
     }
 
-    public function delete(User $user, WorkLogPatch $workLogPatch): bool
+    public function delete(User $authUser, User $user): bool
     {
-        return $user->hasPermission($workLogPatch->user, 'workLogPatch_permission', 'write') || $workLogPatch->user->supervisor_id === $user->id;
+        return
+            $user->supervisor_id === $authUser->id ||
+            $authUser->hasPermission($user, 'workLogPatch_permission', 'write') ||
+            $authUser->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($user, 'workLogPatch_permission', 'write'));
     }
 }

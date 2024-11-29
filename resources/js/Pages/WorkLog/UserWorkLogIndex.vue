@@ -163,8 +163,8 @@ function retreatPatch() {
             >
                 <template v-slot:item.action="{ item }">
                     <v-btn
+                        v-if="editableWorkLogs.find(e => e.id === item.id) && can('workLogPatch', 'update')"
                         color="primary"
-                        v-if="editableWorkLogs.find(e => e.id === item.id)"
                         @click.stop="editWorkLog(item.id)"
                         :icon="
                             workLogs.data.find(log => log.id === item.id)?.work_log_patches.at(-1)?.status === 'created' ? 'mdi-eye' : 'mdi-pencil'

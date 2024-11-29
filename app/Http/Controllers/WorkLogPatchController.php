@@ -42,7 +42,7 @@ class WorkLogPatchController extends Controller
 
     public function update(Request $request, WorkLogPatch $workLogPatch)
     {
-        Gate::authorize('update', $workLogPatch);
+        Gate::authorize('update', $workLogPatch->user);
 
         $validated = $request->validate([
             'accepted' => 'required|boolean'
@@ -59,7 +59,7 @@ class WorkLogPatchController extends Controller
 
     public function destroy(WorkLogPatch $workLogPatch)
     {
-        Gate::authorize('delete', $workLogPatch);
+        Gate::authorize('delete', $workLogPatch->user);
 
         $workLogPatch->delete();
 

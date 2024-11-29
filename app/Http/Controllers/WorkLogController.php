@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\WorkLog;
+use App\Models\WorkLogPatch;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -62,6 +63,11 @@ class WorkLogController extends Controller
                 ->with('workLogPatches:id,work_log_id,updated_at,status,start,end,is_home_office')
                 ->orderBy('start', 'DESC')
                 ->paginate(12),
+            'can' => [
+                'workLogPatch' => [
+                    'update' => Gate::allows('update', [WorkLogPatch::class, $user]),
+                ]
+            ]
         ]);
     }
 }
