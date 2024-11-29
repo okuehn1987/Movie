@@ -7,6 +7,7 @@ use App\Models\OperatingSite;
 use App\Models\Organization;
 use App\Models\TimeAccountSetting;
 use App\Models\User;
+use App\Models\WorkLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Middleware;
@@ -51,6 +52,9 @@ class HandleInertiaRequests extends Middleware
                 'error' => $request->session()->get('error'),
             ],
             'globalCan' => [
+                'workLog' => [
+                    'viewIndex' => Gate::allows('viewIndex', WorkLog::class),
+                ],
                 'organization' => [
                     'viewIndex' =>  Gate::allows('viewIndex', Organization::class),
                     'viewShow' => Gate::allows('viewShow', Organization::class),

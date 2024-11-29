@@ -13,16 +13,18 @@ use Inertia\Inertia;
 
 class WorkLogController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        Gate::authorize('publicAuth', User::class);
+        Gate::authorize('viewIndex', WorkLog::class);
 
         return Inertia::render('WorkLog/WorkLogIndex', [
-            'users' => User::find(Auth::id())->supervisees()->get(['id', 'first_name', 'last_name'])->map(fn($u) => [
-                ...$u->toArray(),
-                'isPresent' => $u->workLogs()->latest()->first()->end ? true : false,
-                'latestWorkLog' => $u->workLogs()->latest()->first()
-            ])
+            'users' => User::inOrganization()->get(['id', 'first_name', 'last_name'])
+                ->filter(fn($u) => $request->user()->can('viewShow', [WorkLog::class, $u]))
+                ->map(fn($u) => [
+                    ...$u->toArray(),
+                    'isPresent' => $u->workLogs()->latest()->first()->end ? true : false,
+                    'latestWorkLog' => $u->workLogs()->latest()->first()
+                ])
         ]);
     }
 
@@ -50,13 +52,12 @@ class WorkLogController extends Controller
 
         return back()->with('success', 'Arbeitsstatus erfolgreich eingetragen.');
     }
-    public function userWorkLogs(Request $request, User $user)
+    public function userWorkLogs(User $user)
     {
-        Gate::authorize('viewShow', $user);
         Gate::authorize('viewShow', [WorkLog::class, $user]);
 
         return Inertia::render('WorkLog/UserWorkLogIndex', [
-            'user' => $user,
+            'user' => $user->only('id', 'first_name', 'last_name'),
             'workLogs' => WorkLog::where('user_id', $user->id)
                 ->with('workLogPatches:id,work_log_id,updated_at,status,start,end,is_home_office')
                 ->orderBy('start', 'DESC')

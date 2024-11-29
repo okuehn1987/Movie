@@ -9,7 +9,7 @@ import { computed, onMounted, ref, toRefs } from 'vue';
 type PatchProp = Omit<WorkLogPatch, 'deleted_at' | 'created_at' | 'user_id'>;
 
 const props = defineProps<{
-    user: User;
+    user: Pick<User, 'id' | 'first_name' | 'last_name'>;
     workLogs: Paginator<
         WorkLog & {
             work_log_patches: PatchProp[];
@@ -131,8 +131,8 @@ function retreatPatch() {
                     {
                         title: '',
                         key: 'action',
-                        width: '96px',
                         sortable: false,
+                        align: 'end',
                     },
                 ]"
                 :items="

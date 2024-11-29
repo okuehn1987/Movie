@@ -14,7 +14,7 @@ import { router } from '@inertiajs/vue3';
                     value: route('absence.index'),
                     title: 'Abwesenheiten',
                 },
-                {
+                can('workLog', 'viewIndex') && {
                     props: { active: route().current('workLog.index'), prependIcon: 'mdi-clock-outline' },
                     value: route('workLog.index'),
                     title: 'Arbeitszeiten',
