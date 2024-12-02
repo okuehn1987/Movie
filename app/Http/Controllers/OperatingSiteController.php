@@ -42,7 +42,7 @@ class OperatingSiteController extends Controller
             'operatingSite' => $operatingSite->load('operatingTimes'),
             'can' => [
                 'operatingSite' => [
-                    'update' => false && Gate::allows('update', $operatingSite),
+                    'update' => Gate::allows('update', $operatingSite),
                 ],
                 'operatingTime' => [
                     'viewIndex' => Gate::allows('viewIndex', OperatingTime::class),
