@@ -48,7 +48,6 @@ defineProps<{
                     <v-card-item>TODO: to be implemented</v-card-item>
                 </v-card>
             </v-col>
-            <!-- TODO: add worklog patch permission in FE -->
             <v-col cols="12" sm="6" lg="4" v-if="patches">
                 <WorkLogPatches :patches="patches" />
             </v-col>
