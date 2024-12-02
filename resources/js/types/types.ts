@@ -286,9 +286,9 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
           }
     );
 
-type PermissionValue = 'read' | 'write' | null;
+export type PermissionValue = 'read' | 'write' | null;
 
-type Permission = {
+export type Permission = {
     all:
         | 'user_permission'
         | 'workLogPatch_permission'
@@ -309,16 +309,16 @@ export type OrganizationUser = DBObject<'organizationUser'> &
     SoftDelete & {
         organization_id: Organization['id'];
         user_id: User['id'];
-    } & Record<Permission['all'] & Permission['organization'] & Permission['group'] & Permission['operatingSite'], PermissionValue>;
+    } & Record<Permission['all' | 'group' | 'operatingSite' | 'organization'], PermissionValue>;
 
 export type OperatingSiteUser = DBObject<'operatingSiteUser'> &
     SoftDelete & {
         operating_site_id: OperatingSite['id'];
         user_id: User['id'];
-    } & Record<Permission['all'] & Permission['operatingSite'], PermissionValue>;
+    } & Record<Permission['all' | 'operatingSite'], PermissionValue>;
 
 export type GroupUser = DBObject<'groupUser'> &
     SoftDelete & {
         group_id: Group['id'];
         user_id: User['id'];
-    } & Record<Permission['all'] & Permission['group'], PermissionValue>;
+    } & Record<Permission['all' | 'group'], PermissionValue>;

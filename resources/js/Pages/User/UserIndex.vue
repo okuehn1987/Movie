@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Canable, Group, OperatingSite, Paginator, User, UserPermission } from '@/types/types';
+import { Canable, Group, OperatingSite, Paginator, Permission, User } from '@/types/types';
 import { Link } from '@inertiajs/vue3';
 import UserForm from './UserForm.vue';
 import { fillNullishValues, usePagination } from '@/utils';
@@ -13,7 +13,7 @@ const props = defineProps<{
     supervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
     groups: Pick<Group, 'id' | 'name'>[];
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];
-    permissions: UserPermission;
+    permissions: { name: Permission[keyof Permission]; label: string }[];
 }>();
 
 const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');

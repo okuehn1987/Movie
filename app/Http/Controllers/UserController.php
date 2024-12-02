@@ -26,7 +26,6 @@ class UserController extends Controller
     public function index()
     {
         Gate::authorize('viewIndex', User::class);
-
         return Inertia::render('User/UserIndex', [
             'users' => User::inOrganization()->with('group:id,name')->paginate(12)->through(fn($u) => [
                 ...$u->toArray(),
@@ -39,7 +38,7 @@ class UserController extends Controller
                 ]
             ]),
             'supervisors' => User::inOrganization()->where('is_supervisor', true)->get(['id', 'first_name', 'last_name']),
-            'permissions' => User::$PERMISSIONS,
+            'permissions' => collect(User::$PERMISSIONS)->flatten(1),
             'groups' => Group::inOrganization()->get(['id', 'name']),
             'operating_sites' => OperatingSite::inOrganization()->get(['id', 'name']),
             'can' => [
@@ -62,7 +61,7 @@ class UserController extends Controller
         $userTransactions = TimeAccountTransaction::forUser($user)->with('user:id,first_name,last_name')->latest()->paginate(15);
 
         return Inertia::render('User/UserShow', [
-            'user' => $user,
+            'user' => $user->load(['groupUser', 'operatingSiteUser', 'organizationUser']),
             'supervisors' => User::inOrganization()
                 ->where('is_supervisor', true)
                 ->whereNotIn('id', $user->allSuperviseesFlat()->pluck('id'))
@@ -72,7 +71,6 @@ class UserController extends Controller
             'defaultTimeAccountId' => $user->defaultTimeAccount()->id,
             'groups' => Group::inOrganization()->get(),
             'operating_sites' => OperatingSite::inOrganization()->get(),
-            'permissions' => User::$PERMISSIONS,
             'time_account_transactions' => $userTransactions,
             'organigramUsers' => ($user->supervisor ?: $user)->allSupervisees()->get([
                 'id',
@@ -82,6 +80,7 @@ class UserController extends Controller
                 'email'
             ]),
             'supervisor' => $user->supervisor()->first(['id', 'first_name', 'last_name', 'email']),
+            'permissions' => collect(User::$PERMISSIONS)->flatten(1),
             'can' => [
                 'timeAccount' => [
                     'viewIndex' => Gate::allows('viewIndex', [TimeAccount::class, $user]),
@@ -96,13 +95,14 @@ class UserController extends Controller
                 'user' => [
                     'viewIndex' => Gate::allows('viewIndex', User::class),
                 ]
-            ]
+            ],
         ]);
     }
 
     public function store(Request $request)
     {
         Gate::authorize('create', User::class);
+        $request['groupUser'] = $request['organizationUser'];
 
         $validated = $request->validate([
             "first_name" => "required|string",
@@ -144,8 +144,33 @@ class UserController extends Controller
             'userWorkingWeek.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'userWorkingWeekSince' => 'required|date',
 
-            'permissions' => 'nullable|array',
-            'permissions.*' => ['required', Rule::in(collect(User::$PERMISSIONS)->map(fn($p) => $p['name']))]
+            'organizationUser' => 'required|array',
+            'organizationUser.*' => ['nullable', function ($attribute, $value, $fail) {
+                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+                if (!in_array($value, ['read', 'write', null])) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+            }],
+            'operatingSiteUser' => 'required|array',
+            'operatingSiteUser.*' => ['nullable', function ($attribute, $value, $fail) {
+                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->only(['all', 'operatingSite'])->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+                if (!in_array($value, ['read', 'write', null])) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+            }],
+            'groupUser' => 'required|array',
+            'groupUser.*' => ['nullable', function ($attribute, $value, $fail) {
+                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->only(['all', 'group'])->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+                if (!in_array($value, ['read', 'write', null])) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+            }]
         ]);
 
         $user = (new User)->forceFill([
@@ -200,16 +225,19 @@ class UserController extends Controller
         OrganizationUser::create([
             "user_id" => $user->id,
             "organization_id" => Organization::getCurrent()->id,
+            ...$validated['organizationUser']
         ]);
 
         GroupUser::create([
             "user_id" => $user->id,
             "group_id" => $user->group_id,
+            ...$validated['groupUser']
         ]);
 
         OperatingSiteUser::create([
             "user_id" => $user->id,
             "operating_site_id" => $user->operating_site_id,
+            ...$validated['operatingSiteUser']
         ]);
 
         return back()->with('success', 'Mitarbeitenden erfolgreich angelegt.');
@@ -248,8 +276,14 @@ class UserController extends Controller
             "federal_state" => "nullable|string",
             "phone_number" => "nullable|string",
             "staff_number" => "nullable|integer",
-            "group_id" => "nullable|integer",
-            'operating_site_id' => 'required|integer',
+            "group_id" => [
+                "nullable",
+                Rule::exists('groups', 'id')->where('organization_id', Organization::getCurrent()->id)
+            ],
+            'operating_site_id' => [
+                "required",
+                Rule::exists('operating_sites', 'id')->where('organization_id', Organization::getCurrent()->id)
+            ],
             'supervisor_id' => [
                 'nullable',
                 Rule::exists('users', 'id')
@@ -263,8 +297,34 @@ class UserController extends Controller
             'userWorkingWeek' => 'required|array',
             'userWorkingWeek.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'userWorkingWeekSince' => 'required|date',
-            'permissions' => 'nullable|array',
-            'permissions.*' => ['required', Rule::in(collect(User::$PERMISSIONS)->map(fn($p) => $p['name']))]
+
+            'organizationUser' => 'required|array',
+            'organizationUser.*' => ['nullable', function ($attribute, $value, $fail) {
+                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+                if (!in_array($value, ['read', 'write', null])) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+            }],
+            'operatingSiteUser' => 'required|array',
+            'operatingSiteUser.*' => ['nullable', function ($attribute, $value, $fail) {
+                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->only(['all', 'operatingSite'])->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+                if (!in_array($value, ['read', 'write', null])) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+            }],
+            'groupUser' => 'required|array',
+            'groupUser.*' => ['nullable', function ($attribute, $value, $fail) {
+                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->only(['all', 'group'])->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+                if (!in_array($value, ['read', 'write', null])) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+            }]
         ]);
 
         $user->update([
@@ -286,8 +346,10 @@ class UserController extends Controller
             'supervisor_id' => $validated['supervisor_id'],
             'is_supervisor' => $validated['is_supervisor'],
             'date_of_birth' => Carbon::parse(Carbon::parse($validated['date_of_birth'])->format('d-m-Y')),
-            ...collect(User::$PERMISSIONS)->flatMap(fn($p) => [$p['name'] => in_array($p['name'], $validated['permissions'])])
         ]);
+        $user->organizationUser->update($validated['organizationUser']);
+        $user->operatingSiteUser->update($validated['operatingSiteUser']);
+        $user->groupUser->update($validated['groupUser']);
 
         $lastWorkingHour = $user->userWorkingHours()
             ->where('active_since', Carbon::parse($validated['userWorkingHoursSince']))

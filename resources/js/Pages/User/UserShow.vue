@@ -2,14 +2,17 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import {
     Group,
+    GroupUser,
     OperatingSite,
+    OperatingSiteUser,
+    OrganizationUser,
     Paginator,
+    Permission,
     TimeAccount,
     TimeAccountSetting,
     TimeAccountTransaction,
     Tree,
     User,
-    UserPermission,
     UserWorkingHours,
     UserWorkingWeek,
 } from '@/types/types';
@@ -24,6 +27,9 @@ defineProps<{
     user: User & {
         currentWorkingHours: UserWorkingHours;
         userWorkingWeek: UserWorkingWeek;
+        organization_user: OrganizationUser;
+        operating_site_user: OperatingSiteUser;
+        group_user: GroupUser;
     };
     supervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
 
@@ -36,10 +42,10 @@ defineProps<{
 
     groups: Group[];
     operating_sites: OperatingSite[];
-    permissions: UserPermission[];
+    permissions: { name: Permission[keyof Permission]; label: string }[];
 
     organigramUsers: Tree<Pick<User, 'id' | 'first_name' | 'last_name' | 'email' | 'supervisor_id'>, 'all_supervisees'>[];
-    supervisor: Pick<User, 'id' | 'first_name' | 'last_name' | 'email'>;
+    supervisor: Pick<User, 'id' | 'first_name' | 'last_name' | 'email'> | null;
 }>();
 
 const tab = ref(route().params['tab'] ?? 'generalInformation');
@@ -55,7 +61,7 @@ const tab = ref(route().params['tab'] ?? 'generalInformation');
         <v-card>
             <v-tabs-window v-model="tab">
                 <v-tabs-window-item style="overflow-y: auto" :style="{ maxHeight: getMaxScrollHeight(48) }" value="generalInformation">
-                    <UserForm :supervisors :user :groups :operating_sites :permissions mode="edit"></UserForm>
+                    <UserForm :supervisors :user :groups :operating_sites mode="edit" :permissions></UserForm>
                 </v-tabs-window-item>
 
                 <v-tabs-window-item v-if="can('timeAccount', 'viewIndex')" style="overflow-y: auto" value="timeAccounts">
