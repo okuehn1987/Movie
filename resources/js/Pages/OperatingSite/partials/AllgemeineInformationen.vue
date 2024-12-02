@@ -91,6 +91,7 @@ function submit() {
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-text-field
+                            required
                             label="Bundesland"
                             v-model="operatingSiteForm.federal_state"
                             :error-messages="operatingSiteForm.errors.federal_state"

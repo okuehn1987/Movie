@@ -143,13 +143,14 @@ function submit() {
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-text-field
+                            required
                             v-model="userForm.federal_state"
                             label="Bundesland"
                             :error-messages="userForm.errors.federal_state"
                         ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-text-field v-model="userForm.country" label="Land" :error-messages="userForm.errors.country"></v-text-field>
+                        <v-text-field required v-model="userForm.country" label="Land" :error-messages="userForm.errors.country"></v-text-field>
                     </v-col>
 
                     <v-col cols="12"><h3>Struktur</h3></v-col>
