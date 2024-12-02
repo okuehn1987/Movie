@@ -39,11 +39,18 @@ class TimeAccountTransactionController extends Controller
             'description' => 'required|string',
         ]);
 
+        $fromAccount = TimeAccount::find($validated['from_id']);
+        $toAccount = TimeAccount::find($validated['to_id']);
+
+        if ($fromAccount && $toAccount && $fromAccount->user_id !== $toAccount->user_id) {
+            return back()->with('error', 'Transaktionen zwischen zwei verschiedenen Benutzern sind nicht möglich.');
+        }
+
         TimeAccount::transferBalanceFromTo(
             $validated["amount"],
             $validated["description"],
-            TimeAccount::find($validated["from_id"]),
-            TimeAccount::find($validated['to_id'])
+            $fromAccount,
+            $toAccount
         );
 
 
