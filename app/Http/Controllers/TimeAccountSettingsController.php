@@ -40,13 +40,11 @@ class TimeAccountSettingsController extends Controller
 
     public function update(Request $request, TimeAccountSetting $timeAccountSetting)
     {
-        Gate::authorize('update', $timeAccountSetting);
         // TODO: 
     }
 
     public function destroy(TimeAccountSetting $timeAccountSetting)
     {
-        Gate::authorize('delete', $timeAccountSetting);
         // TODO: 
     }
 }

@@ -55,11 +55,7 @@ class AbsenceController extends Controller
             'start' => 'required|date',
             'end' => 'required|date',
             'absence_type_id' => 'required|exists:absence_types,id',
-            'user_id' => ['required', 'exists:users,id', function (string $attribute, mixed $value, Closure $fail) {
-                if (Auth::id() !== $value && User::find($value)->supervisor_id !== Auth::id()) {
-                    $fail('Du bist nicht berechtigt dazu, diese Abwesenheit zu beantragen'); // TODO: middleware
-                }
-            }]
+            'user_id' => 'required|exists:users,id'
         ]);
 
         $user = User::find(Auth::id());
@@ -93,7 +89,6 @@ class AbsenceController extends Controller
 
     public function destroy(Absence $absence)
     {
-        Gate::authorize('delete', $absence);
         // TODO: 
     }
 }
