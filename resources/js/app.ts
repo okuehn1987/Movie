@@ -1,7 +1,7 @@
 import '../css/app.css';
 import '@mdi/font/css/materialdesignicons.css';
 import { createApp, h, DefineComponent } from 'vue';
-import { createInertiaApp, usePage } from '@inertiajs/vue3';
+import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from 'ziggy-js';
 import { de } from 'vuetify/locale';
@@ -60,28 +60,18 @@ const vuetify = createVuetify({
     directives,
 });
 
+import canPlugin from './canPlugin';
+
 createInertiaApp({
     title: title => `${title} - ${appName}`,
     resolve: name => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob<DefineComponent>('./Pages/**/*.vue')),
     setup({ el, App, props, plugin }) {
-        const app = createApp({ render: () => h(App, props) });
-        window['can'] = function (model, method, context) {
-            const page = usePage();
-            let value;
-            if (context) {
-                value = context.can[model]?.[method];
-            } else {
-                value = page.props.can?.[model]?.[method] ?? page.props.globalCan[model]?.[method];
-            }
-            if (value === undefined)
-                throw new Error(
-                    `cannot read ability ${model}.${method} in page.props.can || context.can, did you forget to provide the ability in the controller?`,
-                );
-            return value;
-        };
-        app.config.globalProperties['can'] = window.can;
-
-        app.use(plugin).use(ZiggyVue).use(vuetify).mount(el);
+        createApp({ render: () => h(App, props) })
+            .use(plugin)
+            .use(ZiggyVue)
+            .use(canPlugin)
+            .use(vuetify)
+            .mount(el);
     },
     progress: {
         color: '#4B5563',
