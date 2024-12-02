@@ -20,7 +20,7 @@ const operatingSiteForm = useForm({
     federal_state: props.operatingSite.federal_state,
     zip: props.operatingSite.zip,
     name: props.operatingSite.name,
-    is_head_quarter: props.operatingSite.is_head_quarter,
+    is_headquarter: props.operatingSite.is_headquarter,
 });
 
 function submit() {
@@ -37,7 +37,7 @@ function submit() {
 <template>
     <v-card>
         <v-card-text>
-            <v-form @submit.prevent="submit">
+            <v-form @submit.prevent="submit" :disabled="!can('operatingSite', 'update')">
                 <v-row>
                     <v-col cols="12"><h3>Kontaktinformationen</h3></v-col>
 
@@ -113,11 +113,11 @@ function submit() {
                     <v-col cols="12" md="6">
                         <v-checkbox
                             label="Hauptsitz?"
-                            v-model="operatingSiteForm.is_head_quarter"
-                            :error-messages="operatingSiteForm.errors.is_head_quarter"
+                            v-model="operatingSiteForm.is_headquarter"
+                            :error-messages="operatingSiteForm.errors.is_headquarter"
                         ></v-checkbox>
                     </v-col>
-                    <v-col cols="12" class="text-end">
+                    <v-col cols="12" class="text-end" v-if="can('operatingSite', 'update')">
                         <v-btn :loading="operatingSiteForm.processing" type="submit" color="primary">Aktualisieren</v-btn>
                     </v-col>
                 </v-row>

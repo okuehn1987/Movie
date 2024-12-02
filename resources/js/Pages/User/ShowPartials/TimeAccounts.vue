@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { TimeAccount, TimeAccountSetting, User, UserWorkingHours, UserWorkingWeek } from '@/types/types';
-import { accountType, getTruncationCylceDisplayName, roundTo } from '@/utils';
+import { accountType, getTruncationCycleDisplayName, roundTo } from '@/utils';
 import NewTimeAccountForm from './NewTimeAccountForm.vue';
 import TimeAccountDeleteForm from './TimeAccountDeleteForm.vue';
 import TimeAccountSettingsForm from './TimeAccountSettingsForm.vue';
@@ -29,7 +29,7 @@ const timeAccounts = computed(() => props.time_accounts.filter(t => t.deleted_at
                 ...account,
                 balance: roundTo(account.balance, 2),
                 type: accountType(account.time_account_setting.type),
-                truncation_cycle_length_in_months: getTruncationCylceDisplayName(account.time_account_setting.truncation_cycle_length_in_months),
+                truncation_cycle_length_in_months: getTruncationCycleDisplayName(account.time_account_setting.truncation_cycle_length_in_months),
             }))
         "
         :headers="[
@@ -58,15 +58,15 @@ const timeAccounts = computed(() => props.time_accounts.filter(t => t.deleted_at
         ]"
     >
         <template v-slot:header.actions>
-            <TimeAccountTransferForm :time_accounts />
-            <NewTimeAccountForm :user :time_account_settings />
+            <TimeAccountTransferForm v-if="can('timeAccountTransaction', 'create')" :time_accounts />
+            <NewTimeAccountForm v-if="can('timeAccount', 'create')" :user :time_account_settings />
         </template>
         <template v-slot:item.actions="{ item }">
             <div class="d-flex justify-end">
-                <TimeAccountTransactionForm :item />
-                <TimeAccountSettingsForm :item :time_account_settings :user />
-                <TimeAccountDeleteForm :item v-if="item.id !== defaultTimeAccountId" />
-                <div v-else-if="timeAccounts.length > 1" style="width: 48px"></div>
+                <TimeAccountTransactionForm v-if="can('timeAccountTransaction', 'create')" :item />
+                <TimeAccountSettingsForm v-if="can('timeAccount', 'update')" :item :time_account_settings :user />
+                <TimeAccountDeleteForm :item v-if="item.id !== defaultTimeAccountId && can('timeAccount', 'delete')" />
+                <div v-else-if="timeAccounts.length > 1 && can('timeAccount', 'delete')" style="width: 48px"></div>
             </div>
         </template>
         <template v-slot:item.balance="{ item }">

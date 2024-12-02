@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string("zip")->nullable();
             $table->string("federal_state")->default("SH");
             $table->foreignId('organization_id');
-            $table->boolean("is_head_quarter")->default(false);
+            $table->boolean("is_headquarter")->default(false);
             $table->timestamps();
         });
     }

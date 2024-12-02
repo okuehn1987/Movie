@@ -20,6 +20,11 @@ class Group extends Model
         return $this->hasMany(User::class);
     }
 
+    public function groupUsers()
+    {
+        return $this->hasMany(GroupUser::class);
+    }
+
     public function organization()
     {
         return $this->belongsTo(Organization::class);

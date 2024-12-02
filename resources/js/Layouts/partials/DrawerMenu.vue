@@ -1,10 +1,5 @@
 <script setup lang="ts">
-import { router, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
-
-const page = usePage();
-
-const user = computed(() => page.props.auth.user);
+import { router } from '@inertiajs/vue3';
 </script>
 
 <template>
@@ -14,53 +9,58 @@ const user = computed(() => page.props.auth.user);
         :items="
             [
                 { props: { active: route().current('dashboard'), prependIcon: 'mdi-view-dashboard' }, value: route('dashboard'), title: 'Dashboard' },
-                {
+                can('absence', 'viewIndex') && {
                     props: { active: route().current('absence.index'), prependIcon: 'mdi-timer-cancel-outline' },
                     value: route('absence.index'),
                     title: 'Abwesenheiten',
                 },
-                {
-                    props: { active: route().current('users.workLogs'), prependIcon: 'mdi-clock-outline' },
-                    value: route('users.workLogs'),
+                can('workLog', 'viewIndex') && {
+                    props: { active: route().current('workLog.index'), prependIcon: 'mdi-clock-outline' },
+                    value: route('workLog.index'),
                     title: 'Arbeitszeiten',
                 },
-                { type: 'divider' },
-                { type: 'subheader', title: 'Admin' },
-                {
-                    title: 'Organisation',
-                    subtitle: 'test',
-                    value: route('organization.show', { organization: $page.props.organization.id }),
-                    props: { prependIcon: 'mdi-domain', active: route().current('organization.show') },
-                },
-                {
-                    props: { active: route().current('operatingSite.index'), prependIcon: 'mdi-map-marker' },
-                    value: route('operatingSite.index'),
-                    title: 'Betriebsstätten',
-                },
-                {
-                    props: { active: route().current('group.index'), prependIcon: 'mdi-dots-circle' },
-                    value: route('group.index'),
-                    title: 'Abteilungen',
-                },
-                $page.props.auth.user.user_administration && {
-                    props: { active: route().current('user.index'), prependIcon: 'mdi-account-group' },
-                    value: route('user.index'),
-                    title: 'Mitarbeitende',
-                },
-                {
-                    props: {
-                        active: route().current('timeAccountSetting.index'),
-                        prependIcon: 'mdi-timer',
-                    },
-                    value: route('timeAccountSetting.index'),
-                    title: 'Arbeitszeitkonten',
-                },
-                {
-                    props: { prependIcon: 'mdi-tree', active: route().current('organization.tree') },
-                    value: route('organization.tree'),
-                    title: 'Organigramm',
-                },
-                ...(user.role === 'super-admin'
+                ...(['organization', 'operatingSite', 'group', 'user', 'timeAccountSetting'].some(m => can(m, 'viewIndex')) ||
+                can('organization', 'viewShow')
+                    ? [
+                          { type: 'divider' },
+                          { type: 'subheader', title: 'Admin' },
+                          can('organization', 'viewShow') && {
+                              title: 'Organisation',
+                              subtitle: 'test',
+                              value: route('organization.show', { organization: $page.props.organization.id }),
+                              props: { prependIcon: 'mdi-domain', active: route().current('organization.show') },
+                          },
+                          can('operatingSite', 'viewIndex') && {
+                              props: { active: route().current('operatingSite.index'), prependIcon: 'mdi-map-marker' },
+                              value: route('operatingSite.index'),
+                              title: 'Betriebsstätten',
+                          },
+                          can('group', 'viewIndex') && {
+                              props: { active: route().current('group.index'), prependIcon: 'mdi-dots-circle' },
+                              value: route('group.index'),
+                              title: 'Abteilungen',
+                          },
+                          can('user', 'viewIndex') && {
+                              props: { active: route().current('user.index'), prependIcon: 'mdi-account-group' },
+                              value: route('user.index'),
+                              title: 'Mitarbeitende',
+                          },
+                          can('timeAccountSetting', 'viewIndex') && {
+                              props: {
+                                  active: route().current('timeAccountSetting.index'),
+                                  prependIcon: 'mdi-timer',
+                              },
+                              value: route('timeAccountSetting.index'),
+                              title: 'Arbeitszeitkonten',
+                          },
+                          can('user', 'viewIndex') && {
+                              props: { prependIcon: 'mdi-tree', active: route().current('organization.tree') },
+                              value: route('organization.tree', { organization: $page.props.organization.id }),
+                              title: 'Organigramm',
+                          },
+                      ]
+                    : []),
+                ...(can('organization', 'viewIndex')
                     ? [
                           { type: 'divider' },
                           { type: 'subheader', title: 'Super-Admin' },

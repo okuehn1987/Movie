@@ -4,16 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Organization;
 use App\Models\TimeAccount;
-use App\Models\TimeAccountTransaction;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class TimeAccountController extends Controller
 {
     public function store(Request $request, User $user)
     {
+        Gate::authorize('create', [TimeAccount::class, $user]);
+
         $validated = $request->validate([
             'name' => 'required|string',
             'balance' => 'required|numeric',
@@ -30,6 +31,8 @@ class TimeAccountController extends Controller
 
     public function update(Request $request, TimeAccount $timeAccount)
     {
+        Gate::authorize('update', $timeAccount);
+
         $validated = $request->validate([
             'name' => 'required|string',
             'balance_limit' => 'required|numeric',
@@ -43,6 +46,8 @@ class TimeAccountController extends Controller
 
     public function destroy(TimeAccount $timeAccount)
     {
+        Gate::authorize('delete', [TimeAccount::class, $timeAccount->user]);
+
         if ($timeAccount->balance != 0 || $timeAccount->id == $timeAccount->user->defaultTimeAccount()->id) {
             return back()->with('error', 'Das Arbeitszeitkonto kann nicht gelöscht werden');
         }

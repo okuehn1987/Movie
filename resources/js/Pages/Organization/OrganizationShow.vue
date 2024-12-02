@@ -20,17 +20,27 @@ const tab = ref<'Allgemeine Informationen' | 'Sonderarbeitszeitfaktor' | 'Abwese
     <AdminLayout :title="'Organisation ' + organization.name">
         <v-tabs v-model="tab" color="primary">
             <v-tab prepend-icon="mdi-account" text="Allgemeine Informationen" value="Allgemeine Informationen"></v-tab>
-            <v-tab prepend-icon="mdi-clock-outline" text="Sonderarbeitszeitfaktor" value="Sonderarbeitszeitfaktor"></v-tab>
-            <v-tab prepend-icon="mdi-clock-outline" text="Abwesenheitsgründe" value="Abwesenheitsgründe"></v-tab>
+            <v-tab
+                v-if="can('specialWorkingHoursFactors', 'viewIndex')"
+                prepend-icon="mdi-clock-outline"
+                text="Sonderarbeitszeitfaktor"
+                value="Sonderarbeitszeitfaktor"
+            ></v-tab>
+            <v-tab
+                v-if="can('absenceType', 'viewIndex')"
+                prepend-icon="mdi-clock-outline"
+                text="Abwesenheitsgründe"
+                value="Abwesenheitsgründe"
+            ></v-tab>
         </v-tabs>
         <v-tabs-window v-model="tab" class="w-100">
             <v-tabs-window-item value="Allgemeine Informationen">
                 <OrganizationSettings :organization></OrganizationSettings>
             </v-tabs-window-item>
-            <v-tabs-window-item value="Sonderarbeitszeitfaktor">
+            <v-tabs-window-item v-if="can('specialWorkingHoursFactors', 'viewIndex')" value="Sonderarbeitszeitfaktor">
                 <SWHFIndex :special_working_hours_factors></SWHFIndex>
             </v-tabs-window-item>
-            <v-tabs-window-item value="Abwesenheitsgründe">
+            <v-tabs-window-item v-if="can('absenceType', 'viewIndex')" value="Abwesenheitsgründe">
                 <AbsenceTypeIndex :absenceTypes="absence_types"></AbsenceTypeIndex>
             </v-tabs-window-item>
         </v-tabs-window>

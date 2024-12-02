@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Group;
+use App\Models\GroupUser;
 use App\Models\OperatingSite;
+use App\Models\OperatingSiteUser;
 use App\Models\Organization;
+use App\Models\OrganizationUser;
 use App\Models\TimeAccount;
 use App\Models\TimeAccountSetting;
 use App\Models\TimeAccountTransaction;
@@ -14,6 +17,7 @@ use App\Models\UserWorkingWeek;
 use App\Services\HolidayService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -22,18 +26,35 @@ class UserController extends Controller
 {
     public function index()
     {
+        Gate::authorize('viewIndex', User::class);
         return Inertia::render('User/UserIndex', [
-            'users' => User::inOrganization()->with('group:id,name')->paginate(12),
+            'users' => User::inOrganization()->with('group:id,name')->paginate(12)->through(fn($u) => [
+                ...$u->toArray(),
+                'can' => [
+                    'user' => [
+                        'viewShow' => Gate::allows('viewShow', $u),
+                        'delete' => Gate::allows('delete', $u),
+                    ],
+
+                ]
+            ]),
             'supervisors' => User::inOrganization()->where('is_supervisor', true)->get(['id', 'first_name', 'last_name']),
-            'permissions' => User::$PERMISSIONS,
+            'permissions' => collect(User::$PERMISSIONS)->flatten(1),
             'groups' => Group::inOrganization()->get(['id', 'name']),
             'operating_sites' => OperatingSite::inOrganization()->get(['id', 'name']),
-            'countries' => HolidayService::getCountries()
+            'countries' => HolidayService::getCountries(),
+            'can' => [
+                'user' => [
+                    'create' => Gate::allows('create', User::class),
+                ]
+            ]
         ]);
     }
 
     public function show(User $user)
     {
+        Gate::authorize('viewShow', $user);
+
         $user['currentWorkingHours'] = $user->userWorkingHours()->latest()->first();
         $user['userWorkingWeek'] = $user->userWorkingWeeks()->latest()->first();
 
@@ -42,7 +63,7 @@ class UserController extends Controller
         $userTransactions = TimeAccountTransaction::forUser($user)->with('user:id,first_name,last_name')->latest()->paginate(15);
 
         return Inertia::render('User/UserShow', [
-            'user' => $user,
+            'user' => $user->load(['groupUser', 'operatingSiteUser', 'organizationUser']),
             'supervisors' => User::inOrganization()
                 ->where('is_supervisor', true)
                 ->whereNotIn('id', $user->allSuperviseesFlat()->pluck('id'))
@@ -52,7 +73,6 @@ class UserController extends Controller
             'defaultTimeAccountId' => $user->defaultTimeAccount()->id,
             'groups' => Group::inOrganization()->get(),
             'operating_sites' => OperatingSite::inOrganization()->get(),
-            'permissions' => User::$PERMISSIONS,
             'time_account_transactions' => $userTransactions,
             'organigramUsers' => ($user->supervisor ?: $user)->allSupervisees()->get([
                 'id',
@@ -62,12 +82,31 @@ class UserController extends Controller
                 'email'
             ]),
             'supervisor' => $user->supervisor()->first(['id', 'first_name', 'last_name', 'email']),
-            'countries' => HolidayService::getCountries()
+            'countries' => HolidayService::getCountries(),
+            'permissions' => collect(User::$PERMISSIONS)->flatten(1),
+            'can' => [
+                'timeAccount' => [
+                    'viewIndex' => Gate::allows('viewIndex', [TimeAccount::class, $user]),
+                    'create' => Gate::allows('create', [TimeAccount::class, $user]),
+                    'update' => Gate::allows('update', [TimeAccount::class, $user]),
+                    'delete' => Gate::allows('delete', [TimeAccount::class, $user]),
+                ],
+                'timeAccountTransaction' => [
+                    'viewIndex' => Gate::allows('viewIndex', [TimeAccountTransaction::class, $user]),
+                    'create' => Gate::allows('create', [TimeAccountTransaction::class, $user]),
+                ],
+                'user' => [
+                    'viewIndex' => Gate::allows('viewIndex', User::class),
+                ]
+            ],
         ]);
     }
 
     public function store(Request $request)
     {
+        Gate::authorize('create', User::class);
+        $request['groupUser'] = $request['organizationUser'];
+
         $validated = $request->validate([
             "first_name" => "required|string",
             "last_name" => "required|string",
@@ -108,8 +147,33 @@ class UserController extends Controller
             'userWorkingWeek.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'userWorkingWeekSince' => 'required|date',
 
-            'permissions' => 'nullable|array',
-            'permissions.*' => ['required', Rule::in(collect(User::$PERMISSIONS)->map(fn($p) => $p['name']))]
+            'organizationUser' => 'required|array',
+            'organizationUser.*' => ['nullable', function ($attribute, $value, $fail) {
+                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+                if (!in_array($value, ['read', 'write', null])) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+            }],
+            'operatingSiteUser' => 'required|array',
+            'operatingSiteUser.*' => ['nullable', function ($attribute, $value, $fail) {
+                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->only(['all', 'operatingSite'])->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+                if (!in_array($value, ['read', 'write', null])) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+            }],
+            'groupUser' => 'required|array',
+            'groupUser.*' => ['nullable', function ($attribute, $value, $fail) {
+                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->only(['all', 'group'])->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+                if (!in_array($value, ['read', 'write', null])) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+            }]
         ]);
 
         $user = (new User)->forceFill([
@@ -161,11 +225,37 @@ class UserController extends Controller
             'user_id' => $user->id
         ]);
 
+        OrganizationUser::create([
+            "user_id" => $user->id,
+            "organization_id" => Organization::getCurrent()->id,
+            ...$validated['organizationUser']
+        ]);
+
+        GroupUser::create([
+            "user_id" => $user->id,
+            "group_id" => $user->group_id,
+            ...$validated['groupUser']
+        ]);
+
+        OperatingSiteUser::create([
+            "user_id" => $user->id,
+            "operating_site_id" => $user->operating_site_id,
+            ...$validated['operatingSiteUser']
+        ]);
+
         return back()->with('success', 'Mitarbeitenden erfolgreich angelegt.');
     }
 
     public function destroy(User $user)
     {
+        Gate::authorize('delete', $user);
+
+        if ($user->is_supervisor) {
+            return back()->with('error', 'Mitarbeitende mit unterstellten Mitarbeitenden können nicht gelöscht werden.');
+        }
+        if ($user->organization->owner_id === $user->id) {
+            return back()->with('error', 'Organisationsinhaber kann nicht gelöscht werden.');
+        }
         $user->delete();
 
         return back()->with('success', 'Mitarbeitenden erfolgreich gelöscht.');
@@ -173,6 +263,8 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
+        Gate::authorize('update', $user);
+
         $validated = $request->validate([
             "first_name" => "required|string",
             "last_name" => "required|string",
@@ -187,8 +279,14 @@ class UserController extends Controller
             "federal_state" => "required|string",
             "phone_number" => "nullable|string",
             "staff_number" => "nullable|integer",
-            "group_id" => "nullable|integer",
-            'operating_site_id' => 'required|integer',
+            "group_id" => [
+                "nullable",
+                Rule::exists('groups', 'id')->where('organization_id', Organization::getCurrent()->id)
+            ],
+            'operating_site_id' => [
+                "required",
+                Rule::exists('operating_sites', 'id')->where('organization_id', Organization::getCurrent()->id)
+            ],
             'supervisor_id' => [
                 'nullable',
                 Rule::exists('users', 'id')
@@ -202,8 +300,34 @@ class UserController extends Controller
             'userWorkingWeek' => 'required|array',
             'userWorkingWeek.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'userWorkingWeekSince' => 'required|date',
-            'permissions' => 'nullable|array',
-            'permissions.*' => ['required', Rule::in(collect(User::$PERMISSIONS)->map(fn($p) => $p['name']))]
+
+            'organizationUser' => 'required|array',
+            'organizationUser.*' => ['nullable', function ($attribute, $value, $fail) {
+                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+                if (!in_array($value, ['read', 'write', null])) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+            }],
+            'operatingSiteUser' => 'required|array',
+            'operatingSiteUser.*' => ['nullable', function ($attribute, $value, $fail) {
+                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->only(['all', 'operatingSite'])->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+                if (!in_array($value, ['read', 'write', null])) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+            }],
+            'groupUser' => 'required|array',
+            'groupUser.*' => ['nullable', function ($attribute, $value, $fail) {
+                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->only(['all', 'group'])->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+                if (!in_array($value, ['read', 'write', null])) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+            }]
         ]);
 
         $user->update([
@@ -225,8 +349,10 @@ class UserController extends Controller
             'supervisor_id' => $validated['supervisor_id'],
             'is_supervisor' => $validated['is_supervisor'],
             'date_of_birth' => Carbon::parse(Carbon::parse($validated['date_of_birth'])->format('d-m-Y')),
-            ...collect(User::$PERMISSIONS)->flatMap(fn($p) => [$p['name'] => in_array($p['name'], $validated['permissions'])])
         ]);
+        $user->organizationUser->update($validated['organizationUser']);
+        $user->operatingSiteUser->update($validated['operatingSiteUser']);
+        $user->groupUser->update($validated['groupUser']);
 
         $lastWorkingHour = $user->userWorkingHours()
             ->where('active_since', Carbon::parse($validated['userWorkingHoursSince']))

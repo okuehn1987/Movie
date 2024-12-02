@@ -24,7 +24,8 @@ class OperatingSiteFactory extends Factory
             'zip' => fake()->postcode(),
             'country' => fake()->country(),
             'phone_number' => fake()->phoneNumber(),
-            'email' => fake()->email()
+            'email' => fake()->email(),
+            'federal_state' => fake()->state(),
         ];
     }
 }

@@ -1,0 +1,37 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('operating_site_users', function (Blueprint $table) {
+            $table->id();
+            $table->softDeletes();
+            $table->foreignId('operating_site_id');
+            $table->foreignId('user_id');
+            $table->enum('user_permission', ['read', 'write'])->nullable();
+            $table->enum('workLogPatch_permission', ['read', 'write'])->nullable();
+            $table->enum('absence_permission', ['read', 'write'])->nullable();
+            $table->enum('operatingSite_permission', ['read', 'write'])->nullable();
+            $table->enum('timeAccount_permission', ['read', 'write'])->nullable();
+            $table->enum('timeAccountSetting_permission', ['read', 'write'])->nullable();
+            $table->enum('timeAccountTransaction_permission', ['read', 'write'])->nullable();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('operating_site_users');
+    }
+};

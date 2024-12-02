@@ -11,9 +11,7 @@ class Organization extends Model
 {
     use HasFactory, SoftDeletes, ScopeInOrganization;
 
-    protected $fillable = [
-        'name'
-    ];
+    protected $guarded = [];
 
     public function operatingSites()
     {
@@ -23,6 +21,12 @@ class Organization extends Model
     {
         return $this->hasManyThrough(User::class, OperatingSite::class);
     }
+
+    public function organizationUsers()
+    {
+        return $this->hasMany(OrganizationUser::class);
+    }
+
     public function absenceTypes()
     {
         return $this->hasMany(AbsenceType::class);
@@ -50,23 +54,23 @@ class Organization extends Model
         return $this->hasMany(CustomAddress::class);
     }
 
-    public static function getCurrent()
+    public static function getCurrent(): Organization
     {
         if (Auth::check()) return Auth::user()->organization;
-        return Organization::find(1);
+        return Organization::where('name', self::getOrganizationNameByDomain())->first() ?? Organization::first();
     }
 
 
-    public static function getOrganizationNameByDomain()
+    public static function getOrganizationNameByDomain(): string
     {
         if (app()->environment('local')) {
             if (request()->organization) session(['org' => request()->organization]);
             return session('org') ?? 'MBD';
         }
         $domain = str_replace('www.', '', request()->getHost());
-        // $domain = str_replace('brittaai', 'britta-ai', $domain);
 
         return match ($domain) {
+            'staging.herta.mbd-team.de' => 'MBD',
             default => 'MBD',
         };
     }

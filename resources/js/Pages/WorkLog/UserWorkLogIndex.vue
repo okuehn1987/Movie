@@ -9,7 +9,7 @@ import { computed, onMounted, ref, toRefs } from 'vue';
 type PatchProp = Omit<WorkLogPatch, 'deleted_at' | 'created_at' | 'user_id'>;
 
 const props = defineProps<{
-    user: User;
+    user: Pick<User, 'id' | 'first_name' | 'last_name'>;
     workLogs: Paginator<
         WorkLog & {
             work_log_patches: PatchProp[];
@@ -119,7 +119,7 @@ function retreatPatch() {
 <template>
     <AdminLayout
         :title="user.first_name + ' ' + user.last_name"
-        :backurl="route().params['fromUserWorkLogs'] ? route('users.workLogs') : route('dashboard')"
+        :backurl="route().params['fromUserWorkLogs'] ? route('workLog.index') : route('dashboard')"
     >
         <v-card>
             <v-data-table
@@ -131,8 +131,8 @@ function retreatPatch() {
                     {
                         title: '',
                         key: 'action',
-                        width: '96px',
                         sortable: false,
+                        align: 'end',
                     },
                 ]"
                 :items="
@@ -163,8 +163,8 @@ function retreatPatch() {
             >
                 <template v-slot:item.action="{ item }">
                     <v-btn
+                        v-if="editableWorkLogs.find(e => e.id === item.id) && can('workLogPatch', 'update')"
                         color="primary"
-                        v-if="editableWorkLogs.find(e => e.id === item.id)"
                         @click.stop="editWorkLog(item.id)"
                         :icon="
                             workLogs.data.find(log => log.id === item.id)?.work_log_patches.at(-1)?.status === 'created' ? 'mdi-eye' : 'mdi-pencil'

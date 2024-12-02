@@ -8,6 +8,7 @@ use App\Models\OperatingTime;
 use App\Models\Organization;
 use App\Models\SpecialWorkingHoursFactor;
 use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use App\Services\HolidayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -17,11 +18,15 @@ class OrganizationController extends Controller
 {
     public function index()
     {
-        return Inertia::render('Organization/OrganizationIndex', ['organizations' => Organization::all(), 'countries' => HolidayService::getCountries()]);
+        Gate::authorize('viewIndex', Organization::class);
+
+        return Inertia::render('Organization/OrganizationIndex', ['organizations' => Organization::all(),  'countries' => HolidayService::getCountries()]);
     }
 
     public function store(Request $request)
     {
+        Gate::authorize('create', Organization::class);
+
         $validated = $request->validate([
             'organization_name' => "required|string|unique:organizations,name",
             'organization_street' => "required|string",
@@ -53,7 +58,7 @@ class OrganizationController extends Controller
             'zip' => $validated['organization_zip'],
             'federal_state' => $validated['organization_federal_state'],
             'organization_id' => $org->id,
-            'is_head_quarter' => 1
+            'is_headquarter' => 1
         ]);
         $user = (new User)->forceFill([
             'first_name' => $validated['first_name'],
@@ -73,17 +78,36 @@ class OrganizationController extends Controller
 
     public function show(Organization $organization)
     {
+        Gate::authorize('viewShow', $organization);
+
         return Inertia::render('Organization/OrganizationShow', [
             'organization' => $organization,
             'operating_sites' => OperatingSite::inOrganization()->get(),
             'operating_times' => OperatingTime::inOrganization()->get(),
             'absence_types' => AbsenceType::inOrganization()->get(),
-            'special_working_hours_factors' => SpecialWorkingHoursFactor::inOrganization()->get()
+            'special_working_hours_factors' => SpecialWorkingHoursFactor::inOrganization()->get(),
+            'can' => [
+                'organization' => [
+                    'update' => Gate::allows('update', $organization),
+                ],
+                'specialWorkingHoursFactors' => [
+                    'viewIndex' => Gate::allows('viewIndex', SpecialWorkingHoursFactor::class),
+                    'create' => Gate::allows('create', SpecialWorkingHoursFactor::class),
+                    'update' => Gate::allows('update', SpecialWorkingHoursFactor::class),
+                    'delete' => Gate::allows('delete', SpecialWorkingHoursFactor::class),
+                ],
+                'absenceType' => [
+                    'viewIndex' => Gate::allows('viewIndex', AbsenceType::class),
+                    'create' => Gate::allows('create', AbsenceType::class),
+                ]
+            ]
         ]);
     }
 
     public function update(Request $request, Organization $organization)
     {
+        Gate::authorize('update', $organization);
+
         $validated = $request->validate([
             'name' => "required|string",
             'tax_registration_id' => "nullable|string",
@@ -100,13 +124,17 @@ class OrganizationController extends Controller
     }
     public function destroy(Organization $organization)
     {
+        Gate::authorize('delete', $organization);
+
         $organization->delete();
 
         return back()->with('success', 'Organisation erfolgreich gelöscht.');
     }
 
-    public function organigram()
+    public function organigram(Organization $organization)
     {
+        Gate::authorize('viewShow', $organization) && Gate::authorize('viewIndex', User::class);
+
         return Inertia::render('Organization/OrganizationOrganigram', [
             'users' => User::whereNull('supervisor_id')
                 ->with('allSupervisees:id,first_name,last_name,supervisor_id,email')
