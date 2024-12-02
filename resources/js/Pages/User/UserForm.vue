@@ -324,7 +324,7 @@ const step = ref(1);
                                 <v-select
                                     v-model="userForm.supervisor_id"
                                     :items="supervisors.map(s => ({ title: s.first_name + ' ' + s.last_name, value: s.id }))"
-                                    label="Wähle einen Vorgesetzten falls vorhanden"
+                                    label="Wähle einen Vorgesetzten, falls vorhanden"
                                     :error-messages="userForm.errors.supervisor_id"
                                 ></v-select>
                             </v-col>
