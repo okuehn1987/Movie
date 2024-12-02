@@ -176,7 +176,7 @@ function submit() {
                     </v-dialog>
                 </template>
                 <template v-slot:item.action="{ item }">
-                    <div class="d-flex" :class="{ 'justify-end': data.some(o => o.users_count == 0 && !can('operatingSite', 'delete', o)) }">
+                    <div class="d-flex" :class="{ 'justify-end': !data.some(o => o.users_count == 0 && can('operatingSite', 'delete', o)) }">
                         <Link :href="route('operatingSite.show', { operatingSite: item.id })" v-if="can('operatingSite', 'viewShow', item)">
                             <v-btn color="primary" size="large" variant="text" icon="mdi-eye" />
                         </Link>
