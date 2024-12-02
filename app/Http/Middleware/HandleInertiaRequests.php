@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Absence;
 use App\Models\Group;
 use App\Models\OperatingSite;
 use App\Models\Organization;
@@ -52,6 +53,9 @@ class HandleInertiaRequests extends Middleware
                 'error' => $request->session()->get('error'),
             ],
             'globalCan' => [
+                'absence' => [
+                    'viewIndex' => Gate::allows('viewIndex', Absence::class),
+                ],
                 'workLog' => [
                     'viewIndex' => Gate::allows('viewIndex', WorkLog::class),
                 ],

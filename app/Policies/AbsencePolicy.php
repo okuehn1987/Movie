@@ -20,6 +20,10 @@ class AbsencePolicy
         return null; // only if this is returned, the other methods are checked
     }
 
+    public function viewIndex(User $user)
+    {
+        return true;
+    }
     public function viewShow(User $authUser, Absence $absence): bool
     {
         return
