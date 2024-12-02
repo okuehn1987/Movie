@@ -39,7 +39,7 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
                             ...fillNullishValues(u),
                             date_of_birth: DateTime.fromFormat(u.date_of_birth, 'yyyy-MM-dd').toFormat('dd.MM.yyyy'),
                         }))
-                        .toSorted((a, b) => +can('user', 'viewShow', b) - +can('user', 'viewShow', a))
+                        .toSorted((a, b) => (a.first_name + a.last_name).localeCompare(b.first_name + b.last_name))
                 "
                 hover
             >
