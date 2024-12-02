@@ -4,20 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Http\Middleware\CheckIfGateWasUsedToAuthorizeRequest;
 use App\Http\Middleware\HasOrganizationAccess;
-use App\Http\Middleware\HasRole;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard')->name('home');
 
 Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAuthorizeRequest::class])->group(function () {
+    //super admin routes
+    Route::resource('organization', OrganizationController::class)->only(['index', 'store', 'destroy']);
+    Route::get('/organization/{organization}/tree', [OrganizationController::class, 'organigram'])->name('organization.tree');
+    //super admin routes
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('user', UserController::class)->only(['index', 'store', 'destroy', 'update', 'show']);
 
-    Route::middleware(HasRole::class . ':super-admin')->group(function () {
-        Route::resource('organization', OrganizationController::class)->only(['index', 'store', 'destroy']);
-        Route::get('/organization/{organization}/tree', [OrganizationController::class, 'organigram'])->name('organization.tree');
-    });
     Route::resource('organization', OrganizationController::class)->only(['show', 'update']);
     Route::resource('absence', AbsenceController::class)->only(['index', 'update', 'store']);
     Route::resource('absenceType', AbsenceTypeController::class)->only(['store', 'update', 'destroy']);
