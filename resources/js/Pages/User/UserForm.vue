@@ -275,7 +275,7 @@ const step = ref(1);
                 </template>
 
                 <template v-slot:item.3>
-                    <v-card-text :style="{ maxHeight: getMaxScrollHeight(72 + 24 * 2 + 52 + 48) }" class="overflow-auto">
+                    <v-card-text :style="mode == 'create' ? { maxHeight: getMaxScrollHeight(72 + 24 * 2 + 52) } : {}" class="overflow-auto">
                         <v-row>
                             <v-col cols="12"><h4>Organisation</h4></v-col>
 

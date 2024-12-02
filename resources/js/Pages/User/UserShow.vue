@@ -16,7 +16,6 @@ import {
     UserWorkingHours,
     UserWorkingWeek,
 } from '@/types/types';
-import { getMaxScrollHeight } from '@/utils';
 import { ref } from 'vue';
 import TimeAccounts from './ShowPartials/TimeAccounts.vue';
 import TimeAccountTransactions from './ShowPartials/TimeAccountTransactions.vue';
@@ -60,7 +59,7 @@ const tab = ref(route().params['tab'] ?? 'generalInformation');
         </v-tabs>
         <v-card>
             <v-tabs-window v-model="tab">
-                <v-tabs-window-item style="overflow-y: auto" :style="{ maxHeight: getMaxScrollHeight(48) }" value="generalInformation">
+                <v-tabs-window-item style="overflow-y: auto" value="generalInformation">
                     <UserForm :supervisors :user :groups :operating_sites mode="edit" :permissions></UserForm>
                 </v-tabs-window-item>
 
