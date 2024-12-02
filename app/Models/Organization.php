@@ -57,7 +57,7 @@ class Organization extends Model
     public static function getCurrent(): Organization
     {
         if (Auth::check()) return Auth::user()->organization;
-        return Organization::find(1);
+        return Organization::where('name', self::getOrganizationNameByDomain())->first() ?? Organization::first();
     }
 
 
@@ -68,9 +68,9 @@ class Organization extends Model
             return session('org') ?? 'MBD';
         }
         $domain = str_replace('www.', '', request()->getHost());
-        // $domain = str_replace('brittaai', 'britta-ai', $domain);
 
         return match ($domain) {
+            'staging.herta.mbd-team.de' => 'MBD',
             default => 'MBD',
         };
     }
