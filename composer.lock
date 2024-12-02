@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "77052987c3721a61c5c5ddeb6b9c31ce",
+    "content-hash": "b7ff24cc5cfc58a3107ef94b208a73cd",
     "packages": [
         {
             "name": "barryvdh/laravel-debugbar",
@@ -6506,6 +6506,61 @@
             "time": "2022-03-08T17:03:00+00:00"
         },
         {
+            "name": "web-id/laravel-playwright",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/web-id-fr/laravel-playwright.git",
+                "reference": "a6c73fff985eecaf6477de2cdde6e0cef9969eed"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/web-id-fr/laravel-playwright/zipball/a6c73fff985eecaf6477de2cdde6e0cef9969eed",
+                "reference": "a6c73fff985eecaf6477de2cdde6e0cef9969eed",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": "^6.0|^7.0|^8.0|^9.0|^10.0|^11.0",
+                "php": "^8.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "WebId\\LaravelPlaywright\\PlaywrightServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "WebId\\LaravelPlaywright\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Yoann Frommelt",
+                    "email": "yoann@web-id.fr"
+                }
+            ],
+            "description": "Laravel Playwright Boilerplate",
+            "homepage": "https://github.com/web-id-fr/laravel-playwright",
+            "keywords": [
+                "end-to-end",
+                "laravel",
+                "playwtight"
+            ],
+            "support": {
+                "issues": "https://github.com/web-id-fr/laravel-playwright/issues",
+                "source": "https://github.com/web-id-fr/laravel-playwright/tree/main"
+            },
+            "time": "2024-03-14T10:51:00+00:00"
+        },
+        {
             "name": "webmozart/assert",
             "version": "1.11.0",
             "source": {
@@ -8767,7 +8822,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "web-id/laravel-playwright": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
