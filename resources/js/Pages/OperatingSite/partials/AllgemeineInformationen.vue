@@ -18,7 +18,7 @@ const operatingSiteForm = useForm({
     federal_state: props.operatingSite.federal_state,
     zip: props.operatingSite.zip,
     name: props.operatingSite.name,
-    is_head_quarter: props.operatingSite.is_head_quarter,
+    is_headquarter: props.operatingSite.is_headquarter,
 });
 
 function submit() {
@@ -106,8 +106,8 @@ function submit() {
                     <v-col cols="12" md="6">
                         <v-checkbox
                             label="Hauptsitz?"
-                            v-model="operatingSiteForm.is_head_quarter"
-                            :error-messages="operatingSiteForm.errors.is_head_quarter"
+                            v-model="operatingSiteForm.is_headquarter"
+                            :error-messages="operatingSiteForm.errors.is_headquarter"
                         ></v-checkbox>
                     </v-col>
                     <v-col cols="12" class="text-end" v-if="can('operatingSite', 'update')">

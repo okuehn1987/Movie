@@ -57,7 +57,7 @@ class OrganizationController extends Controller
             'zip' => $validated['organization_zip'],
             'federal_state' => $validated['organization_federal_state'],
             'organization_id' => $org->id,
-            'is_head_quarter' => 1
+            'is_headquarter' => 1
         ]);
         $user = (new User)->forceFill([
             'first_name' => $validated['first_name'],

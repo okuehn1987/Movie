@@ -20,7 +20,7 @@ const operatingSiteForm = useForm({
     fax: '',
     federal_state: '',
     house_number: '',
-    is_head_quarter: false,
+    is_headquarter: false,
     phone_number: '',
     street: '',
     zip: '',
@@ -162,7 +162,7 @@ function submit() {
                                             </v-col>
 
                                             <v-col cols="12" md="6">
-                                                <v-checkbox v-model="operatingSiteForm.is_head_quarter" label="Hauptsitz?"></v-checkbox>
+                                                <v-checkbox v-model="operatingSiteForm.is_headquarter" label="Hauptsitz?"></v-checkbox>
                                             </v-col>
 
                                             <v-col cols="12" class="text-end">

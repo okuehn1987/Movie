@@ -136,7 +136,7 @@ export type OperatingSite = DBObject<'operatingSite'> &
         phone_number: string | null;
         fax: string | null;
         organization_id: Organization['id'];
-        is_head_quarter: boolean;
+        is_headquarter: boolean;
     };
 
 export type OperatingTime = DBObject<'operatingTime'> &

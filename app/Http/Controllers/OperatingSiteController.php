@@ -65,7 +65,7 @@ class OperatingSiteController extends Controller
             'fax' => "nullable|string",
             'federal_state' => "required|string",
             'house_number' => "required|string",
-            'is_head_quarter' => "required|boolean",
+            'is_headquarter' => "required|boolean",
             'phone_number' => "required|string",
             'street' => "required|string",
             'zip' => "required|string",
@@ -88,14 +88,14 @@ class OperatingSiteController extends Controller
             'fax' => "nullable|string",
             'federal_state' => "required|string",
             'house_number' => "required|string",
-            'is_head_quarter' => "required|boolean",
+            'is_headquarter' => "required|boolean",
             'phone_number' => "required|string",
             'street' => "required|string",
             'zip' => "required|string",
         ]);
 
-        if ($validated['is_head_quarter'] && $operatingSite->is_head_quarter === false) {
-            OperatingSite::inOrganization()->where('is_head_quarter', true)->update(['is_head_quarter' => false]);
+        if ($validated['is_headquarter'] && $operatingSite->is_headquarter === false) {
+            OperatingSite::inOrganization()->where('is_headquarter', true)->update(['is_headquarter' => false]);
         }
 
         $operatingSite->update($validated);
