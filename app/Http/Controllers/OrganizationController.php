@@ -8,6 +8,7 @@ use App\Models\OperatingTime;
 use App\Models\Organization;
 use App\Models\SpecialWorkingHoursFactor;
 use App\Models\User;
+use App\Services\HolidayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
@@ -16,7 +17,7 @@ class OrganizationController extends Controller
 {
     public function index()
     {
-        return Inertia::render('Organization/OrganizationIndex', ['organizations' => Organization::all()]);
+        return Inertia::render('Organization/OrganizationIndex', ['organizations' => Organization::all(), 'countries' => HolidayService::getCountries()]);
     }
 
     public function store(Request $request)

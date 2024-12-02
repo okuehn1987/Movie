@@ -33,6 +33,11 @@ class HolidayService
         ]
     ];
 
+    public static function getCountries()
+    {
+        return collect(array_keys(self::$COUNTRIES))->map(fn($c) => ['title' => self::$COUNTRIES[$c]['name'], 'value' => $c, 'regions' => self::$COUNTRIES[$c]['regions']]);
+    }
+
     public static function isHoliday($countryCode, $region = null, CarbonInterface $date)
     {
         return Holidays::for(self::$COUNTRIES[$countryCode]['class']::make($countryCode . ($region ? '-' . $region : '')))->isHoliday($date);

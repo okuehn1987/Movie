@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Group, OperatingSite, User, UserPermission, UserWorkingWeek, UserWorkingHours, Weekday } from '@/types/types';
+import { Group, OperatingSite, User, UserPermission, UserWorkingWeek, UserWorkingHours, Weekday, CountryProp, Country } from '@/types/types';
+import { getStates } from '@/utils';
 import { useForm } from '@inertiajs/vue3';
 import { DateTime, Info } from 'luxon';
 
@@ -10,6 +11,7 @@ const props = defineProps<{
     permissions: UserPermission[];
     groups: Pick<Group, 'id' | 'name'>[];
     mode: 'create' | 'edit';
+    countries: CountryProp[];
 }>();
 
 const emit = defineEmits<{
@@ -26,7 +28,7 @@ const userForm = useForm({
     street: '',
     house_number: '',
     address_suffix: '',
-    country: '',
+    country: '' as Country,
     federal_state: '',
     phone_number: '',
     staff_number: 0 as null | number,
@@ -52,7 +54,7 @@ if (props.user) {
     userForm.street = props.user.street ?? '';
     userForm.house_number = props.user.house_number ?? '';
     userForm.address_suffix = props.user.address_suffix ?? '';
-    userForm.country = props.user.country ?? '';
+    userForm.country = (props.user.country as Country) ?? '';
     userForm.federal_state = props.user.federal_state ?? '';
     userForm.phone_number = props.user.phone_number ?? '';
     userForm.staff_number = props.user.staff_number;
@@ -142,15 +144,23 @@ function submit() {
                         <v-text-field v-model="userForm.city" label="Ort" :error-messages="userForm.errors.city"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-text-field
-                            required
-                            v-model="userForm.federal_state"
+                        <v-select
                             label="Bundesland"
+                            :items="getStates(userForm.country, countries)"
+                            :disabled="!userForm.country"
+                            required
                             :error-messages="userForm.errors.federal_state"
-                        ></v-text-field>
+                            v-model="userForm.federal_state"
+                        ></v-select>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-text-field required v-model="userForm.country" label="Land" :error-messages="userForm.errors.country"></v-text-field>
+                        <v-select
+                            label="Land"
+                            required
+                            :items="countries.map(country => ({ title: country.title, value: country.value }))"
+                            :error-messages="userForm.errors.country"
+                            v-model="userForm.country"
+                        ></v-select>
                     </v-col>
 
                     <v-col cols="12"><h3>Struktur</h3></v-col>

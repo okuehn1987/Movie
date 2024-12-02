@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\OperatingSite;
 use App\Models\OperatingTime;
 use App\Models\Organization;
+use App\Services\HolidayService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -12,13 +13,14 @@ class OperatingSiteController extends Controller
 {
     public function index()
     {
-        return Inertia::render('OperatingSite/OperatingSiteIndex', ['operatingSites' => OperatingSite::inOrganization()->withCount('users')->paginate(12)]);
+        return Inertia::render('OperatingSite/OperatingSiteIndex', ['operatingSites' => OperatingSite::inOrganization()->withCount('users')->paginate(12), 'countries' => HolidayService::getCountries()]);
     }
     public function show(OperatingSite $operatingSite)
     {
         return Inertia::render('OperatingSite/OperatingSiteShow', [
             'operatingSite' => $operatingSite,
-            'operatingTimes' => OperatingTime::inOrganization()->where('operating_site_id', $operatingSite->id)->get()
+            'operatingTimes' => OperatingTime::inOrganization()->where('operating_site_id', $operatingSite->id)->get(),
+            'countries' => HolidayService::getCountries()
         ]);
     }
     public function store(Request $request)

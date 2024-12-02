@@ -11,6 +11,7 @@ use App\Models\TimeAccountTransaction;
 use App\Models\User;
 use App\Models\UserWorkingHour;
 use App\Models\UserWorkingWeek;
+use App\Services\HolidayService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -26,7 +27,8 @@ class UserController extends Controller
             'supervisors' => User::inOrganization()->where('is_supervisor', true)->get(['id', 'first_name', 'last_name']),
             'permissions' => User::$PERMISSIONS,
             'groups' => Group::inOrganization()->get(['id', 'name']),
-            'operating_sites' => OperatingSite::inOrganization()->get(['id', 'name'])
+            'operating_sites' => OperatingSite::inOrganization()->get(['id', 'name']),
+            'countries' => HolidayService::getCountries()
         ]);
     }
 
@@ -60,6 +62,7 @@ class UserController extends Controller
                 'email'
             ]),
             'supervisor' => $user->supervisor()->first(['id', 'first_name', 'last_name', 'email']),
+            'countries' => HolidayService::getCountries()
         ]);
     }
 

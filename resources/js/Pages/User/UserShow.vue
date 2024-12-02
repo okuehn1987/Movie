@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import {
+    CountryProp,
     Group,
     OperatingSite,
     Paginator,
@@ -40,6 +41,7 @@ defineProps<{
 
     organigramUsers: Tree<Pick<User, 'id' | 'first_name' | 'last_name' | 'email' | 'supervisor_id'>, 'all_supervisees'>[];
     supervisor: Pick<User, 'id' | 'first_name' | 'last_name' | 'email'>;
+    countries: CountryProp[];
 }>();
 
 const tab = ref(route().params['tab'] ?? 'generalInformation');
@@ -55,7 +57,7 @@ const tab = ref(route().params['tab'] ?? 'generalInformation');
         <v-card>
             <v-tabs-window v-model="tab">
                 <v-tabs-window-item style="overflow-y: auto" :style="{ maxHeight: getMaxScrollHeight(48) }" value="generalInformation">
-                    <UserForm :supervisors :user :groups :operating_sites :permissions mode="edit"></UserForm>
+                    <UserForm :countries :supervisors :user :groups :operating_sites :permissions mode="edit"></UserForm>
                 </v-tabs-window-item>
 
                 <v-tabs-window-item style="overflow-y: auto" value="timeAccounts">

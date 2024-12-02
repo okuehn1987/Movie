@@ -4,6 +4,12 @@ type Timestamp = string & { __datetime__: void };
 
 type Branded<T, Brand extends string> = T & { [x in `__${Brand}__`]: void };
 
+export type Country = Branded<string, 'country'>;
+
+export type State = Branded<string, 'state'>;
+
+export type CountryProp = { title: string; value: Country; regions: Record<State, string> };
+
 export type DBObject<Brand extends string> = {
     id: Branded<number, Brand>;
     created_at: Timestamp;
@@ -42,10 +48,10 @@ type Address = {
     street: string | null;
     house_number: string | null;
     address_suffix: string | null;
-    country: string | null;
+    country: string;
     city: string | null;
     zip: string | null;
-    federal_state: string | null;
+    federal_state: string;
 };
 
 export type Status = 'created' | 'declined' | 'accepted';

@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { OperatingSite } from '@/types/types';
+import { Country, CountryProp, OperatingSite } from '@/types/types';
+import { getStates } from '@/utils';
 import { useForm } from '@inertiajs/vue3';
 
 const props = defineProps<{
     operatingSite: OperatingSite;
+    countries: CountryProp[];
 }>();
 
 const operatingSiteForm = useForm({
@@ -11,7 +13,7 @@ const operatingSiteForm = useForm({
     fax: props.operatingSite.fax,
     phone_number: props.operatingSite.phone_number,
     street: props.operatingSite.street,
-    country: props.operatingSite.country,
+    country: props.operatingSite.country as Country,
     city: props.operatingSite.city,
     address_suffix: props.operatingSite.address_suffix,
     house_number: props.operatingSite.house_number,
@@ -90,19 +92,23 @@ function submit() {
                         <v-text-field label="Ort" v-model="operatingSiteForm.city" :error-messages="operatingSiteForm.errors.city"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-text-field
-                            required
+                        <v-select
                             label="Bundesland"
-                            v-model="operatingSiteForm.federal_state"
+                            :items="getStates(operatingSiteForm.country, countries)"
+                            :disabled="!operatingSiteForm.country"
+                            required
                             :error-messages="operatingSiteForm.errors.federal_state"
-                        ></v-text-field>
+                            v-model="operatingSiteForm.federal_state"
+                        ></v-select>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-text-field
+                        <v-select
                             label="Land"
+                            required
+                            :items="countries.map(country => ({ title: country.title, value: country.value }))"
                             :error-messages="operatingSiteForm.errors.country"
                             v-model="operatingSiteForm.country"
-                        ></v-text-field>
+                        ></v-select>
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-checkbox
