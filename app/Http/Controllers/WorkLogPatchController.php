@@ -7,11 +7,14 @@ use App\Models\WorkLogPatch;
 use App\Notifications\PatchNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class WorkLogPatchController extends Controller
 {
     public function store(Request $request)
     {
+        Gate::authorize('create', WorkLogPatch::class);
+
         $validated = $request->validate([
             'start' => 'required|date',
             'end' => 'required|date',
@@ -39,6 +42,8 @@ class WorkLogPatchController extends Controller
 
     public function update(Request $request, WorkLogPatch $workLogPatch)
     {
+        Gate::authorize('update', $workLogPatch->user);
+
         $validated = $request->validate([
             'accepted' => 'required|boolean'
         ]);
@@ -54,6 +59,8 @@ class WorkLogPatchController extends Controller
 
     public function destroy(WorkLogPatch $workLogPatch)
     {
+        Gate::authorize('delete', $workLogPatch->user);
+
         $workLogPatch->delete();
 
         return back()->with('success',  "Antrag auf Zeitkorrektur erfolgreich zurückgezogen.");

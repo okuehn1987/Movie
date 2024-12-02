@@ -11,7 +11,7 @@ defineProps<{
 <template>
     <v-dialog max-width="1000">
         <template v-slot:activator="{ props: activatorProps }">
-            <v-btn v-bind="activatorProps" color="error" size="large" variant="text" icon="mdi-delete" />
+            <v-btn v-bind="activatorProps" color="error" variant="text" icon="mdi-delete" />
         </template>
 
         <template v-slot:default="{ isActive }">

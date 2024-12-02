@@ -60,6 +60,8 @@ const vuetify = createVuetify({
     directives,
 });
 
+import canPlugin from './canPlugin';
+
 createInertiaApp({
     title: title => `${title} - ${appName}`,
     resolve: name => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob<DefineComponent>('./Pages/**/*.vue')),
@@ -67,6 +69,7 @@ createInertiaApp({
         createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
+            .use(canPlugin)
             .use(vuetify)
             .mount(el);
     },

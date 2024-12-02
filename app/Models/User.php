@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable
 {
@@ -24,10 +25,55 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+
+
     public static $PERMISSIONS = [
-        ['name' => "work_log_patching", 'label' => "Zeitkorrekturen verwalten"],
-        ['name' => "user_administration", 'label' => "Nutzer verwalten"]
+        'all' => [
+            ['name' => 'user_permission', 'label' => 'Mitarbeitende verwalten'],
+            ['name' => 'workLogPatch_permission', 'label' => 'Zeitkorrekturen verwalten'],
+            ['name' => 'absence_permission', 'label' => 'Abwesenheiten verwalten'],
+            ['name' => 'timeAccount_permission', 'label' => 'Zeitkonten verwalten'],
+            ['name' => 'timeAccountSetting_permission', 'label' => 'Zeitkontovarianten verwalten'],
+            ['name' => 'timeAccountTransaction_permission', 'label' => 'Zeitkontotransaktionen verwalten'],
+        ],
+        'organization' => [
+            ['name' => 'absenceType_permission', 'label' => 'Abwesenheitsgründe verwalten'],
+            ['name' => 'specialWorkingHoursFactor_permission', 'label' => 'Sonderarbeitszeitfaktoren verwalten'],
+            ['name' => 'organization_permission', 'label' => 'Organisation verwalten'],
+        ],
+        'operatingSite' => [['name' => 'operatingSite_permission', 'label' => 'Betriebsstätte verwalten']],
+        'group' =>  [['name' => 'group_permission', 'label' => 'Abteilungen verwalten']],
     ];
+
+    /** 
+     * @param User | null $user
+     * @param string $permissionName 
+     * @param 'read'|'write' $permissionLevel
+     *   */
+    public function hasPermission(User | null $user, string $permissionName, string $permissionLevel)
+    {
+        if ($permissionLevel != 'read' && $permissionLevel != 'write') abort(404);
+
+        if (
+            array_key_exists($permissionName, $this->organizationUser->toArray()) &&
+            ($this->organizationUser->{$permissionName} == 'write' || $this->organizationUser->{$permissionName} == $permissionLevel) &&
+            (!$user || $user->organizationUser->organization_id == $this->organizationUser->organization_id)
+        ) return true;
+
+        if (
+            array_key_exists($permissionName, $this->groupUser->toArray()) &&
+            ($this->groupUser->{$permissionName} == 'write' || $this->groupUser->{$permissionName} == $permissionLevel) &&
+            (!$user || $user->group_id == $this->groupUser->group_id)
+        ) return true;
+
+        if (
+            array_key_exists($permissionName, $this->operatingSiteUser->toArray()) &&
+            ($this->operatingSiteUser?->{$permissionName} == 'write' || $this->operatingSiteUser->{$permissionName} == $permissionLevel) &&
+            (!$user || $user->operating_site_id == $this->operatingSiteUser->operating_site_id)
+        ) return true;
+
+        return false;
+    }
 
     protected function casts(): array
     {
@@ -126,6 +172,21 @@ class User extends Authenticatable
         return $this->hasMany(UserWorkingWeek::class);
     }
 
+    public function organizationUser()
+    {
+        return $this->hasOne(OrganizationUser::class);
+    }
+
+    public function groupUser()
+    {
+        return $this->hasOne(GroupUser::class);
+    }
+
+    public function operatingSiteUser()
+    {
+        return $this->hasOne(OperatingSiteUser::class);
+    }
+
     public function userWorkingWeekForDate(CarbonInterface $date): UserWorkingWeek | null
     {
         return $this->userWorkingWeeks()->where('active_since', '<=', $date->format('Y-m-d'))
@@ -138,7 +199,7 @@ class User extends Authenticatable
         return $this->hasOne(WorkLog::class)->latestOfMany('start');
     }
 
-    public function getOvertimeAttribute(): float
+    public function getOvertimeAttribute()
     {
         return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->where('type', 'default'))->sum('balance');
     }

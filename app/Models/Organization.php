@@ -11,9 +11,7 @@ class Organization extends Model
 {
     use HasFactory, SoftDeletes, ScopeInOrganization;
 
-    protected $fillable = [
-        'name'
-    ];
+    protected $guarded = [];
 
     public function operatingSites()
     {
@@ -23,6 +21,12 @@ class Organization extends Model
     {
         return $this->hasManyThrough(User::class, OperatingSite::class);
     }
+
+    public function organizationUsers()
+    {
+        return $this->hasMany(OrganizationUser::class);
+    }
+
     public function absenceTypes()
     {
         return $this->hasMany(AbsenceType::class);
@@ -50,14 +54,14 @@ class Organization extends Model
         return $this->hasMany(CustomAddress::class);
     }
 
-    public static function getCurrent()
+    public static function getCurrent(): Organization
     {
         if (Auth::check()) return Auth::user()->organization;
         return Organization::find(1);
     }
 
 
-    public static function getOrganizationNameByDomain()
+    public static function getOrganizationNameByDomain(): string
     {
         if (app()->environment('local')) {
             if (request()->organization) session(['org' => request()->organization]);

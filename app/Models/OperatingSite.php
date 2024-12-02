@@ -29,6 +29,11 @@ class OperatingSite extends Model
         return $this->hasMany(User::class);
     }
 
+    public function operatingSiteUser()
+    {
+        return $this->hasMany(OperatingSiteUser::class);
+    }
+
     public function hasHoliday(CarbonInterface $date)
     {
         if (!$this->country || !$this->federal_state) {
