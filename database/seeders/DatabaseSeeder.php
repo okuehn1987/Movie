@@ -17,7 +17,6 @@ use App\Models\UserWorkingHour;
 use App\Models\UserWorkingWeek;
 use App\Models\WorkLog;
 use Illuminate\Database\Eloquent\Factories\Sequence;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -35,40 +34,36 @@ class DatabaseSeeder extends Seeder
             ->has(UserWorkingHour::factory(1))
             ->has(UserWorkingWeek::factory(1));
 
-        foreach ([1, 2, 3] as $n) {
-            Organization::factory()
-                ->has(TimeAccountSetting::factory(1))
-                ->has(
-                    OperatingSite::factory(3)
-                        ->has(
-                            $users->has(TimeAccount::factory(1, [
-                                'time_account_setting_id' => $n,
-                                'balance_limit' => random_int(20, 100),
-                                'balance' => random_int(0, 20)
-                            ]))
-                        )
-                        ->has(OperatingTime::factory(7, ['start' => '09:00:00', 'end' => '17:00:00'])
-                            ->sequence(fn(Sequence $sequence) => ['type' => [
-                                'monday',
-                                'tuesday',
-                                'wednesday',
-                                'thursday',
-                                'friday',
-                                'saturday',
-                                'sunday',
-                            ][$sequence->index % 7]]))
-                )
-                ->has(Group::factory(3))->create();
-        }
-        foreach (Organization::all() as $org) {
+        $org = Organization::factory()
+            ->has(TimeAccountSetting::factory(1))
+            ->has(
+                OperatingSite::factory(3)
+                    ->has(
+                        $users->has(TimeAccount::factory(1, [
+                            'time_account_setting_id' => 1,
+                            'balance_limit' => random_int(20, 100),
+                            'balance' => random_int(0, 20)
+                        ]))
+                    )
+                    ->has(OperatingTime::factory(7, ['start' => '09:00:00', 'end' => '17:00:00'])
+                        ->sequence(fn(Sequence $sequence) => ['type' => [
+                            'monday',
+                            'tuesday',
+                            'wednesday',
+                            'thursday',
+                            'friday',
+                            'saturday',
+                            'sunday',
+                        ][$sequence->index % 7]]))
+            )
+            ->has(Group::factory(3))->create();
 
-            foreach (AbsenceType::$DEFAULTS as $type) {
-                AbsenceType::factory([
-                    "organization_id" => $org->id,
-                    'type' => $type['name'],
-                    ...$type,
-                ])->create();
-            }
+        foreach (AbsenceType::$DEFAULTS as $type) {
+            AbsenceType::factory([
+                "organization_id" => $org->id,
+                'type' => $type['name'],
+                ...$type,
+            ])->create();
         }
 
         $admin = User::factory([
