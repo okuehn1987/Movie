@@ -12,6 +12,7 @@ import {
     Permission,
     GroupUser,
     OperatingSiteUser,
+    Writeable,
 } from '@/types/types';
 import { getMaxScrollHeight, getStates } from '@/utils';
 import { useForm } from '@inertiajs/vue3';
@@ -105,8 +106,8 @@ if (props.user) {
     userForm.street = props.user.street ?? '';
     userForm.house_number = props.user.house_number ?? '';
     userForm.address_suffix = props.user.address_suffix ?? '';
-    userForm.country = (props.user.country as Country) ?? '';
-    userForm.federal_state = props.user.federal_state ?? '';
+    userForm.country = props.user.country as Country;
+    userForm.federal_state = props.user.federal_state;
     userForm.phone_number = props.user.phone_number ?? '';
     userForm.staff_number = props.user.staff_number;
     userForm.password = props.user.password;
@@ -149,16 +150,64 @@ function submit() {
 }
 
 const step = ref(1);
+
+const steps = ref([
+    {
+        isValidated: false,
+        name: 'Allgemeine Angaben',
+        fields: {
+            first_name: [() => !!userForm.first_name],
+            last_name: [() => !!userForm.last_name],
+            email: [() => !!userForm.email],
+            date_of_birth: [() => true],
+            password: [() => props.mode !== 'create' || !!userForm.password],
+            userWorkingHours: [() => !!userForm.userWorkingHours],
+            userWorkingHoursSince: [() => !!userForm.userWorkingHoursSince],
+            userWorkingWeek: [() => !!userForm.userWorkingWeek],
+            userWorkingWeekSince: [() => !!userForm.userWorkingWeekSince],
+        },
+    },
+    {
+        isValidated: false,
+        name: 'Adresse',
+        fields: {
+            street: [() => true],
+            house_number: [() => true],
+            zip: [() => true],
+            city: [() => true],
+            federal_state: [() => !!userForm.federal_state],
+            country: [() => !!userForm.country],
+        },
+    },
+    {
+        isValidated: false,
+        name: 'Berechtigungen',
+        fields: {
+            operating_site_id: [() => !!userForm.operating_site_id],
+            group_id: [() => !!userForm.group_id],
+        },
+    },
+] as const);
 </script>
 <template>
     <v-card>
-        <v-stepper
-            v-model="step"
-            :items="['Allgemeine Informationen', 'Adresse', 'Berechtigungen']"
-            show-actions
-            non-linear
-            :editable="mode == 'edit'"
-        >
+        <v-stepper v-model="step">
+            <v-stepper-header>
+                <template v-for="(s, index) in steps" :key="index">
+                    <v-stepper-item
+                        v-bind="{
+                            editable: mode == 'edit' && s.isValidated,
+                            rules: s.isValidated ? Object.values(s.fields).flat() : [],
+                            step: index,
+                            title: s.name,
+                            value: index + 1,
+                        }"
+                    ></v-stepper-item>
+
+                    {{ s }}
+                    <v-divider v-if="index < steps.length" :key="index"></v-divider>
+                </template>
+            </v-stepper-header>
             <v-form @submit.prevent="submit">
                 <v-stepper-window>
                     <v-stepper-window-item :value="1">
@@ -169,6 +218,7 @@ const step = ref(1);
                                         v-model="userForm.first_name"
                                         label="Vorname"
                                         :error-messages="userForm.errors.first_name"
+                                        :rules="steps[0].fields.first_name"
                                     ></v-text-field>
                                 </v-col>
                                 <v-col cols="12" md="6">
@@ -176,16 +226,23 @@ const step = ref(1);
                                         v-model="userForm.last_name"
                                         label="Nachname"
                                         :error-messages="userForm.errors.last_name"
+                                        :rules="steps[0].fields.last_name"
                                     ></v-text-field>
                                 </v-col>
                                 <v-col cols="12" md="6">
-                                    <v-text-field v-model="userForm.email" label="Email" :error-messages="userForm.errors.email"></v-text-field>
+                                    <v-text-field
+                                        v-model="userForm.email"
+                                        label="Email"
+                                        :error-messages="userForm.errors.email"
+                                        :rules="steps[0].fields.email"
+                                    ></v-text-field>
                                 </v-col>
                                 <v-col cols="12" md="6" v-if="mode == 'create'">
                                     <v-text-field
                                         v-model="userForm.password"
                                         label="Passwort"
                                         :error-messages="userForm.errors.password"
+                                        :rules="steps[0].fields.password"
                                     ></v-text-field>
                                 </v-col>
                                 <v-col cols="12" md="6">
@@ -195,6 +252,7 @@ const step = ref(1);
                                         label="Geburtsdatum"
                                         required
                                         :error-messages="userForm.errors.date_of_birth"
+                                        :rules="steps[0].fields.date_of_birth"
                                     ></v-text-field>
                                 </v-col>
                                 <v-col cols="12">
@@ -205,6 +263,7 @@ const step = ref(1);
                                         v-model="userForm.userWorkingHours"
                                         label="Trage die wöchentliche Arbeitszeit des Mitarbeiters ein"
                                         :error-messages="userForm.errors.userWorkingHours"
+                                        :rules="steps[0].fields.userWorkingHours"
                                     ></v-text-field>
                                 </v-col>
                                 <v-col cols="12" md="6">
@@ -213,6 +272,7 @@ const step = ref(1);
                                         v-model="userForm.userWorkingHoursSince"
                                         label="seit"
                                         :error-messages="userForm.errors.userWorkingHoursSince"
+                                        :rules="steps[0].fields.userWorkingHoursSince"
                                     ></v-date-input>
                                 </v-col>
                                 <v-col cols="12" md="6">
@@ -227,6 +287,7 @@ const step = ref(1);
                                         "
                                         label="Wähle die Arbeitstage des Mitarbeiters aus"
                                         :error-messages="userForm.errors.userWorkingWeek"
+                                        :rules="steps[0].fields.userWorkingWeek"
                                     />
                                 </v-col>
                                 <v-col cols="12" md="6">
@@ -235,6 +296,7 @@ const step = ref(1);
                                         v-model="userForm.userWorkingWeekSince"
                                         label="seit"
                                         :error-messages="userForm.errors.userWorkingWeekSince"
+                                        :rules="steps[0].fields.userWorkingWeekSince"
                                     ></v-date-input>
                                 </v-col>
                             </v-row>
@@ -244,20 +306,46 @@ const step = ref(1);
                         <v-card-text>
                             <v-row>
                                 <v-col cols="12" md="6">
-                                    <v-text-field v-model="userForm.street" label="Straße" :error-messages="userForm.errors.street"></v-text-field>
+                                    <v-text-field
+                                        v-model="userForm.street"
+                                        label="Straße"
+                                        :error-messages="userForm.errors.street"
+                                        :rules="steps[1].fields.street"
+                                    ></v-text-field>
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-text-field
                                         v-model="userForm.house_number"
                                         label="Hausnummer"
                                         :error-messages="userForm.errors.house_number"
+                                        :rules="steps[1].fields.house_number"
                                     ></v-text-field>
                                 </v-col>
                                 <v-col cols="12" md="6">
-                                    <v-text-field v-model="userForm.zip" label="Postleitzahl" :error-messages="userForm.errors.zip"></v-text-field>
+                                    <v-text-field
+                                        v-model="userForm.zip"
+                                        label="Postleitzahl"
+                                        :error-messages="userForm.errors.zip"
+                                        :rules="steps[1].fields.zip"
+                                    ></v-text-field>
                                 </v-col>
                                 <v-col cols="12" md="6">
-                                    <v-text-field v-model="userForm.city" label="Ort" :error-messages="userForm.errors.city"></v-text-field>
+                                    <v-text-field
+                                        v-model="userForm.city"
+                                        label="Ort"
+                                        :error-messages="userForm.errors.city"
+                                        :rules="steps[1].fields.city"
+                                    ></v-text-field>
+                                </v-col>
+                                <v-col cols="12" md="6">
+                                    <v-select
+                                        label="Land"
+                                        required
+                                        :items="countries"
+                                        :error-messages="userForm.errors.country"
+                                        v-model="userForm.country"
+                                        :rules="steps[1].fields.country"
+                                    ></v-select>
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-select
@@ -267,15 +355,7 @@ const step = ref(1);
                                         required
                                         :error-messages="userForm.errors.federal_state"
                                         v-model="userForm.federal_state"
-                                    ></v-select>
-                                </v-col>
-                                <v-col cols="12" md="6">
-                                    <v-select
-                                        label="Land"
-                                        required
-                                        :items="countries"
-                                        :error-messages="userForm.errors.country"
-                                        v-model="userForm.country"
+                                        :rules="steps[1].fields.federal_state"
                                     ></v-select>
                                 </v-col>
                             </v-row>
@@ -299,6 +379,7 @@ const step = ref(1);
                                         :items="operating_sites.map(o => ({ title: o.name, value: o.id }))"
                                         label="Wähle die Betriebsstätte des Mitarbeiters aus."
                                         :error-messages="userForm.errors.operating_site_id"
+                                        :rules="steps[2].fields.operating_site_id"
                                     ></v-select>
                                 </v-col>
                                 <PermissionSelector
@@ -315,6 +396,7 @@ const step = ref(1);
                                         :items="groups.map(g => ({ title: g.name, value: g.id }))"
                                         label="Wähle eine Abteilung aus, zu die der Mitarbeiter gehören soll."
                                         :error-messages="userForm.errors.group_id"
+                                        :rules="steps[2].fields.group_id"
                                     ></v-select>
                                 </v-col>
                                 <PermissionSelector
@@ -347,9 +429,28 @@ const step = ref(1);
                         <v-btn color="primary" variant="elevated" @click.stop="prev">Zurück</v-btn>
                     </template>
                     <template v-slot:next>
-                        <v-btn color="secondary" variant="elevated" @click.stop="step == 3 ? submit() : next()">{{
-                            step == 3 ? 'Speichern' : 'Weiter'
-                        }}</v-btn>
+                        <v-btn
+                            color="secondary"
+                            variant="elevated"
+                            @click.stop="
+                                () => {
+                                    const s = steps[step - 1] as Writeable<typeof steps[number]>;
+                                    if (
+                                        s &&
+                                        Object.values(s.fields)
+                                            .flat()
+                                            .some(f => !f())
+                                    )
+                                        return
+
+                                    if (s) (s.isValidated as boolean) = true;
+
+                                    if (step == 3) submit();
+                                    else next();
+                                }
+                            "
+                            >{{ step == 3 ? 'Speichern' : 'Weiter' }}</v-btn
+                        >
                     </template>
                 </v-stepper-actions>
             </template>

@@ -4,6 +4,8 @@ type Timestamp = string & { __datetime__: void };
 
 type Branded<T, Brand extends string> = T & { [x in `__${Brand}__`]: void };
 
+export type Writeable<T> = { -readonly [P in keyof T]: T[P] };
+
 export type Country = Branded<string, 'country'>;
 
 export type State = Branded<string, 'state'>;
@@ -71,10 +73,10 @@ type Address = {
     street: string | null;
     house_number: string | null;
     address_suffix: string | null;
-    country: string;
+    country: Country;
     city: string | null;
     zip: string | null;
-    federal_state: string;
+    federal_state: State;
 };
 
 export type Status = 'created' | 'declined' | 'accepted';

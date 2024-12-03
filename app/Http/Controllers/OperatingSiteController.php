@@ -8,6 +8,7 @@ use App\Models\Organization;
 use App\Services\HolidayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class OperatingSiteController extends Controller
@@ -63,10 +64,10 @@ class OperatingSiteController extends Controller
             'name' => 'required|string',
             'address_suffix' => "nullable|string",
             'city' => "required|string",
-            'country' => "required|string",
+            "country" => ["required", Rule::in(HolidayService::getCountryCodes())],
+            "federal_state" => ["required", Rule::in(HolidayService::getRegionCodes($request["country"]))],
             'email' => "required|email",
             'fax' => "nullable|string",
-            'federal_state' => "required|string",
             'house_number' => "required|string",
             'is_headquarter' => "required|boolean",
             'phone_number' => "required|string",
@@ -86,10 +87,10 @@ class OperatingSiteController extends Controller
             'name' => 'required|string',
             'address_suffix' => "nullable|string",
             'city' => "required|string",
-            'country' => "required|string",
+            "country" => ["required", Rule::in(HolidayService::getCountryCodes())],
+            "federal_state" => ["required", Rule::in(HolidayService::getRegionCodes($request["country"]))],
             'email' => "required|email",
             'fax' => "nullable|string",
-            'federal_state' => "required|string",
             'house_number' => "required|string",
             'is_headquarter' => "required|boolean",
             'phone_number' => "required|string",

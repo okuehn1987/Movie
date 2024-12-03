@@ -24,6 +24,78 @@ use Inertia\Inertia;
 
 class UserController extends Controller
 {
+
+    private function validateUser(Request $request, array $additionalRules = [])
+    {
+        return $request->validate([
+            "first_name" => "required|string",
+            "last_name" => "required|string",
+            "date_of_birth" => "nullable|date",
+            "city" => "nullable|string",
+            "zip" => "nullable|string",
+            "street" => "nullable|string",
+            "house_number" => "nullable|string",
+            "address_suffix" => "nullable|string",
+            "country" => ["required", Rule::in(HolidayService::getCountryCodes())],
+            "federal_state" => ["required", Rule::in(HolidayService::getRegionCodes($request["country"]))],
+            "phone_number" => "nullable|string",
+            "staff_number" => "nullable|integer",
+            "group_id" => [
+                "nullable",
+                Rule::exists('groups', 'id')->where('organization_id', Organization::getCurrent()->id)
+            ],
+            'operating_site_id' => [
+                "required",
+                Rule::exists('operating_sites', 'id')->where('organization_id', Organization::getCurrent()->id)
+            ],
+
+            'supervisor_id' => [
+                'nullable',
+                Rule::exists('users', 'id')
+                    ->where('is_supervisor', true)
+                    ->whereIn('operating_site_id', OperatingSite::inOrganization()->pluck('id'))
+            ],
+
+            'is_supervisor' => 'required|boolean',
+
+            'userWorkingHours' => 'required|decimal:0,2',
+            'userWorkingHoursSince' => 'required|date',
+
+            'userWorkingWeek' => 'required|array',
+            'userWorkingWeek.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
+            'userWorkingWeekSince' => 'required|date',
+
+            'organizationUser' => 'required|array',
+            'organizationUser.*' => ['nullable', function ($attribute, $value, $fail) {
+                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+                if (!in_array($value, ['read', 'write', null])) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+            }],
+            'operatingSiteUser' => 'required|array',
+            'operatingSiteUser.*' => ['nullable', function ($attribute, $value, $fail) {
+                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->only(['all', 'operatingSite'])->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+                if (!in_array($value, ['read', 'write', null])) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+            }],
+            'groupUser' => 'required|array',
+            'groupUser.*' => ['nullable', function ($attribute, $value, $fail) {
+                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->only(['all', 'group'])->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+                if (!in_array($value, ['read', 'write', null])) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                }
+            }],
+            ...$additionalRules
+        ]);
+    }
+
     public function index()
     {
         Gate::authorize('viewIndex', User::class);
@@ -107,73 +179,9 @@ class UserController extends Controller
         Gate::authorize('create', User::class);
         $request['groupUser'] = $request['organizationUser'];
 
-        $validated = $request->validate([
-            "first_name" => "required|string",
-            "last_name" => "required|string",
-            "email" => "required|string|unique:users",
-            "date_of_birth" => "nullable|date",
-            "city" => "nullable|string",
-            "zip" => "nullable|string",
-            "street" => "nullable|string",
-            "house_number" => "nullable|string",
-            "address_suffix" => "nullable|string",
-            "country" => "required|string",
-            "federal_state" => "required|string",
-            "phone_number" => "nullable|string",
-            "staff_number" => "nullable|integer",
+        $validated = self::validateUser($request, [
             "password" => "required|string",
-            "group_id" => [
-                "nullable",
-                Rule::exists('groups', 'id')->where('organization_id', Organization::getCurrent()->id)
-            ],
-            'operating_site_id' => [
-                "required",
-                Rule::exists('operating_sites', 'id')->where('organization_id', Organization::getCurrent()->id)
-            ],
-
-            'supervisor_id' => [
-                'nullable',
-                Rule::exists('users', 'id')
-                    ->where('is_supervisor', true)
-                    ->whereIn('operating_site_id', OperatingSite::inOrganization()->pluck('id'))
-            ],
-
-            'is_supervisor' => 'required|boolean',
-
-            'userWorkingHours' => 'required|decimal:0,2',
-            'userWorkingHoursSince' => 'required|date',
-
-            'userWorkingWeek' => 'required|array',
-            'userWorkingWeek.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
-            'userWorkingWeekSince' => 'required|date',
-
-            'organizationUser' => 'required|array',
-            'organizationUser.*' => ['nullable', function ($attribute, $value, $fail) {
-                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
-                    $fail('The ' . $attribute . ' is invalid.');
-                }
-                if (!in_array($value, ['read', 'write', null])) {
-                    $fail('The ' . $attribute . ' is invalid.');
-                }
-            }],
-            'operatingSiteUser' => 'required|array',
-            'operatingSiteUser.*' => ['nullable', function ($attribute, $value, $fail) {
-                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->only(['all', 'operatingSite'])->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
-                    $fail('The ' . $attribute . ' is invalid.');
-                }
-                if (!in_array($value, ['read', 'write', null])) {
-                    $fail('The ' . $attribute . ' is invalid.');
-                }
-            }],
-            'groupUser' => 'required|array',
-            'groupUser.*' => ['nullable', function ($attribute, $value, $fail) {
-                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->only(['all', 'group'])->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
-                    $fail('The ' . $attribute . ' is invalid.');
-                }
-                if (!in_array($value, ['read', 'write', null])) {
-                    $fail('The ' . $attribute . ' is invalid.');
-                }
-            }]
+            "email" => "required|email|unique:users",
         ]);
 
         $user = (new User)->forceFill([
@@ -199,9 +207,6 @@ class UserController extends Controller
             'email_verified_at' => now(),
         ]);
 
-        foreach ($validated['permissions'] as $permission) {
-            $user[$permission] = true;
-        }
         $user->password = Hash::make($validated['password']);
         $user->save();
 
@@ -265,69 +270,8 @@ class UserController extends Controller
     {
         Gate::authorize('update', $user);
 
-        $validated = $request->validate([
-            "first_name" => "required|string",
-            "last_name" => "required|string",
-            "email" => "required|string",
-            "date_of_birth" => "nullable|date",
-            "city" => "nullable|string",
-            "zip" => "nullable|string",
-            "street" => "nullable|string",
-            "house_number" => "nullable|string",
-            "address_suffix" => "nullable|string",
-            "country" => "required|string",
-            "federal_state" => "required|string",
-            "phone_number" => "nullable|string",
-            "staff_number" => "nullable|integer",
-            "group_id" => [
-                "nullable",
-                Rule::exists('groups', 'id')->where('organization_id', Organization::getCurrent()->id)
-            ],
-            'operating_site_id' => [
-                "required",
-                Rule::exists('operating_sites', 'id')->where('organization_id', Organization::getCurrent()->id)
-            ],
-            'supervisor_id' => [
-                'nullable',
-                Rule::exists('users', 'id')
-                    ->where('is_supervisor', true)
-                    ->whereIn('operating_site_id', OperatingSite::inOrganization()->pluck('id'))
-                    ->whereNotIn('id', $user->allSuperviseesFlat()->pluck('id'))
-            ],
-            'is_supervisor' => 'required|boolean',
-            'userWorkingHours' => 'required|decimal:0,2',
-            'userWorkingHoursSince' => 'required|date',
-            'userWorkingWeek' => 'required|array',
-            'userWorkingWeek.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
-            'userWorkingWeekSince' => 'required|date',
-
-            'organizationUser' => 'required|array',
-            'organizationUser.*' => ['nullable', function ($attribute, $value, $fail) {
-                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
-                    $fail('The ' . $attribute . ' is invalid.');
-                }
-                if (!in_array($value, ['read', 'write', null])) {
-                    $fail('The ' . $attribute . ' is invalid.');
-                }
-            }],
-            'operatingSiteUser' => 'required|array',
-            'operatingSiteUser.*' => ['nullable', function ($attribute, $value, $fail) {
-                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->only(['all', 'operatingSite'])->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
-                    $fail('The ' . $attribute . ' is invalid.');
-                }
-                if (!in_array($value, ['read', 'write', null])) {
-                    $fail('The ' . $attribute . ' is invalid.');
-                }
-            }],
-            'groupUser' => 'required|array',
-            'groupUser.*' => ['nullable', function ($attribute, $value, $fail) {
-                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->only(['all', 'group'])->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
-                    $fail('The ' . $attribute . ' is invalid.');
-                }
-                if (!in_array($value, ['read', 'write', null])) {
-                    $fail('The ' . $attribute . ' is invalid.');
-                }
-            }]
+        $validated = self::validateUser($request, [
+            "email" => "required|email",
         ]);
 
         $user->update([

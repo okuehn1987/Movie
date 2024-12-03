@@ -42,4 +42,14 @@ class HolidayService
     {
         return Holidays::for(self::$COUNTRIES[$countryCode]['class']::make($countryCode . ($region ? '-' . $region : '')))->isHoliday($date);
     }
+
+    public static function getCountryCodes()
+    {
+        return array_keys(self::$COUNTRIES);
+    }
+
+    public static function getRegionCodes(string|null $countryCode)
+    {
+        return in_array($countryCode, HolidayService::getCountryCodes()) ?  array_keys(HolidayService::$COUNTRIES[$countryCode]["regions"]) : [];
+    }
 }

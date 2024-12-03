@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Gate;
 use App\Services\HolidayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class OrganizationController extends Controller
@@ -32,10 +33,10 @@ class OrganizationController extends Controller
             'organization_street' => "required|string",
             'organization_house_number' => "required|string",
             'organization_address_suffix' => "nullable|string",
-            'organization_country' => "required|string",
+            "organization_country" => ["required", Rule::in(HolidayService::getCountryCodes())],
+            "organization_federal_state" => ["required", Rule::in(HolidayService::getRegionCodes($request["country"]))],
             'organization_city' => "required|string",
             'organization_zip' => "required|string",
-            'organization_federal_state' => "required|string",
             'head_quarter_name' => "required|string",
             'first_name' => "required|string",
             'last_name' => "required|string",

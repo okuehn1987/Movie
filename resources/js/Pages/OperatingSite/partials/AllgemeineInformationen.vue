@@ -93,21 +93,21 @@ function submit() {
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-select
+                            label="Land"
+                            required
+                            :items="countries.map(country => ({ title: country.title, value: country.value }))"
+                            :error-messages="operatingSiteForm.errors.country"
+                            v-model="operatingSiteForm.country"
+                        ></v-select>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-select
                             label="Bundesland"
                             :items="getStates(operatingSiteForm.country, countries)"
                             :disabled="!operatingSiteForm.country"
                             required
                             :error-messages="operatingSiteForm.errors.federal_state"
                             v-model="operatingSiteForm.federal_state"
-                        ></v-select>
-                    </v-col>
-                    <v-col cols="12" md="6">
-                        <v-select
-                            label="Land"
-                            required
-                            :items="countries.map(country => ({ title: country.title, value: country.value }))"
-                            :error-messages="operatingSiteForm.errors.country"
-                            v-model="operatingSiteForm.country"
                         ></v-select>
                     </v-col>
                     <v-col cols="12" md="6">
