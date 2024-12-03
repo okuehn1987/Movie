@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Services\HolidayService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -36,7 +37,8 @@ class UserFactory extends Factory
             'house_number' => fake()->buildingNumber(),
             'city' => fake()->city(),
             'zip' => fake()->postcode(),
-            'country' => fake()->country(),
+            'federal_state' => collect(HolidayService::getRegionCodes('DE'))->random(),
+            'country' => 'DE',
         ];
     }
 

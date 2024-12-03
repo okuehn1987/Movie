@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Services\HolidayService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -25,7 +26,8 @@ class OperatingSiteFactory extends Factory
             'country' => fake()->country(),
             'phone_number' => fake()->phoneNumber(),
             'email' => fake()->email(),
-            'federal_state' => fake()->state(),
+            'federal_state' => collect(HolidayService::getRegionCodes('DE'))->random(),
+            'country' => 'DE'
         ];
     }
 }
