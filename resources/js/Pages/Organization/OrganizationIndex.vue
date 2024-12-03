@@ -74,7 +74,7 @@ function submit() {
                                             <v-form @submit.prevent="submit">
                                                 <v-row>
                                                     <v-col cols="12"><h3>Adresse</h3></v-col>
-                                                    <v-col cols="12">
+                                                    <v-col cols="12" md="6">
                                                         <v-text-field
                                                             label="Firmenname"
                                                             required
@@ -82,51 +82,12 @@ function submit() {
                                                             v-model="organizationForm.organization_name"
                                                         ></v-text-field>
                                                     </v-col>
-                                                    <v-col cols="12">
+                                                    <v-col cols="12" md="6">
                                                         <v-text-field
                                                             label="Standortname"
                                                             required
                                                             :error-messages="organizationForm.errors.head_quarter_name"
                                                             v-model="organizationForm.head_quarter_name"
-                                                        ></v-text-field>
-                                                    </v-col>
-                                                    <v-col cols="12" sm="6">
-                                                        <v-text-field
-                                                            label="Straße"
-                                                            required
-                                                            :error-messages="organizationForm.errors.organization_street"
-                                                            v-model="organizationForm.organization_street"
-                                                        ></v-text-field>
-                                                    </v-col>
-                                                    <v-col cols="12" sm="3">
-                                                        <v-text-field
-                                                            label="Hausnummer"
-                                                            required
-                                                            :error-messages="organizationForm.errors.organization_house_number"
-                                                            v-model="organizationForm.organization_house_number"
-                                                        ></v-text-field>
-                                                    </v-col>
-                                                    <v-col cols="12" sm="3">
-                                                        <v-text-field
-                                                            label="Addresszusatz"
-                                                            :error-messages="organizationForm.errors.organization_address_suffix"
-                                                            v-model="organizationForm.organization_address_suffix"
-                                                        ></v-text-field>
-                                                    </v-col>
-                                                    <v-col cols="12" sm="3">
-                                                        <v-text-field
-                                                            label="PLZ"
-                                                            required
-                                                            :error-messages="organizationForm.errors.organization_zip"
-                                                            v-model="organizationForm.organization_zip"
-                                                        ></v-text-field>
-                                                    </v-col>
-                                                    <v-col cols="12" sm="9">
-                                                        <v-text-field
-                                                            label="Ort"
-                                                            required
-                                                            :error-messages="organizationForm.errors.organization_city"
-                                                            v-model="organizationForm.organization_city"
                                                         ></v-text-field>
                                                     </v-col>
                                                     <v-col cols="12" sm="6">
@@ -147,6 +108,46 @@ function submit() {
                                                             :error-messages="organizationForm.errors.organization_federal_state"
                                                             v-model="organizationForm.organization_federal_state"
                                                         ></v-select>
+                                                    </v-col>
+                                                    <v-col cols="12" sm="6">
+                                                        <v-text-field
+                                                            label="PLZ"
+                                                            required
+                                                            :error-messages="organizationForm.errors.organization_zip"
+                                                            v-model="organizationForm.organization_zip"
+                                                        ></v-text-field>
+                                                    </v-col>
+                                                    <v-col cols="12" sm="6">
+                                                        <v-text-field
+                                                            label="Ort"
+                                                            required
+                                                            :error-messages="organizationForm.errors.organization_city"
+                                                            v-model="organizationForm.organization_city"
+                                                        ></v-text-field>
+                                                    </v-col>
+
+                                                    <v-col cols="12" sm="6">
+                                                        <v-text-field
+                                                            label="Straße"
+                                                            required
+                                                            :error-messages="organizationForm.errors.organization_street"
+                                                            v-model="organizationForm.organization_street"
+                                                        ></v-text-field>
+                                                    </v-col>
+                                                    <v-col cols="12" sm="6">
+                                                        <v-text-field
+                                                            label="Hausnummer"
+                                                            required
+                                                            :error-messages="organizationForm.errors.organization_house_number"
+                                                            v-model="organizationForm.organization_house_number"
+                                                        ></v-text-field>
+                                                    </v-col>
+                                                    <v-col cols="12" sm="6">
+                                                        <v-text-field
+                                                            label="Addresszusatz"
+                                                            :error-messages="organizationForm.errors.organization_address_suffix"
+                                                            v-model="organizationForm.organization_address_suffix"
+                                                        ></v-text-field>
                                                     </v-col>
 
                                                     <v-col cols="12"><h3>Admin Account</h3></v-col>

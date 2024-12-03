@@ -107,6 +107,41 @@ function submit() {
                                             <v-col cols="12"><h3>Adresse</h3></v-col>
 
                                             <v-col cols="12" md="6">
+                                                <v-select
+                                                    label="Land"
+                                                    required
+                                                    :items="countries.map(country => ({ title: country.title, value: country.value }))"
+                                                    :error-messages="operatingSiteForm.errors.country"
+                                                    v-model="operatingSiteForm.country"
+                                                ></v-select>
+                                            </v-col>
+                                            <v-col cols="12" md="6">
+                                                <v-select
+                                                    label="Bundesland"
+                                                    :items="getStates(operatingSiteForm.country, countries)"
+                                                    :disabled="!operatingSiteForm.country"
+                                                    required
+                                                    :error-messages="operatingSiteForm.errors.federal_state"
+                                                    v-model="operatingSiteForm.federal_state"
+                                                ></v-select>
+                                            </v-col>
+                                            <v-col cols="12" md="6">
+                                                <v-text-field
+                                                    label="PLZ"
+                                                    required
+                                                    :error-messages="operatingSiteForm.errors.zip"
+                                                    v-model="operatingSiteForm.zip"
+                                                ></v-text-field>
+                                            </v-col>
+                                            <v-col cols="12" md="6">
+                                                <v-text-field
+                                                    label="Ort"
+                                                    required
+                                                    :error-messages="operatingSiteForm.errors.city"
+                                                    v-model="operatingSiteForm.city"
+                                                ></v-text-field>
+                                            </v-col>
+                                            <v-col cols="12" md="6">
                                                 <v-text-field
                                                     label="Straße"
                                                     required
@@ -128,41 +163,6 @@ function submit() {
                                                     :error-messages="operatingSiteForm.errors.address_suffix"
                                                     v-model="operatingSiteForm.address_suffix"
                                                 ></v-text-field>
-                                            </v-col>
-                                            <v-col cols="12" md="6">
-                                                <v-text-field
-                                                    label="PLZ"
-                                                    required
-                                                    :error-messages="operatingSiteForm.errors.zip"
-                                                    v-model="operatingSiteForm.zip"
-                                                ></v-text-field>
-                                            </v-col>
-                                            <v-col cols="12" md="6">
-                                                <v-text-field
-                                                    label="Ort"
-                                                    required
-                                                    :error-messages="operatingSiteForm.errors.city"
-                                                    v-model="operatingSiteForm.city"
-                                                ></v-text-field>
-                                            </v-col>
-                                            <v-col cols="12" md="6">
-                                                <v-select
-                                                    label="Land"
-                                                    required
-                                                    :items="countries.map(country => ({ title: country.title, value: country.value }))"
-                                                    :error-messages="operatingSiteForm.errors.country"
-                                                    v-model="operatingSiteForm.country"
-                                                ></v-select>
-                                            </v-col>
-                                            <v-col cols="12" md="6">
-                                                <v-select
-                                                    label="Bundesland"
-                                                    :items="getStates(operatingSiteForm.country, countries)"
-                                                    :disabled="!operatingSiteForm.country"
-                                                    required
-                                                    :error-messages="operatingSiteForm.errors.federal_state"
-                                                    v-model="operatingSiteForm.federal_state"
-                                                ></v-select>
                                             </v-col>
 
                                             <v-col cols="12" md="6">
