@@ -203,8 +203,6 @@ const steps = ref([
                             value: index + 1,
                         }"
                     ></v-stepper-item>
-
-                    {{ s }}
                     <v-divider v-if="index < steps.length" :key="index"></v-divider>
                 </template>
             </v-stepper-header>
