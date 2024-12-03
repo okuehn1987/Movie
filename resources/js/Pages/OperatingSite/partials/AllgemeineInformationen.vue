@@ -60,37 +60,6 @@ function submit() {
 
                     <v-col cols="12"><h3>Adresse</h3></v-col>
 
-                    <v-col cols="12" md="4">
-                        <v-text-field
-                            label="Straße"
-                            v-model="operatingSiteForm.street"
-                            :error-messages="operatingSiteForm.errors.street"
-                        ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" md="4">
-                        <v-text-field
-                            label="Hausnummer"
-                            v-model="operatingSiteForm.house_number"
-                            :error-messages="operatingSiteForm.errors.house_number"
-                        ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" md="4">
-                        <v-text-field
-                            label="Adresszusatz"
-                            v-model="operatingSiteForm.address_suffix"
-                            :error-messages="operatingSiteForm.errors.address_suffix"
-                        ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" md="6">
-                        <v-text-field
-                            label="Postleitzahl"
-                            v-model="operatingSiteForm.zip"
-                            :error-messages="operatingSiteForm.errors.zip"
-                        ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" md="6">
-                        <v-text-field label="Ort" v-model="operatingSiteForm.city" :error-messages="operatingSiteForm.errors.city"></v-text-field>
-                    </v-col>
                     <v-col cols="12" md="6">
                         <v-select
                             label="Land"
@@ -109,6 +78,37 @@ function submit() {
                             :error-messages="operatingSiteForm.errors.federal_state"
                             v-model="operatingSiteForm.federal_state"
                         ></v-select>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field
+                            label="Postleitzahl"
+                            v-model="operatingSiteForm.zip"
+                            :error-messages="operatingSiteForm.errors.zip"
+                        ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field label="Ort" v-model="operatingSiteForm.city" :error-messages="operatingSiteForm.errors.city"></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field
+                            label="Straße"
+                            v-model="operatingSiteForm.street"
+                            :error-messages="operatingSiteForm.errors.street"
+                        ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field
+                            label="Hausnummer"
+                            v-model="operatingSiteForm.house_number"
+                            :error-messages="operatingSiteForm.errors.house_number"
+                        ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field
+                            label="Adresszusatz"
+                            v-model="operatingSiteForm.address_suffix"
+                            :error-messages="operatingSiteForm.errors.address_suffix"
+                        ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-checkbox
