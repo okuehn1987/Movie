@@ -106,7 +106,7 @@ if (props.user) {
     userForm.street = props.user.street ?? '';
     userForm.house_number = props.user.house_number ?? '';
     userForm.address_suffix = props.user.address_suffix ?? '';
-    userForm.country = props.user.country as Country;
+    userForm.country = props.user.country;
     userForm.federal_state = props.user.federal_state;
     userForm.phone_number = props.user.phone_number ?? '';
     userForm.staff_number = props.user.staff_number;
