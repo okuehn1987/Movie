@@ -20,29 +20,40 @@ class AbsenceController extends Controller
     {
         Gate::authorize('publicAuth', User::class);
 
+        $validated = $request->validate([
+            'date' => 'nullable|date',
+        ]);
+
+        $date = array_key_exists('date', $validated) ? Carbon::parse($validated['date'])  : Carbon::now();
+
         $user = $request->user();
 
-        return Inertia::render('Absence/AbsenceIndex', [
-            'users' =>
-            User::select('id', 'first_name', 'last_name', 'supervisor_id')
-                ->inOrganization()
-                ->with([
-                    'absences' => fn($absence) => $absence->where('status', 'accepted')->select(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status']),
-                    'absences.absenceType:id,abbreviation',
-                    "userWorkingWeeks:id,user_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday"
-                ])
-                ->get()->filter(fn($u) => $user->can('viewShow', $u))->map(fn($u) => [
-                    ...$u->toArray(),
-                    'absences' => $u->absences->filter(fn($a) => $user->can('viewShow', $a))->map(fn($a) => [
-                        ...$a->toArray(),
-                        'absence_type' => $user->can('viewShow', [AbsenceType::class, $u]) ? $a->absenceType : null,
-                    ]),
-                    'can' => [
-                        'absence' => [
-                            'create' => $user->can('create', [Absence::class, $u]),
-                        ]
+        $users = User::select('id', 'first_name', 'last_name', 'supervisor_id')
+            ->inOrganization()
+            ->with([
+                'userWorkingWeeks:id,user_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday'
+            ])
+            ->get()->filter(fn($u) => $user->can('viewShow', $u))->map(fn($u) => [
+                ...$u->toArray(),
+                'can' => [
+                    'absence' => [
+                        'create' => $user->can('create', [Absence::class, $u]),
                     ]
-                ]),
+                ]
+            ]);
+
+        $absences = Absence::whereIn('user_id', $users->pluck('id'))->where('status', 'accepted')
+            ->where(fn($q) => $q->where('start', '<=', $date->copy()->endOfMonth())->where('end', '>=', $date->copy()->startOfMonth()))
+            ->with(['absenceType:id,abbreviation', 'user:id'])
+            ->get(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status'])
+            ->filter(fn($a) => $user->can('viewShow', $a))->map(fn($a) => [
+                ...$a->toArray(),
+                'absence_type' => $user->can('viewShow', [AbsenceType::class, $a->user]) ? $a->absenceType : null,
+            ]);
+
+        return Inertia::render('Absence/AbsenceIndex', [
+            'users' => $users,
+            'absences' => fn() => $absences,
             'absence_types' => AbsenceType::inOrganization()->get(['id', 'name']),
         ]);
     }
