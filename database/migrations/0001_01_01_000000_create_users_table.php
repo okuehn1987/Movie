@@ -33,10 +33,10 @@ return new class extends Migration
             $table->string("street")->nullable();
             $table->string("house_number")->nullable();
             $table->string("address_suffix")->nullable();
-            $table->string("country")->nullable();
+            $table->string("country")->default("DE");
             $table->string("city")->nullable();
             $table->string("zip")->nullable();
-            $table->string("federal_state")->nullable();
+            $table->string("federal_state")->default("SH");
 
             $table->rememberToken();
             $table->timestamps();

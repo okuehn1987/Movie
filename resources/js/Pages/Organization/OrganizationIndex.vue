@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Organization } from '@/types/types';
-import { fillNullishValues } from '@/utils';
+import { Country, CountryProp, Organization } from '@/types/types';
+import { fillNullishValues, getStates } from '@/utils';
 import { Link, useForm } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 
 defineProps<{
     organizations: Organization[];
+    countries: CountryProp[];
 }>();
 
 const organizationForm = useForm({
@@ -14,7 +15,7 @@ const organizationForm = useForm({
     organization_street: '',
     organization_house_number: '',
     organization_address_suffix: '',
-    organization_country: '',
+    organization_country: '' as Country,
     organization_city: '',
     organization_zip: '',
     organization_federal_state: '',
@@ -129,20 +130,23 @@ function submit() {
                                                         ></v-text-field>
                                                     </v-col>
                                                     <v-col cols="12" sm="6">
-                                                        <v-text-field
+                                                        <v-select
+                                                            label="Land"
+                                                            required
+                                                            :items="countries.map(country => ({ title: country.title, value: country.value }))"
+                                                            :error-messages="organizationForm.errors.organization_country"
+                                                            v-model="organizationForm.organization_country"
+                                                        ></v-select>
+                                                    </v-col>
+                                                    <v-col cols="12" sm="6">
+                                                        <v-select
                                                             label="Bundesland"
+                                                            :items="getStates(organizationForm.organization_country, countries)"
+                                                            :disabled="!organizationForm.organization_country"
                                                             required
                                                             :error-messages="organizationForm.errors.organization_federal_state"
                                                             v-model="organizationForm.organization_federal_state"
-                                                        ></v-text-field>
-                                                    </v-col>
-                                                    <v-col cols="12" sm="6">
-                                                        <v-text-field
-                                                            label="Land"
-                                                            required
-                                                            :error-messages="organizationForm.errors.organization_country"
-                                                            v-model="organizationForm.organization_country"
-                                                        ></v-text-field>
+                                                        ></v-select>
                                                     </v-col>
 
                                                     <v-col cols="12"><h3>Admin Account</h3></v-col>

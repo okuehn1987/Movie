@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Canable, Group, OperatingSite, Paginator, Permission, User } from '@/types/types';
+import { Canable, CountryProp, Group, OperatingSite, Paginator, Permission, User } from '@/types/types';
 import { Link } from '@inertiajs/vue3';
 import UserForm from './UserForm.vue';
 import { fillNullishValues, usePagination } from '@/utils';
@@ -14,6 +14,7 @@ const props = defineProps<{
     groups: Pick<Group, 'id' | 'name'>[];
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];
     permissions: { name: Permission[keyof Permission]; label: string }[];
+    countries: CountryProp[];
 }>();
 
 const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
@@ -51,7 +52,7 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
                             </v-btn>
                         </template>
                         <template v-slot:default="{ isActive }">
-                            <UserForm :supervisors :groups :operating_sites :permissions mode="create" @success="isActive.value = false">
+                            <UserForm :countries :supervisors :groups :operating_sites :permissions mode="create" @success="isActive.value = false">
                                 <template #append>
                                     <v-btn icon variant="text" @click="isActive.value = false">
                                         <v-icon>mdi-close</v-icon>
