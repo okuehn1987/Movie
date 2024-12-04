@@ -8,15 +8,7 @@ use Illuminate\Auth\Access\Response;
 
 class OrganizationPolicy
 {
-    /** Authorize all actions for super-admins */
-    public function before(User $user)
-    {
-        header('authorized-by-gate: ' . self::class);
-
-        if ($user->role === 'super-admin') return true;
-
-        return null; // only if this is returned, the other methods are checked
-    }
+    use _AllowSuperAdmin;
 
     public function viewIndex(User $user): bool
     {
@@ -26,8 +18,7 @@ class OrganizationPolicy
     public function viewShow(User $user, Organization $organization): bool
     {
         return
-            $user->hasPermission(null, 'organization_permission', 'read') ||
-            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'organization_permission', 'read'));
+            $user->hasPermissionOrDelegation(null, 'organization_permission', 'read');
     }
 
     public function create(User $user): bool
@@ -38,8 +29,7 @@ class OrganizationPolicy
     public function update(User $user, Organization $organization): bool
     {
         return
-            $user->hasPermission(null, 'organization_permission', 'write') ||
-            $user->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission(null, 'organization_permission', 'write'));
+            $user->hasPermissionOrDelegation(null, 'organization_permission', 'write');
     }
 
     public function delete(User $user, Organization $organization): bool
