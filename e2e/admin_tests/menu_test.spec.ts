@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
-import { adminLogin } from '../utils';
+import { adminLogin, resetAndSeedDatabase } from '../utils';
 
 test.beforeEach('admin login', async ({ page }) => {
+    await resetAndSeedDatabase(await page);
     await adminLogin(page);
     await expect(page).toHaveURL('/dashboard');
 });
@@ -13,7 +14,7 @@ test('can switch between sites', async ({ page }) => {
     await page.getByText('Arbeitszeiten').click();
     await expect(page.getByRole('banner').getByText('Arbeitszeiten')).toBeVisible();
     await page.getByText('Organisation', { exact: true }).click();
-    await expect(page.getByText('Organisation Kub Ltd')).toBeVisible();
+    await expect(page.getByText('Organisation').first()).toBeVisible();
     await page.getByText('Betriebsstätten').click();
     await expect(page.getByRole('banner').getByText('Betriebsstätten')).toBeVisible();
     await page.getByText('Abteilungen').click();

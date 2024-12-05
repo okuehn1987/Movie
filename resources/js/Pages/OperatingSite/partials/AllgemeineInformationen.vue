@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Country, CountryProp, OperatingSite } from '@/types/types';
+import { CountryProp, OperatingSite } from '@/types/types';
 import { getStates } from '@/utils';
 import { useForm } from '@inertiajs/vue3';
 
@@ -13,7 +13,7 @@ const operatingSiteForm = useForm({
     fax: props.operatingSite.fax,
     phone_number: props.operatingSite.phone_number,
     street: props.operatingSite.street,
-    country: props.operatingSite.country as Country,
+    country: props.operatingSite.country,
     city: props.operatingSite.city,
     address_suffix: props.operatingSite.address_suffix,
     house_number: props.operatingSite.house_number,
@@ -28,9 +28,6 @@ function submit() {
         route('operatingSite.update', {
             operatingSite: props.operatingSite.id,
         }),
-        {
-            onSuccess: () => operatingSiteForm.reset(),
-        },
     );
 }
 </script>

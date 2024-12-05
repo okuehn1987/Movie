@@ -108,6 +108,7 @@ function submit() {
 
                                             <v-col cols="12" md="6">
                                                 <v-select
+                                                    data-testid="land"
                                                     label="Land"
                                                     required
                                                     :items="countries.map(country => ({ title: country.title, value: country.value }))"
@@ -117,6 +118,7 @@ function submit() {
                                             </v-col>
                                             <v-col cols="12" md="6">
                                                 <v-select
+                                                    data-testid="bundesland"
                                                     label="Bundesland"
                                                     :items="getStates(operatingSiteForm.country, countries)"
                                                     :disabled="!operatingSiteForm.country"

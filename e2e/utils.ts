@@ -1,4 +1,5 @@
 import { expect, Page } from '@playwright/test';
+import { refreshDatabase } from './laravel-helpers';
 
 export async function adminLogin(page: Page) {
     await page.goto('/');
@@ -9,3 +10,7 @@ export async function adminLogin(page: Page) {
 }
 
 // export async function userLogin(page: Page) {}
+
+export async function resetAndSeedDatabase(page: Page) {
+    await refreshDatabase({ page, parameters: { '--seeder': 'DatabaseSeederE2E' } });
+}

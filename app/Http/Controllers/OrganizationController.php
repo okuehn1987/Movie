@@ -34,7 +34,7 @@ class OrganizationController extends Controller
             'organization_house_number' => "required|string",
             'organization_address_suffix' => "nullable|string",
             "organization_country" => ["required", Rule::in(HolidayService::getCountryCodes())],
-            "organization_federal_state" => ["required", Rule::in(HolidayService::getRegionCodes($request["country"]))],
+            "organization_federal_state" => ["required", Rule::in(HolidayService::getRegionCodes($request["organization_country"]))],
             'organization_city' => "required|string",
             'organization_zip' => "required|string",
             'head_quarter_name' => "required|string",
