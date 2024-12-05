@@ -50,7 +50,18 @@ class User extends Authenticatable
      * @param string $permissionName 
      * @param 'read'|'write' $permissionLevel
      *   */
-    public function hasPermission(User | null $user, string $permissionName, string $permissionLevel)
+    public function hasPermissionOrDelegation(User | null $user, string $permissionName, string $permissionLevel)
+    {
+        return $this->hasPermission($user, $permissionName,  $permissionLevel) ||
+            $this->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($user, $permissionName,  $permissionLevel));
+    }
+
+    /** 
+     * @param User | null $user
+     * @param string $permissionName 
+     * @param 'read'|'write' $permissionLevel
+     *   */
+    private function hasPermission(User | null $user, string $permissionName, string $permissionLevel)
     {
         if ($permissionLevel != 'read' && $permissionLevel != 'write') abort(404);
 

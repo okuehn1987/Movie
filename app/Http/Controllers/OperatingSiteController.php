@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\OperatingSite;
 use App\Models\OperatingTime;
 use App\Models\Organization;
+use App\Services\HolidayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class OperatingSiteController extends Controller
@@ -27,6 +29,7 @@ class OperatingSiteController extends Controller
                     ]
                 ]
             ),
+            'countries' => HolidayService::getCountries(),
             'can' => [
                 'operatingSite' => [
                     'create' => Gate::allows('create', OperatingSite::class),
@@ -40,6 +43,7 @@ class OperatingSiteController extends Controller
 
         return Inertia::render('OperatingSite/OperatingSiteShow', [
             'operatingSite' => $operatingSite->load('operatingTimes'),
+            'countries' => HolidayService::getCountries(),
             'can' => [
                 'operatingSite' => [
                     'update' => Gate::allows('update', $operatingSite),
@@ -60,10 +64,10 @@ class OperatingSiteController extends Controller
             'name' => 'required|string',
             'address_suffix' => "nullable|string",
             'city' => "required|string",
-            'country' => "required|string",
+            "country" => ["required", Rule::in(HolidayService::getCountryCodes())],
+            "federal_state" => ["required", Rule::in(HolidayService::getRegionCodes($request["country"]))],
             'email' => "required|email",
             'fax' => "nullable|string",
-            'federal_state' => "required|string",
             'house_number' => "required|string",
             'is_headquarter' => "required|boolean",
             'phone_number' => "required|string",
@@ -83,10 +87,10 @@ class OperatingSiteController extends Controller
             'name' => 'required|string',
             'address_suffix' => "nullable|string",
             'city' => "required|string",
-            'country' => "required|string",
+            "country" => ["required", Rule::in(HolidayService::getCountryCodes())],
+            "federal_state" => ["required", Rule::in(HolidayService::getRegionCodes($request["country"]))],
             'email' => "required|email",
             'fax' => "nullable|string",
-            'federal_state' => "required|string",
             'house_number' => "required|string",
             'is_headquarter' => "required|boolean",
             'phone_number' => "required|string",

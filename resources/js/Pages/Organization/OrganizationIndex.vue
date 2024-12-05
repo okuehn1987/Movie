@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Organization } from '@/types/types';
-import { fillNullishValues } from '@/utils';
+import { Country, CountryProp, Organization } from '@/types/types';
+import { fillNullishValues, getStates } from '@/utils';
 import { Link, useForm } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 
 defineProps<{
     organizations: Organization[];
+    countries: CountryProp[];
 }>();
 
 const organizationForm = useForm({
@@ -14,7 +15,7 @@ const organizationForm = useForm({
     organization_street: '',
     organization_house_number: '',
     organization_address_suffix: '',
-    organization_country: '',
+    organization_country: '' as Country,
     organization_city: '',
     organization_zip: '',
     organization_federal_state: '',
@@ -73,7 +74,7 @@ function submit() {
                                             <v-form @submit.prevent="submit">
                                                 <v-row>
                                                     <v-col cols="12"><h3>Adresse</h3></v-col>
-                                                    <v-col cols="12">
+                                                    <v-col cols="12" md="6">
                                                         <v-text-field
                                                             label="Firmenname"
                                                             required
@@ -81,7 +82,7 @@ function submit() {
                                                             v-model="organizationForm.organization_name"
                                                         ></v-text-field>
                                                     </v-col>
-                                                    <v-col cols="12">
+                                                    <v-col cols="12" md="6">
                                                         <v-text-field
                                                             label="Standortname"
                                                             required
@@ -90,29 +91,25 @@ function submit() {
                                                         ></v-text-field>
                                                     </v-col>
                                                     <v-col cols="12" sm="6">
-                                                        <v-text-field
-                                                            label="Straße"
+                                                        <v-select
+                                                            label="Land"
                                                             required
-                                                            :error-messages="organizationForm.errors.organization_street"
-                                                            v-model="organizationForm.organization_street"
-                                                        ></v-text-field>
+                                                            :items="countries.map(country => ({ title: country.title, value: country.value }))"
+                                                            :error-messages="organizationForm.errors.organization_country"
+                                                            v-model="organizationForm.organization_country"
+                                                        ></v-select>
                                                     </v-col>
-                                                    <v-col cols="12" sm="3">
-                                                        <v-text-field
-                                                            label="Hausnummer"
+                                                    <v-col cols="12" sm="6">
+                                                        <v-select
+                                                            label="Bundesland"
+                                                            :items="getStates(organizationForm.organization_country, countries)"
+                                                            :disabled="!organizationForm.organization_country"
                                                             required
-                                                            :error-messages="organizationForm.errors.organization_house_number"
-                                                            v-model="organizationForm.organization_house_number"
-                                                        ></v-text-field>
+                                                            :error-messages="organizationForm.errors.organization_federal_state"
+                                                            v-model="organizationForm.organization_federal_state"
+                                                        ></v-select>
                                                     </v-col>
-                                                    <v-col cols="12" sm="3">
-                                                        <v-text-field
-                                                            label="Addresszusatz"
-                                                            :error-messages="organizationForm.errors.organization_address_suffix"
-                                                            v-model="organizationForm.organization_address_suffix"
-                                                        ></v-text-field>
-                                                    </v-col>
-                                                    <v-col cols="12" sm="3">
+                                                    <v-col cols="12" sm="6">
                                                         <v-text-field
                                                             label="PLZ"
                                                             required
@@ -120,7 +117,7 @@ function submit() {
                                                             v-model="organizationForm.organization_zip"
                                                         ></v-text-field>
                                                     </v-col>
-                                                    <v-col cols="12" sm="9">
+                                                    <v-col cols="12" sm="6">
                                                         <v-text-field
                                                             label="Ort"
                                                             required
@@ -128,20 +125,28 @@ function submit() {
                                                             v-model="organizationForm.organization_city"
                                                         ></v-text-field>
                                                     </v-col>
+
                                                     <v-col cols="12" sm="6">
                                                         <v-text-field
-                                                            label="Bundesland"
+                                                            label="Straße"
                                                             required
-                                                            :error-messages="organizationForm.errors.organization_federal_state"
-                                                            v-model="organizationForm.organization_federal_state"
+                                                            :error-messages="organizationForm.errors.organization_street"
+                                                            v-model="organizationForm.organization_street"
                                                         ></v-text-field>
                                                     </v-col>
                                                     <v-col cols="12" sm="6">
                                                         <v-text-field
-                                                            label="Land"
+                                                            label="Hausnummer"
                                                             required
-                                                            :error-messages="organizationForm.errors.organization_country"
-                                                            v-model="organizationForm.organization_country"
+                                                            :error-messages="organizationForm.errors.organization_house_number"
+                                                            v-model="organizationForm.organization_house_number"
+                                                        ></v-text-field>
+                                                    </v-col>
+                                                    <v-col cols="12" sm="6">
+                                                        <v-text-field
+                                                            label="Addresszusatz"
+                                                            :error-messages="organizationForm.errors.organization_address_suffix"
+                                                            v-model="organizationForm.organization_address_suffix"
                                                         ></v-text-field>
                                                     </v-col>
 

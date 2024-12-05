@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Canable, Count, OperatingSite, Paginator, User } from '@/types/types';
-import { fillNullishValues, usePagination } from '@/utils';
+import { Country, CountryProp, Canable, Count, OperatingSite, Paginator, User } from '@/types/types';
+import { fillNullishValues, getStates, usePagination } from '@/utils';
 import { Link, useForm } from '@inertiajs/vue3';
 import { toRefs } from 'vue';
 
 const props = defineProps<{
     operatingSites: Paginator<OperatingSite & Canable & Count<User>>;
+    countries: CountryProp[];
 }>();
 
 const { currentPage, lastPage, data } = usePagination(toRefs(props), 'operatingSites');
@@ -15,7 +16,7 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'operatingS
 const operatingSiteForm = useForm({
     address_suffix: '',
     city: '',
-    country: '',
+    country: '' as Country,
     email: '',
     fax: '',
     federal_state: '',
@@ -98,13 +99,48 @@ function submit() {
                                                 <v-text-field
                                                     label="Telefonnummer"
                                                     required
-                                                    :error-messages="operatingSiteForm.errors.email"
+                                                    :error-messages="operatingSiteForm.errors.phone_number"
                                                     v-model="operatingSiteForm.phone_number"
                                                 ></v-text-field>
                                             </v-col>
 
                                             <v-col cols="12"><h3>Adresse</h3></v-col>
 
+                                            <v-col cols="12" md="6">
+                                                <v-select
+                                                    label="Land"
+                                                    required
+                                                    :items="countries.map(country => ({ title: country.title, value: country.value }))"
+                                                    :error-messages="operatingSiteForm.errors.country"
+                                                    v-model="operatingSiteForm.country"
+                                                ></v-select>
+                                            </v-col>
+                                            <v-col cols="12" md="6">
+                                                <v-select
+                                                    label="Bundesland"
+                                                    :items="getStates(operatingSiteForm.country, countries)"
+                                                    :disabled="!operatingSiteForm.country"
+                                                    required
+                                                    :error-messages="operatingSiteForm.errors.federal_state"
+                                                    v-model="operatingSiteForm.federal_state"
+                                                ></v-select>
+                                            </v-col>
+                                            <v-col cols="12" md="6">
+                                                <v-text-field
+                                                    label="PLZ"
+                                                    required
+                                                    :error-messages="operatingSiteForm.errors.zip"
+                                                    v-model="operatingSiteForm.zip"
+                                                ></v-text-field>
+                                            </v-col>
+                                            <v-col cols="12" md="6">
+                                                <v-text-field
+                                                    label="Ort"
+                                                    required
+                                                    :error-messages="operatingSiteForm.errors.city"
+                                                    v-model="operatingSiteForm.city"
+                                                ></v-text-field>
+                                            </v-col>
                                             <v-col cols="12" md="6">
                                                 <v-text-field
                                                     label="Straße"
@@ -126,38 +162,6 @@ function submit() {
                                                     label="Addresszusatz"
                                                     :error-messages="operatingSiteForm.errors.address_suffix"
                                                     v-model="operatingSiteForm.address_suffix"
-                                                ></v-text-field>
-                                            </v-col>
-                                            <v-col cols="12" md="6">
-                                                <v-text-field
-                                                    label="PLZ"
-                                                    required
-                                                    :error-messages="operatingSiteForm.errors.zip"
-                                                    v-model="operatingSiteForm.zip"
-                                                ></v-text-field>
-                                            </v-col>
-                                            <v-col cols="12" md="6">
-                                                <v-text-field
-                                                    label="Ort"
-                                                    required
-                                                    :error-messages="operatingSiteForm.errors.city"
-                                                    v-model="operatingSiteForm.city"
-                                                ></v-text-field>
-                                            </v-col>
-                                            <v-col cols="12" md="6">
-                                                <v-text-field
-                                                    label="Bundesland"
-                                                    required
-                                                    :error-messages="operatingSiteForm.errors.federal_state"
-                                                    v-model="operatingSiteForm.federal_state"
-                                                ></v-text-field>
-                                            </v-col>
-                                            <v-col cols="12" md="6">
-                                                <v-text-field
-                                                    label="Land"
-                                                    required
-                                                    :error-messages="operatingSiteForm.errors.country"
-                                                    v-model="operatingSiteForm.country"
                                                 ></v-text-field>
                                             </v-col>
 

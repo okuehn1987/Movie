@@ -6,7 +6,7 @@ import { computed, ref } from 'vue';
 const props = defineProps<{
     currentUser: User;
     users: Tree<Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id' | 'email'>, 'all_supervisees'>[];
-    supervisor: Pick<User, 'id' | 'first_name' | 'last_name' | 'email'> | null;
+    supervisor?: Pick<User, 'id' | 'first_name' | 'last_name' | 'email'> | null;
 }>();
 
 const opened = ref(props.supervisor ? [props.supervisor.id] : []);

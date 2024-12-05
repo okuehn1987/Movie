@@ -33,8 +33,23 @@ class HolidayService
         ]
     ];
 
+    public static function getCountries()
+    {
+        return collect(array_keys(self::$COUNTRIES))->map(fn($c) => ['title' => self::$COUNTRIES[$c]['name'], 'value' => $c, 'regions' => self::$COUNTRIES[$c]['regions']]);
+    }
+
     public static function isHoliday($countryCode, $region = null, CarbonInterface $date)
     {
         return Holidays::for(self::$COUNTRIES[$countryCode]['class']::make($countryCode . ($region ? '-' . $region : '')))->isHoliday($date);
+    }
+
+    public static function getCountryCodes()
+    {
+        return array_keys(self::$COUNTRIES);
+    }
+
+    public static function getRegionCodes(string|null $countryCode)
+    {
+        return in_array($countryCode, HolidayService::getCountryCodes()) ?  array_keys(HolidayService::$COUNTRIES[$countryCode]["regions"]) : [];
     }
 }

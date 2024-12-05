@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import {
+    CountryProp,
     Group,
     GroupUser,
     OperatingSite,
@@ -45,6 +46,7 @@ defineProps<{
 
     organigramUsers: Tree<Pick<User, 'id' | 'first_name' | 'last_name' | 'email' | 'supervisor_id'>, 'all_supervisees'>[];
     supervisor: Pick<User, 'id' | 'first_name' | 'last_name' | 'email'> | null;
+    countries: CountryProp[];
 }>();
 
 const tab = ref(route().params['tab'] ?? 'generalInformation');
@@ -60,7 +62,7 @@ const tab = ref(route().params['tab'] ?? 'generalInformation');
         <v-card>
             <v-tabs-window v-model="tab">
                 <v-tabs-window-item style="overflow-y: auto" value="generalInformation">
-                    <UserForm :supervisors :user :groups :operating_sites mode="edit" :permissions></UserForm>
+                    <UserForm :countries :supervisors :user :groups :operating_sites mode="edit" :permissions></UserForm>
                 </v-tabs-window-item>
 
                 <v-tabs-window-item v-if="can('timeAccount', 'viewIndex')" style="overflow-y: auto" value="timeAccounts">
