@@ -37,7 +37,7 @@ const absenceForm = useForm({
     user_id: page.props.auth.user.id,
     start: null as Date | null,
     end: null as Date | null,
-    absence_type_id: null as null | number,
+    absence_type_id: null as null | AbsenceType['id'],
 });
 
 function createAbsenceModal(user_id: User['id'], start?: DateTime) {
