@@ -17,13 +17,7 @@ export function usePageIsLoading() {
 
     router.on('start', e => {
         if (!page.value) return;
-        if (
-            route(page.value, {
-                ...route().params,
-            }) ==
-            e.detail.visit.url.origin + e.detail.visit.url.pathname
-        )
-            loading.value = true;
+        if (route(page.value) == e.detail.visit.url.origin + e.detail.visit.url.pathname) loading.value = true;
     });
     router.on('finish', () => (loading.value = false));
 
@@ -128,4 +122,42 @@ export function getStates(country: Country, countries: { title: string; value: C
         title: v,
         value: k,
     }));
+}
+
+export function debounce<T extends (...args: unknown[]) => void>(func: T, delay: number): (...args: Parameters<T>) => void {
+    let timeout: ReturnType<typeof setTimeout>;
+
+    return function (...args: Parameters<T>) {
+        // Clear the previous timeout if the function is called again
+        if (timeout) {
+            clearTimeout(timeout);
+        }
+
+        // Set a new timeout to call the function after the specified delay
+        timeout = setTimeout(() => {
+            func(...args);
+        }, delay);
+    };
+}
+
+export function throttle<T extends (...args: unknown[]) => void>(func: T, delayLimit: number): (...args: Parameters<T>) => void {
+    let lastFunc: ReturnType<typeof setTimeout>;
+    let lastRan: number = 0;
+
+    return function (...args: Parameters<T>) {
+        const now = Date.now();
+
+        // If enough time has passed, run the function
+        if (now - lastRan >= delayLimit) {
+            func(...args);
+            lastRan = now;
+        } else {
+            // Otherwise, set a timeout to call the function after the limit period
+            if (lastFunc) clearTimeout(lastFunc);
+            lastFunc = setTimeout(() => {
+                func(...args);
+                lastRan = now;
+            }, delayLimit - (now - lastRan));
+        }
+    };
 }
