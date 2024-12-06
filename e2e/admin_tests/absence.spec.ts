@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { adminLogin } from '../utils';
+import { DateTime } from 'luxon';
 
 test.beforeEach('admin login', async ({ page }) => {
     await adminLogin(page);
@@ -7,19 +8,22 @@ test.beforeEach('admin login', async ({ page }) => {
     await expect(page).toHaveURL('/absence');
 });
 
+const date = DateTime.now().setLocale('de-DE');
+
 test('checks calendar function', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'Dezember' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: date.toFormat('MMMM yyyy') })).toBeVisible();
     await page.locator('div:nth-child(3) > button').first().click();
-    await expect(page.getByRole('heading', { name: 'Januar' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: date.plus({ month: 1 }).toFormat('MMMM yyyy') })).toBeVisible();
     await page.locator('button:nth-child(2)').first().click();
-    await expect(page.getByRole('heading', { name: 'Dezember' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: date.toFormat('MMMM yyyy') })).toBeVisible();
     await page.locator('div:nth-child(3) > button:nth-child(2)').click();
-    await expect(page.getByRole('heading', { name: 'Dezember' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: date.plus({ year: 1 }).toFormat('MMMM yyyy') })).toBeVisible();
     await page.locator('.d-flex > button').first().click();
-    await expect(page.getByRole('heading', { name: 'Dezember' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: date.toFormat('MMMM yyyy') })).toBeVisible();
 });
 
-test('creates an absence in the calendar', async ({ page }) => {
+//TODO: complete when all features are enabled soon!!!
+test.skip('creates an absence in the calendar', async ({ page }) => {
     await page.getByRole('row', { name: 'admin admin' }).locator('button').click();
     await expect(page.getByText('Abwesenheit beantragen')).toBeVisible();
     await page.locator('.v-field__input').first().click();

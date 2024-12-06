@@ -4,14 +4,15 @@ import { adminLogin } from '../utils';
 test.beforeEach('admin login', async ({ page }) => {
     await adminLogin(page);
     await expect(page).toHaveURL('/dashboard');
-});
-
-test('creates an organization', async ({ page }) => {
     await page
         .locator('div')
         .filter({ hasText: /^Organisationen$/ })
         .first()
         .click();
+    await expect(page).toHaveURL('/organization');
+});
+
+test('creates an organization', async ({ page }) => {
     await page.getByRole('row', { name: 'id owner_id name created_at' }).getByRole('button').click();
     await expect(page.getByText('Organisation erstellen')).toBeVisible();
     await page.getByLabel('Firmenname').fill('Grumpy Tests Ltd.');
