@@ -30,10 +30,7 @@ test('adds specialWorkingHoursFactors', async ({ page }) => {
     await expect(page.getByRole('cell', { name: 'Keine Daten vorhanden' })).toBeVisible();
     await page.getByRole('row', { name: 'Tag Faktor' }).getByRole('button').click();
     await expect(page.getByText('Besondere Arbeitszeitzuschläge')).toBeVisible();
-    await page
-        .locator('div:nth-child(3) > .v-form > .v-row > div > .v-input > .v-input__control > .v-field > .v-field__field > .v-field__input')
-        .first()
-        .click();
+    await page.getByTestId('swhfWeekday').first().click();
     await page.getByText('Montag').click();
     await expect(
         page
@@ -90,11 +87,7 @@ test('adds absence type', async ({ page }) => {
     await expect(page.getByText('Abwesenheitgrund erstellen')).toBeVisible();
     await page.getByLabel('Abwesenheitsgrund').fill('gelber Schein');
     await page.getByLabel('Abkürzung').fill('Freiheit');
-    await page
-        .locator(
-            'div:nth-child(3) > .v-form > .v-row > div:nth-child(3) > .v-input > .v-input__control > .v-field > .v-field__field > .v-field__input',
-        )
-        .click();
+    await page.getByTestId('absenceType').click();
     await page.getByRole('option', { name: 'Bildungsurlaub' }).click();
     await page.getByLabel('Muss genehmigt werden?').check();
     await page.getByRole('button', { name: 'Erstellen' }).click();

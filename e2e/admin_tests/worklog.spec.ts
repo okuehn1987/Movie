@@ -7,7 +7,8 @@ test.beforeEach('admin login', async ({ page }) => {
     await expect(page).toHaveURL('/workLog');
 });
 
-test('admin login', async ({ page }) => {
+//FIXME: needs seeder or something. too many nth childs and #inputs
+test('admin time correction', async ({ page }) => {
     await page
         .getByRole('row', { name: /admin admin Gehen .*/ })
         .getByRole('button')

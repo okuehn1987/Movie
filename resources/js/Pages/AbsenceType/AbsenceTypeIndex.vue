@@ -85,6 +85,7 @@ const absenceTypeForm = useForm({
                                         <v-col cols="12" md="6">
                                             <v-select
                                                 label="Typ"
+                                                data-testid="absenceType"
                                                 :items="DEFAULTS"
                                                 item-value="name"
                                                 item-title="name"
