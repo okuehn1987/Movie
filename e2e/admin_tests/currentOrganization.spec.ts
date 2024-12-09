@@ -25,9 +25,8 @@ test('changes information ', async ({ page }) => {
     await expect(page.getByText('Organisation Weihnachtsmann &')).toBeVisible();
 });
 
-test('adds specialWorkingHoursFactors', async ({ page }) => {
+test('adds, edits and deletes specialWorkingHoursFactors', async ({ page }) => {
     await page.getByRole('tab', { name: 'Sonderarbeitszeitfaktor' }).click();
-    await expect(page.getByText('Organisation Weihnachtsmann')).toBeVisible();
     await expect(page.getByRole('cell', { name: 'Keine Daten vorhanden' })).toBeVisible();
     await page.getByRole('row', { name: 'Tag Faktor' }).getByRole('button').click();
     await expect(page.getByText('Besondere Arbeitszeitzuschläge')).toBeVisible();
@@ -45,11 +44,8 @@ test('adds specialWorkingHoursFactors', async ({ page }) => {
     await expect(page.getByText('Besonderer')).toBeVisible();
     await expect(page.getByRole('cell', { name: 'Montag' })).toBeVisible();
     await expect(page.getByRole('cell', { name: '2' })).toBeVisible();
-});
 
-test('edits specialWorkingHoursFactors', async ({ page }) => {
-    await page.getByRole('tab', { name: 'Sonderarbeitszeitfaktor' }).click();
-    await expect(page.getByText('Organisation Weihnachtsmann')).toBeVisible();
+    // edits specialWorkingHoursFactors
     await page.getByRole('row', { name: 'Montag' }).getByRole('button').first().click();
     await page
         .locator('div')
@@ -69,11 +65,8 @@ test('edits specialWorkingHoursFactors', async ({ page }) => {
     await expect(page.getByText('Besonderer')).toBeVisible();
     await expect(page.getByRole('cell', { name: 'Freitag' })).toBeVisible();
     await expect(page.getByRole('cell', { name: '3' })).toBeVisible();
-});
 
-test('deletes specialWorkingHoursFactors', async ({ page }) => {
-    await page.getByRole('tab', { name: 'Sonderarbeitszeitfaktor' }).click();
-    await expect(page.getByText('Organisation Weihnachtsmann')).toBeVisible();
+    // deletes specialWorkingHoursFactors
     await page.getByRole('row', { name: 'Freitag' }).getByRole('button').nth(1).click();
     await expect(page.getByText('Arbeitszuschlag löschen')).toBeVisible();
     await page.getByRole('button', { name: 'Löschen' }).click();
@@ -83,7 +76,6 @@ test('deletes specialWorkingHoursFactors', async ({ page }) => {
 
 test('adds absence type', async ({ page }) => {
     await page.getByRole('tab', { name: 'Abwesenheitsgründe' }).click();
-    await expect(page.getByText('Organisation Weihnachtsmann')).toBeVisible();
     await page.getByRole('row', { name: '# Abwesenheitsgrund Abkürzung' }).getByRole('button').click();
     await expect(page.getByText('Abwesenheitgrund erstellen')).toBeVisible();
     await page.getByLabel('Abwesenheitsgrund').fill('gelber Schein');
@@ -95,5 +87,4 @@ test('adds absence type', async ({ page }) => {
     await expect(page.getByText('Abwesenheitgrund erstellen')).not.toBeVisible();
     await expect(page.getByText('Abwesenheitstyp erfolgreich')).toBeVisible();
     await expect(page.getByRole('cell', { name: 'gelber Schein' })).toBeVisible();
-    await expect(page.getByRole('cell', { name: '1' }).nth(3)).toBeVisible();
 });

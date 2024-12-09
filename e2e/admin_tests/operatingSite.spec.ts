@@ -31,11 +31,11 @@ test('create operating Site', async ({ page }) => {
 
 test('show and edit created operating site', async ({ page }) => {
     await page
-        .getByRole('row', { name: /.* Happys Wonderworld/ })
+        .getByRole('row', { name: /.* delete me ORG/ })
         .getByRole('link')
         .getByRole('button')
         .click();
-    await expect(page.getByText('Betriebsstätte Happys')).toBeVisible();
+    await expect(page.getByText('delete me ORG')).toBeVisible();
     await page
         .locator('div')
         .filter({ hasText: /^Schleswig-Holstein$/ })
@@ -45,13 +45,18 @@ test('show and edit created operating site', async ({ page }) => {
     await page.getByRole('button', { name: 'Aktualisieren' }).click();
     await expect(page.getByText('Betriebsstätte erfolgreich')).toBeVisible();
     await page.getByRole('banner').getByRole('button').first().click();
-    await page.getByRole('row', { name: '20 Happys Wonderworld' }).getByRole('link').getByRole('button').click();
+    await page
+        .getByRole('row', { name: /.*delete me ORG/ })
+        .getByRole('link')
+        .getByRole('button')
+        .click();
     await expect(page.getByText('Saarland')).toBeVisible();
 });
 
-test('add working hours to operating site', async ({ page }) => {
+test('add and delete working hours to operating site', async ({ page }) => {
+    //add working hours
     await page
-        .getByRole('row', { name: /.* Happys Wonderworld/ })
+        .getByRole('row', { name: /.* delete me ORG/ })
         .getByRole('link')
         .getByRole('button')
         .click();
@@ -62,14 +67,8 @@ test('add working hours to operating site', async ({ page }) => {
     await page.getByRole('button', { name: 'Hinzufügen' }).click();
     await expect(page.getByText('Betriebszeit erfolgreich')).toBeVisible();
     await expect(page.getByRole('main').getByRole('listbox').getByText('Montag')).toBeVisible();
-});
 
-test('delete working hours from operating site', async ({ page }) => {
-    await page
-        .getByRole('row', { name: /.* Happys Wonderworld/ })
-        .getByRole('link')
-        .getByRole('button')
-        .click();
+    //delete working hours
     await page.getByRole('tab', { name: 'Betriebszeiten' }).click();
     await expect(page.getByText('08:00 Uhr - 17:00 Uhr')).toBeVisible();
     await page.getByRole('main').getByRole('link').getByRole('button').click();
@@ -77,14 +76,14 @@ test('delete working hours from operating site', async ({ page }) => {
     await expect(page.getByRole('main').getByRole('listbox').getByText('Montag')).not.toBeVisible();
 });
 
-test('delete previously created operating Site', async ({ page }) => {
+test('delete operating Site', async ({ page }) => {
     await page
-        .getByRole('row', { name: /.* Happys Wonderworld/ })
+        .getByRole('row', { name: /.* delete me ORG/ })
         .getByRole('button')
         .nth(1)
         .click();
     await expect(page.getByText('Betriebsstätte löschen')).toBeVisible();
     await page.getByRole('button', { name: 'Löschen' }).click();
     await expect(page.getByText('Betriebsstätte erfolgreich')).toBeVisible();
-    await expect(page.getByRole('cell', { name: 'Happys Wonderworld' })).not.toBeVisible();
+    await expect(page.getByRole('cell', { name: 'delete me ORG' })).not.toBeVisible();
 });
