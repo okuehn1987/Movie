@@ -15,6 +15,8 @@ class WorkLogPatch extends Model
     protected $guarded = [];
     protected $casts = ['is_home_office' => 'boolean'];
 
+    protected $casts = ['is_home_office' => 'boolean'];
+
     public function workLog()
     {
         return $this->belongsTo(WorkLog::class);

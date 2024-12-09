@@ -14,6 +14,11 @@ class Organization extends Model
     protected $guarded = [];
     protected $casts = ['night_surcharges' => 'boolean', 'vacation_limitation_period' => 'boolean' ];
 
+    protected $casts = [
+        'night_surcharges' => 'boolean',
+        'vacation_limitation_period' => 'boolean'
+    ];
+
     public function operatingSites()
     {
         return $this->hasMany(OperatingSite::class);
