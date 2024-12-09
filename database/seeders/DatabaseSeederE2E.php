@@ -18,9 +18,11 @@ use App\Models\UserWorkingHour;
 use App\Models\UserWorkingWeek;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
+use Database\Factories\OperatingSiteFactory;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Holidays\Countries\Country;
 
 class DatabaseSeederE2E extends Seeder
 {
@@ -35,8 +37,6 @@ class DatabaseSeederE2E extends Seeder
             ->has(WorkLog::factory(1, ['end' => null, 'start' => now()->subDay()]))
             ->has(UserWorkingHour::factory(1))
             ->has(UserWorkingWeek::factory(1))
-            // ->has(Absence:: factory (1))
-            // ->has(AbsenceType:: factory(1)['Urlaub'])
             ;
 
         $org = Organization::factory()
@@ -74,20 +74,7 @@ class DatabaseSeederE2E extends Seeder
         
 
 
-        $admin = User::factory([
-            'operating_site_id' => 1,
-            'password' => Hash::make('admin'),
-            'email' => 'admin@admin.com',
-            'first_name' => 'admin',
-            'last_name' => 'admin',
-            'role' => 'super-admin',
-            'organization_id' => 1,
-        ])->has(WorkLog::factory(3))
-            ->has(WorkLog::factory(1, ['end' => null, 'start' => now()->subHour()]))
-            ->has(UserWorkingHour::factory(1))
-            ->has(TimeAccount::factory(1, ['time_account_setting_id' => 1]))
-            ->has(UserWorkingWeek::factory(1))
-            ->create();
+       
 
         $testUser = User::factory([
             'operating_site_id' => 1,
@@ -119,10 +106,48 @@ class DatabaseSeederE2E extends Seeder
             'status' => 'created',  
         ])->create();
 
+      
+
+
+       
+
+        $admin = User::factory([
+            'operating_site_id' => 1,
+            'password' => Hash::make('admin'),
+            'email' => 'admin@admin.com',
+            'first_name' => 'admin',
+            'last_name' => 'admin',
+            'role' => 'super-admin',
+            'organization_id' => 1,
+            'is_supervisor' => 1,
+        ])->has(WorkLog::factory(3))
+            ->has(WorkLog::factory(1, ['end' => null, 'start' => now()->subHour()]))
+            ->has(UserWorkingHour::factory(1))
+            ->has(TimeAccount::factory(1, ['time_account_setting_id' => 1]))
+            ->has(UserWorkingWeek::factory(1))
+            ->create();
+
+    
         Organization::find(1)->update(['owner_id' => $admin->id]);
 
         $admin->isSubstitutedBy()->attach(User::find(1));
         $admin->isSubstitutionFor()->attach(User::find(6));
+
+        $testOperatingSite = OperatingSite::factory([
+            'organization_id'=>1,
+            'name'=> 'delete me ORG',
+            'email'=> 'delete@me.de',
+            'phone_number' =>666666666,
+            'street' => 'lösch mich',
+            'house_number' => 666,
+            'country'=> 'DE',
+            'city' => 'Testcity',
+            'zip' => 12345,
+            'federal_state' => 'SH',
+        
+            
+
+        ])->create();
 
         foreach (User::with(['organization', 'organization.groups', 'timeAccounts', 'operatingSite'])->get() as $user) {
             $group = $user->organization->groups->random();
@@ -155,12 +180,10 @@ class DatabaseSeederE2E extends Seeder
                 "operating_site_id" => $user->operating_site_id,
             ]);
 
-        //     Organization::create([
-        //         "name" => 'Einsteins Testing Ltd.',
-        //         "id" => $user->id,
-                
-                
-        //     ]);
+           
         }
+     
+
+        
     }
 }
