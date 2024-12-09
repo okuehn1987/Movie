@@ -10,7 +10,12 @@ class OrganizationPolicy
 {
     use _AllowSuperAdmin;
 
-    public function viewShow(User $user, Organization $organization): bool
+    public function viewIndex(User $user): bool
+    {
+        return false;
+    }
+
+    public function viewShow(User $user): bool
     {
         return $user->hasPermissionOrDelegation(null, 'organization_permission', 'read');
     }

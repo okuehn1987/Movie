@@ -26,7 +26,7 @@ class DashboardController extends Controller
             $patches = WorkLogPatch::inOrganization()->where('status', 'created')
                 ->with(['workLog:id,start,end,is_home_office', 'user:id,first_name,last_name'])
                 ->get(['id', 'start', 'end', 'is_home_office', 'user_id', 'work_log_id'])
-                ->filter(fn($patch) => $user->can('update', $patch));
+                ->filter(fn($patch) => $user->can('update', $patch->user));
         }
 
         $absences = null;
