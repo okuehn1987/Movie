@@ -52,7 +52,7 @@ class AbsenceController extends Controller
             ]);
 
         return Inertia::render('Absence/AbsenceIndex', [
-            'users' => $users,
+            'users' => [...$users],
             'absences' => fn() => $absences,
             'absence_types' => AbsenceType::inOrganization()->get(['id', 'name']),
         ]);

@@ -82,7 +82,6 @@ class DatabaseSeederE2E extends Seeder
             'email' => 'user@user.com',
             'first_name' => 'user',
             'last_name' => 'user',
-            'role' => 'super-admin',
             'organization_id' => 1,
         ])
         ->has(UserWorkingHour::factory(1))

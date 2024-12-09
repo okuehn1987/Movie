@@ -20,9 +20,10 @@ class WorkLogPolicy
 
     public function viewShow(User $authUser, User $user): bool
     {
+        $user = User::find($user->id);
         return
             $authUser->id === $user->id ||
-            $user->supervisor_id === $authUser->id ||
+            $authUser->id === $user->supervisor_id ||
             $user->hasPermissionOrDelegation($user, 'workLog_permission', 'read');
     }
 
