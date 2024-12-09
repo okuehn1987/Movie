@@ -15,7 +15,7 @@ class OrganizationPolicy
         return false;
     }
 
-    public function viewShow(User $user, Organization $organization): bool
+    public function viewShow(User $user): bool
     {
         return
             $user->hasPermissionOrDelegation(null, 'organization_permission', 'read');
