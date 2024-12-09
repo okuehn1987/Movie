@@ -102,7 +102,7 @@ function submit() {
                                                     </v-col>
                                                     <v-col cols="12" sm="6">
                                                         <v-select
-                                                            data-testid="organizationProvince"
+                                                            data-testid="federalState"
                                                             label="Bundesland"
                                                             :items="getStates(organizationForm.organization_country, countries)"
                                                             :disabled="!organizationForm.organization_country"
