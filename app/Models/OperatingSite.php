@@ -14,6 +14,8 @@ class OperatingSite extends Model
 
     protected $guarded = [];
 
+    protected $casts = ['is_headquarter' => 'boolean'];
+
     public function operatingTimes()
     {
         return $this->hasMany(OperatingTime::class);

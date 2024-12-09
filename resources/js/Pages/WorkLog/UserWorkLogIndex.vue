@@ -83,9 +83,11 @@ function editWorkLog(id: WorkLog['id']) {
     }
     let start = workLog.start;
     let end = workLog.end;
+    let isHomeOffice = workLog.is_home_office;
     if (lastPatch && lastPatch.status == 'accepted') {
         start = lastPatch.start;
         end = lastPatch.end;
+        isHomeOffice = lastPatch.is_home_office;
     }
 
     workLogForm.id = id;
@@ -93,7 +95,7 @@ function editWorkLog(id: WorkLog['id']) {
     workLogForm.end = end ? new Date(end) : new Date();
     workLogForm.start_time = DateTime.fromSQL(start).toFormat('HH:mm');
     workLogForm.end_time = DateTime.fromSQL(end || DateTime.now().toSQL()).toFormat('HH:mm');
-    workLogForm.is_home_office = workLog.is_home_office;
+    workLogForm.is_home_office = isHomeOffice;
     showDialog.value = true;
 }
 

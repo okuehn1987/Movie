@@ -80,7 +80,7 @@ function submitOperatingTime() {
                             type="time"
                             v-model="operatingTimeForm.start"
                             :error-messages="operatingTimeForm.errors.start"
-                            label="Beginn Arbeitstages"
+                            label="Beginn des Arbeitstages"
                         ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="4">
@@ -88,7 +88,7 @@ function submitOperatingTime() {
                             type="time"
                             v-model="operatingTimeForm.end"
                             :error-messages="operatingTimeForm.errors.end"
-                            label="Beginn Arbeitstages"
+                            label="Ende des Arbeitstages"
                         ></v-text-field>
                     </v-col>
                     <v-col cols="12" class="text-end">

@@ -28,9 +28,6 @@ function submit() {
         route('operatingSite.update', {
             operatingSite: props.operatingSite.id,
         }),
-        {
-            onSuccess: () => operatingSiteForm.reset(),
-        },
     );
 }
 </script>
