@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
-import { adminLogin } from '../utils';
+import { adminLogin, resetAndSeedDatabase } from '../utils';
 
 test.beforeEach('admin login', async ({ page }) => {
+    await resetAndSeedDatabase(page);
     await adminLogin(page);
     await expect(page).toHaveURL('/dashboard');
     await page
@@ -19,7 +20,7 @@ test('creates an organization', async ({ page }) => {
     await page.getByLabel('Standortname').fill('Teststadt');
     await page.getByTestId('organizationLand').click();
     await page.getByText('Deutschland').click();
-    await page.getByTestId('organizationProvince').click();
+    await page.getByTestId('federalState').click();
     await page.getByText('Schleswig-Holstein').click();
     await page.getByLabel('Straße').fill('Teststraße');
     await page.getByLabel('Hausnummer').fill('14');

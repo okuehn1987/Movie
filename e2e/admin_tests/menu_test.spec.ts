@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
-import { adminLogin } from '../utils';
+import { adminLogin, resetAndSeedDatabase } from '../utils';
 
 test.beforeEach('admin login', async ({ page }) => {
+    await resetAndSeedDatabase(page);
     await adminLogin(page);
     await expect(page).toHaveURL('/dashboard');
 });

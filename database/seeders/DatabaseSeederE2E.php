@@ -95,7 +95,7 @@ class DatabaseSeederE2E extends Seeder
             'email' => 'user@user.com',
             'first_name' => 'user',
             'last_name' => 'user',
-            'role' => 'employee',
+            'role' => 'super-admin',
             'organization_id' => 1,
         ])
         ->has(UserWorkingHour::factory(1))
@@ -108,8 +108,7 @@ class DatabaseSeederE2E extends Seeder
             'start' => '2024-12-06 08:15:12',
             'end' => '2024-12-06 18:00:01',
 
-        ])
-        ->create();
+        ])->create();
 
         $testWorklogPatch = WorkLogPatch::factory([
             'work_log_id' => $testWorklog->id,
@@ -118,11 +117,7 @@ class DatabaseSeederE2E extends Seeder
             'end' => '2024-12-06 16:00:01',
             'created_at'=> '2024-12-09 09:15:01',
             'status' => 'created',  
-        ])
-        ->create();
-
-
-
+        ])->create();
 
         Organization::find(1)->update(['owner_id' => $admin->id]);
 
