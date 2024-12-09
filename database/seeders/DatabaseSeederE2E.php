@@ -71,14 +71,9 @@ class DatabaseSeederE2E extends Seeder
             ])->create();
         }
 
-        
-
-
-       
-
         $testUser = User::factory([
             'operating_site_id' => 1,
-            'password' => Hash::make('test'),
+            'password' => Hash::make('user'),
             'email' => 'user@user.com',
             'first_name' => 'user',
             'last_name' => 'user',
