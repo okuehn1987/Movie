@@ -13,7 +13,6 @@ class OperatingSite extends Model
     use HasFactory, SoftDeletes, ScopeInOrganization;
 
     protected $guarded = [];
-    protected $casts = ['is_headquarter' => 'boolean'];
 
     protected $casts = ['is_headquarter' => 'boolean'];
 

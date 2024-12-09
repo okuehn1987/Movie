@@ -12,7 +12,6 @@ class Organization extends Model
     use HasFactory, SoftDeletes, ScopeInOrganization;
 
     protected $guarded = [];
-    protected $casts = ['night_surcharges' => 'boolean', 'vacation_limitation_period' => 'boolean' ];
 
     protected $casts = [
         'night_surcharges' => 'boolean',
