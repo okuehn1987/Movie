@@ -12,32 +12,26 @@ class OperatingSitePolicy
 
     public function viewIndex(User $user): bool
     {
-        return
-            $user->hasPermissionOrDelegation(null, 'operatingSite_permission', 'read');
+        return true;
     }
 
     public function viewShow(User $user, OperatingSite $operatingSite): bool
     {
-        return
-            $user->operatingSite_id === $operatingSite->id ||
-            $user->hasPermissionOrDelegation(null, 'operatingSite_permission', 'read');
+        return true;
     }
 
     public function create(User $user): bool
     {
-        return
-            $user->hasPermissionOrDelegation(null, 'operatingSite_permission', 'write');
+        return $user->hasPermissionOrDelegation(null, 'operatingSite_permission', 'write');
     }
 
     public function update(User $user, OperatingSite $operatingSite): bool
     {
-        return
-            $user->hasPermissionOrDelegation(null, 'operatingSite_permission', 'write');
+        return $user->hasPermissionOrDelegation(null, 'operatingSite_permission', 'write');
     }
 
     public function delete(User $user, OperatingSite $operatingSite): bool
     {
-        return
-            $user->hasPermissionOrDelegation(null, 'operatingSite_permission', 'write');
+        return $user->hasPermissionOrDelegation(null, 'operatingSite_permission', 'write');
     }
 }

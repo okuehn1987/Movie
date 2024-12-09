@@ -25,7 +25,7 @@ class WorkLogPatchPolicy
     public function delete(User $authUser, User $user): bool
     {
         return
-            $user->supervisor_id === $authUser->id ||
+            $authUser->id === $user->id ||
             $authUser->hasPermissionOrDelegation($user, 'workLogPatch_permission', 'write');
     }
 }

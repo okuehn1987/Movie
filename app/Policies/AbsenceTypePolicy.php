@@ -26,23 +26,16 @@ class AbsenceTypePolicy
 
     public function create(User $user): bool
     {
-        return
-            $user->id === $user->id ||
-            $user->id === $user->supervisor_id ||
-            $user->hasPermissionOrDelegation(null, 'absenceType_permission', 'write');
+        return $user->hasPermissionOrDelegation(null, 'absenceType_permission', 'write');
     }
 
-    public function update(User $user, AbsenceType $absenceType): bool
+    public function update(User $user): bool
     {
-        return
-            $user->id === $user->supervisor_id ||
-            $user->hasPermissionOrDelegation($absenceType->user, 'absenceType_permission', 'write');
+        return $user->hasPermissionOrDelegation(null, 'absenceType_permission', 'write');
     }
 
-    public function delete(User $user, AbsenceType $absenceType): bool
+    public function delete(User $user): bool
     {
-        return
-            $user->id === $user->supervisor_id ||
-            $user->hasPermissionOrDelegation($absenceType->user, 'absenceType_permission', 'write');
+        return $user->hasPermissionOrDelegation(null, 'absenceType_permission', 'write');
     }
 }

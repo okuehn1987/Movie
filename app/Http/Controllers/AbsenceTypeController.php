@@ -32,7 +32,7 @@ class AbsenceTypeController extends Controller
 
     public function update(Request $request, AbsenceType $absenceType)
     {
-        Gate::authorize('update', $absenceType);
+        Gate::authorize('update', AbsenceType::class);
 
         $validated = $request->validate([
             "name" => 'required|string',
@@ -48,7 +48,7 @@ class AbsenceTypeController extends Controller
 
     public function destroy(Request $request, AbsenceType $absenceType)
     {
-        Gate::authorize('delete', $absenceType);
+        Gate::authorize('update', AbsenceType::class);
 
         $absenceType->delete();
 

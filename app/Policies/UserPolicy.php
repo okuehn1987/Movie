@@ -11,28 +11,25 @@ class UserPolicy
 
     public function viewIndex(User $authUser): bool
     {
-        return
-            $authUser->hasPermissionOrDelegation(null, 'user_permission', 'read');
+        return $authUser->hasPermissionOrDelegation(null, 'user_permission', 'read');
     }
 
     public function viewShow(User $authUser, User $user): bool
     {
         return
             $authUser->id === $user->id ||
+            $authUser->id === $user->supervisor_id ||
             $authUser->hasPermissionOrDelegation($user, 'user_permission', 'read');
     }
 
     public function create(User $authUser): bool
     {
-        return
-            $authUser->hasPermissionOrDelegation(null, 'user_permission', 'write');
+        return $authUser->hasPermissionOrDelegation(null, 'user_permission', 'write');
     }
 
     public function update(User $authUser, User $user): bool
     {
-        return
-            $authUser->id === $user->id ||
-            $authUser->hasPermissionOrDelegation($user, 'user_permission', 'write');
+        return $authUser->hasPermissionOrDelegation($user, 'user_permission', 'write');
     }
 
     public function delete(User $authUser, User $user): bool
