@@ -13,7 +13,7 @@ class WorkLogPatchController extends Controller
 {
     public function store(Request $request)
     {
-        Gate::authorize('create', WorkLogPatch::class);
+        Gate::authorize('create', [WorkLogPatch::class, WorkLog::find($request['workLog'])->user]);
 
         $validated = $request->validate([
             'start' => 'required|date',
@@ -42,7 +42,7 @@ class WorkLogPatchController extends Controller
 
     public function update(Request $request, WorkLogPatch $workLogPatch)
     {
-        Gate::authorize('update', $workLogPatch->user);
+        Gate::authorize('update', [WorkLogPatch::class, $workLogPatch->user]);
 
         $validated = $request->validate([
             'accepted' => 'required|boolean'
@@ -59,7 +59,7 @@ class WorkLogPatchController extends Controller
 
     public function destroy(WorkLogPatch $workLogPatch)
     {
-        Gate::authorize('delete', $workLogPatch->user);
+        Gate::authorize('delete', [WorkLogPatch::class, $workLogPatch->user]);
 
         $workLogPatch->delete();
 
