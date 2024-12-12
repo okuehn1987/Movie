@@ -10,9 +10,9 @@ class WorkLogPatchPolicy
 {
     use _AllowSuperAdminAndOrganizationOwner;
 
-    public function create(User $user): bool
+    public function create(User $authUser, User $user): bool
     {
-        return true;
+        return $authUser->id == $user->id;
     }
 
     public function update(User $authUser, User $user): bool
