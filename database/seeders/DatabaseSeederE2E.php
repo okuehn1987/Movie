@@ -138,10 +138,16 @@ class DatabaseSeederE2E extends Seeder
             'city' => 'Testcity',
             'zip' => 12345,
             'federal_state' => 'SH',
-        
-            
-
-        ])->create();
+        ])->has(OperatingTime::factory(7, ['start' => '09:00:00', 'end' => '17:00:00'])
+        ->sequence(fn(Sequence $sequence) => ['type' => [
+            'monday',
+            'tuesday',
+            'wednesday',
+            'thursday',
+            'friday',
+            'saturday',
+            'sunday',
+        ][$sequence->index % 7]]))->create();
 
         foreach (User::with(['organization', 'organization.groups', 'timeAccounts', 'operatingSite'])->get() as $user) {
             $group = $user->organization->groups->random();

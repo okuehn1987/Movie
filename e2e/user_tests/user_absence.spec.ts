@@ -24,6 +24,7 @@ test('checks calendar function', async ({ page }) => {
     await expect(page.getByRole('heading', { name: date.toFormat('MMMM yyyy') })).toBeVisible();
 });
 
+//TODO: absences can be stacked, also in database, no edit nor delete option
 test('tests absence entry button', async ({ page }) => {
     await page.getByRole('row', { name: 'user user' }).locator('button').click();
     await expect(page.getByText('Abwesenheit beantragen')).toBeVisible();
