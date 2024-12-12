@@ -32,6 +32,7 @@ class AbsencePolicy
     public function update(User $user, Absence $absence): bool
     {
         return
+            $user->id == $absence->user->id ||
             $absence->user->supervisor_id === $user->id ||
             $user->hasPermissionOrDelegation($absence->user, 'absence_permission', 'write');
     }

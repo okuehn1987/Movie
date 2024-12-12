@@ -17,8 +17,7 @@ class OrganizationPolicy
 
     public function viewShow(User $user): bool
     {
-        return
-            $user->hasPermissionOrDelegation(null, 'organization_permission', 'read');
+        return $user->hasPermissionOrDelegation(null, 'organization_permission', 'read');
     }
 
     public function create(User $user): bool
@@ -28,8 +27,7 @@ class OrganizationPolicy
 
     public function update(User $user, Organization $organization): bool
     {
-        return
-            $user->hasPermissionOrDelegation(null, 'organization_permission', 'write');
+        return $user->hasPermissionOrDelegation(null, 'organization_permission', 'write');
     }
 
     public function delete(User $user, Organization $organization): bool

@@ -12,31 +12,26 @@ class GroupPolicy
 
     public function viewIndex(User $user): bool
     {
-        return
-            $user->hasPermissionOrDelegation(null, 'group_permission', 'read');
+        return true;
     }
 
     public function viewShow(User $user, Group $group): bool
     {
-        return
-            $user->hasPermissionOrDelegation(null, 'group_permission', 'read');
+        return true;
     }
 
     public function create(User $user): bool
     {
-        return
-            $user->hasPermissionOrDelegation(null, 'group_permission', 'write');
+        return $user->hasPermissionOrDelegation(null, 'group_permission', 'write');
     }
 
     public function update(User $user, Group $group): bool
     {
-        return
-            $user->hasPermissionOrDelegation(null, 'group_permission', 'write');
+        return $user->hasPermissionOrDelegation(null, 'group_permission', 'write');
     }
 
     public function delete(User $user, Group $group): bool
     {
-        return
-            $user->hasPermissionOrDelegation(null, 'group_permission', 'write');
+        return $user->hasPermissionOrDelegation(null, 'group_permission', 'write');
     }
 }

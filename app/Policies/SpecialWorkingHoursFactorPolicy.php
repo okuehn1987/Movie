@@ -12,25 +12,21 @@ class SpecialWorkingHoursFactorPolicy
 
     public function viewIndex(User $user): bool
     {
-        return
-            $user->hasPermissionOrDelegation(null, 'specialWorkingHoursFactor_permission', 'read');
+        return $user->hasPermissionOrDelegation(null, 'specialWorkingHoursFactor_permission', 'read');
     }
 
     public function create(User $user): bool
     {
-        return
-            $user->hasPermissionOrDelegation(null, 'specialWorkingHoursFactor_permission', 'write');
+        return $user->hasPermissionOrDelegation(null, 'specialWorkingHoursFactor_permission', 'write');
     }
 
     public function update(User $user): bool
     {
-        return
-            $user->hasPermissionOrDelegation(null, 'specialWorkingHoursFactor_permission', 'write');
+        return $user->hasPermissionOrDelegation(null, 'specialWorkingHoursFactor_permission', 'write');
     }
 
     public function delete(User $user): bool
     {
-        return
-            $user->hasPermissionOrDelegation(null, 'specialWorkingHoursFactor_permission', 'write');
+        return $user->hasPermissionOrDelegation(null, 'specialWorkingHoursFactor_permission', 'write');
     }
 }
