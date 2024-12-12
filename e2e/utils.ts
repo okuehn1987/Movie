@@ -9,8 +9,6 @@ export async function adminLogin(page: Page) {
     await expect(page).toHaveURL('/dashboard');
 }
 
-// export async function userLogin(page: Page) {}
-
 export async function resetAndSeedDatabase(page: Page) {
     await refreshDatabase({ page, parameters: { '--seeder': 'DatabaseSeederE2E' } });
 }
