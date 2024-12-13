@@ -69,7 +69,7 @@ const groupForm = useForm({
                                                 <v-select
                                                     v-model="groupForm.users"
                                                     :error-messages="groupForm.errors.users"
-                                                    :items="users.map(user => ({ id: user.id, title: user.name }))"
+                                                    :items="users.map(user => ({ value: user.id, title: user.name }))"
                                                     label="Wähle Mitarbeiter aus, die zur Abteilung gehören"
                                                     multiple
                                                 ></v-select>
