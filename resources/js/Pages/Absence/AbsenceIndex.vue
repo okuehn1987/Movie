@@ -14,10 +14,8 @@ type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'> 
 
 const props = defineProps<{
     users: UserProp[];
-    absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id' | 'user_id'> & {
-        absence_type?: Pick<AbsenceType, 'id' | 'abbreviation'>;
-    })[];
-    absence_types: Pick<AbsenceType, 'id' | 'name'>[];
+    absences: Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id' | 'user_id'>[];
+    absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
 }>();
 
 const page = usePage();
@@ -186,6 +184,7 @@ const loading = usePageIsLoading();
                                     can('absence', 'create', item) &&
                                         createAbsenceModal(item.id, date.startOf('month').plus({ day: +(header.key ?? 0) - 1 }))
                                 "
+                                :absenceTypes="absence_types"
                                 :user="item"
                                 :date="date.startOf('month').plus({ day: +(header.key ?? 0) - 1 })"
                                 :absences="absences.filter(a => a.user_id === item.id)"

@@ -17,7 +17,8 @@ class Absence extends Model
 
     public function toArray()
     {
-        if (true) $this->makeVisible(['absence_type_id', 'absenceType']); //FIXME: use policies 
+        $user = User::find(Auth::id());
+        if ($user->can('viewShow', [AbsenceType::class, $this->user])) $this->makeVisible(['absence_type_id', 'absenceType']);
         return parent::toArray();
     }
 
