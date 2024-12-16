@@ -22,8 +22,6 @@ import { router } from '@inertiajs/vue3';
                 ...(['organization', 'operatingSite', 'group', 'user', 'timeAccountSetting'].some(m => can(m, 'viewIndex')) ||
                 can('organization', 'viewShow')
                     ? [
-                          { type: 'divider' },
-                          { type: 'subheader', title: 'Admin' },
                           can('organization', 'viewShow') && {
                               title: 'Organisation',
                               subtitle: 'test',
