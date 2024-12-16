@@ -120,12 +120,11 @@ if (props.user) {
         if (props.user.userWorkingWeek[weekday]) userForm.userWorkingWeek.push(weekday);
     }
     userForm.userWorkingWeekSince = new Date(props.user.userWorkingWeek.active_since);
-
+    console.log(props.user.group_user);
     userForm.organizationUser = props.user.organization_user;
     userForm.groupUser = props.user.group_user;
     userForm.operatingSiteUser = props.user.operating_site_user;
 }
-
 function submit() {
     const form = userForm.transform(data => ({
         ...data,
@@ -184,7 +183,6 @@ const steps = ref([
         name: 'Berechtigungen',
         fields: {
             operating_site_id: [() => !!userForm.operating_site_id],
-            group_id: [() => !!userForm.group_id],
         },
     },
 ] as const);
@@ -215,6 +213,7 @@ const steps = ref([
                                     <v-text-field
                                         v-model="userForm.first_name"
                                         label="Vorname"
+                                        required
                                         :error-messages="userForm.errors.first_name"
                                         :rules="steps[0].fields.first_name"
                                     ></v-text-field>
@@ -223,6 +222,7 @@ const steps = ref([
                                     <v-text-field
                                         v-model="userForm.last_name"
                                         label="Nachname"
+                                        required
                                         :error-messages="userForm.errors.last_name"
                                         :rules="steps[0].fields.last_name"
                                     ></v-text-field>
@@ -231,6 +231,7 @@ const steps = ref([
                                     <v-text-field
                                         v-model="userForm.email"
                                         label="Email"
+                                        required
                                         :error-messages="userForm.errors.email"
                                         :rules="steps[0].fields.email"
                                     ></v-text-field>
@@ -239,6 +240,7 @@ const steps = ref([
                                     <v-text-field
                                         v-model="userForm.password"
                                         label="Passwort"
+                                        required
                                         :error-messages="userForm.errors.password"
                                         :rules="steps[0].fields.password"
                                     ></v-text-field>
@@ -260,6 +262,7 @@ const steps = ref([
                                     <v-text-field
                                         v-model="userForm.userWorkingHours"
                                         label="Trage die wöchentliche Arbeitszeit des Mitarbeiters ein"
+                                        required
                                         :error-messages="userForm.errors.userWorkingHours"
                                         :rules="steps[0].fields.userWorkingHours"
                                     ></v-text-field>
@@ -269,6 +272,7 @@ const steps = ref([
                                         prepend-icon=""
                                         v-model="userForm.userWorkingHoursSince"
                                         label="seit"
+                                        required
                                         :error-messages="userForm.errors.userWorkingHoursSince"
                                         :rules="steps[0].fields.userWorkingHoursSince"
                                     ></v-date-input>
@@ -284,6 +288,7 @@ const steps = ref([
                                             }))
                                         "
                                         label="Wähle die Arbeitstage des Mitarbeiters aus"
+                                        required
                                         :error-messages="userForm.errors.userWorkingWeek"
                                         :rules="steps[0].fields.userWorkingWeek"
                                     />
@@ -293,6 +298,7 @@ const steps = ref([
                                         prepend-icon=""
                                         v-model="userForm.userWorkingWeekSince"
                                         label="seit"
+                                        required
                                         :error-messages="userForm.errors.userWorkingWeekSince"
                                         :rules="steps[0].fields.userWorkingWeekSince"
                                     ></v-date-input>
@@ -307,6 +313,7 @@ const steps = ref([
                                     <v-text-field
                                         v-model="userForm.street"
                                         label="Straße"
+                                        required
                                         :error-messages="userForm.errors.street"
                                         :rules="steps[1].fields.street"
                                     ></v-text-field>
@@ -315,6 +322,7 @@ const steps = ref([
                                     <v-text-field
                                         v-model="userForm.house_number"
                                         label="Hausnummer"
+                                        required
                                         :error-messages="userForm.errors.house_number"
                                         :rules="steps[1].fields.house_number"
                                     ></v-text-field>
@@ -323,6 +331,7 @@ const steps = ref([
                                     <v-text-field
                                         v-model="userForm.zip"
                                         label="Postleitzahl"
+                                        required
                                         :error-messages="userForm.errors.zip"
                                         :rules="steps[1].fields.zip"
                                     ></v-text-field>
@@ -331,6 +340,7 @@ const steps = ref([
                                     <v-text-field
                                         v-model="userForm.city"
                                         label="Ort"
+                                        required
                                         :error-messages="userForm.errors.city"
                                         :rules="steps[1].fields.city"
                                     ></v-text-field>
@@ -394,10 +404,10 @@ const steps = ref([
                                         :items="groups.map(g => ({ title: g.name, value: g.id }))"
                                         label="Wähle eine Abteilung aus, zu die der Mitarbeiter gehören soll."
                                         :error-messages="userForm.errors.group_id"
-                                        :rules="steps[2].fields.group_id"
                                     ></v-select>
                                 </v-col>
                                 <PermissionSelector
+                                    v-if="user?.group_id"
                                     v-model="userForm.groupUser"
                                     objKey="groupUser"
                                     :permissions

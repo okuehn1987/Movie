@@ -235,7 +235,7 @@ class UserController extends Controller
             ...$validated['organizationUser']
         ]);
 
-        if (array_key_exists('groupUser', $validated)) {
+        if (!is_null($user->group_id)) {
             GroupUser::create([
                 "user_id" => $user->id,
                 "group_id" => $user->group_id,
