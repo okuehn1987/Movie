@@ -53,7 +53,7 @@ const userForm = useForm({
     country: '' as Country,
     federal_state: '',
     phone_number: '',
-    staff_number: 0 as null | number,
+    staff_number: null as null | string,
     password: '',
     group_id: null as null | Group['id'],
     operating_site_id: null as null | OperatingSite['id'],
@@ -247,9 +247,15 @@ const steps = ref([
                                         type="date"
                                         v-model="userForm.date_of_birth"
                                         label="Geburtsdatum"
-                                        required
                                         :error-messages="userForm.errors.date_of_birth"
                                         :rules="steps[0].fields.date_of_birth"
+                                    ></v-text-field>
+                                </v-col>
+                                <v-col cols="12" md="6">
+                                    <v-text-field
+                                        v-model="userForm.staff_number"
+                                        label="Personalnummer"
+                                        :error-messages="userForm.errors.staff_number"
                                     ></v-text-field>
                                 </v-col>
                                 <v-col cols="12">
@@ -274,6 +280,7 @@ const steps = ref([
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-select
+                                        chips
                                         v-model="userForm.userWorkingWeek"
                                         multiple
                                         :items="
