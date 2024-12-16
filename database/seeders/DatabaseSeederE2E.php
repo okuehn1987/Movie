@@ -36,8 +36,7 @@ class DatabaseSeederE2E extends Seeder
             ->has(WorkLog::factory(3))
             ->has(WorkLog::factory(1, ['end' => null, 'start' => now()->subDay()]))
             ->has(UserWorkingHour::factory(1))
-            ->has(UserWorkingWeek::factory(1))
-            ;
+            ->has(UserWorkingWeek::factory(1));
 
         $org = Organization::factory()
             ->has(TimeAccountSetting::factory(1))
@@ -79,10 +78,10 @@ class DatabaseSeederE2E extends Seeder
             'last_name' => 'user',
             'organization_id' => 1,
         ])
-        ->has(UserWorkingHour::factory(1))
-        ->has(TimeAccount::factory(1, ['time_account_setting_id' => 1]))
-        ->has(UserWorkingWeek::factory(1))
-        ->create();
+            ->has(UserWorkingHour::factory(1))
+            ->has(TimeAccount::factory(1, ['time_account_setting_id' => 1]))
+            ->has(UserWorkingWeek::factory(1))
+            ->create();
 
         $testWorklog = WorkLog::factory([
             'user_id' => $testUser->id,
@@ -96,14 +95,14 @@ class DatabaseSeederE2E extends Seeder
             'user_id' => $testUser->id,
             'start' => '2024-12-06 08:00:12',
             'end' => '2024-12-06 16:00:01',
-            'created_at'=> '2024-12-09 09:15:01',
-            'status' => 'created',  
+            'created_at' => '2024-12-09 09:15:01',
+            'status' => 'created',
         ])->create();
 
-      
 
 
-       
+
+
 
         $admin = User::factory([
             'operating_site_id' => 1,
@@ -121,37 +120,37 @@ class DatabaseSeederE2E extends Seeder
             ->has(UserWorkingWeek::factory(1))
             ->create();
 
-    
+
         Organization::find(1)->update(['owner_id' => $admin->id]);
 
         $admin->isSubstitutedBy()->attach(User::find(1));
         $admin->isSubstitutionFor()->attach(User::find(6));
 
         $testOperatingSite = OperatingSite::factory([
-            'organization_id'=>1,
-            'name'=> 'delete me ORG',
-            'email'=> 'delete@me.de',
-            'phone_number' =>666666666,
+            'organization_id' => 1,
+            'name' => 'delete me ORG',
+            'email' => 'delete@me.de',
+            'phone_number' => 666666666,
             'street' => 'lösch mich',
             'house_number' => 666,
-            'country'=> 'DE',
+            'country' => 'DE',
             'city' => 'Testcity',
             'zip' => 12345,
             'federal_state' => 'SH',
         ])->has(OperatingTime::factory(7, ['start' => '09:00:00', 'end' => '17:00:00'])
-        ->sequence(fn(Sequence $sequence) => ['type' => [
-            'monday',
-            'tuesday',
-            'wednesday',
-            'thursday',
-            'friday',
-            'saturday',
-            'sunday',
-        ][$sequence->index % 7]]))->create();
+            ->sequence(fn(Sequence $sequence) => ['type' => [
+                'monday',
+                'tuesday',
+                'wednesday',
+                'thursday',
+                'friday',
+                'saturday',
+                'sunday',
+            ][$sequence->index % 7]]))->create();
 
         foreach (User::with(['organization', 'organization.groups', 'timeAccounts', 'operatingSite'])->get() as $user) {
-            $group = $user->organization->groups->random();
-            $user->group_id = $group->id;
+            // $group = $user->organization->groups->random();
+            // $user->group_id = $group->id;
             $user->timeAccounts()->first()->addBalance(100, 'seeder balance');
             $user->supervisor_id = User::whereIn('operating_site_id', $user->organization->operatingSites()->get()->pluck('id'))->where('id', '!=', $user->id)
                 ->whereNotIn('id', $user->allSuperviseesFlat()->pluck('id'))
@@ -170,20 +169,15 @@ class DatabaseSeederE2E extends Seeder
                     : [])
             ]);
 
-            GroupUser::create([
-                "user_id" => $user->id,
-                "group_id" => $user->group_id,
-            ]);
+            // GroupUser::create([
+            //     "user_id" => $user->id,
+            //     "group_id" => $user->group_id,
+            // ]);
 
             OperatingSiteUser::create([
                 "user_id" => $user->id,
                 "operating_site_id" => $user->operating_site_id,
             ]);
-
-           
         }
-     
-
-        
     }
 }
