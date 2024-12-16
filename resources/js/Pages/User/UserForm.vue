@@ -122,7 +122,7 @@ if (props.user) {
     userForm.userWorkingWeekSince = new Date(props.user.userWorkingWeek.active_since);
     console.log(props.user.group_user);
     userForm.organizationUser = props.user.organization_user;
-    userForm.groupUser = props.user.group_user;
+    userForm.groupUser = props.user.group_user ?? userForm.groupUser;
     userForm.operatingSiteUser = props.user.operating_site_user;
 }
 function submit() {
@@ -194,7 +194,7 @@ const steps = ref([
                 <template v-for="(s, index) in steps" :key="index">
                     <v-stepper-item
                         v-bind="{
-                            editable: mode == 'edit' && s.isValidated,
+                            editable: mode == 'edit' || s.isValidated,
                             rules: s.isValidated ? Object.values(s.fields).flat() : [],
                             step: index,
                             title: s.name,
