@@ -432,14 +432,15 @@ const steps = ref([
                 </v-stepper-window>
             </v-form>
             <template v-slot:actions="{ next, prev }">
-                <v-stepper-actions :disabled="false">
+                <v-stepper-actions :disabled="false" :class="`justify-${step !== 1 ? 'space-between' : 'end'}`">
                     <template v-slot:prev>
-                        <v-btn color="primary" variant="elevated" @click.stop="prev">Zurück</v-btn>
+                        <v-btn color="primary" variant="elevated" @click.stop="prev" v-if="step !== 1">Zurück</v-btn>
                     </template>
                     <template v-slot:next>
                         <v-btn
                             color="secondary"
                             variant="elevated"
+                            class="text-end"
                             @click.stop="
                                 () => {
                                     const s = steps[step - 1] as Writeable<typeof steps[number]>;
