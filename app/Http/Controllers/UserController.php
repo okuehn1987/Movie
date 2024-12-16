@@ -236,11 +236,13 @@ class UserController extends Controller
             ...$validated['organizationUser']
         ]);
 
-        GroupUser::create([
-            "user_id" => $user->id,
-            "group_id" => $user->group_id,
-            ...$validated['groupUser']
-        ]);
+        if (!is_null($user->group_id)) {
+            GroupUser::create([
+                "user_id" => $user->id,
+                "group_id" => $user->group_id,
+                ...$validated['groupUser']
+            ]);
+        }
 
         OperatingSiteUser::create([
             "user_id" => $user->id,

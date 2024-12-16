@@ -184,7 +184,6 @@ const steps = ref([
         name: 'Berechtigungen',
         fields: {
             operating_site_id: [() => !!userForm.operating_site_id],
-            group_id: [() => !!userForm.group_id],
         },
     },
 ] as const);
@@ -394,10 +393,10 @@ const steps = ref([
                                         :items="groups.map(g => ({ title: g.name, value: g.id }))"
                                         label="Wähle eine Abteilung aus, zu die der Mitarbeiter gehören soll."
                                         :error-messages="userForm.errors.group_id"
-                                        :rules="steps[2].fields.group_id"
                                     ></v-select>
                                 </v-col>
                                 <PermissionSelector
+                                    v-if="user?.group_id"
                                     v-model="userForm.groupUser"
                                     objKey="groupUser"
                                     :permissions
