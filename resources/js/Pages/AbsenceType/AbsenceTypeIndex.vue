@@ -31,7 +31,6 @@ const absenceTypeForm = useForm({
         <v-data-table-virtual
             hover
             :headers="[
-                { title: '#', key: 'id' },
                 { title: 'Abwesenheitsgrund', key: 'name' },
                 { title: 'Abkürzung', key: 'abbreviation' },
                 { title: 'Muss genehmigt werden', key: 'requires_approval' },
