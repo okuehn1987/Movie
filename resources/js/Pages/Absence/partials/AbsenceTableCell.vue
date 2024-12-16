@@ -10,9 +10,8 @@ type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'> 
 const props = defineProps<{
     user: UserProp;
     date: DateTime;
-    absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id' | 'user_id'> & {
-        absence_type?: Pick<AbsenceType, 'id' | 'abbreviation'>;
-    })[];
+    absences: Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id' | 'user_id'>[];
+    absenceTypes: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
 }>();
 
 const absence = computed(() => props.absences.find(a => DateTime.fromSQL(a.start) <= props.date && props.date <= DateTime.fromSQL(a.end)));
@@ -27,7 +26,7 @@ function shouldUserWork(user: UserProp, day: DateTime) {
         :class="{ 'editable-cell': can('absence', 'create', props.user) }"
         :role="can('absence', 'create', props.user) ? 'button' : 'cell'"
     >
-        {{ absence ? absence.absence_type?.abbreviation ?? '❌' : '' }}
+        {{ absence ? absenceTypes.find(a => a.id === absence?.absence_type_id)?.abbreviation ?? '❌' : '' }}
     </td>
 </template>
 

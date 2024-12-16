@@ -46,15 +46,12 @@ class AbsenceController extends Controller
             ->where(fn($q) => $q->where('start', '<=', $date->copy()->endOfMonth())->where('end', '>=', $date->copy()->startOfMonth()))
             ->with(['absenceType:id,abbreviation', 'user:id'])
             ->get(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status'])
-            ->filter(fn($a) => $user->can('viewShow', $a))->map(fn($a) => [
-                ...$a->toArray(),
-                'absence_type' => $user->can('viewShow', [AbsenceType::class, $a->user]) ? $a->absenceType : null,
-            ]);
+            ->filter(fn($a) => $user->can('viewShow', $a));
 
         return Inertia::render('Absence/AbsenceIndex', [
             'users' => $users,
             'absences' => fn() => $absences,
-            'absence_types' => AbsenceType::inOrganization()->get(['id', 'name']),
+            'absence_types' => AbsenceType::inOrganization()->get(['id', 'name', 'abbreviation']),
         ]);
     }
 
