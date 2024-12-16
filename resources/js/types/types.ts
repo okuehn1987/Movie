@@ -93,7 +93,7 @@ export type User = DBObject<'user'> &
         group_id: Group['id'] | null;
         supervisor_id: User['id'] | null;
         organization_id: Organization['id'] | null;
-        staff_number: number | null;
+        staff_number: string | null;
         date_of_birth: Date;
         home_office: boolean;
         home_office_ratio: number | null;

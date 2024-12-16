@@ -73,6 +73,7 @@ class User extends Authenticatable
         ) return true;
 
         if (
+            $this->groupUser &&
             array_key_exists($permissionName, $this->groupUser->toArray()) &&
             ($this->groupUser->{$permissionName} == 'write' || $this->groupUser->{$permissionName} == $permissionLevel) &&
             (!$user || $user->group_id == $this->groupUser->group_id)

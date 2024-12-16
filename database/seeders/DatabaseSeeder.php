@@ -87,8 +87,8 @@ class DatabaseSeeder extends Seeder
         $admin->isSubstitutionFor()->attach(User::find(6));
 
         foreach (User::with(['organization', 'organization.groups', 'timeAccounts', 'operatingSite'])->get() as $user) {
-            $group = $user->organization->groups->random();
-            $user->group_id = $group->id;
+            // $group = $user->organization->groups->random();
+            // $user->group_id = $group->id;
             $user->timeAccounts()->first()->addBalance(100, 'seeder balance');
             $user->supervisor_id = User::whereIn('operating_site_id', $user->organization->operatingSites()->get()->pluck('id'))->where('id', '!=', $user->id)
                 ->whereNotIn('id', $user->allSuperviseesFlat()->pluck('id'))
@@ -107,10 +107,10 @@ class DatabaseSeeder extends Seeder
                     : [])
             ]);
 
-            GroupUser::create([
-                "user_id" => $user->id,
-                "group_id" => $user->group_id,
-            ]);
+            // GroupUser::create([
+            //     "user_id" => $user->id,
+            //     "group_id" => $user->group_id,
+            // ]);
 
             OperatingSiteUser::create([
                 "user_id" => $user->id,

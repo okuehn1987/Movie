@@ -83,7 +83,7 @@ class UserController extends Controller
                     $fail('The ' . $attribute . ' is invalid.');
                 }
             }],
-            'groupUser' => 'required|array',
+            'groupUser' => 'nullable|array',
             'groupUser.*' => ['nullable', function ($attribute, $value, $fail) {
                 if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->only(['all', 'group'])->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
                     $fail('The ' . $attribute . ' is invalid.');
@@ -177,7 +177,6 @@ class UserController extends Controller
     public function store(Request $request)
     {
         Gate::authorize('create', User::class);
-        $request['groupUser'] = $request['organizationUser'];
 
         $validated = self::validateUser($request, [
             "password" => "required|string",
@@ -236,11 +235,13 @@ class UserController extends Controller
             ...$validated['organizationUser']
         ]);
 
-        GroupUser::create([
-            "user_id" => $user->id,
-            "group_id" => $user->group_id,
-            ...$validated['groupUser']
-        ]);
+        if (!is_null($user->group_id)) {
+            GroupUser::create([
+                "user_id" => $user->id,
+                "group_id" => $user->group_id,
+                ...$validated['groupUser']
+            ]);
+        }
 
         OperatingSiteUser::create([
             "user_id" => $user->id,

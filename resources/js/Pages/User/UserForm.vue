@@ -53,7 +53,7 @@ const userForm = useForm({
     country: '' as Country,
     federal_state: '',
     phone_number: '',
-    staff_number: 0 as null | number,
+    staff_number: null as null | string,
     password: '',
     group_id: null as null | Group['id'],
     operating_site_id: null as null | OperatingSite['id'],
@@ -122,7 +122,7 @@ if (props.user) {
     userForm.userWorkingWeekSince = new Date(props.user.userWorkingWeek.active_since);
 
     userForm.organizationUser = props.user.organization_user;
-    userForm.groupUser = props.user.group_user;
+    userForm.groupUser = props.user.group_user ?? userForm.groupUser;
     userForm.operatingSiteUser = props.user.operating_site_user;
 }
 
@@ -184,7 +184,6 @@ const steps = ref([
         name: 'Berechtigungen',
         fields: {
             operating_site_id: [() => !!userForm.operating_site_id],
-            group_id: [() => !!userForm.group_id],
         },
     },
 ] as const);
@@ -196,7 +195,7 @@ const steps = ref([
                 <template v-for="(s, index) in steps" :key="index">
                     <v-stepper-item
                         v-bind="{
-                            editable: mode == 'edit' && s.isValidated,
+                            editable: mode == 'edit' || s.isValidated,
                             rules: s.isValidated ? Object.values(s.fields).flat() : [],
                             step: index,
                             title: s.name,
@@ -248,9 +247,15 @@ const steps = ref([
                                         type="date"
                                         v-model="userForm.date_of_birth"
                                         label="Geburtsdatum"
-                                        required
                                         :error-messages="userForm.errors.date_of_birth"
                                         :rules="steps[0].fields.date_of_birth"
+                                    ></v-text-field>
+                                </v-col>
+                                <v-col cols="12" md="6">
+                                    <v-text-field
+                                        v-model="userForm.staff_number"
+                                        label="Personalnummer"
+                                        :error-messages="userForm.errors.staff_number"
                                     ></v-text-field>
                                 </v-col>
                                 <v-col cols="12">
@@ -275,6 +280,7 @@ const steps = ref([
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-select
+                                        chips
                                         v-model="userForm.userWorkingWeek"
                                         multiple
                                         :items="
@@ -394,10 +400,10 @@ const steps = ref([
                                         :items="groups.map(g => ({ title: g.name, value: g.id }))"
                                         label="Wähle eine Abteilung aus, zu die der Mitarbeiter gehören soll."
                                         :error-messages="userForm.errors.group_id"
-                                        :rules="steps[2].fields.group_id"
                                     ></v-select>
                                 </v-col>
                                 <PermissionSelector
+                                    v-if="user?.group_id"
                                     v-model="userForm.groupUser"
                                     objKey="groupUser"
                                     :permissions
