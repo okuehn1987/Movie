@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('operating_site_id');
             $table->foreignId('user_id');
             $table->enum('user_permission', ['read', 'write'])->nullable();
+            $table->enum('workLog_permission', ['read', 'write'])->nullable();
             $table->enum('workLogPatch_permission', ['read', 'write'])->nullable();
             $table->enum('absence_permission', ['read', 'write'])->nullable();
             $table->enum('operatingSite_permission', ['read', 'write'])->nullable();

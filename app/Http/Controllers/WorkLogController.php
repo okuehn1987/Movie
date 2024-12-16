@@ -39,15 +39,15 @@ class WorkLogController extends Controller
             'is_home_office' => 'required|boolean',
             'id' => [
                 'nullable',
-                Rule::in([$last->id])
+                Rule::in([$last?->id])
             ]
         ]);
 
 
-        WorkLog::updateOrCreate(['id' => $validated['id']], [
+        WorkLog::updateOrCreate(['id' => array_key_exists('id', $validated) ? $validated['id'] : 0], [
             ...$validated,
-            'start' => $validated['id'] ? $last->start :  Carbon::now(),
-            'end' => $validated['id'] ? Carbon::now() : null,
+            'start' => array_key_exists('id', $validated) && $validated['id'] ? $last->start :  Carbon::now(),
+            'end' => array_key_exists('id', $validated) && $validated['id'] ? Carbon::now() : null,
             'user_id' => Auth::id()
         ]);
 
@@ -60,12 +60,13 @@ class WorkLogController extends Controller
         return Inertia::render('WorkLog/UserWorkLogIndex', [
             'user' => $user->only('id', 'first_name', 'last_name'),
             'workLogs' => WorkLog::where('user_id', $user->id)
+                ->whereNotNull('end')
                 ->with('workLogPatches:id,work_log_id,updated_at,status,start,end,is_home_office')
                 ->orderBy('start', 'DESC')
                 ->paginate(12),
             'can' => [
                 'workLogPatch' => [
-                    'update' => Gate::allows('update', [WorkLogPatch::class, $user]),
+                    'create' => Gate::allows('create', [WorkLogPatch::class, $user]),
                 ]
             ]
         ]);

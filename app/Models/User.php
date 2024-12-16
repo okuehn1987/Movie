@@ -30,6 +30,7 @@ class User extends Authenticatable
     public static $PERMISSIONS = [
         'all' => [
             ['name' => 'user_permission', 'label' => 'Mitarbeitende verwalten'],
+            ['name' => 'workLog_permission', 'label' => 'Arbeitszeiten verwalten'],
             ['name' => 'workLogPatch_permission', 'label' => 'Zeitkorrekturen verwalten'],
             ['name' => 'absence_permission', 'label' => 'Abwesenheiten verwalten'],
             ['name' => 'timeAccount_permission', 'label' => 'Zeitkonten verwalten'],
@@ -53,7 +54,7 @@ class User extends Authenticatable
     public function hasPermissionOrDelegation(User | null $user, string $permissionName, string $permissionLevel)
     {
         return $this->hasPermission($user, $permissionName,  $permissionLevel) ||
-            $this->isSubstitutionFor()->some(fn($substitution) => $substitution->hasPermission($user, $permissionName,  $permissionLevel));
+            $this->isSubstitutionFor->some(fn($substitution) => $substitution->hasPermission($user, $permissionName,  $permissionLevel));
     }
 
     /** 

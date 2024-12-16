@@ -70,7 +70,7 @@ function submit() {
                         <v-select
                             label="Bundesland"
                             :items="getStates(operatingSiteForm.country, countries)"
-                            :disabled="!operatingSiteForm.country"
+                            :disabled="!operatingSiteForm.country || !can('operatingSite', 'update')"
                             required
                             :error-messages="operatingSiteForm.errors.federal_state"
                             v-model="operatingSiteForm.federal_state"

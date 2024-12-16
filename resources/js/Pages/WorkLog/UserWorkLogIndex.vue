@@ -165,7 +165,7 @@ function retreatPatch() {
             >
                 <template v-slot:item.action="{ item }">
                     <v-btn
-                        v-if="editableWorkLogs.find(e => e.id === item.id) && can('workLogPatch', 'update')"
+                        v-if="editableWorkLogs.find(e => e.id === item.id) && can('workLogPatch', 'create')"
                         color="primary"
                         @click.stop="editWorkLog(item.id)"
                         :icon="
@@ -249,7 +249,11 @@ function retreatPatch() {
                                     </v-col>
 
                                     <v-col cols="12" class="text-end">
-                                        <v-btn v-if="patchLog" :loading="workLogForm.processing" @click.stop="retreatPatch" color="primary"
+                                        <v-btn
+                                            v-if="patchLog && $page.props.auth.user.id == user.id"
+                                            :loading="workLogForm.processing"
+                                            @click.stop="retreatPatch"
+                                            color="primary"
                                             >Antrag zurückziehen</v-btn
                                         >
                                         <v-btn v-else :loading="workLogForm.processing" type="submit" color="primary">Korrektur beantragen</v-btn>
