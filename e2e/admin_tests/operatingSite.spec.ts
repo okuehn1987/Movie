@@ -61,7 +61,7 @@ test('add and delete working hours to operating site', async ({ page }) => {
         .getByRole('button')
         .click();
     await page.getByRole('tab', { name: 'Betriebszeiten' }).click();
-    await expect(page.getByText('Montag')).toBeVisible();
+    await expect(page.getByRole('main').getByRole('listbox').getByText('Montag')).toBeVisible();
     await page.getByLabel('Beginn des Arbeitstages').fill('08:00');
     await page.getByLabel('Ende des Arbeitstages').fill('17:00');
     await page.getByRole('button', { name: 'Hinzufügen' }).click();
@@ -71,7 +71,7 @@ test('add and delete working hours to operating site', async ({ page }) => {
     //delete working hours
     await page.getByRole('tab', { name: 'Betriebszeiten' }).click();
     await expect(page.getByText('08:00 Uhr - 17:00 Uhr')).toBeVisible();
-    await page.getByRole('main').getByRole('link').getByRole('button').click();
+    await page.getByRole('main').getByRole('link').getByRole('button').first().click();
     await expect(page.getByText('Betriebszeit erfolgreich gelö')).toBeVisible();
     await expect(page.getByRole('main').getByRole('listbox').getByText('Montag')).not.toBeVisible();
 });
