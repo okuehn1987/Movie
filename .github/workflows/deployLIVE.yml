@@ -1,0 +1,28 @@
+name: Build and Deploy to LIVE
+
+on:
+  push:
+    branches: ['LIVE']
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Deploy to LIVE, 'pull' pulls changes and migrates, 'clean' rebuilds the Docker Container and pulls then"
+        required: true
+        default: pull
+        type: choice
+        options:
+          - pull
+          - clean
+
+jobs:
+  build-and-deploy:
+    uses: MBD-Team/deployments/.github/workflows/deploy.yml@master
+    with:
+      env: LIVE
+      server: server5.mbd-team.de
+      mode: ${{github.event.inputs.mode}}
+      createTag: false
+      runDeploymentCheck: false
+      runPlaywrightDeploymentCheck: true
+      domain: herta.mbd-team.de
+      project: Herta

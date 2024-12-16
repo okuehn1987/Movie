@@ -39,15 +39,15 @@ class WorkLogController extends Controller
             'is_home_office' => 'required|boolean',
             'id' => [
                 'nullable',
-                Rule::in([$last->id])
+                Rule::in([$last?->id])
             ]
         ]);
 
 
-        WorkLog::updateOrCreate(['id' => $validated['id']], [
+        WorkLog::updateOrCreate(['id' => array_key_exists('id', $validated) ? $validated['id'] : 0], [
             ...$validated,
-            'start' => $validated['id'] ? $last->start :  Carbon::now(),
-            'end' => $validated['id'] ? Carbon::now() : null,
+            'start' => array_key_exists('id', $validated) && $validated['id'] ? $last->start :  Carbon::now(),
+            'end' => array_key_exists('id', $validated) && $validated['id'] ? Carbon::now() : null,
             'user_id' => Auth::id()
         ]);
 
