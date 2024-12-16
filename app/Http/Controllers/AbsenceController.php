@@ -28,12 +28,18 @@ class AbsenceController extends Controller
 
         $user = $request->user();
 
-        $users = User::select('id', 'first_name', 'last_name', 'supervisor_id')
-            ->inOrganization()
+        $absences = Absence::inOrganization()->where('status', 'accepted')
+            ->where(fn($q) => $q->where('start', '<=', $date->copy()->endOfMonth())->where('end', '>=', $date->copy()->startOfMonth()))
+            ->with(['absenceType:id,abbreviation', 'user:id'])
+            ->get(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status'])
+            ->filter(fn($a) => $user->can('viewShow', $a));
+
+        $users = User::inOrganization()
+            ->whereIn('id', $absences->pluck('user_id')->unique())
             ->with([
                 'userWorkingWeeks:id,user_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday'
             ])
-            ->get()->filter(fn($u) => $user->can('viewShow', $u))->map(fn($u) => [
+            ->get(['id', 'first_name', 'last_name', 'supervisor_id'])->map(fn($u) => [
                 ...$u->toArray(),
                 'can' => [
                     'absence' => [
@@ -41,12 +47,6 @@ class AbsenceController extends Controller
                     ]
                 ]
             ]);
-
-        $absences = Absence::whereIn('user_id', $users->pluck('id'))->where('status', 'accepted')
-            ->where(fn($q) => $q->where('start', '<=', $date->copy()->endOfMonth())->where('end', '>=', $date->copy()->startOfMonth()))
-            ->with(['absenceType:id,abbreviation', 'user:id'])
-            ->get(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status'])
-            ->filter(fn($a) => $user->can('viewShow', $a));
 
         return Inertia::render('Absence/AbsenceIndex', [
             'users' => $users,
