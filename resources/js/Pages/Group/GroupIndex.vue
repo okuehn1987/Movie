@@ -67,6 +67,7 @@ const groupForm = useForm({
                                             </v-col>
                                             <v-col cols="12" sm="6">
                                                 <v-select
+                                                    data-testid="employeeGroupAssignment"
                                                     v-model="groupForm.users"
                                                     :error-messages="groupForm.errors.users"
                                                     :items="users.map(user => ({ value: user.id, title: user.name }))"
