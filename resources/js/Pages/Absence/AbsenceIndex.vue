@@ -175,9 +175,16 @@ const loading = usePageIsLoading();
                     <tr>
                         <template v-for="header in columns" :key="header.key">
                             <td v-if="header.key === 'name'">{{ item.first_name }} {{ item.last_name }}</td>
-                            <td v-else-if="header.key === 'action'">
-                                <v-btn icon="mdi-plus" variant="text" @click="can('absence', 'create', item) && createAbsenceModal(item.id)"></v-btn>
-                            </td>
+                            <template v-else-if="header.key === 'action'">
+                                <td v-if="can('absence', 'create', item)">
+                                    <v-btn
+                                        icon="mdi-plus"
+                                        variant="text"
+                                        @click="can('absence', 'create', item) && createAbsenceModal(item.id)"
+                                    ></v-btn>
+                                </td>
+                                <td v-else></td>
+                            </template>
                             <AbsenceTableCell
                                 v-else
                                 @click="
