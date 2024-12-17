@@ -52,7 +52,18 @@ function createAbsenceModal(user_id: User['id'], start?: DateTime) {
 
     openModal.value = true;
 }
-const reload = throttle(() => router.reload({ only: ['absences', 'holidays'], data: { date: date.value.toFormat('yyyy-MM') } }), 500);
+
+const loadedMonths = ref([date.value.toFormat('yyyy-MM')]);
+
+const reload = throttle(() => {
+    if (loadedMonths.value.includes(date.value.toFormat('yyyy-MM'))) return;
+    router.reload({
+        only: ['absences', 'holidays'],
+        data: { date: date.value.toFormat('yyyy-MM') },
+        onStart: () => loadedMonths.value.push(date.value.toFormat('yyyy-MM')),
+        onError: () => (loadedMonths.value = loadedMonths.value.filter(e => e != date.value.toFormat('yyyy-MM'))),
+    });
+}, 500);
 watch(date, reload);
 
 const loading = usePageIsLoading();

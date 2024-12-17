@@ -18,7 +18,10 @@ const props = defineProps<{
 const absence = computed(() => props.absences.find(a => DateTime.fromSQL(a.start) <= props.date && props.date <= DateTime.fromSQL(a.end)));
 
 function shouldUserWork(user: UserProp, day: DateTime) {
-    return user.user_working_weeks.find(e => e[day.setLocale('en-US').weekdayLong?.toLowerCase() as Weekday]) && !props.holidays?.[props.date.day];
+    return (
+        user.user_working_weeks.find(e => e[day.setLocale('en-US').weekdayLong?.toLowerCase() as Weekday]) &&
+        !props.holidays?.[props.date.toFormat('yyyy-MM-dd')]
+    );
 }
 </script>
 <template>
@@ -26,7 +29,7 @@ function shouldUserWork(user: UserProp, day: DateTime) {
         :style="{ backgroundColor: shouldUserWork(user, date) ? '' : 'lightgray' }"
         :class="{ 'editable-cell': can('absence', 'create', props.user) }"
         :role="can('absence', 'create', props.user) ? 'button' : 'cell'"
-        :title="props.holidays?.[props.date.day]"
+        :title="props.holidays?.[props.date.toFormat('yyyy-MM-dd')]"
     >
         {{ absence && shouldUserWork(user, date) ? absenceTypes.find(a => a.id === absence?.absence_type_id)?.abbreviation ?? '❌' : '' }}
     </td>
