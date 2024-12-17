@@ -30,16 +30,17 @@ class AbsenceController extends Controller
 
         $absences = Absence::inOrganization()->where('status', 'accepted')
             ->where(fn($q) => $q->where('start', '<=', $date->copy()->endOfMonth())->where('end', '>=', $date->copy()->startOfMonth()))
-            ->with(['absenceType:id,abbreviation', 'user:id'])
+            ->with(['absenceType:id,abbreviation', 'user:id,group_id,operating_site_id,supervisor_id'])
             ->get(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status'])
-            ->filter(fn($a) => $user->can('viewShow', $a));
+            ->filter(fn($a) => $user->can('viewShow', [Absence::class, $a->user]));
 
         $users = User::inOrganization()
-            ->whereIn('id', $absences->pluck('user_id')->unique())
             ->with([
                 'userWorkingWeeks:id,user_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday'
             ])
-            ->get(['id', 'first_name', 'last_name', 'supervisor_id'])->map(fn($u) => [
+            ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'group_id'])
+            ->filter(fn($u) => $user->can('viewShow', [Absence::class, $u]))
+            ->map(fn($u) => [
                 ...$u->toArray(),
                 'can' => [
                     'absence' => [
