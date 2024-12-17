@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Notifications\AbsenceNotification;
 use App\Services\HolidayService;
 use Carbon\Carbon;
-use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -50,11 +49,16 @@ class AbsenceController extends Controller
                 ]
             ]);
 
+        $holidays = collect(HolidayService::getHolidays($user->operatingSite->country, $user->operatingSite->federal_state, $date))
+            ->mapWithKeys(
+                fn($val, $key) => [Carbon::parse($key)->day => $val]
+            );
+
         return Inertia::render('Absence/AbsenceIndex', [
             'users' => $users,
             'absences' => fn() => $absences,
             'absence_types' => AbsenceType::inOrganization()->get(['id', 'name', 'abbreviation']),
-            'holidays' => fn() => HolidayService::getHolidays($user->operatingSite->country, $user->operatingSite->federal_state, $date)
+            'holidays' => fn() => $holidays->isEmpty() ? null : $holidays
         ]);
     }
 

@@ -16,12 +16,12 @@ const props = defineProps<{
     users: UserProp[];
     absences: Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id' | 'user_id'>[];
     absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
-    holidays: Record<string, string> | [];
+    holidays: Record<string, string> | null;
 }>();
 
 const page = usePage();
-
-const date = ref(DateTime.now());
+const dateParam = route().params['date'];
+const date = ref(dateParam ? (DateTime.fromFormat(dateParam, 'yyyy-MM') as DateTime<true>) : DateTime.now());
 
 function getDaysInMonth() {
     const daysInMonth = [];
