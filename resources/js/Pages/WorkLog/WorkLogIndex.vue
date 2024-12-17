@@ -6,7 +6,7 @@ import { Link } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 
 defineProps<{
-    users: (Pick<User, 'id' | 'first_name' | 'last_name'> & { latestWorkLog: WorkLog; isPresent: boolean })[];
+    users: (Pick<User, 'id' | 'first_name' | 'last_name'> & { latestWorkLog: WorkLog })[];
 }>();
 </script>
 <template>
@@ -32,7 +32,7 @@ defineProps<{
             ]"
         >
             <template v-slot:item.isPresent="{ item }">
-                <v-icon icon="mdi-circle" :color="item.isPresent ? 'success' : 'error'" size="md"></v-icon>
+                <v-icon icon="mdi-circle" :color="item.latestWorkLog.end ? 'error' : 'success'" size="md"></v-icon>
             </template>
             <template #item.actions="{ item }">
                 <Link
