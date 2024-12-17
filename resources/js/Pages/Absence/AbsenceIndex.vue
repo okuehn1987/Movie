@@ -16,6 +16,7 @@ const props = defineProps<{
     users: UserProp[];
     absences: Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id' | 'user_id'>[];
     absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
+    holidays: Record<string, string> | [];
 }>();
 
 const page = usePage();
@@ -51,7 +52,7 @@ function createAbsenceModal(user_id: User['id'], start?: DateTime) {
 
     openModal.value = true;
 }
-const reload = throttle(() => router.reload({ only: ['absences'], data: { date: date.value.toFormat('yyyy-MM') } }), 500);
+const reload = throttle(() => router.reload({ only: ['absences', 'holidays'], data: { date: date.value.toFormat('yyyy-MM') } }), 500);
 watch(date, reload);
 
 const loading = usePageIsLoading();
@@ -191,6 +192,7 @@ const loading = usePageIsLoading();
                                     can('absence', 'create', item) &&
                                         createAbsenceModal(item.id, date.startOf('month').plus({ day: +(header.key ?? 0) - 1 }))
                                 "
+                                :holidays="holidays"
                                 :absenceTypes="absence_types"
                                 :user="item"
                                 :date="date.startOf('month').plus({ day: +(header.key ?? 0) - 1 })"

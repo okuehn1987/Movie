@@ -6,6 +6,7 @@ use App\Models\Absence;
 use App\Models\AbsenceType;
 use App\Models\User;
 use App\Notifications\AbsenceNotification;
+use App\Services\HolidayService;
 use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
@@ -53,6 +54,7 @@ class AbsenceController extends Controller
             'users' => $users,
             'absences' => fn() => $absences,
             'absence_types' => AbsenceType::inOrganization()->get(['id', 'name', 'abbreviation']),
+            'holidays' => fn() => HolidayService::getHolidays($user->operatingSite->country, $user->operatingSite->federal_state, $date)
         ]);
     }
 
