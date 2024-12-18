@@ -6,8 +6,8 @@ use App\Models\Absence;
 use App\Models\AbsenceType;
 use App\Models\User;
 use App\Notifications\AbsenceNotification;
+use App\Services\HolidayService;
 use Carbon\Carbon;
-use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -34,25 +34,30 @@ class AbsenceController extends Controller
             ->get(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status'])
             ->filter(fn($a) => $user->can('viewShow', [Absence::class, $a->user]));
 
-        $users = User::inOrganization()
-            ->with([
-                'userWorkingWeeks:id,user_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday'
-            ])
-            ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'group_id'])
-            ->filter(fn($u) => $user->can('viewShow', [Absence::class, $u]))
-            ->map(fn($u) => [
-                ...$u->toArray(),
-                'can' => [
-                    'absence' => [
-                        'create' => $user->can('create', [Absence::class, $u]),
-                    ]
-                ]
-            ]);
+
+        $holidays = collect(HolidayService::getHolidays($user->operatingSite->country, $user->operatingSite->federal_state, $date))
+            ->mapWithKeys(
+                fn($val, $key) => [Carbon::parse($key)->format('Y-m-d') => $val]
+            );
 
         return Inertia::render('Absence/AbsenceIndex', [
-            'users' => $users,
-            'absences' => fn() => $absences,
-            'absence_types' => AbsenceType::inOrganization()->get(['id', 'name', 'abbreviation']),
+            'users' => fn() => User::inOrganization()
+                ->with([
+                    'userWorkingWeeks:id,user_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday'
+                ])
+                ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'group_id'])
+                ->filter(fn($u) => $user->can('viewShow', [Absence::class, $u]))
+                ->map(fn($u) => [
+                    ...$u->toArray(),
+                    'can' => [
+                        'absence' => [
+                            'create' => $user->can('create', [Absence::class, $u]),
+                        ]
+                    ]
+                ]),
+            'absence_types' => fn() => AbsenceType::inOrganization()->get(['id', 'name', 'abbreviation']),
+            'absences' =>  Inertia::merge(fn() => $absences),
+            'holidays' =>  Inertia::merge(fn() => $holidays->isEmpty() ? (object)[] : $holidays)
         ]);
     }
 
