@@ -7,6 +7,7 @@ use App\Models\OperatingSite;
 use App\Models\OperatingTime;
 use App\Models\Organization;
 use App\Models\SpecialWorkingHoursFactor;
+use App\Models\TimeAccountSetting;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use App\Services\HolidayService;
@@ -87,6 +88,7 @@ class OrganizationController extends Controller
             'operating_times' => OperatingTime::inOrganization()->get(),
             'absence_types' => AbsenceType::inOrganization()->get(),
             'special_working_hours_factors' => SpecialWorkingHoursFactor::inOrganization()->get(),
+            'timeAccountSettings' => TimeAccountSetting::inOrganization()->get(),
             'can' => [
                 'organization' => [
                     'update' => Gate::allows('update', $organization),
@@ -100,6 +102,10 @@ class OrganizationController extends Controller
                 'absenceType' => [
                     'viewIndex' => Gate::allows('viewIndex', AbsenceType::class),
                     'create' => Gate::allows('create', AbsenceType::class),
+                ],
+                'timeAccountSetting' => [
+                    'create' => Gate::allows('create', TimeAccountSetting::class),
+                    'viewIndex' => Gate::allows('viewIndex', TimeAccountSetting::class),
                 ]
             ]
         ]);

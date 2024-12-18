@@ -72,9 +72,6 @@ class HandleInertiaRequests extends Middleware
                 'user' => [
                     'viewIndex' => Gate::allows('viewIndex', User::class),
                 ],
-                'timeAccountSetting' => [
-                    'viewIndex' => Gate::allows('viewIndex', TimeAccountSetting::class),
-                ],
             ]
         ];
     }

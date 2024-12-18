@@ -26,6 +26,22 @@ declare module 'ziggy-js' {
     "ignition.executeSolution": [],
     "ignition.updateConfig": [],
     "home": [],
+    "organization.index": [],
+    "organization.store": [],
+    "organization.destroy": [
+        {
+            "name": "organization",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "organization.tree": [
+        {
+            "name": "organization",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "dashboard": [],
     "user.index": [],
     "user.store": [],
@@ -46,22 +62,6 @@ declare module 'ziggy-js' {
     "user.destroy": [
         {
             "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "organization.index": [],
-    "organization.store": [],
-    "organization.destroy": [
-        {
-            "name": "organization",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "organization.tree": [
-        {
-            "name": "organization",
             "required": true,
             "binding": "id"
         }
@@ -216,7 +216,6 @@ declare module 'ziggy-js' {
         }
     ],
     "timeAccountTransaction.store": [],
-    "timeAccountSetting.index": [],
     "timeAccountSetting.store": [],
     "notification.update": [
         {
