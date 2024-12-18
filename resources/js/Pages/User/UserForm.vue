@@ -59,6 +59,8 @@ const userForm = useForm({
     operating_site_id: null as null | OperatingSite['id'],
     supervisor_id: null as null | User['id'],
     is_supervisor: false,
+    hasHomeOffice: false,
+    homeOfficeHoursPerWeek: null as number | null,
     userWorkingHours: 0,
     userWorkingHoursSince: new Date(),
     userWorkingWeek: [] as Weekday[],
@@ -114,6 +116,8 @@ if (props.user) {
     userForm.group_id = props.user.group_id;
     userForm.operating_site_id = props.user.operating_site_id;
     userForm.supervisor_id = props.user.supervisor_id;
+    userForm.hasHomeOffice = props.user.home_office;
+    userForm.homeOfficeHoursPerWeek = props.user.home_office_ratio;
     userForm.userWorkingHours = props.user.currentWorkingHours?.weekly_working_hours ?? 0;
     userForm.userWorkingHoursSince = new Date(props.user.currentWorkingHours.active_since);
     for (const weekday of Info.weekdays('long', { locale: 'en' }).map(e => e.toLowerCase()) as Weekday[]) {

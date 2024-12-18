@@ -25,8 +25,6 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-
-
     public static $PERMISSIONS = [
         'all' => [
             ['name' => 'user_permission', 'label' => 'Mitarbeitende verwalten'],
