@@ -13,6 +13,7 @@ defineProps<{
     operating_times: OperatingTime[];
     special_working_hours_factors: SpecialWorkingHoursFactor[];
     absence_types: AbsenceType[];
+    absence_type_defaults: string[];
     timeAccountSettings: TimeAccountSetting[];
 }>();
 
@@ -49,7 +50,7 @@ const tab = ref<'Allgemeine Informationen' | 'Sonderarbeitszeitfaktor' | 'Abwese
                 <SWHFIndex :special_working_hours_factors />
             </v-tabs-window-item>
             <v-tabs-window-item v-if="can('absenceType', 'viewIndex')" value="Abwesenheitsgründe">
-                <AbsenceTypeIndex :absenceTypes="absence_types" />
+                <AbsenceTypeIndex :absenceTypes="absence_types" :absence_type_defaults />
             </v-tabs-window-item>
             <v-tabs-window-item v-if="can('timeAccountSetting', 'viewIndex')" value="Zeitkontoeinstellungen">
                 <TimeAccountSettingsIndex :timeAccountSettings />
