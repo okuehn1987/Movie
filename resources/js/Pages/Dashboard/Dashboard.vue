@@ -3,6 +3,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Absence, AbsenceType, OperatingTime, User, WorkLog, WorkLogPatch } from '@/types/types';
 import WorkingHours from './partial/WorkingHours.vue';
 import WorkLogPatches from './partial/WorkLogPatches.vue';
+import AbsenceRequests from './partial/AbsenceRequests.vue';
 import Absences from './partial/Absences.vue';
 
 type PatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id' | 'work_log_id'> & {
@@ -10,9 +11,8 @@ type PatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 
     user: Pick<User, 'id' | 'first_name' | 'last_name'>;
 };
 
-type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'user_id'> & {
+type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'user_id' | 'absence_type_id'> & {
     user: Pick<User, 'id' | 'first_name' | 'last_name'>;
-    absence_type: Pick<AbsenceType, 'id' | 'name'>;
 };
 
 defineProps<{
@@ -22,7 +22,8 @@ defineProps<{
     operating_times: OperatingTime[];
     overtime: number;
     workingHours: { should: number; current: number };
-    absences: AbsenceProp[] | null;
+    absenceRequests: (AbsenceProp & { absence_type: Pick<AbsenceType, 'id' | 'name'> })[] | null;
+    currentAbsences: (AbsenceProp & { absence_type: Pick<AbsenceType, 'id' | 'abbreviation'> })[];
 }>();
 </script>
 
@@ -51,8 +52,12 @@ defineProps<{
             <v-col cols="12" sm="6" lg="4" v-if="patches">
                 <WorkLogPatches :patches="patches" />
             </v-col>
-            <v-col cols="12" sm="6" lg="4" v-if="absences">
-                <Absences :absences="absences" />
+            <v-col cols="12" sm="6" lg="4">
+                <Absences :absences="currentAbsences" />
+            </v-col>
+            <v-col cols="12" sm="6" lg="4"></v-col>
+            <v-col cols="12" sm="6" lg="4" v-if="absenceRequests">
+                <AbsenceRequests :absenceRequests="absenceRequests" />
             </v-col>
         </v-row>
     </AdminLayout>
