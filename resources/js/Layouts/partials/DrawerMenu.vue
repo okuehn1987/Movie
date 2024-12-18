@@ -45,14 +45,6 @@ import { router } from '@inertiajs/vue3';
                               value: route('user.index'),
                               title: 'Mitarbeitende',
                           },
-                          can('timeAccountSetting', 'viewIndex') && {
-                              props: {
-                                  active: route().current('timeAccountSetting.index'),
-                                  prependIcon: 'mdi-timer',
-                              },
-                              value: route('timeAccountSetting.index'),
-                              title: 'Arbeitszeitkonten',
-                          },
                           can('user', 'viewIndex') && {
                               props: { prependIcon: 'mdi-tree', active: route().current('organization.tree') },
                               value: route('organization.tree', { organization: $page.props.organization.id }),
