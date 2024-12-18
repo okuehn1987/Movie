@@ -162,7 +162,7 @@ const loading = usePageIsLoading();
             <v-data-table-virtual
                 fixed-header
                 style="white-space: pre"
-                :style="{ maxHeight: getMaxScrollHeight(80) }"
+                :style="{ maxHeight: getMaxScrollHeight(80 + 1) }"
                 id="absence-table"
                 :items="users"
                 :headers="[
