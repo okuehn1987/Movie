@@ -50,6 +50,14 @@ class OrganizationController extends Controller
             'name' => $validated['organization_name'],
         ]);
 
+        foreach (AbsenceType::$DEFAULTS as $type) {
+            AbsenceType::create([
+                "organization_id" => $org->id,
+                'type' => $type['name'],
+                ...$type,
+            ]);
+        }
+
         $operating_site = OperatingSite::create([
             'name' => $validated['head_quarter_name'],
             'street' => $validated['organization_street'],
@@ -87,6 +95,7 @@ class OrganizationController extends Controller
             'operating_sites' => OperatingSite::inOrganization()->get(),
             'operating_times' => OperatingTime::inOrganization()->get(),
             'absence_types' => AbsenceType::inOrganization()->get(),
+            'absence_type_defaults' => AbsenceType::getTypes(),
             'special_working_hours_factors' => SpecialWorkingHoursFactor::inOrganization()->get(),
             'timeAccountSettings' => TimeAccountSetting::inOrganization()->get(),
             'can' => [
