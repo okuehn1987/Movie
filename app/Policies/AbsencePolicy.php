@@ -17,7 +17,7 @@ class AbsencePolicy
     {
         return
             $authUser->id === $user->id ||
-            $authUser->supervisor_id === $user->id ||
+            $authUser->id === $user->supervisor_id ||
             $authUser->group_id === $user->group_id ||
             $authUser->hasPermissionOrDelegation($user, 'absence_permission', 'read');
     }
@@ -26,7 +26,7 @@ class AbsencePolicy
     {
         return
             $authUser->id === $user->id ||
-            $authUser->supervisor_id === $user->id ||
+            $authUser->id === $user->supervisor_id ||
             $authUser->hasPermissionOrDelegation($user, 'absence_permission', 'write');
     }
 
@@ -34,14 +34,14 @@ class AbsencePolicy
     {
         return
             $user->id == $absence->user->id ||
-            $absence->user->supervisor_id === $user->id ||
+            $user->id === $absence->user->supervisor_id  ||
             $user->hasPermissionOrDelegation($absence->user, 'absence_permission', 'write');
     }
 
     public function delete(User $user, Absence $absence): bool
     {
         return
-            $absence->user->supervisor_id === $user->id ||
+            $user->id === $absence->user->supervisor_id ||
             $user->hasPermissionOrDelegation($absence->user, 'absence_permission', 'write');
     }
 }
