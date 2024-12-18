@@ -24,7 +24,6 @@ const groupForm = useForm({
                 :style="{ maxHeight: getMaxScrollHeight(0) }"
                 fixed-header
                 :headers="[
-                    { title: '#', key: 'id' },
                     { title: 'Abteilungsname', key: 'name' },
                     { title: 'Mitarbeitende', key: 'users_count' },
                     { title: '', key: 'actions', align: 'end' },

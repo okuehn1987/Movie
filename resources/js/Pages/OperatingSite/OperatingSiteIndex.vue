@@ -40,7 +40,6 @@ function submit() {
             <v-data-table-virtual
                 hover
                 :headers="[
-                    { title: '#', key: 'id' },
                     { title: 'Name', key: 'name' },
                     { title: 'Anschrift', key: 'streetAddress' },
                     { title: 'Stadt', key: 'cityAddress' },

@@ -16,11 +16,12 @@ const props = defineProps<{
     users: UserProp[];
     absences: Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id' | 'user_id'>[];
     absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
+    holidays: Record<string, string> | null;
 }>();
 
 const page = usePage();
-
-const date = ref(DateTime.now());
+const dateParam = route().params['date'];
+const date = ref(dateParam ? (DateTime.fromFormat(dateParam, 'yyyy-MM') as DateTime<true>) : DateTime.now());
 
 function getDaysInMonth() {
     const daysInMonth = [];
@@ -51,7 +52,18 @@ function createAbsenceModal(user_id: User['id'], start?: DateTime) {
 
     openModal.value = true;
 }
-const reload = throttle(() => router.reload({ only: ['absences'], data: { date: date.value.toFormat('yyyy-MM') } }), 500);
+
+const loadedMonths = ref([date.value.toFormat('yyyy-MM')]);
+
+const reload = throttle(() => {
+    if (loadedMonths.value.includes(date.value.toFormat('yyyy-MM'))) return;
+    router.reload({
+        only: ['absences', 'holidays'],
+        data: { date: date.value.toFormat('yyyy-MM') },
+        onStart: () => loadedMonths.value.push(date.value.toFormat('yyyy-MM')),
+        onError: () => (loadedMonths.value = loadedMonths.value.filter(e => e != date.value.toFormat('yyyy-MM'))),
+    });
+}, 500);
 watch(date, reload);
 
 const loading = usePageIsLoading();
@@ -175,15 +187,23 @@ const loading = usePageIsLoading();
                     <tr>
                         <template v-for="header in columns" :key="header.key">
                             <td v-if="header.key === 'name'">{{ item.first_name }} {{ item.last_name }}</td>
-                            <td v-else-if="header.key === 'action'">
-                                <v-btn icon="mdi-plus" variant="text" @click="can('absence', 'create', item) && createAbsenceModal(item.id)"></v-btn>
-                            </td>
+                            <template v-else-if="header.key === 'action'">
+                                <td v-if="can('absence', 'create', item)">
+                                    <v-btn
+                                        icon="mdi-plus"
+                                        variant="text"
+                                        @click="can('absence', 'create', item) && createAbsenceModal(item.id)"
+                                    ></v-btn>
+                                </td>
+                                <td v-else></td>
+                            </template>
                             <AbsenceTableCell
                                 v-else
                                 @click="
                                     can('absence', 'create', item) &&
                                         createAbsenceModal(item.id, date.startOf('month').plus({ day: +(header.key ?? 0) - 1 }))
                                 "
+                                :holidays="holidays"
                                 :absenceTypes="absence_types"
                                 :user="item"
                                 :date="date.startOf('month').plus({ day: +(header.key ?? 0) - 1 })"
