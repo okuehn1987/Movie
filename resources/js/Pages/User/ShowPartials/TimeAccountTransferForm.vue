@@ -40,7 +40,7 @@ const timeAccountTransferForm = useForm({
                                     data-testid="timeAccountTransactionStartAccount"
                                     :items="
                                         time_accounts
-                                            .filter(t => t.id != timeAccountTransferForm.to_id)
+                                            .filter(t => t.id != timeAccountTransferForm.to_id && t.deleted_at === null)
                                             .map(t => ({
                                                 title: t.name,
                                                 value: t.id,
@@ -56,7 +56,7 @@ const timeAccountTransferForm = useForm({
                                     data-testid="timeAccountTransactionDestinationAccount"
                                     :items="
                                         time_accounts
-                                            .filter(t => t.id != timeAccountTransferForm.from_id)
+                                            .filter(t => t.id != timeAccountTransferForm.from_id && t.deleted_at === null)
                                             .map(t => ({
                                                 title: t.name,
                                                 value: t.id,

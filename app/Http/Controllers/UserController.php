@@ -59,7 +59,7 @@ class UserController extends Controller
             'is_supervisor' => 'required|boolean',
 
             'home_office' => 'required|boolean',
-            'home_office_hours_per_week' => 'required_if:home_office,true|numeric',
+            'home_office_hours_per_week' => 'nullable|required_if:home_office,true|numeric',
 
             'userWorkingHours' => 'required|decimal:0,2',
             'userWorkingHoursSince' => 'required|date',

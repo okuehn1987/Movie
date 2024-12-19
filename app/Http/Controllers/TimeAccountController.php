@@ -22,7 +22,7 @@ class TimeAccountController extends Controller
             'time_account_setting_id' => ['required', Rule::exists('time_account_settings', 'id')->where('organization_id', Organization::getCurrent()->id)],
         ]);
 
-        $timeAccount = TimeAccount::create([...$validated, 'user_id' => $user->id]);
+        $timeAccount = TimeAccount::create([...collect($validated)->except('balance')->toArray(), 'user_id' => $user->id]);
 
         $timeAccount->addBalance($validated['balance'], 'Initialer Kontostand');
 

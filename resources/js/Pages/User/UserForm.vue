@@ -124,7 +124,6 @@ if (props.user) {
         if (props.user.userWorkingWeek[weekday]) userForm.userWorkingWeek.push(weekday);
     }
     userForm.userWorkingWeekSince = new Date(props.user.userWorkingWeek.active_since);
-    console.log(props.user.group_user);
     userForm.organizationUser = props.user.organization_user;
     userForm.groupUser = props.user.group_user ?? userForm.groupUser;
     userForm.operatingSiteUser = props.user.operating_site_user;

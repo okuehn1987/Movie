@@ -17,7 +17,7 @@ export function usePageIsLoading() {
 
     router.on('start', e => {
         if (!page.value) return;
-        if (route(page.value) == e.detail.visit.url.origin + e.detail.visit.url.pathname) loading.value = true;
+        if (route(page.value, route().params) == e.detail.visit.url.origin + e.detail.visit.url.pathname) loading.value = true;
     });
     router.on('finish', () => (loading.value = false));
 
