@@ -20,12 +20,14 @@ class User extends Authenticatable
 
     protected $guarded = ['password', 'role', 'email_verified_at'];
 
+    protected $casts = [
+        'home_office' => 'boolean',
+    ];
+
     protected $hidden = [
         'password',
         'remember_token',
     ];
-
-
 
     public static $PERMISSIONS = [
         'all' => [
@@ -67,8 +69,8 @@ class User extends Authenticatable
     {
         if ($permissionLevel != 'read' && $permissionLevel != 'write') abort(404);
 
-        $this->load(['organizationUser', 'groupUser', 'operatingSiteUser']);
-        if ($user) $user->load(['organizationUser', 'groupUser', 'operatingSiteUser']);
+        $this->load(['organizationUser']);
+        if ($user) $user->load(['organizationUser']);
 
         if (
             array_key_exists($permissionName, $this->organizationUser->toArray()) &&
@@ -76,12 +78,18 @@ class User extends Authenticatable
             (!$user || $user->organizationUser->organization_id == $this->organizationUser->organization_id)
         ) return true;
 
+        $this->load(['groupUser']);
+        if ($user) $user->load(['groupUser']);
+
         if (
             $this->groupUser &&
             array_key_exists($permissionName, $this->groupUser->toArray()) &&
             ($this->groupUser->{$permissionName} == 'write' || $this->groupUser->{$permissionName} == $permissionLevel) &&
             (!$user || $user->group_id == $this->groupUser->group_id)
         ) return true;
+
+        $this->load(['operatingSiteUser']);
+        if ($user) $user->load(['operatingSiteUser']);
 
         if (
             array_key_exists($permissionName, $this->operatingSiteUser->toArray()) &&
@@ -221,7 +229,7 @@ class User extends Authenticatable
         return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->where('type', 'default'))->sum('balance');
     }
 
-    public static function getCurrentWeekWorkingHours(User $user): float
+    public static function getCurrentWeekWorkingHours(User $user): object
     {
         //all logs that could be applicable
         $currentWeekWorkLogs = $user->workLogs()
@@ -248,16 +256,21 @@ class User extends Authenticatable
 
         $handledWorklogs = [];
         $currentWeekHours = 0;
+        $currentWeekHomeOfficeHours = 0;
 
         foreach ($currentWeekWorkLogs as $worklog) {
             $handledWorklogs[] = $worklog->id;
 
             if (!$worklog['patch']) {
-                $currentWeekHours += Carbon::parse($worklog->start)->diffInMinutes(Carbon::parse($worklog->end)) / 60;
+                $t = Carbon::parse($worklog->start)->diffInMinutes(Carbon::parse($worklog->end)) / 60;
+                $currentWeekHours += $t;
+                if ($worklog->is_home_office) $currentWeekHomeOfficeHours += $t;
             } else {
                 foreach ($currentWeekPatches as $p) {
                     if ($p->work_log_id == $worklog['patch']->work_log_id) {
-                        $currentWeekHours += Carbon::parse($p->start)->diffInMinutes(Carbon::parse($p->end)) / 60;
+                        $t = Carbon::parse($p->start)->diffInMinutes(Carbon::parse($p->end)) / 60;
+                        $currentWeekHours += $t;
+                        if ($worklog['patch']->is_home_office) $currentWeekHomeOfficeHours += $t;
                     }
                 }
             }
@@ -269,6 +282,9 @@ class User extends Authenticatable
             }
         }
 
-        return $currentWeekHours;
+        return (object)[
+            'totalHours' => $currentWeekHours,
+            'homeOfficeHours' => $currentWeekHomeOfficeHours,
+        ];
     }
 }
