@@ -1,15 +1,17 @@
 import { test, expect } from '@playwright/test';
-import { adminLogin, resetAndSeedDatabase } from '../utils';
+import { adminLogin } from '../utils';
 
 test.beforeEach('admin login', async ({ page }) => {
-    await resetAndSeedDatabase(page);
     await adminLogin(page);
     await page.getByRole('navigation').locator('div').filter({ hasText: 'Mitarbeitende' }).nth(2).click();
     await expect(page).toHaveURL('/user');
 });
 
-test('can create a new user', async ({ page }) => {
-    await page.getByRole('row', { name: '# Vorname Nachname Email' }).getByRole('button').click();
+test('creates a new user', async ({ page }) => {
+    await page
+        .getByRole('row', { name: /.*Vorname Nachname Email/ })
+        .getByRole('button')
+        .click();
 
     //Allgemeine Angaben
     await page.getByLabel('Vorname').fill('Test');
@@ -38,14 +40,236 @@ test('can create a new user', async ({ page }) => {
     await page.getByRole('button', { name: 'Weiter' }).click();
 
     //Berechtigungen
-    await page.getByTestId('userOperatingSite').click();
-    await page.getByText('delete me ORG').click();
-    await page.locator('.v-col > .v-input > .v-input__control > .v-field > .v-field__field > .v-field__input').first().click();
+    // organisation part
+    await expect(page.getByRole('heading', { name: 'Organisation' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Betriebsstätte' })).toBeVisible();
+    await page.getByTestId('permissionSelector').first().click();
     await page.getByText('Mitarbeitende verwalten').click();
-    await page.locator('.v-col > .v-input > .v-input__control > .v-field > .v-field__append-inner > .mdi-menu-down').first().click();
-    await page.locator('span').filter({ hasText: 'StufeLesenStufe' }).locator('i').click();
+    await page.getByText('Zeitkonten verwalten').click();
+    await expect(page.getByText('Zeitkonten verwaltenMitarbeitende verwalten')).toBeVisible();
+    await page
+        .locator('div')
+        .filter({ hasText: /^Lesen$/ })
+        .first()
+        .click();
+    await expect(
+        page
+            .getByRole('dialog')
+            .locator('div')
+            .filter({ hasText: /^Lesen$/ })
+            .nth(2),
+    ).toBeVisible();
+    await page.getByText('Schreiben').click();
+    await expect(
+        page
+            .locator('div')
+            .filter({ hasText: /^Schreiben$/ })
+            .first(),
+    ).toBeVisible();
+
+    // operating Site part
+    await page.getByTestId('userOperatingSiteSelection').first().click();
+    await page.getByText('delete me ORG').click();
+    await expect(page.getByTestId('userOperatingSiteSelection').locator('div').filter({ hasText: 'delete me ORG' }).nth(3)).toBeVisible();
+    await page.getByTestId('permissionSelector').nth(1).click();
+    await page.getByText('Zeitkorrekturen verwalten').click();
+    await page.getByText('Abwesenheiten verwalten').click();
+    await page.getByText('Abwesenheiten verwaltenZeitkorrekturen verwalten').click();
+    await expect(page.getByText('Abwesenheiten verwaltenZeitkorrekturen verwalten')).toBeVisible();
+    await expect(page.getByText('Lesen').nth(1)).toBeVisible();
+    await page.getByText('Lesen').nth(2).click();
     await page.getByRole('option', { name: 'Schreiben' }).click();
+    await expect(
+        page
+            .locator('div')
+            .filter({ hasText: /^Schreiben$/ })
+            .nth(2),
+    ).toBeVisible();
+
+    // group part
+    await page.getByTestId('userGroupSelection').click();
+    await page.getByRole('option', { name: /.*/ }).last().click();
+
+    // supervisor part
+    await page.getByTestId('userSupervisorSelection').click();
+    await page.getByText('admin admin').click();
+    await page.getByLabel('Ist ein Vorgesetzter').check();
+    await page.getByRole('button', { name: 'Speichern' }).click();
+    await expect(page.getByText('Mitarbeitenden erfolgreich')).toBeVisible;
+    await expect(page.getByRole('cell', { name: 'Test', exact: true })).toBeVisible;
+    await expect(page.getByRole('cell', { name: 'test@test.de' })).toBeVisible;
+});
+
+test('changes information of previously added user', async ({ page }) => {
+    // Allgemeine Angaben
+    await expect(page.getByRole('cell', { name: 'Test', exact: true })).toBeVisible();
+    await page.getByRole('row', { name: 'Test Tester test@test.de' }).getByRole('link').getByRole('button').click();
+    await expect(page.getByText('Test Tester bearbeiten')).toBeVisible;
+    await page.getByLabel('Vorname').fill('Changed');
+    await page.getByLabel('Email').fill('changed@changed.de');
+    await page.getByLabel('Geburtsdatum').fill('1111-11-13');
+    await page.getByRole('button', { name: 'Weiter' }).click();
+
+    // Adresse
+    await page.getByLabel('Straße').fill('changedbytest');
+    await page.getByRole('button', { name: 'Weiter' }).click();
+
+    // Berechtigungen
+    await page.getByText('Mitarbeitende verwaltenZeitkonten verwalten').click();
+    await page.getByRole('option', { name: 'Zeitkonten verwalten' }).click();
+    await page
+        .locator('div')
+        .filter({ hasText: /^OrganisationsrechteMitarbeitende verwalten$/ })
+        .locator('div')
+        .first()
+        .click();
+    await expect(
+        page
+            .locator('div')
+            .filter({ hasText: /^Mitarbeitende verwalten$/ })
+            .first(),
+    ).toBeVisible();
+    await expect(page.getByText('Zeitkonten verwalten').nth(1)).not.toBeVisible();
+    await page
+        .locator('div')
+        .filter({ hasText: /^Lesen$/ })
+        .first()
+        .click();
+    await page.getByRole('option', { name: 'Schreiben' }).click();
+    await expect(
+        page
+            .locator('div')
+            .filter({ hasText: /^Schreiben$/ })
+            .first(),
+    ).toBeVisible();
+    await page.getByText('Zeitkorrekturen verwaltenAbwesenheiten verwalten').click();
+    await page.getByRole('option', { name: 'Zeitkorrekturen verwalten' }).click();
+    await page
+        .locator('div')
+        .filter({ hasText: /^BetriebstättenrechteAbwesenheiten verwalten$/ })
+        .locator('div')
+        .first()
+        .click();
+    await expect(
+        page
+            .locator('div')
+            .filter({ hasText: /^Abwesenheiten verwalten$/ })
+            .first(),
+    ).toBeVisible();
+    await expect(page.getByText('Zeitkorrekturen verwalten').nth(1)).not.toBeVisible();
+    await page
+        .locator('div')
+        .filter({ hasText: /^Lesen$/ })
+        .first()
+        .click();
+    await page.getByRole('option', { name: 'Schreiben' }).click();
+    await expect(
+        page
+            .locator('div')
+            .filter({ hasText: /^Schreiben$/ })
+            .nth(2),
+    ).toBeVisible();
+    await page.getByTestId('permissionSelector').last().click();
+    await page.getByText('Zeitkontovarianten verwalten').click();
+    await page
+        .locator('div')
+        .filter({ hasText: /^AbteilungsrechteZeitkontovarianten verwalten$/ })
+        .locator('div')
+        .first()
+        .click();
+    await expect(
+        page
+            .locator('div')
+            .filter({ hasText: /^Zeitkontovarianten verwalten$/ })
+            .first(),
+    ).toBeVisible();
+    await expect(page.getByText('Zeitkontovarianten verwalten').nth(1)).toBeVisible();
     await page.getByRole('button', { name: 'Speichern' }).click();
     await expect(page.getByText('Mitarbeitenden erfolgreich')).toBeVisible();
-    await expect(page.getByRole('cell', { name: 'Test', exact: true })).toBeVisible();
+
+    // checks if updated information are visible
+    await expect(page.getByText('Changed Tester bearbeiten')).toBeVisible();
+    await page.getByRole('banner').getByRole('button').first().click();
+    await expect(page.getByRole('cell', { name: 'Changed', exact: true })).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'changed@changed.de' })).toBeVisible();
+    await expect(page.getByRole('cell', { name: '13.11.1111' })).toBeVisible();
+});
+
+test('tests time_account function', async ({ page }) => {
+    await page.getByRole('row', { name: 'Changed Tester changed@' }).getByRole('link').getByRole('button').click();
+    await expect(page.getByText('Changed Tester bearbeiten')).toBeVisible();
+    await page.getByRole('tab', { name: 'Arbeitszeitkonten' }).click();
+
+    //adds hours to standard time account
+    await expect(page.getByRole('cell', { name: 'Standardkonto' })).toBeVisible();
+    await expect(page.getByRole('cell', { name: '80' })).toBeVisible();
+    await page.getByRole('row', { name: 'Standardkonto 0 80 Standard' }).getByRole('button').first().click();
+    await expect(page.getByText('Stunden für Konto')).toBeVisible();
+    await page.getByLabel('Stunden').fill('40');
+    await page.getByLabel('Beschreibung').fill('This is a test');
+    await page.getByRole('button', { name: 'Speichern' }).click();
+    await expect(page.getByText('Changed Tester bearbeiten')).toBeVisible();
+    await expect(page.getByText('Transaktion erfolgreich')).toBeVisible();
+    await expect(page.getByText('Stunden für Konto')).not.toBeVisible();
+    await expect(page.locator('span').filter({ hasText: '40' }).first()).toBeVisible();
+
+    //updates time_account information
+    await page.getByRole('row', { name: 'Standardkonto 40 80 Standard' }).getByRole('button').nth(1).click();
+    await expect(page.getByText('Einstellungen für Konto')).toBeVisible();
+    await page.getByLabel('Name', { exact: true }).fill('StandardkontoTest');
+    await page.getByLabel('Limit in Stunden').fill('50');
+    await expect(page.getByText('entspricht 1.25x wöchentliche')).toBeVisible();
+    await page.getByRole('button', { name: 'Speichern' }).click();
+    await expect(page.getByText('Arbeitszeitkonto erfolgreich')).toBeVisible();
+    await expect(page.getByText('Einstellungen für Konto')).not.toBeVisible();
+    await expect(page.getByRole('cell', { name: '50' })).toBeVisible();
+
+    // creates a new time account
+    await page.getByRole('row', { name: 'Name Überstunden Limit Typ' }).getByRole('button').nth(1).click();
+    await expect(page.getByText('Neues Arbeitszeitkonto')).toBeVisible();
+    await page.getByLabel('Name', { exact: true }).fill('Testkonto');
+    await page.getByLabel('Limit in Stunden').fill('40');
+    await page.getByLabel('Startbetrag in Stunden').fill('10');
+    await page.getByRole('button', { name: 'Speichern' }).click();
+    await expect(page.getByText('Arbeitszeitkonto erfolgreich')).toBeVisible();
+    await expect(page.getByText('Neues Arbeitszeitkonto')).not.toBeVisible();
+
+    // tests transaction function
+    await page.getByRole('row', { name: 'Name Überstunden Limit Typ' }).getByRole('button').first().click();
+    await expect(page.getByText('Stundentransaktion durchführen')).toBeVisible();
+    await page.getByTestId('timeAccountTransactionStartAccount').click();
+    await page.getByRole('option', { name: 'StandardkontoTest' }).click();
+    await page.getByTestId('timeAccountTransactionDestinationAccount').click();
+    await page.getByRole('option', { name: 'Testkonto' }).click();
+    await page.getByLabel('Stunden').fill('10');
+    await page.getByLabel('Beschreibung').fill('This is another test');
+    await expect(page.getByText('Die Beschreibung ist für die')).toBeVisible();
+    await page.getByRole('button', { name: 'Speichern' }).click();
+    await expect(page.getByText('Transaktion erfolgreich')).toBeVisible();
+    await expect(page.getByText('Stundentransaktion durchführen')).not.toBeVisible();
+    await page.locator('span').filter({ hasText: /^20$/ }).first().click();
+});
+
+test('tests visibility of transactions', async ({ page }) => {
+    await page.getByRole('row', { name: 'Changed Tester changed@' }).getByRole('link').getByRole('button').click();
+    await page.getByRole('tab', { name: 'Transaktionen' }).click();
+    await expect(page.getByText('Changed Tester bearbeiten')).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'StandardkontoTest' }).first()).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'Testkonto' }).first()).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'This is another test' })).toBeVisible();
+
+    await expect(page.getByRole('cell', { name: 'Initialer Kontostand' })).toBeVisible();
+    await expect(page.getByRole('cell', { name: '+ 10' }).locator('span').first()).toBeVisible();
+
+    await expect(page.getByRole('cell', { name: 'StandardkontoTest' }).nth(1)).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'This is a test' })).toBeVisible();
+    await expect(page.getByRole('cell', { name: '+ 40' }).locator('span').first()).toBeVisible();
+});
+
+test('trys organigramm', async ({ page }) => {
+    await page.getByRole('row', { name: 'Changed Tester changed@' }).getByRole('link').getByRole('button').click();
+    await expect(page.getByText('Changed Tester bearbeiten')).toBeVisible();
+    await page.getByRole('tab', { name: 'Organigramm' }).click();
+    await expect(page.getByText('Changed Tester bearbeiten')).toBeVisible();
+    await expect(page.getByText('Changed Tester', { exact: true })).toBeVisible();
 });

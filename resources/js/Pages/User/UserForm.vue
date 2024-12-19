@@ -389,6 +389,7 @@ const steps = ref([
                                         label="Wähle die Betriebsstätte des Mitarbeiters aus."
                                         :error-messages="userForm.errors.operating_site_id"
                                         :rules="steps[2].fields.operating_site_id"
+                                        data-testid="userOperatingSiteSelection"
                                     ></v-select>
                                 </v-col>
                                 <PermissionSelector
@@ -397,6 +398,7 @@ const steps = ref([
                                     :permissions
                                     :errors="userForm.errors"
                                     label="Betriebstättenrechte"
+                                    data-testid="userOperatingSitePermissions"
                                 ></PermissionSelector>
                                 <v-col cols="12"><h4>Abteilung</h4></v-col>
                                 <v-col cols="12" md="6">
@@ -405,6 +407,7 @@ const steps = ref([
                                         :items="groups.map(g => ({ title: g.name, value: g.id }))"
                                         label="Wähle eine Abteilung aus, zu die der Mitarbeiter gehören soll."
                                         :error-messages="userForm.errors.group_id"
+                                        data-testid="userGroupSelection"
                                     ></v-select>
                                 </v-col>
                                 <PermissionSelector
@@ -422,6 +425,7 @@ const steps = ref([
                                         :items="supervisors.map(s => ({ title: s.first_name + ' ' + s.last_name, value: s.id }))"
                                         label="Wähle einen Vorgesetzten, falls vorhanden"
                                         :error-messages="userForm.errors.supervisor_id"
+                                        data-testid="userSupervisorSelection"
                                     ></v-select>
                                 </v-col>
                                 <v-col cols="12" md="6">

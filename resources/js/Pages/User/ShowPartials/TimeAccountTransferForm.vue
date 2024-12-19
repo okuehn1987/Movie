@@ -37,6 +37,7 @@ const timeAccountTransferForm = useForm({
                         <v-row>
                             <v-col cols="12" md="4">
                                 <v-select
+                                    data-testid="timeAccountTransactionStartAccount"
                                     :items="
                                         time_accounts
                                             .filter(t => t.id != timeAccountTransferForm.to_id)
@@ -52,6 +53,7 @@ const timeAccountTransferForm = useForm({
                             </v-col>
                             <v-col cols="12" md="4">
                                 <v-select
+                                    data-testid="timeAccountTransactionDestinationAccount"
                                     :items="
                                         time_accounts
                                             .filter(t => t.id != timeAccountTransferForm.from_id)

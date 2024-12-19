@@ -28,6 +28,7 @@ const selectedPermissions = computed({
 <template>
     <v-col cols="12">
         <v-select
+            data-testid="permissionSelector"
             multiple
             chips
             :label
