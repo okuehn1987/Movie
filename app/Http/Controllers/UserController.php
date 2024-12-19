@@ -297,7 +297,7 @@ class UserController extends Controller
         ]);
         $user->organizationUser->update($validated['organizationUser']);
         $user->operatingSiteUser->update($validated['operatingSiteUser']);
-        $user->groupUser->update($validated['groupUser']);
+        $user->groupUser?->update($validated['groupUser']);
 
         $lastWorkingHour = $user->userWorkingHours()
             ->where('active_since', Carbon::parse($validated['userWorkingHoursSince']))
