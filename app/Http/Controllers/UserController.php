@@ -58,6 +58,9 @@ class UserController extends Controller
 
             'is_supervisor' => 'required|boolean',
 
+            'home_office' => 'required|boolean',
+            'home_office_hours_per_week' => 'required_if:home_office,true|numeric',
+
             'userWorkingHours' => 'required|decimal:0,2',
             'userWorkingHoursSince' => 'required|date',
 
@@ -197,16 +200,16 @@ class UserController extends Controller
             'federal_state' => $validated['federal_state'],
             'phone_number' => $validated['phone_number'],
             'staff_number' => $validated['staff_number'],
-            'password' => $validated['password'],
+            'password' =>  Hash::make($validated['password']),
             'group_id' => $validated['group_id'],
             'is_supervisor' => $validated['is_supervisor'],
             'supervisor_id' => $validated['supervisor_id'],
             'operating_site_id' => $validated['operating_site_id'],
             'date_of_birth' => Carbon::parse($validated['date_of_birth']),
+            'home_office' => $validated['home_office'],
+            'home_office_hours_per_week' => $validated['home_office_hours_per_week'],
             'email_verified_at' => now(),
         ]);
-
-        $user->password = Hash::make($validated['password']);
         $user->save();
 
         UserWorkingHour::create([
@@ -294,6 +297,8 @@ class UserController extends Controller
             'supervisor_id' => $validated['supervisor_id'],
             'is_supervisor' => $validated['is_supervisor'],
             'date_of_birth' => Carbon::parse(Carbon::parse($validated['date_of_birth'])->format('d-m-Y')),
+            'home_office' => $validated['home_office'],
+            'home_office_hours_per_week' => $validated['home_office_hours_per_week'],
         ]);
         $user->organizationUser->update($validated['organizationUser']);
         $user->operatingSiteUser->update($validated['operatingSiteUser']);
@@ -317,7 +322,7 @@ class UserController extends Controller
             ->firstOrNew();
 
         foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $day) {
-            $workingWeek[$day] = in_array($day, $validated['userWorkingWeek']) ? 1 : 0;
+            $workingWeek[$day] = (int)in_array($day, $validated['userWorkingWeek']);
         }
 
         if ($workingWeek->isDirty()) $workingWeek->replicate()->save();

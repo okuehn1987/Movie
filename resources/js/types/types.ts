@@ -95,13 +95,20 @@ export type User = DBObject<'user'> &
         organization_id: Organization['id'] | null;
         staff_number: string | null;
         date_of_birth: Date;
-        home_office: boolean;
-        home_office_ratio: number | null;
         phone_number: string | null;
         email_verified_at: string | null;
         weekly_working_hours: number;
         is_supervisor: boolean;
-    };
+    } & (
+        | {
+              home_office: true;
+              home_office_hours_per_week: number;
+          }
+        | {
+              home_office: false;
+              home_office_hours_per_week: null;
+          }
+    );
 
 export type UserAppends = {
     readonly name: string;

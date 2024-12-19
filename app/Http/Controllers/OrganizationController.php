@@ -152,7 +152,7 @@ class OrganizationController extends Controller
         Gate::authorize('viewShow', $organization) && Gate::authorize('viewIndex', User::class);
 
         return Inertia::render('Organization/OrganizationOrganigram', [
-            'users' => User::whereNull('supervisor_id')
+            'users' => User::inOrganization()->whereNull('supervisor_id')
                 ->with('allSupervisees:id,first_name,last_name,supervisor_id,email')
                 ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'email']),
         ]);
