@@ -96,7 +96,11 @@ class AbsenceController extends Controller
             'accepted' => 'required|boolean'
         ]);
 
-        $absence->update(['status' => $validated['accepted'] ? 'accepted' : 'declined']);
+        if ($validated['accepted']) {
+            $absence->accountAsTransaction();
+        } else {
+            $absence->update(['status' => 'declined']);
+        }
 
         return back()->with('success',  "Abwesenheit erfolgreich " . ($validated['accepted'] ? 'akzeptiert' : 'abgelehnt') . ".");
     }
