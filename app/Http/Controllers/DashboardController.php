@@ -30,7 +30,7 @@ class DashboardController extends Controller
         }
 
         $visibleUsers = User::inOrganization()
-            ->get(['id'])
+            ->get(['id', 'supervisor_id', 'group_id', 'operating_site_id'])
             ->filter(fn($u) => $user->can('viewShow', [Absence::class, $u]))
             ->pluck('id');
 
