@@ -273,3 +273,12 @@ test('trys organigramm', async ({ page }) => {
     await expect(page.getByText('Changed Tester bearbeiten')).toBeVisible();
     await expect(page.getByText('Changed Tester', { exact: true })).toBeVisible();
 });
+
+test('deletes previously created user', async ({ page }) => {
+    await page.getByRole('row', { name: 'Changed Tester changed@' }).getByRole('button').nth(1).click();
+    await expect(page.getByText('Mitarbeiter löschen')).toBeVisible();
+    await page.getByRole('button', { name: 'Löschen' }).click();
+    await expect(page.getByText('Mitarbeitenden erfolgreich')).toBeVisible();
+    await expect(page.getByText('Mitarbeiter löschen')).not.toBeVisible();
+    await expect(page.getByRole('cell', { name: 'Changed' })).not.toBeVisible();
+});
