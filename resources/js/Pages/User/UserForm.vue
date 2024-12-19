@@ -59,8 +59,8 @@ const userForm = useForm({
     operating_site_id: null as null | OperatingSite['id'],
     supervisor_id: null as null | User['id'],
     is_supervisor: false,
-    hasHomeOffice: false,
-    homeOfficeHoursPerWeek: null as number | null,
+    home_office: false,
+    home_office_hours_per_week: null as number | null,
     userWorkingHours: 0,
     userWorkingHoursSince: new Date(),
     userWorkingWeek: [] as Weekday[],
@@ -116,8 +116,8 @@ if (props.user) {
     userForm.group_id = props.user.group_id;
     userForm.operating_site_id = props.user.operating_site_id;
     userForm.supervisor_id = props.user.supervisor_id;
-    userForm.hasHomeOffice = props.user.home_office;
-    userForm.homeOfficeHoursPerWeek = props.user.home_office_ratio;
+    userForm.home_office = props.user.home_office;
+    userForm.home_office_hours_per_week = props.user.home_office_hours_per_week;
     userForm.userWorkingHours = props.user.currentWorkingHours?.weekly_working_hours ?? 0;
     userForm.userWorkingHoursSince = new Date(props.user.currentWorkingHours.active_since);
     for (const weekday of Info.weekdays('long', { locale: 'en' }).map(e => e.toLowerCase()) as Weekday[]) {
@@ -267,6 +267,7 @@ const steps = ref([
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-text-field
+                                        type="number"
                                         v-model="userForm.userWorkingHours"
                                         label="Trage die wöchentliche Arbeitszeit des Mitarbeiters ein"
                                         :error-messages="userForm.errors.userWorkingHours"
@@ -306,6 +307,27 @@ const steps = ref([
                                         :error-messages="userForm.errors.userWorkingWeekSince"
                                         :rules="steps[0].fields.userWorkingWeekSince"
                                     ></v-date-input>
+                                </v-col>
+                                <v-col cols="12" md="6">
+                                    <v-checkbox
+                                        v-model="userForm.home_office"
+                                        label="Homeoffice"
+                                        :error-messages="userForm.errors.home_office"
+                                        @update:model-value="
+                                            v => {
+                                                if (!v) userForm.home_office_hours_per_week = null;
+                                            }
+                                        "
+                                    ></v-checkbox>
+                                </v-col>
+                                <v-col cols="12" md="6">
+                                    <v-text-field
+                                        type="number"
+                                        v-model="userForm.home_office_hours_per_week"
+                                        label="Homeoffice Stunden pro Woche"
+                                        :disabled="!userForm.home_office"
+                                        :error-messages="userForm.errors.home_office_hours_per_week"
+                                    ></v-text-field>
                                 </v-col>
                             </v-row>
                         </v-card-text>

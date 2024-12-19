@@ -30,7 +30,7 @@ class DashboardController extends Controller
         }
 
         $visibleUsers = User::inOrganization()
-            ->get(['id'])
+            ->get(['id', 'supervisor_id', 'group_id', 'operating_site_id'])
             ->filter(fn($u) => $user->can('viewShow', [Absence::class, $u]))
             ->pluck('id');
 
@@ -49,7 +49,7 @@ class DashboardController extends Controller
             ->where('start', '<=', Carbon::now()->format('Y-m-d'))
             ->where('end', '>=', Carbon::now()->format('Y-m-d'))
             ->whereIn('user_id', $visibleUsers)
-            ->with(['user:id,first_name,last_name', 'absenceType:id,abbreviation'])
+            ->with(['user:id,first_name,last_name,supervisor_id', 'absenceType:id,abbreviation'])
             ->get(['id', 'start', 'end', 'user_id', 'absence_type_id'])
             ->toArray();
 
@@ -66,7 +66,8 @@ class DashboardController extends Controller
             'overtime' => $user->overtime,
             'workingHours' => [
                 'should' => $user->userWorkingHours()->where('active_since', '<=', Carbon::now()->format('Y-m-d'))->orderBy('active_since', 'Desc')->first()['weekly_working_hours'],
-                'current' => User::getCurrentWeekWorkingHours($user)
+                'current' => User::getCurrentWeekWorkingHours($user)->totalHours,
+                'currentHomeOffice' => User::getCurrentWeekWorkingHours($user)->homeOfficeHours,
             ],
         ]);
     }

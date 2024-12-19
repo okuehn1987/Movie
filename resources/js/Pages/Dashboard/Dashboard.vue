@@ -21,7 +21,7 @@ defineProps<{
     patches: PatchProp[] | null;
     operating_times: OperatingTime[];
     overtime: number;
-    workingHours: { should: number; current: number };
+    workingHours: { should: number; current: number; currentHomeOffice: number };
     absenceRequests: (AbsenceProp & { absence_type: Pick<AbsenceType, 'id' | 'name'> })[] | null;
     currentAbsences: (AbsenceProp & { absence_type: Pick<AbsenceType, 'id' | 'abbreviation'> })[];
 }>();
@@ -43,19 +43,18 @@ defineProps<{
                 </v-card>
             </v-col>
 
-            <v-col cols="12" sm="6" lg="4">
+            <!-- <v-col cols="12" sm="6" lg="4">
                 <v-card>
                     <v-card-title>Informationen</v-card-title>
                     <v-card-item>TODO: to be implemented</v-card-item>
                 </v-card>
-            </v-col>
+            </v-col> -->
             <v-col cols="12" sm="6" lg="4" v-if="patches">
                 <WorkLogPatches :patches="patches" />
             </v-col>
             <v-col cols="12" sm="6" lg="4">
                 <Absences :absences="currentAbsences" />
             </v-col>
-            <v-col cols="12" sm="6" lg="4"></v-col>
             <v-col cols="12" sm="6" lg="4" v-if="absenceRequests">
                 <AbsenceRequests :absenceRequests="absenceRequests" />
             </v-col>
