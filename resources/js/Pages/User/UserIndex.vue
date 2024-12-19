@@ -25,7 +25,6 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
             <v-data-table-virtual
                 no-data-text="Es wurden keine Mitarbeiter gefunden"
                 :headers="[
-                    { title: '#', key: 'id' },
                     { title: 'Vorname', key: 'first_name' },
                     { title: 'Nachname', key: 'last_name' },
                     { title: 'Email', key: 'email' },

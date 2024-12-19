@@ -3,8 +3,6 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\WorkLog;
-use App\Models\WorkLogPatch;
 use Illuminate\Auth\Access\Response;
 
 class WorkLogPolicy

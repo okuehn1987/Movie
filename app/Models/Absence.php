@@ -13,12 +13,11 @@ class Absence extends Model
 
     protected $guarded = [];
 
-    protected $hidden = ['absence_type_id', 'absenceType'];
-
-    public function toArray()
+    public function getHidden()
     {
-        if (true) $this->makeVisible(['absence_type_id', 'absenceType']); //FIXME: use policies 
-        return parent::toArray();
+        $user = User::find(Auth::id());
+        if ($user->cannot('viewShow', [AbsenceType::class, $this->user])) return ['absence_type_id', 'absenceType'];
+        return [];
     }
 
     public function user()

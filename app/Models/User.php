@@ -53,6 +53,7 @@ class User extends Authenticatable
      *   */
     public function hasPermissionOrDelegation(User | null $user, string $permissionName, string $permissionLevel)
     {
+        $this->load(['isSubstitutionFor']);
         return $this->hasPermission($user, $permissionName,  $permissionLevel) ||
             $this->isSubstitutionFor->some(fn($substitution) => $substitution->hasPermission($user, $permissionName,  $permissionLevel));
     }
@@ -65,6 +66,9 @@ class User extends Authenticatable
     private function hasPermission(User | null $user, string $permissionName, string $permissionLevel)
     {
         if ($permissionLevel != 'read' && $permissionLevel != 'write') abort(404);
+
+        $this->load(['organizationUser', 'groupUser', 'operatingSiteUser']);
+        if ($user) $user->load(['organizationUser', 'groupUser', 'operatingSiteUser']);
 
         if (
             array_key_exists($permissionName, $this->organizationUser->toArray()) &&

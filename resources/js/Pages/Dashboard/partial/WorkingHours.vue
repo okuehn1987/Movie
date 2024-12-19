@@ -116,9 +116,14 @@ const currentWorkingHours = computed(() =>
                         Es fehlt eine Meldung. Bitte Zeitkorrektur.
                         <v-btn color="error" :href="`/user/${page.props.auth.user.id}/workLogs?workLog=${lastWorkLog?.id}`"> Zeitkorrektur </v-btn>
                     </v-alert>
-                    <div v-else-if="(page.props.auth.user.home_office && lastWorkLog?.end) || (lastWorkLog?.is_home_office && !lastWorkLog.end)">
+                    <div
+                        v-else-if="
+                            (page.props.auth.user.home_office && (!lastWorkLog || lastWorkLog.end)) ||
+                            (lastWorkLog && lastWorkLog.is_home_office && !lastWorkLog.end)
+                        "
+                    >
                         <v-btn block size="large" @click.stop="changeWorkStatus(true)" color="primary" class="me-2">
-                            {{ lastWorkLog.end ? 'Kommen Homeoffice' : 'Gehen Homeoffice' }}
+                            {{ !lastWorkLog || lastWorkLog.end ? 'Kommen Homeoffice' : 'Gehen Homeoffice' }}
                         </v-btn>
                     </div>
                 </v-col>
@@ -131,7 +136,7 @@ const currentWorkingHours = computed(() =>
                         color="primary"
                         v-if="lastWorkLog?.end || !lastWorkLog?.is_home_office"
                     >
-                        {{ lastWorkLog?.end ? 'Kommen' : 'Gehen' }}
+                        {{ !lastWorkLog || lastWorkLog.end ? 'Kommen' : 'Gehen' }}
                     </v-btn>
                 </v-col>
             </v-row>

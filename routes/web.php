@@ -35,7 +35,7 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::resource('user.timeAccount', TimeAccountController::class)->shallow()->only(['store']);
     Route::resource('timeAccount', TimeAccountController::class)->only(['update', 'destroy']);
     Route::resource('timeAccountTransaction', TimeAccountTransactionController::class)->only(['store']);
-    Route::resource('timeAccountSetting', TimeAccountSettingsController::class)->only(['index', 'store']);
+    Route::resource('timeAccountSetting', TimeAccountSettingsController::class)->only(['store']);
 
     Route::post('notifications/{notification}/update', [NotificationController::class, 'update'])->name('notification.update');
 
