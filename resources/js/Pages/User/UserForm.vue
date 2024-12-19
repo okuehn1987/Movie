@@ -288,7 +288,6 @@ const steps = ref([
                                             }))
                                         "
                                         label="Wähle die Arbeitstage des Mitarbeiters aus"
-                                        required
                                         :error-messages="userForm.errors.userWorkingWeek"
                                         :rules="steps[0].fields.userWorkingWeek"
                                     />
@@ -298,7 +297,6 @@ const steps = ref([
                                         prepend-icon=""
                                         v-model="userForm.userWorkingWeekSince"
                                         label="seit"
-                                        required
                                         :error-messages="userForm.errors.userWorkingWeekSince"
                                         :rules="steps[0].fields.userWorkingWeekSince"
                                     ></v-date-input>
@@ -313,7 +311,6 @@ const steps = ref([
                                     <v-text-field
                                         v-model="userForm.street"
                                         label="Straße"
-                                        required
                                         :error-messages="userForm.errors.street"
                                         :rules="steps[1].fields.street"
                                     ></v-text-field>
@@ -322,7 +319,6 @@ const steps = ref([
                                     <v-text-field
                                         v-model="userForm.house_number"
                                         label="Hausnummer"
-                                        required
                                         :error-messages="userForm.errors.house_number"
                                         :rules="steps[1].fields.house_number"
                                     ></v-text-field>
@@ -331,7 +327,6 @@ const steps = ref([
                                     <v-text-field
                                         v-model="userForm.zip"
                                         label="Postleitzahl"
-                                        required
                                         :error-messages="userForm.errors.zip"
                                         :rules="steps[1].fields.zip"
                                     ></v-text-field>
@@ -340,7 +335,6 @@ const steps = ref([
                                     <v-text-field
                                         v-model="userForm.city"
                                         label="Ort"
-                                        required
                                         :error-messages="userForm.errors.city"
                                         :rules="steps[1].fields.city"
                                     ></v-text-field>
