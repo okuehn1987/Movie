@@ -24,6 +24,7 @@ class WorkLogController extends Controller
                 ->map(
                     function ($u) {
                         $u['latestWorkLog'] = $u->workLogs()->latest()->first();
+                        $u['defaultTimeAccount'] = $u->defaultTimeAccount()->first();
                         return $u;
                     }
                 )],

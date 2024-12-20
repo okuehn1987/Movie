@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { User, WorkLog } from '@/types/types';
+import { TimeAccount, User, WorkLog } from '@/types/types';
 import { getMaxScrollHeight } from '@/utils';
 import { Link } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 
 defineProps<{
-    users: (Pick<User, 'id' | 'first_name' | 'last_name'> & { latestWorkLog: WorkLog })[];
+    users: (Pick<User, 'id' | 'first_name' | 'last_name'> & { latestWorkLog: WorkLog; defaultTimeAccount: TimeAccount })[];
 }>();
 </script>
 <template>
@@ -18,6 +18,7 @@ defineProps<{
             :items="
                 users.map(u => ({
                     ...u,
+                    defaultTimeAccount: u.defaultTimeAccount.balance,
                     lastAction: u.latestWorkLog.end ? 'Gehen' : 'Kommen',
                     time: DateTime.fromSQL(u.latestWorkLog.end ? u.latestWorkLog.end : u.latestWorkLog.start).toFormat('dd.MM.yyyy HH:mm'),
                 }))
@@ -26,6 +27,7 @@ defineProps<{
                 { title: '', key: 'isPresent', sortable: false },
                 { title: 'Vorname', key: 'first_name' },
                 { title: 'Nachname', key: 'last_name' },
+                { title: 'Gleitzeitkonto', key: 'defaultTimeAccount' },
                 { title: 'Letzte Buchung', key: 'lastAction' },
                 { title: 'Uhrzeit', key: 'time' },
                 { title: '', key: 'actions', sortable: false, align: 'end' },
