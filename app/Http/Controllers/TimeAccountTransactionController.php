@@ -18,11 +18,11 @@ class TimeAccountTransactionController extends Controller
 
         $validated = $request->validate([
             'from_id' => [
-                Rule::in([null, TimeAccount::inOrganization()->get(['id'])]),
+                Rule::in([null, ...TimeAccount::inOrganization()->get(['id'])->pluck('id')]),
                 'required_if:to_id,null',
             ],
             'to_id' => [
-                Rule::in([null, TimeAccount::inOrganization()->get(['id'])]),
+                Rule::in([null, ...TimeAccount::inOrganization()->get(['id'])->pluck('id')]),
                 'required_if:from_id,null',
             ],
             'amount' => "required|numeric|min:0",
