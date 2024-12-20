@@ -187,9 +187,10 @@ class User extends Authenticatable
         return $this->hasMany(TimeAccount::class);
     }
 
-    public function defaultTimeAccount(): TimeAccount
+    /** @return \Illuminate\Database\Eloquent\Relations\HasOne<\App\Models\TimeAccount, \App\Models\User>*/
+    public function defaultTimeAccount()
     {
-        return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->whereNull('type'))->first();
+        return $this->hasOne(TimeAccount::class)->whereHas('timeAccountSetting', fn($q) => $q->whereNull('type'));
     }
 
     public function userWorkingWeeks()
