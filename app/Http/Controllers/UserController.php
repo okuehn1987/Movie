@@ -225,7 +225,7 @@ class UserController extends Controller
         ]);
 
         TimeAccount::create([
-            'name' => 'Standardkonto',
+            'name' => 'Gleitzeitkonto',
             'balance' => 0,
             'balance_limit' => $validated['userWorkingHours'] * 2,
             'time_account_setting_id' => TimeAccountSetting::inOrganization()->whereNull('type')->first()->id,
