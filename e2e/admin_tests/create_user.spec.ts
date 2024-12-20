@@ -33,10 +33,15 @@ test('creates a new user', async ({ page }) => {
     await page.getByLabel('Hausnummer').fill('11');
     await page.getByLabel('Postleitzahl').fill('11111');
     await page.getByLabel('Ort', { exact: true }).fill('Testhausen');
-    await page.getByRole('dialog').locator('i').nth(2).click();
-    await page.getByText('Deutschland').click();
-    await page.getByRole('dialog').locator('i').nth(3).click();
-    await page.getByRole('option', { name: 'Hamburg' }).click();
+    await page
+        .locator('div')
+        .filter({ hasText: /^BundeslandBundesland$/ })
+        .first()
+        .click();
+    await page.getByTestId('land').click();
+    await page.getByRole('option', { name: 'Deutschland' }).click();
+    await page.getByTestId('federal_state').click();
+    await page.getByRole('option', { name: 'Berlin' }).click();
     await page.getByRole('button', { name: 'Weiter' }).click();
 
     //Berechtigungen
@@ -205,7 +210,7 @@ test('tests time_account function', async ({ page }) => {
     await expect(page.getByRole('cell', { name: '80' })).toBeVisible();
     await page.getByRole('row', { name: 'Standardkonto 0 80 Standard' }).getByRole('button').first().click();
     await expect(page.getByText('Stunden für Konto')).toBeVisible();
-    await page.getByLabel('Stunden').fill('40');
+    await page.getByLabel('Stunden', { exact: true }).fill('40');
     await page.getByLabel('Beschreibung').fill('This is a test');
     await page.getByRole('button', { name: 'Speichern' }).click();
     await expect(page.getByText('Changed Tester bearbeiten')).toBeVisible();

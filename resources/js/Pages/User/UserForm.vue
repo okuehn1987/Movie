@@ -373,6 +373,7 @@ const steps = ref([
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-select
+                                        data-testid="land"
                                         label="Land"
                                         required
                                         :items="countries"
@@ -383,6 +384,7 @@ const steps = ref([
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-select
+                                        data-testid="federal_state"
                                         label="Bundesland"
                                         :items="getStates(userForm.country, countries)"
                                         :disabled="!userForm.country"
