@@ -87,7 +87,7 @@ export function getTruncationCycleDisplayName(cycleLength: TimeAccountSetting['t
     return ({ 'null': 'Unbegrenzt', '1': 'Monatlich', '3': 'Quartalsweise', '6': 'Halbjährlich', '12': 'Jährlich' } as const)[cycleLength ?? 'null'];
 }
 
-export const DEFAULT_ACCOUNTYPE_NAME = 'Standard';
+export const DEFAULT_ACCOUNTYPE_NAME = 'Gleitzeitkonto';
 export function accountType(type: TimeAccountSetting['type']): typeof DEFAULT_ACCOUNTYPE_NAME | (string & NonNullable<unknown>) {
     return type ?? DEFAULT_ACCOUNTYPE_NAME;
 }

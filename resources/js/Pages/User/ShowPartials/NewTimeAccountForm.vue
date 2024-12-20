@@ -14,7 +14,7 @@ const props = defineProps<{
 const newTimeAccountForm = useForm({
     balance_limit: props.user.currentWorkingHours.weekly_working_hours * 2,
     balance: 0,
-    time_account_setting_id: props.time_account_settings[0]?.id ?? null,
+    time_account_setting_id: props.time_account_settings.filter(t => t.type != null)[0]?.id ?? null,
     name: '',
 });
 </script>
@@ -49,10 +49,14 @@ const newTimeAccountForm = useForm({
                             <v-col cols="12" md="6">
                                 <v-select
                                     :items="
-                                        time_account_settings.map(s => ({
-                                            title: `${accountType(s.type)} (${getTruncationCycleDisplayName(s.truncation_cycle_length_in_months)})`,
-                                            value: s.id,
-                                        }))
+                                        time_account_settings
+                                            .filter(t => t.type != null)
+                                            .map(s => ({
+                                                title: `${accountType(s.type)} (${getTruncationCycleDisplayName(
+                                                    s.truncation_cycle_length_in_months,
+                                                )})`,
+                                                value: s.id,
+                                            }))
                                     "
                                     label="Typ"
                                     v-model="newTimeAccountForm.time_account_setting_id"
