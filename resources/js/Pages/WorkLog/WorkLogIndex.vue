@@ -6,7 +6,7 @@ import { Link } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 
 defineProps<{
-    users: (Pick<User, 'id' | 'first_name' | 'last_name'> & { latestWorkLog: WorkLog; defaultTimeAccount: TimeAccount })[];
+    users: (Pick<User, 'id' | 'first_name' | 'last_name'> & { latest_work_log: WorkLog; default_time_account: TimeAccount })[];
 }>();
 </script>
 <template>
@@ -18,9 +18,9 @@ defineProps<{
             :items="
                 users.map(u => ({
                     ...u,
-                    defaultTimeAccount: u.defaultTimeAccount.balance,
-                    lastAction: u.latestWorkLog.end ? 'Gehen' : 'Kommen',
-                    time: DateTime.fromSQL(u.latestWorkLog.end ? u.latestWorkLog.end : u.latestWorkLog.start).toFormat('dd.MM.yyyy HH:mm'),
+                    defaultTimeAccount: u.default_time_account.balance,
+                    lastAction: u.latest_work_log.end ? 'Gehen' : 'Kommen',
+                    time: DateTime.fromSQL(u.latest_work_log.end ? u.latest_work_log.end : u.latest_work_log.start).toFormat('dd.MM.yyyy HH:mm'),
                 }))
             "
             :headers="[
@@ -34,7 +34,7 @@ defineProps<{
             ]"
         >
             <template v-slot:item.isPresent="{ item }">
-                <v-icon icon="mdi-circle" :color="item.latestWorkLog.end ? 'error' : 'success'" size="md"></v-icon>
+                <v-icon icon="mdi-circle" :color="item.latest_work_log.end ? 'error' : 'success'" size="md"></v-icon>
             </template>
             <template #item.actions="{ item }">
                 <Link
