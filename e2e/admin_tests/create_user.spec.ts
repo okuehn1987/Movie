@@ -200,6 +200,47 @@ test('changes information of previously added user', async ({ page }) => {
     await expect(page.getByRole('cell', { name: '13.11.1111' })).toBeVisible();
 });
 
+test('creates a time_account and deletes it', async ({ page }) => {
+    // creates account with hours on it
+    await page.getByRole('row', { name: 'Changed Tester changed@' }).getByRole('link').getByRole('button').click();
+    await page.getByRole('tab', { name: 'Arbeitszeitkonten' }).click();
+    await page.getByRole('row', { name: 'Name Überstunden Limit Typ' }).getByRole('button').nth(1).click();
+    await expect(page.getByText('Neues Arbeitszeitkonto')).toBeVisible();
+    await page.getByLabel('Name', { exact: true }).fill('This will be deleted');
+    await page.getByLabel('Startbetrag in Stunden').fill('10');
+    await page.getByRole('button', { name: 'Speichern' }).click();
+    await expect(page.getByText('Arbeitszeitkonto erfolgreich')).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'This will be deleted' })).toBeVisible();
+
+    // trys to delete account with hours still on
+    await page.getByRole('row', { name: 'This will be deleted 10 80' }).getByRole('button').nth(2).click();
+    await expect(page.getByText('Konto This will be deleted lö')).toBeVisible();
+    await expect(page.getByText('Konten können nur gelöscht')).toBeVisible();
+
+    // deletes hours on account
+    await page.getByRole('dialog').getByRole('button').click();
+    await page.getByRole('row', { name: 'This will be deleted 10 80' }).getByRole('button').first().click();
+    await expect(page.getByText('Stunden für Konto This will')).toBeVisible();
+    await page
+        .locator('div')
+        .filter({ hasText: /^Stunden hinzufügen$/ })
+        .first()
+        .click();
+    await page.getByRole('option', { name: 'Stunden abziehen' }).click();
+    await page.getByLabel('Stunden', { exact: true }).fill('10');
+    await page.getByLabel('Beschreibung').fill('Test deletion');
+    await page.getByRole('button', { name: 'Speichern' }).click();
+    await expect(page.getByText('Transaktion erfolgreich')).toBeVisible();
+    await expect(page.locator('#app span').filter({ hasText: '0' }).nth(1)).toBeVisible();
+
+    // deletes account
+    await page.getByRole('row', { name: 'This will be deleted 0 80' }).getByRole('button').nth(2).click();
+    await page.getByText('Konto This will be deleted lö').click();
+    await page.getByText('Sind Sie sich sicher das').click();
+    await page.getByRole('button', { name: 'Speichern' }).click();
+    await expect(page.getByText('Arbeitszeitkonto erfolgreich')).toBeVisible();
+});
+
 test('tests time_account function', async ({ page }) => {
     await page.getByRole('row', { name: 'Changed Tester changed@' }).getByRole('link').getByRole('button').click();
     await expect(page.getByText('Changed Tester bearbeiten')).toBeVisible();
@@ -246,7 +287,7 @@ test('tests time_account function', async ({ page }) => {
     await page.getByRole('option', { name: 'StandardkontoTest' }).click();
     await page.getByTestId('timeAccountTransactionDestinationAccount').click();
     await page.getByRole('option', { name: 'Testkonto' }).click();
-    await page.getByLabel('Stunden').fill('10');
+    await page.getByLabel('Stunden', { exact: true }).fill('10');
     await page.getByLabel('Beschreibung').fill('This is another test');
     await expect(page.getByText('Die Beschreibung ist für die')).toBeVisible();
     await page.getByRole('button', { name: 'Speichern' }).click();
