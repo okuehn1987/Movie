@@ -14,11 +14,11 @@ const adminForm = useForm({
 
 const adminLogin = () => {
     adminForm.post(route('login'), {
-        onSuccess: () => {
-            router.reload();
-        },
         onFinish: () => {
             adminForm.reset('password');
+            if (!adminForm.errors.email && !adminForm.errors.password) {
+                router.reload();
+            }
         },
     });
 };
