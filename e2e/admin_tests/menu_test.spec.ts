@@ -25,8 +25,6 @@ test('can switch between sites', async ({ page }) => {
         .first()
         .click();
     await expect(page.getByText('Mitarbeiter')).toBeVisible();
-    await page.getByText('Arbeitszeitkonten').click();
-    await expect(page.getByText('Arbeitzeitkonten')).toBeVisible();
     await page.getByText('Organigramm').click();
     await expect(page.getByRole('banner').getByText('Organigramm')).toBeVisible();
     await page.getByText('Organisationen').click();

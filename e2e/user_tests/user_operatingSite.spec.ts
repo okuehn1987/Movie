@@ -9,10 +9,9 @@ test.beforeEach('user login', async ({ page }) => {
     await expect(page.getByRole('banner').getByText('Betriebsstätten')).toBeVisible();
 });
 
-//FIXME: federal state sill changeable until swapping sides
 test('tests if operatingSite is visible', async ({ page }) => {
     await expect(page.getByRole('cell', { name: 'delete me ORG' })).toBeVisible();
-    await page.getByRole('row', { name: '3 delete me ORG lösch mich' }).getByRole('button').click();
+    await page.getByRole('row', { name: 'delete me ORG lösch mich 666' }).getByRole('button').click();
     await expect(page.getByText('Betriebsstätte delete me ORG')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Kontaktinformationen' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Adresse' })).toBeVisible();

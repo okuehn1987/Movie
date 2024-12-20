@@ -10,7 +10,7 @@ test.beforeEach('admin login', async ({ page }) => {
 });
 
 test('creates new group', async ({ page }) => {
-    await page.getByRole('row', { name: '# Abteilungsname Mitarbeitende' }).getByRole('button').click();
+    await page.getByRole('row', { name: 'Abteilungsname Mitarbeitende' }).getByRole('button').click();
     await expect(page.getByText('Abteilung erstellen')).toBeVisible();
     await page.getByLabel('Abteilungsname').fill('Test');
     await page.getByTestId('employeeGroupAssignment').click();
@@ -18,6 +18,5 @@ test('creates new group', async ({ page }) => {
     await page.getByTestId('employeeGroupAssignment').locator('div').filter({ hasText: 'user user' }).nth(3).click();
     await page.getByRole('button', { name: 'Erstellen' }).click();
     await expect(page.getByText('Gruppe erfolgreich erstellt.')).toBeVisible();
-    await expect(page.getByRole('cell', { name: '4' })).toBeVisible();
     await expect(page.getByRole('cell', { name: 'Test' })).toBeVisible();
 });

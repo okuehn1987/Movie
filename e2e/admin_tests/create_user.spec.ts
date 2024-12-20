@@ -52,18 +52,19 @@ test('creates a new user', async ({ page }) => {
     await page.getByText('Mitarbeitende verwalten').click();
     await page.getByText('Zeitkonten verwalten').click();
     await expect(page.getByText('Zeitkonten verwaltenMitarbeitende verwalten')).toBeVisible();
-    await page
-        .locator('div')
-        .filter({ hasText: /^Lesen$/ })
-        .first()
-        .click();
+    await page.getByText('Zeitkonten verwaltenMitarbeitende verwalten').click();
     await expect(
         page
             .getByRole('dialog')
             .locator('div')
             .filter({ hasText: /^Lesen$/ })
-            .nth(2),
+            .nth(1),
     ).toBeVisible();
+    await page
+        .locator('div')
+        .filter({ hasText: /^Lesen$/ })
+        .nth(2)
+        .click();
     await page.getByText('Schreiben').click();
     await expect(
         page
@@ -164,14 +165,14 @@ test('changes information of previously added user', async ({ page }) => {
     await expect(page.getByText('Zeitkorrekturen verwalten').nth(1)).not.toBeVisible();
     await page
         .locator('div')
-        .filter({ hasText: /^Lesen$/ })
+        .filter({ hasText: /^Schreiben$/ })
         .first()
         .click();
-    await page.getByRole('option', { name: 'Schreiben' }).click();
+    await page.getByRole('option', { name: 'Lesen' }).click();
     await expect(
         page
             .locator('div')
-            .filter({ hasText: /^Schreiben$/ })
+            .filter({ hasText: /^Lesen$/ })
             .nth(2),
     ).toBeVisible();
     await page.getByTestId('permissionSelector').last().click();
@@ -233,12 +234,15 @@ test('creates a time_account and deletes it', async ({ page }) => {
     await expect(page.getByText('Transaktion erfolgreich')).toBeVisible();
     await expect(page.locator('#app span').filter({ hasText: '0' }).nth(1)).toBeVisible();
 
-    // deletes account
+    // deletes account and checks if its successfully deleted
     await page.getByRole('row', { name: 'This will be deleted 0 80' }).getByRole('button').nth(2).click();
     await page.getByText('Konto This will be deleted lö').click();
     await page.getByText('Sind Sie sich sicher das').click();
     await page.getByRole('button', { name: 'Speichern' }).click();
     await expect(page.getByText('Arbeitszeitkonto erfolgreich')).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'This will be deleted' })).not.toBeVisible();
+    await page.getByRole('tab', { name: 'Transaktionen' }).click();
+    await expect(page.getByRole('cell', { name: 'Test deletion' })).toBeVisible();
 });
 
 test('tests time_account function', async ({ page }) => {
@@ -304,7 +308,7 @@ test('tests visibility of transactions', async ({ page }) => {
     await expect(page.getByRole('cell', { name: 'Testkonto' }).first()).toBeVisible();
     await expect(page.getByRole('cell', { name: 'This is another test' })).toBeVisible();
 
-    await expect(page.getByRole('cell', { name: 'Initialer Kontostand' })).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'Initialer Kontostand' }).first()).toBeVisible();
     await expect(page.getByRole('cell', { name: '+ 10' }).locator('span').first()).toBeVisible();
 
     await expect(page.getByRole('cell', { name: 'StandardkontoTest' }).nth(1)).toBeVisible();

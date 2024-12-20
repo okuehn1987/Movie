@@ -76,11 +76,11 @@ test('adds, edits and deletes specialWorkingHoursFactors', async ({ page }) => {
 
 test('adds absence type', async ({ page }) => {
     await page.getByRole('tab', { name: 'Abwesenheitsgründe' }).click();
-    await page.getByRole('row', { name: '# Abwesenheitsgrund Abkürzung' }).getByRole('button').click();
+    await page.getByRole('row', { name: 'Abwesenheitsgrund Abkürzung' }).getByRole('button').click();
     await expect(page.getByText('Abwesenheitgrund erstellen')).toBeVisible();
     await page.getByLabel('Abwesenheitsgrund').fill('gelber Schein');
     await page.getByLabel('Abkürzung').fill('Freiheit');
-    await page.getByTestId('absenceType').click();
+    await page.getByTestId('typeOfAbsence').click();
     await page.getByRole('option', { name: 'Bildungsurlaub' }).click();
     await page.getByLabel('Muss genehmigt werden?').check();
     await page.getByRole('button', { name: 'Erstellen' }).click();

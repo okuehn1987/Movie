@@ -9,7 +9,7 @@ test.beforeEach('admin login', async ({ page }) => {
 });
 
 test('create operating Site', async ({ page }) => {
-    await page.getByRole('row', { name: '# Name Anschrift Stadt Land' }).getByRole('button').click();
+    await page.getByRole('row', { name: 'Name Anschrift Stadt Land' }).getByRole('button').click();
     await expect(page.getByText('Betriebsstätte erstellen')).toBeVisible();
     await page.getByLabel('Name').fill('Happys Wonderworld');
     await page.getByLabel('E-Mail').fill('test@test.com');
@@ -30,11 +30,7 @@ test('create operating Site', async ({ page }) => {
 });
 
 test('show and edit created operating site', async ({ page }) => {
-    await page
-        .getByRole('row', { name: /.* delete me ORG/ })
-        .getByRole('link')
-        .getByRole('button')
-        .click();
+    await page.getByRole('row', { name: 'delete me ORG lösch mich 666' }).getByRole('link').getByRole('button').click();
     await expect(page.getByText('delete me ORG')).toBeVisible();
     await page
         .locator('div')
@@ -55,11 +51,7 @@ test('show and edit created operating site', async ({ page }) => {
 
 test('add and delete working hours to operating site', async ({ page }) => {
     //add working hours
-    await page
-        .getByRole('row', { name: /.* delete me ORG/ })
-        .getByRole('link')
-        .getByRole('button')
-        .click();
+    await page.getByRole('row', { name: 'delete me ORG lösch mich 666' }).getByRole('link').getByRole('button').click();
     await page.getByRole('tab', { name: 'Betriebszeiten' }).click();
     await expect(page.getByRole('main').getByRole('listbox').getByText('Montag')).toBeVisible();
     await page.getByLabel('Beginn des Arbeitstages').fill('08:00');
@@ -71,17 +63,13 @@ test('add and delete working hours to operating site', async ({ page }) => {
     //delete working hours
     await page.getByRole('tab', { name: 'Betriebszeiten' }).click();
     await expect(page.getByText('08:00 Uhr - 17:00 Uhr')).toBeVisible();
-    await page.getByRole('main').getByRole('link').getByRole('button').first().click();
+    await page.locator('.v-list-item__append > button > .v-btn').first().click();
     await expect(page.getByText('Betriebszeit erfolgreich gelö')).toBeVisible();
     await expect(page.getByRole('main').getByRole('listbox').getByText('Montag')).not.toBeVisible();
 });
 
 test('delete operating Site', async ({ page }) => {
-    await page
-        .getByRole('row', { name: /.* delete me ORG/ })
-        .getByRole('button')
-        .nth(1)
-        .click();
+    await page.getByRole('row', { name: 'delete me ORG lösch mich 666' }).getByRole('button').nth(1).click();
     await expect(page.getByText('Betriebsstätte löschen')).toBeVisible();
     await page.getByRole('button', { name: 'Löschen' }).click();
     await expect(page.getByText('Betriebsstätte erfolgreich')).toBeVisible();
