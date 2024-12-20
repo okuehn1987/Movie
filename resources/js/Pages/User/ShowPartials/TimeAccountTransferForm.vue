@@ -23,6 +23,11 @@ const timeAccountTransferForm = useForm({
         </template>
         <template v-slot:default="{ isActive }">
             <v-card title="Stundentransaktion durchführen">
+                <template #append>
+                    <v-btn icon variant="text" @click.stop="isActive.value = false">
+                        <v-icon>mdi-close</v-icon>
+                    </v-btn>
+                </template>
                 <v-card-text>
                     <v-form
                         @submit.prevent="
