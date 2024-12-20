@@ -31,6 +31,11 @@ class Absence extends Model
         return $this->belongsTo(AbsenceType::class);
     }
 
+    public function getDurationAttribute()
+    {
+        return (int)Carbon::parse($this->start)->diffInDays(Carbon::parse($this->end)) + 1;
+    }
+
     public function accountAsTransaction()
     {
         DB::transaction(function () {
