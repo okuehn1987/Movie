@@ -6,7 +6,6 @@ test.beforeEach('user login', async ({ page }) => {
 });
 
 test('login and logout for admin successfull', async ({ page }) => {
-    await page.setViewportSize({ width: 1600, height: 900 });
     await page.goto('/');
     await page.getByLabel('Email').fill('admin@admin.com');
     await page.getByLabel('Passwort').fill('admin');
@@ -17,7 +16,6 @@ test('login and logout for admin successfull', async ({ page }) => {
 });
 
 test('invalid user login fails', async ({ page }) => {
-    await page.setViewportSize({ width: 1600, height: 900 });
     await page.goto('/');
     await page.getByLabel('Email', { exact: true }).fill('noUser@user.com');
     await page.getByLabel('Passwort', { exact: true }).fill('user');
@@ -26,7 +24,6 @@ test('invalid user login fails', async ({ page }) => {
 });
 
 test('login and logout for user successfull', async ({ page }) => {
-    await page.setViewportSize({ width: 1600, height: 900 });
     await page.goto('/');
     await page.getByLabel('Email').fill('user@user.com');
     await page.getByLabel('Passwort').fill('user');
