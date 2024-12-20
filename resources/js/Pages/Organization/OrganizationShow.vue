@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { AbsenceType, OperatingSite, OperatingTime, Organization, SpecialWorkingHoursFactor } from '@/types/types';
+import { AbsenceType, OperatingSite, OperatingTime, Organization, SpecialWorkingHoursFactor, TimeAccountSetting } from '@/types/types';
 import { ref } from 'vue';
 import OrganizationSettings from './OrganizationSettings.vue';
 import SWHFIndex from '../SWHF/SWHFIndex.vue';
 import AbsenceTypeIndex from '../AbsenceType/AbsenceTypeIndex.vue';
+import TimeAccountSettingsIndex from '../TimeAccount/TimeAccountSettingsIndex.vue';
 
 defineProps<{
     organization: Organization;
@@ -12,9 +13,11 @@ defineProps<{
     operating_times: OperatingTime[];
     special_working_hours_factors: SpecialWorkingHoursFactor[];
     absence_types: AbsenceType[];
+    absence_type_defaults: string[];
+    timeAccountSettings: TimeAccountSetting[];
 }>();
 
-const tab = ref<'Allgemeine Informationen' | 'Sonderarbeitszeitfaktor' | 'Abwesenheitsgründe'>('Allgemeine Informationen');
+const tab = ref<'Allgemeine Informationen' | 'Sonderarbeitszeitfaktor' | 'Abwesenheitsgründe' | 'Zeitkontoeinstellungen'>('Allgemeine Informationen');
 </script>
 <template>
     <AdminLayout :title="'Organisation ' + organization.name">
@@ -32,16 +35,25 @@ const tab = ref<'Allgemeine Informationen' | 'Sonderarbeitszeitfaktor' | 'Abwese
                 text="Abwesenheitsgründe"
                 value="Abwesenheitsgründe"
             ></v-tab>
+            <v-tab
+                v-if="can('timeAccountSetting', 'viewIndex')"
+                prepend-icon="mdi-clock-outline"
+                text="Zeitkontoeinstellungen"
+                value="Zeitkontoeinstellungen"
+            ></v-tab>
         </v-tabs>
         <v-tabs-window v-model="tab" class="w-100">
             <v-tabs-window-item value="Allgemeine Informationen">
-                <OrganizationSettings :organization></OrganizationSettings>
+                <OrganizationSettings :organization />
             </v-tabs-window-item>
             <v-tabs-window-item v-if="can('specialWorkingHoursFactors', 'viewIndex')" value="Sonderarbeitszeitfaktor">
-                <SWHFIndex :special_working_hours_factors></SWHFIndex>
+                <SWHFIndex :special_working_hours_factors />
             </v-tabs-window-item>
             <v-tabs-window-item v-if="can('absenceType', 'viewIndex')" value="Abwesenheitsgründe">
-                <AbsenceTypeIndex :absenceTypes="absence_types"></AbsenceTypeIndex>
+                <AbsenceTypeIndex :absenceTypes="absence_types" :absence_type_defaults />
+            </v-tabs-window-item>
+            <v-tabs-window-item v-if="can('timeAccountSetting', 'viewIndex')" value="Zeitkontoeinstellungen">
+                <TimeAccountSettingsIndex :timeAccountSettings />
             </v-tabs-window-item>
         </v-tabs-window>
     </AdminLayout>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Absence;
 use App\Models\Organization;
 use App\Models\User;
 use App\Models\WorkingHoursCalculation;
@@ -84,14 +85,27 @@ Schedule::call(function () {
 
             $workingDaysInWeek = $currentWorkingWeek?->numberOfWorkingDays;
 
-            $shouldWorkYesterday = $workingDaysInWeek > 0 && $currentWorkingWeek->hasWorkDay($day) && !$user->operatingSite->hasHoliday($day);
+            $hasAbsenceForDay = $user->absences()
+                ->where('status', 'accepted')
+                ->whereDate('start', '<=', $day)
+                ->whereDate('end', '>=', $day)->exists();
 
-            $sollStunden = 0;
-            if ($shouldWorkYesterday && $currentWorkingHours != null) $sollStunden = $currentWorkingHours['weekly_working_hours'] / $workingDaysInWeek;
+            $shouldWorkYesterday =
+                !$hasAbsenceForDay &&
+                $workingDaysInWeek > 0 &&
+                $currentWorkingWeek->hasWorkDay($day) &&
+                !$user->operatingSite->hasHoliday($day);
 
             $workLogs = $user->workLogs()->whereNotNull('end')->whereBetween('start', [$day->startOfDay(), $day->endOfDay()])->get();
 
-            $istStunden = $workLogs->sum('duration');
+            $sollStunden = 0;
+            $istStunden = 0;
+            if ($shouldWorkYesterday && $currentWorkingHours != null) {
+                $sollStunden = $currentWorkingHours['weekly_working_hours'] / $workingDaysInWeek;
+                $istStunden = $workLogs->sum('duration');
+            } else if ($currentWorkingHours != null) {
+                $istStunden = max($workLogs->sum('duration') - $currentWorkingHours['weekly_working_hours'] / $workingDaysInWeek, 0);
+            }
 
             $user->defaultTimeAccount()->addBalance($istStunden - $sollStunden, 'Tägliche Überstundenberechnung ' . $day->format('d.m.Y'));
 

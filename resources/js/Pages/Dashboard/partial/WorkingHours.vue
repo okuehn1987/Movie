@@ -9,7 +9,7 @@ const props = defineProps<{
     lastWorkLog: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office'> | null;
     operating_times: OperatingTime[];
     overtime: number;
-    workingHours: { should: number; current: number };
+    workingHours: { should: number; current: number; currentHomeOffice: number };
 }>();
 
 const page = usePage();
@@ -49,7 +49,7 @@ const currentWorkingHours = computed(() =>
         </template>
         <v-card-text>
             <v-row>
-                <v-col cols="12" sm="6">
+                <!-- <v-col cols="12" sm="6">
                     <div class="d-flex align-center ga-3">
                         <v-avatar color="blue-grey" rounded size="40" class="elevation-2">
                             <v-icon size="24" icon="mdi-clock" />
@@ -62,18 +62,36 @@ const currentWorkingHours = computed(() =>
                             </div>
                         </div>
                     </div>
-                </v-col>
+                </v-col> -->
                 <v-col cols="12" sm="6">
+                    <div class="d-flex align-center ga-3">
+                        <v-avatar color="blue-grey" rounded size="40" class="elevation-2">
+                            <v-icon size="24" icon="mdi-clock-check" />
+                        </v-avatar>
+
+                        <div class="d-flex flex-column">
+                            gesamt Woche
+                            <div class="text-h6">
+                                {{ Math.floor(currentWorkingHours || 0) }}:{{
+                                    Math.floor(((currentWorkingHours || 0) % 1) * 60)
+                                        .toString()
+                                        .padStart(2, '0')
+                                }}
+                            </div>
+                        </div>
+                    </div>
+                </v-col>
+                <v-col cols="12" sm="6" v-if="$page.props.auth.user.home_office">
                     <div class="d-flex align-center ga-3">
                         <v-avatar color="green" rounded size="40" class="elevation-2">
                             <v-icon size="24" icon="mdi-clock-check" />
                         </v-avatar>
 
                         <div class="d-flex flex-column">
-                            Woche Ist
+                            Homeoffice Woche
                             <div class="text-h6">
-                                {{ Math.floor(currentWorkingHours || 0) }}:{{
-                                    Math.floor(((currentWorkingHours || 0) % 1) * 60)
+                                {{ Math.floor(workingHours.currentHomeOffice || 0) }}:{{
+                                    Math.floor(((workingHours.currentHomeOffice || 0) % 1) * 60)
                                         .toString()
                                         .padStart(2, '0')
                                 }}
@@ -116,9 +134,14 @@ const currentWorkingHours = computed(() =>
                         Es fehlt eine Meldung. Bitte Zeitkorrektur.
                         <v-btn color="error" :href="`/user/${page.props.auth.user.id}/workLogs?workLog=${lastWorkLog?.id}`"> Zeitkorrektur </v-btn>
                     </v-alert>
-                    <div v-else-if="(page.props.auth.user.home_office && lastWorkLog?.end) || (lastWorkLog?.is_home_office && !lastWorkLog.end)">
+                    <div
+                        v-else-if="
+                            (page.props.auth.user.home_office && (!lastWorkLog || lastWorkLog.end)) ||
+                            (lastWorkLog && lastWorkLog.is_home_office && !lastWorkLog.end)
+                        "
+                    >
                         <v-btn block size="large" @click.stop="changeWorkStatus(true)" color="primary" class="me-2">
-                            {{ lastWorkLog.end ? 'Kommen Homeoffice' : 'Gehen Homeoffice' }}
+                            {{ !lastWorkLog || lastWorkLog.end ? 'Kommen Homeoffice' : 'Gehen Homeoffice' }}
                         </v-btn>
                     </div>
                 </v-col>
@@ -131,7 +154,7 @@ const currentWorkingHours = computed(() =>
                         color="primary"
                         v-if="lastWorkLog?.end || !lastWorkLog?.is_home_office"
                     >
-                        {{ lastWorkLog?.end ? 'Kommen' : 'Gehen' }}
+                        {{ !lastWorkLog || lastWorkLog.end ? 'Kommen' : 'Gehen' }}
                     </v-btn>
                 </v-col>
             </v-row>

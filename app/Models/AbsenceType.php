@@ -20,7 +20,8 @@ class AbsenceType extends Model
         ['name' => 'Bildungsurlaub', 'abbreviation' => 'BU'],
         ['name' => 'Sonderurlaub', 'abbreviation' => 'SU'],
         ['name' => 'Elternzeit', 'abbreviation' => 'EZ'],
-        ['name' => 'Urlaub', 'abbreviation' => 'EU']
+        ['name' => 'Urlaub', 'abbreviation' => 'EU'],
+        ['name' => 'Arbeitsunfähigkeit', 'abbreviation' => 'AU']
     ];
 
     public static function getTypes()

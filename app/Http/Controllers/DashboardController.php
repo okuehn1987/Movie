@@ -19,7 +19,7 @@ class DashboardController extends Controller
         Gate::authorize('publicAuth', User::class);
 
         $user = $request->user();
-        $isSupervisor = User::where('supervisor_id', $user->id)->exists();
+        $isSupervisor = User::where('supervisor_id', $user->id)->exists(); //TODO: also look if the user has any permissions or delegations 
 
         $patches = null;
         if ($isSupervisor) {
@@ -29,13 +29,29 @@ class DashboardController extends Controller
                 ->filter(fn($patch) => $user->can('update', $patch->user));
         }
 
-        $absences = null;
+        $visibleUsers = User::inOrganization()
+            ->get(['id', 'supervisor_id', 'group_id', 'operating_site_id'])
+            ->filter(fn($u) => $user->can('viewShow', [Absence::class, $u]))
+            ->pluck('id');
+
+        $absenceRequests = null;
         if ($isSupervisor) {
-            $absences = Absence::inOrganization()->where('status', 'created')
+            $absenceRequests = Absence::inOrganization()
+                ->where('status', 'created')
+                ->whereIn('user_id', $visibleUsers)
                 ->with(['user:id,first_name,last_name', 'absenceType:id,name'])
                 ->get(['id', 'start', 'end', 'user_id', 'absence_type_id'])
-                ->filter(fn($absence) => $user->can('viewShow', $absence) && $user->can('update', $absence));
+                ->filter(fn($a) => $user->can('update', $a));
         }
+
+        $currentAbsences = Absence::inOrganization()
+            ->where('status', 'accepted')
+            ->where('start', '<=', Carbon::now()->format('Y-m-d'))
+            ->where('end', '>=', Carbon::now()->format('Y-m-d'))
+            ->whereIn('user_id', $visibleUsers)
+            ->with(['user:id,first_name,last_name,supervisor_id', 'absenceType:id,abbreviation'])
+            ->get(['id', 'start', 'end', 'user_id', 'absence_type_id'])
+            ->toArray();
 
         return Inertia::render('Dashboard/Dashboard', [
             'lastWorkLog' => WorkLog::select('id', 'start', 'end', 'is_home_office')
@@ -45,11 +61,13 @@ class DashboardController extends Controller
             'supervisor' => User::select('id', 'first_name', 'last_name')->find($user->supervisor_id),
             'patches' => $patches,
             'operating_times' => $user->operatingSite->operatingTimes,
-            'absences' => $absences,
+            'absenceRequests' => $absenceRequests,
+            'currentAbsences' => $currentAbsences,
             'overtime' => $user->overtime,
             'workingHours' => [
                 'should' => $user->userWorkingHours()->where('active_since', '<=', Carbon::now()->format('Y-m-d'))->orderBy('active_since', 'Desc')->first()['weekly_working_hours'],
-                'current' => User::getCurrentWeekWorkingHours($user)
+                'current' => User::getCurrentWeekWorkingHours($user)->totalHours,
+                'currentHomeOffice' => User::getCurrentWeekWorkingHours($user)->homeOfficeHours,
             ],
         ]);
     }

@@ -7,6 +7,7 @@ use App\Models\OperatingSite;
 use App\Models\OperatingTime;
 use App\Models\Organization;
 use App\Models\SpecialWorkingHoursFactor;
+use App\Models\TimeAccountSetting;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use App\Services\HolidayService;
@@ -49,6 +50,14 @@ class OrganizationController extends Controller
             'name' => $validated['organization_name'],
         ]);
 
+        foreach (AbsenceType::$DEFAULTS as $type) {
+            AbsenceType::create([
+                "organization_id" => $org->id,
+                'type' => $type['name'],
+                ...$type,
+            ]);
+        }
+
         $operating_site = OperatingSite::create([
             'name' => $validated['head_quarter_name'],
             'street' => $validated['organization_street'],
@@ -86,7 +95,9 @@ class OrganizationController extends Controller
             'operating_sites' => OperatingSite::inOrganization()->get(),
             'operating_times' => OperatingTime::inOrganization()->get(),
             'absence_types' => AbsenceType::inOrganization()->get(),
+            'absence_type_defaults' => AbsenceType::getTypes(),
             'special_working_hours_factors' => SpecialWorkingHoursFactor::inOrganization()->get(),
+            'timeAccountSettings' => TimeAccountSetting::inOrganization()->get(),
             'can' => [
                 'organization' => [
                     'update' => Gate::allows('update', $organization),
@@ -100,6 +111,10 @@ class OrganizationController extends Controller
                 'absenceType' => [
                     'viewIndex' => Gate::allows('viewIndex', AbsenceType::class),
                     'create' => Gate::allows('create', AbsenceType::class),
+                ],
+                'timeAccountSetting' => [
+                    'create' => Gate::allows('create', TimeAccountSetting::class),
+                    'viewIndex' => Gate::allows('viewIndex', TimeAccountSetting::class),
                 ]
             ]
         ]);
@@ -137,7 +152,7 @@ class OrganizationController extends Controller
         Gate::authorize('viewShow', $organization) && Gate::authorize('viewIndex', User::class);
 
         return Inertia::render('Organization/OrganizationOrganigram', [
-            'users' => User::whereNull('supervisor_id')
+            'users' => User::inOrganization()->whereNull('supervisor_id')
                 ->with('allSupervisees:id,first_name,last_name,supervisor_id,email')
                 ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'email']),
         ]);
