@@ -18,7 +18,7 @@ defineProps<{
             :items="
                 users.map(u => ({
                     ...u,
-                    defaultTimeAccount: u.default_time_account?.balance,
+                    defaultTimeAccount: u.default_time_account.balance,
                     lastAction: u.latest_work_log.end ? 'Gehen' : 'Kommen',
                     time: DateTime.fromSQL(u.latest_work_log.end ? u.latest_work_log.end : u.latest_work_log.start).toFormat('dd.MM.yyyy HH:mm'),
                 }))

@@ -227,7 +227,7 @@ class User extends Authenticatable
 
     public function getOvertimeAttribute()
     {
-        return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->where('type', 'default'))->sum('balance');
+        return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->whereNull('type'))->sum('balance');
     }
 
     public static function getCurrentWeekWorkingHours(User $user): object
