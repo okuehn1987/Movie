@@ -16,13 +16,13 @@ on:
 
 jobs:
     build-and-deploy:
-        uses: MBD-Team/deployments/.github/workflows/deployTest.yml@master
+        uses: MBD-Team/deployments/.github/workflows/deploy.yml@master
         with:
-            # env: Staging
-            # server: server3.mbd-team.de
-            # mode: ${{github.event.inputs.mode}}
-            # createTag: false
+            env: Staging
+            server: server3.mbd-team.de
+            mode: ${{github.event.inputs.mode}}
+            createTag: false
             runDeploymentCheck: false
             runPlaywrightDeploymentCheck: true
-            # domain: staging.herta.mbd-team.de
-            # project: Herta
+            domain: staging.herta.mbd-team.de
+            project: Herta
