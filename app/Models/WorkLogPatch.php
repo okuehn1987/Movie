@@ -56,7 +56,7 @@ class WorkLogPatch extends Model
             $patch
                 ->workLog
                 ->user
-                ->defaultTimeAccount()
+                ->defaultTimeAccount
                 ->addBalance(
                     $patch->getDurationAttribute() - $oldDuration,
                     'Korrektur akzeptiert am ' . Carbon::parse($patch->accepted_at)->format('d.m.Y H:i:s')
