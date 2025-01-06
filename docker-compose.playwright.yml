@@ -5,7 +5,7 @@ services:
             context: '.'
             dockerfile: Dockerfile
     playwright:
-        image: mcr.microsoft.com/playwright:v1.44.1-jammy
+        image: mcr.microsoft.com/playwright:v1.49.0-jammy
         environment:
             - PLAYWRIGHT_BASE_URL=${PLAYWRIGHT_BASE_URL:-http://127.0.0.1:8000}
             - PLAYWRIGHT_RUN_ARGS=${PLAYWRIGHT_RUN_ARGS}
