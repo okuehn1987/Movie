@@ -16,7 +16,7 @@ on:
 
 jobs:
     build-and-deploy:
-        uses: MBD-Team/deployments/.github/workflows/deploy.yml@master
+        uses: MBD-Team/deployments/.github/workflows/deployTest.yml@master
         with:
             env: Staging
             server: server3.mbd-team.de
