@@ -27,7 +27,7 @@ test.beforeEach('admin login', async ({ page }) => {
     await page.getByText('Mitarbeitende').click();
 });
 
-test('creates and changes a new user', async ({ page }) => {
+test('creates, changes and deletes a new user', async ({ page }) => {
     await page
         .getByRole('row', { name: /.*Vorname Nachname Email/ })
         .getByRole('button')
@@ -218,6 +218,14 @@ test('creates and changes a new user', async ({ page }) => {
     await expect(page.getByRole('cell', { name: 'Changed', exact: true })).toBeVisible();
     await expect(page.getByRole('cell', { name: 'changed@changed.de' })).toBeVisible();
     await expect(page.getByRole('cell', { name: '13.11.1111' })).toBeVisible();
+
+    //deletes previously created user
+    await page.getByRole('row', { name: 'Changed Tester' }).getByRole('button').nth(1).click();
+    await expect(page.getByText('Mitarbeiter löschen')).toBeVisible();
+    await page.getByRole('button', { name: 'Löschen' }).click();
+    await expect(page.getByText('Mitarbeitenden erfolgreich')).toBeVisible();
+    await expect(page.getByText('Mitarbeiter löschen')).not.toBeVisible();
+    await expect(page.getByRole('cell', { name: 'Changed Tester' })).not.toBeVisible();
 });
 
 test('creates a time_account and deletes it', async ({ page }) => {
@@ -335,13 +343,4 @@ test('trys organigramm', async ({ page }) => {
     await page.getByRole('tab', { name: 'Organigramm' }).click();
     await expect(page.getByText('user user bearbeiten')).toBeVisible();
     await expect(page.getByText('user user', { exact: true })).toBeVisible();
-});
-
-test('deletes previously created user', async ({ page }) => {
-    await page.getByRole('row', { name: 'user user user@' }).getByRole('button').nth(1).click();
-    await expect(page.getByText('Mitarbeiter löschen')).toBeVisible();
-    await page.getByRole('button', { name: 'Löschen' }).click();
-    await expect(page.getByText('Mitarbeitenden erfolgreich')).toBeVisible();
-    await expect(page.getByText('Mitarbeiter löschen')).not.toBeVisible();
-    await expect(page.getByRole('cell', { name: 'user' })).not.toBeVisible();
 });
