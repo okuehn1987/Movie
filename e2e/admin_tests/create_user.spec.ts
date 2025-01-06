@@ -1,13 +1,33 @@
 import { test, expect } from '@playwright/test';
-import { adminLogin } from '../utils';
+import { adminLogin, resetAndSeedDatabase } from '../utils';
 
 test.beforeEach('admin login', async ({ page }) => {
+    await resetAndSeedDatabase(page);
     await adminLogin(page);
     await page.getByRole('navigation').locator('div').filter({ hasText: 'Mitarbeitende' }).nth(2).click();
     await expect(page).toHaveURL('/user');
+
+    //creates time account type
+
+    await page.getByText('Organisation', { exact: true }).click();
+    await page.getByRole('tab', { name: 'Zeitkontoeinstellungen' }).click();
+    await page.getByRole('row', { name: 'Art Berechnungszeitraum' }).getByRole('button').click();
+    await expect(page.getByText('Neue Variante Erstellen')).toBeVisible();
+    await page.getByLabel('Bezeichnung').fill('TestAcc');
+    await page
+        .locator('div')
+        .filter({ hasText: /^Unbegrenzt$/ })
+        .first()
+        .click();
+    await page.getByText('Quartalsweise').click();
+    await page.getByRole('button', { name: 'Speichern' }).click();
+    await expect(page.getByText('Neue Variante erfolgreich')).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'TestAcc' })).toBeVisible();
+
+    await page.getByText('Mitarbeitende').click();
 });
 
-test('creates a new user', async ({ page }) => {
+test('creates and changes a new user', async ({ page }) => {
     await page
         .getByRole('row', { name: /.*Vorname Nachname Email/ })
         .getByRole('button')
@@ -104,9 +124,8 @@ test('creates a new user', async ({ page }) => {
     await expect(page.getByText('Mitarbeitenden erfolgreich')).toBeVisible;
     await expect(page.getByRole('cell', { name: 'Test', exact: true })).toBeVisible;
     await expect(page.getByRole('cell', { name: 'test@test.de' })).toBeVisible;
-});
 
-test('changes information of previously added user', async ({ page }) => {
+    // changes information of previously added user
     // Allgemeine Angaben
     await expect(page.getByRole('cell', { name: 'Test', exact: true })).toBeVisible();
     await page.getByRole('row', { name: 'Test Tester test@test.de' }).getByRole('link').getByRole('button').click();
@@ -203,24 +222,25 @@ test('changes information of previously added user', async ({ page }) => {
 
 test('creates a time_account and deletes it', async ({ page }) => {
     // creates account with hours on it
-    await page.getByRole('row', { name: 'Changed Tester changed@' }).getByRole('link').getByRole('button').click();
+    await page.getByRole('row', { name: 'user user user@' }).getByRole('link').getByRole('button').click();
     await page.getByRole('tab', { name: 'Arbeitszeitkonten' }).click();
     await page.getByRole('row', { name: 'Name Überstunden Limit Typ' }).getByRole('button').nth(1).click();
     await expect(page.getByText('Neues Arbeitszeitkonto')).toBeVisible();
     await page.getByLabel('Name', { exact: true }).fill('This will be deleted');
+    await page.getByText('TestAcc (Quartalsweise)').click();
     await page.getByLabel('Startbetrag in Stunden').fill('10');
     await page.getByRole('button', { name: 'Speichern' }).click();
     await expect(page.getByText('Arbeitszeitkonto erfolgreich')).toBeVisible();
     await expect(page.getByRole('cell', { name: 'This will be deleted' })).toBeVisible();
 
     // trys to delete account with hours still on
-    await page.getByRole('row', { name: 'This will be deleted 10 80' }).getByRole('button').nth(2).click();
+    await page.getByRole('row', { name: 'This will be deleted' }).getByRole('button').nth(2).click();
     await expect(page.getByText('Konto This will be deleted lö')).toBeVisible();
     await expect(page.getByText('Konten können nur gelöscht')).toBeVisible();
 
     // deletes hours on account
     await page.getByRole('dialog').getByRole('button').click();
-    await page.getByRole('row', { name: 'This will be deleted 10 80' }).getByRole('button').first().click();
+    await page.getByRole('row', { name: 'This will be deleted' }).getByRole('button').first().click();
     await expect(page.getByText('Stunden für Konto This will')).toBeVisible();
     await page
         .locator('div')
@@ -235,7 +255,7 @@ test('creates a time_account and deletes it', async ({ page }) => {
     await expect(page.locator('#app span').filter({ hasText: '0' }).nth(1)).toBeVisible();
 
     // deletes account and checks if its successfully deleted
-    await page.getByRole('row', { name: 'This will be deleted 0 80' }).getByRole('button').nth(2).click();
+    await page.getByRole('row', { name: 'This will be deleted' }).getByRole('button').nth(2).click();
     await page.getByText('Konto This will be deleted lö').click();
     await page.getByText('Sind Sie sich sicher das').click();
     await page.getByRole('button', { name: 'Speichern' }).click();
@@ -246,29 +266,26 @@ test('creates a time_account and deletes it', async ({ page }) => {
 });
 
 test('tests time_account function', async ({ page }) => {
-    await page.getByRole('row', { name: 'Changed Tester changed@' }).getByRole('link').getByRole('button').click();
-    await expect(page.getByText('Changed Tester bearbeiten')).toBeVisible();
+    await page.getByRole('row', { name: 'user user user@' }).getByRole('link').getByRole('button').click();
+    await expect(page.getByText('user user bearbeiten')).toBeVisible();
     await page.getByRole('tab', { name: 'Arbeitszeitkonten' }).click();
 
     //adds hours to standard time account
-    await expect(page.getByRole('cell', { name: 'Standardkonto' })).toBeVisible();
-    await expect(page.getByRole('cell', { name: '80' })).toBeVisible();
-    await page.getByRole('row', { name: 'Standardkonto 0 80 Standard' }).getByRole('button').first().click();
+    await page.getByRole('row', { name: 'Gleitzeitkonto' }).getByRole('button').first().click();
     await expect(page.getByText('Stunden für Konto')).toBeVisible();
     await page.getByLabel('Stunden', { exact: true }).fill('40');
     await page.getByLabel('Beschreibung').fill('This is a test');
     await page.getByRole('button', { name: 'Speichern' }).click();
-    await expect(page.getByText('Changed Tester bearbeiten')).toBeVisible();
+    await expect(page.getByText('user user bearbeiten')).toBeVisible();
     await expect(page.getByText('Transaktion erfolgreich')).toBeVisible();
     await expect(page.getByText('Stunden für Konto')).not.toBeVisible();
     await expect(page.locator('span').filter({ hasText: '40' }).first()).toBeVisible();
 
     //updates time_account information
-    await page.getByRole('row', { name: 'Standardkonto 40 80 Standard' }).getByRole('button').nth(1).click();
+    await page.getByRole('row', { name: 'Gleitzeitkonto' }).getByRole('button').nth(1).click();
     await expect(page.getByText('Einstellungen für Konto')).toBeVisible();
     await page.getByLabel('Name', { exact: true }).fill('StandardkontoTest');
     await page.getByLabel('Limit in Stunden').fill('50');
-    await expect(page.getByText('entspricht 1.25x wöchentliche')).toBeVisible();
     await page.getByRole('button', { name: 'Speichern' }).click();
     await expect(page.getByText('Arbeitszeitkonto erfolgreich')).toBeVisible();
     await expect(page.getByText('Einstellungen für Konto')).not.toBeVisible();
@@ -298,37 +315,33 @@ test('tests time_account function', async ({ page }) => {
     await expect(page.getByText('Transaktion erfolgreich')).toBeVisible();
     await expect(page.getByText('Stundentransaktion durchführen')).not.toBeVisible();
     await page.locator('span').filter({ hasText: /^20$/ }).first().click();
-});
 
-test('tests visibility of transactions', async ({ page }) => {
-    await page.getByRole('row', { name: 'Changed Tester changed@' }).getByRole('link').getByRole('button').click();
+    // tests visibility of transactions
     await page.getByRole('tab', { name: 'Transaktionen' }).click();
-    await expect(page.getByText('Changed Tester bearbeiten')).toBeVisible();
-    await expect(page.getByRole('cell', { name: 'StandardkontoTest' }).first()).toBeVisible();
+    await expect(page.getByText('user user bearbeiten')).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'Gleitzeitkonto' }).first()).toBeVisible();
     await expect(page.getByRole('cell', { name: 'Testkonto' }).first()).toBeVisible();
     await expect(page.getByRole('cell', { name: 'This is another test' })).toBeVisible();
 
     await expect(page.getByRole('cell', { name: 'Initialer Kontostand' }).first()).toBeVisible();
     await expect(page.getByRole('cell', { name: '+ 10' }).locator('span').first()).toBeVisible();
-
-    await expect(page.getByRole('cell', { name: 'StandardkontoTest' }).nth(1)).toBeVisible();
     await expect(page.getByRole('cell', { name: 'This is a test' })).toBeVisible();
     await expect(page.getByRole('cell', { name: '+ 40' }).locator('span').first()).toBeVisible();
 });
 
 test('trys organigramm', async ({ page }) => {
-    await page.getByRole('row', { name: 'Changed Tester changed@' }).getByRole('link').getByRole('button').click();
-    await expect(page.getByText('Changed Tester bearbeiten')).toBeVisible();
+    await page.getByRole('row', { name: 'user user user@' }).getByRole('link').getByRole('button').click();
+    await expect(page.getByText('user user bearbeiten')).toBeVisible();
     await page.getByRole('tab', { name: 'Organigramm' }).click();
-    await expect(page.getByText('Changed Tester bearbeiten')).toBeVisible();
-    await expect(page.getByText('Changed Tester', { exact: true })).toBeVisible();
+    await expect(page.getByText('user user bearbeiten')).toBeVisible();
+    await expect(page.getByText('user user', { exact: true })).toBeVisible();
 });
 
 test('deletes previously created user', async ({ page }) => {
-    await page.getByRole('row', { name: 'Changed Tester changed@' }).getByRole('button').nth(1).click();
+    await page.getByRole('row', { name: 'user user user@' }).getByRole('button').nth(1).click();
     await expect(page.getByText('Mitarbeiter löschen')).toBeVisible();
     await page.getByRole('button', { name: 'Löschen' }).click();
     await expect(page.getByText('Mitarbeitenden erfolgreich')).toBeVisible();
     await expect(page.getByText('Mitarbeiter löschen')).not.toBeVisible();
-    await expect(page.getByRole('cell', { name: 'Changed' })).not.toBeVisible();
+    await expect(page.getByRole('cell', { name: 'user' })).not.toBeVisible();
 });

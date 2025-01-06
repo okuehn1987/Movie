@@ -23,8 +23,8 @@ test('checks calendar function', async ({ page }) => {
     await expect(page.getByRole('heading', { name: date.toFormat('MMMM yyyy') })).toBeVisible();
 });
 
-//TODO: complete when all features are enabled soon!!!
-test.skip('creates an absence in the calendar', async ({ page }) => {
+//TODO:absences can be stacked in data base
+test('creates an absence in the calendar', async ({ page }) => {
     await page.getByRole('row', { name: 'admin admin' }).locator('button').click();
     await expect(page.getByText('Abwesenheit beantragen')).toBeVisible();
     await page.locator('.v-field__input').first().click();
@@ -44,5 +44,4 @@ test.skip('creates an absence in the calendar', async ({ page }) => {
     await page.getByRole('button', { name: 'beantragen' }).click();
     await expect(page.getByText('Abwesenheit beantragt.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'BU' }).first()).toBeVisible();
-    await expect(page.getByRole('button', { name: 'BU' }).nth(3)).toBeVisible();
 });

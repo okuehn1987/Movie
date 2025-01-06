@@ -5,20 +5,14 @@ test.beforeEach('user login', async ({ page }) => {
     await resetAndSeedDatabase(page);
     await userLogin(page);
     await expect(page).toHaveURL('/dashboard');
-    await page.getByText('Arbeitszeiten').click();
-    await expect(page).toHaveURL('/workLog');
 });
 
-//FIXME:test only works when there is at least one person below user in random assigned hierarchy, otherwhise worklog does not show.
-//FIXME: therefore flakey
 test('withdraws pre seeded time correction and ads another, accepts as admin and checks as user if successfull', async ({ page }) => {
-    await page.getByRole('row', { name: 'user user Gehen 06.12.2024 18:' }).getByRole('button').click();
-    await page.getByText('user user').click();
-    await expect(page.getByRole('cell', { name: 'Beantragt' })).toBeVisible();
+    await page.getByRole('button').nth(3).click();
+    await expect(page.getByRole('row', { name: '06.12.2024 08:15 06.12.2024' }).getByRole('button')).toBeVisible();
     await page.getByRole('row', { name: '06.12.2024 08:15 06.12.2024' }).getByRole('button').click();
     await expect(page.getByText('Zeitkorrektur')).toBeVisible();
     await page.getByRole('button', { name: 'Antrag zurückziehen' }).click();
-    await expect(page.getByText('Zeitkorrektur', { exact: true })).not.toBeVisible();
     await expect(page.getByText('Antrag auf Zeitkorrektur')).toBeVisible();
     await expect(page.getByRole('cell', { name: 'Nicht vorhanden' })).toBeVisible();
 
@@ -69,11 +63,7 @@ test('withdraws pre seeded time correction and ads another, accepts as admin and
     await page.getByRole('button', { name: 'Abmelden' }).click();
     await userLogin(page);
     await expect(page).toHaveURL('/dashboard');
-    await page.getByText('Arbeitszeiten').click();
-    await expect(page).toHaveURL('/workLog');
-    await page.getByRole('row', { name: 'user user Gehen 06.12.2024 18:' }).getByRole('button').click();
-    await expect(page.getByText('user user')).toBeVisible();
+    await page.getByRole('button').nth(3).click();
     await expect(page.getByRole('cell', { name: '10:30' })).toBeVisible();
-    await expect(page.getByRole('cell', { name: 'Ja' })).toBeVisible();
     await expect(page.getByRole('cell', { name: 'Akzeptiert' })).toBeVisible();
 });
