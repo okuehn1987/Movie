@@ -45,7 +45,7 @@ class TimeAccountController extends Controller
             'time_account_setting_id' => [
                 'required',
                 function ($attr, $val, $fail) use ($timeAccount) {
-                    if ($timeAccount->id == $timeAccount->user->defaultTimeAccount()->id) {
+                    if ($timeAccount->id == $timeAccount->user->defaultTimeAccount->id) {
                         return;
                     } else {
                         return TimeAccountSetting::where('id', $val)
@@ -66,7 +66,7 @@ class TimeAccountController extends Controller
     {
         Gate::authorize('delete', [TimeAccount::class, $timeAccount->user]);
 
-        if ($timeAccount->balance != 0 || $timeAccount->id == $timeAccount->user->defaultTimeAccount()->id) {
+        if ($timeAccount->balance != 0 || $timeAccount->id == $timeAccount->user->defaultTimeAccount->id) {
             return back()->with('error', 'Das Arbeitszeitkonto kann nicht gelöscht werden');
         }
 

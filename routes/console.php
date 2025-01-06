@@ -107,7 +107,7 @@ Schedule::call(function () {
                 $istStunden = max($workLogs->sum('duration') - $currentWorkingHours['weekly_working_hours'] / $workingDaysInWeek, 0);
             }
 
-            $user->defaultTimeAccount()->addBalance($istStunden - $sollStunden, 'Tägliche Überstundenberechnung ' . $day->format('d.m.Y'));
+            $user->defaultTimeAccount->addBalance($istStunden - $sollStunden, 'Tägliche Überstundenberechnung ' . $day->format('d.m.Y'));
 
             //TODO: add SWHF's & Nachtschicht, etc.
         }
