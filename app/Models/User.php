@@ -187,9 +187,10 @@ class User extends Authenticatable
         return $this->hasMany(TimeAccount::class);
     }
 
-    public function defaultTimeAccount(): TimeAccount
+    /** @return \Illuminate\Database\Eloquent\Relations\HasOne<\App\Models\TimeAccount, \App\Models\User>*/
+    public function defaultTimeAccount()
     {
-        return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->whereNull('type'))->first();
+        return $this->hasOne(TimeAccount::class)->whereHas('timeAccountSetting', fn($q) => $q->whereNull('type'));
     }
 
     public function userWorkingWeeks()
@@ -226,7 +227,7 @@ class User extends Authenticatable
 
     public function getOvertimeAttribute()
     {
-        return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->where('type', 'default'))->sum('balance');
+        return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->whereNull('type'))->sum('balance');
     }
 
     public static function getCurrentWeekWorkingHours(User $user): object

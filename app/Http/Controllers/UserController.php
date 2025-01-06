@@ -145,7 +145,7 @@ class UserController extends Controller
                 ->get(['id', 'first_name', 'last_name']),
             'time_accounts' => $timeAccounts,
             'time_account_settings' => TimeAccountSetting::inOrganization()->get(['id', 'type', 'truncation_cycle_length_in_months']),
-            'defaultTimeAccountId' => $user->defaultTimeAccount()->id,
+            'defaultTimeAccountId' => $user->defaultTimeAccount->id,
             'groups' => Group::inOrganization()->get(),
             'operating_sites' => OperatingSite::inOrganization()->get(),
             'time_account_transactions' => $userTransactions,
@@ -225,7 +225,7 @@ class UserController extends Controller
         ]);
 
         TimeAccount::create([
-            'name' => 'Standardkonto',
+            'name' => 'Gleitzeitkonto',
             'balance' => 0,
             'balance_limit' => $validated['userWorkingHours'] * 2,
             'time_account_setting_id' => TimeAccountSetting::inOrganization()->whereNull('type')->first()->id,

@@ -78,12 +78,17 @@ watch(
                             </v-col>
                             <v-col cols="12" md="6">
                                 <v-select
+                                    :disabled="item.time_account_setting.type === null"
                                     label="Typ"
                                     :items="
-                                        time_account_settings.map(s => ({
-                                            title: `${accountType(s.type)} (${getTruncationCycleDisplayName(s.truncation_cycle_length_in_months)})`,
-                                            value: s.id,
-                                        }))
+                                        time_account_settings
+                                            .filter(s => item.time_account_setting.type === null || s.type != null)
+                                            .map(s => ({
+                                                title: `${accountType(s.type)} (${getTruncationCycleDisplayName(
+                                                    s.truncation_cycle_length_in_months,
+                                                )})`,
+                                                value: s.id,
+                                            }))
                                     "
                                     v-model="timeAccountSettingsForm.time_account_setting_id"
                                     :error-messages="timeAccountSettingsForm.errors.time_account_setting_id"
