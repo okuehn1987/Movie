@@ -23,6 +23,8 @@ class PasswordController extends Controller
         $request->user()->password = Hash::make($validated['password']);
         $request->user()->save();
 
+        $request->user()->save();
+
         return back()->with('success', 'Passwort erfolgreich gespeichert.');
     }
 }

@@ -28,7 +28,7 @@ class TimeAccountController extends Controller
             ],
         ]);
 
-        $timeAccount = TimeAccount::create([...$validated, 'user_id' => $user->id]);
+        $timeAccount = TimeAccount::create([...collect($validated)->except('balance')->toArray(), 'user_id' => $user->id]);
 
         $timeAccount->addBalance($validated['balance'], 'Initialer Kontostand');
 
