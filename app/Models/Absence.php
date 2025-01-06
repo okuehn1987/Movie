@@ -61,7 +61,7 @@ class Absence extends Model
 
                 $duration = $workLogs->sum('duration');
 
-                $this->user->defaultTimeAccount()->addBalance(
+                $this->user->defaultTimeAccount->addBalance(
                     -min($duration, $sollStunden),
                     'Abwesenheit akzeptiert am ' . Carbon::parse($this->accepted_at)->format('d.m.Y H:i:s')
                 );
