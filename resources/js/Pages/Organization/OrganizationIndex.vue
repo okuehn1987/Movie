@@ -146,7 +146,7 @@ function submit() {
                                                     </v-col>
                                                     <v-col cols="12" sm="6">
                                                         <v-text-field
-                                                            label="Addresszusatz"
+                                                            label="Addresszusatz (optional)"
                                                             :error-messages="organizationForm.errors.organization_address_suffix"
                                                             v-model="organizationForm.organization_address_suffix"
                                                         ></v-text-field>
