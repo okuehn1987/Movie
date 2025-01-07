@@ -12,6 +12,7 @@ use App\Models\TimeAccount;
 use App\Models\TimeAccountSetting;
 use App\Models\TimeAccountTransaction;
 use App\Models\User;
+use App\Models\UserLeaveDay;
 use App\Models\UserWorkingHour;
 use App\Models\UserWorkingWeek;
 use App\Services\HolidayService;
@@ -59,7 +60,7 @@ class UserController extends Controller
             'is_supervisor' => 'required|boolean',
 
             'home_office' => 'required|boolean',
-            'home_office_hours_per_week' => 'required_if:home_office,true|numeric',
+            'home_office_hours_per_week' => 'nullable|required_if:home_office,true|numeric',
 
             'userWorkingHours' => 'required|decimal:0,2',
             'userWorkingHoursSince' => 'required|date',
@@ -67,6 +68,9 @@ class UserController extends Controller
             'userWorkingWeek' => 'required|array',
             'userWorkingWeek.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'userWorkingWeekSince' => 'required|date',
+
+            'userLeaveDays' => 'required|integer',
+            'userLeaveDaysSince' => 'required|date',
 
             'organizationUser' => 'required|array',
             'organizationUser.*' => ['nullable', function ($attribute, $value, $fail) {
@@ -130,7 +134,7 @@ class UserController extends Controller
     {
         Gate::authorize('viewShow', $user);
 
-        $user->load(['groupUser', 'operatingSiteUser', 'organizationUser']);
+        $user->load(['groupUser', 'operatingSiteUser', 'organizationUser', 'userLeaveDays']);
         $user['currentWorkingHours'] = $user->userWorkingHours()->latest()->first();
         $user['userWorkingWeek'] = $user->userWorkingWeeks()->latest()->first();
         $user['leaveDaysForYear'] = $user->leaveDaysForYear(Carbon::now());
@@ -224,6 +228,13 @@ class UserController extends Controller
         ]);
         $user->save();
 
+        UserLeaveDay::create([
+            'user_id' => $user->id,
+            'leave_days' => $validated['userLeaveDays'],
+            'active_since' => Carbon::parse($validated['userLeaveDaysSince']),
+            'type' => 'annual'
+        ]);
+
         UserWorkingHour::create([
             'user_id' => $user->id,
             'weekly_working_hours' => $validated['userWorkingHours'],
@@ -315,6 +326,14 @@ class UserController extends Controller
         $user->organizationUser->update($validated['organizationUser']);
         $user->operatingSiteUser->update($validated['operatingSiteUser']);
         $user->groupUser->update($validated['groupUser']);
+
+        UserLeaveDay::updateOrCreate([
+            'active_since' => Carbon::parse($validated['userLeaveDaysSince']),
+            'user_id' => $user->id,
+            'type' => 'annual'
+        ], [
+            'leave_days' => $validated['userLeaveDays'],
+        ]);
 
         $lastWorkingHour = $user->userWorkingHours()
             ->where('active_since', Carbon::parse($validated['userWorkingHoursSince']))

@@ -16,6 +16,7 @@ import {
     TimeAccountTransaction,
     Tree,
     User,
+    UserLeaveDays,
     UserWorkingHours,
     UserWorkingWeek,
 } from '@/types/types';
@@ -39,6 +40,7 @@ defineProps<{
             absence_type: Pick<AbsenceType, 'id' | 'name'>;
             usedDays: number;
         })[];
+        user_leave_days: UserLeaveDays[];
     };
     supervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
 
