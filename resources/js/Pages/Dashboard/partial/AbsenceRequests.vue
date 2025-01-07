@@ -76,7 +76,7 @@ function changeAbsenceStatus(accepted: boolean) {
                 </template>
                 <v-card-text>
                     <v-row>
-                        <v-col cols="12">
+                        <v-col cols="12" v-if="absenceDialog.absence_type.name == 'Urlaub'">
                             <v-alert :type="absenceDialog.user.leaveDaysForYear < absenceDialog.usedDays ? 'warning' : 'info'" class="w-100">
                                 <v-row>
                                     <v-col cols="12" md="6">
