@@ -36,6 +36,25 @@ class Absence extends Model
         return (int)Carbon::parse($this->start)->diffInDays(Carbon::parse($this->end)) + 1;
     }
 
+    public function getUsedDaysAttribute()
+    {
+        $usedDays = 0;
+        for ($day = Carbon::parse($this->start)->startOfDay(); $day->lte(Carbon::parse($this->end)); $day->addDay()) {
+            $currentWorkingWeek = $this->user->userWorkingWeekForDate($day);
+            $workingDaysInWeek = $currentWorkingWeek?->numberOfWorkingDays;
+
+            if (
+                $workingDaysInWeek > 0 &&
+                $currentWorkingWeek->hasWorkDay($day) &&
+                !$this->user->operatingSite->hasHoliday($day)
+            ) {
+                $usedDays++;
+            };
+        }
+
+        return $usedDays;
+    }
+
     public function accountAsTransaction()
     {
         DB::transaction(function () {

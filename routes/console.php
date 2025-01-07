@@ -127,54 +127,14 @@ Schedule::call(function () {
 })->name('dailyWorkLogCut')->dailyAt("00:00");
 
 Schedule::call(function () {
-    dump('start');
-
-    foreach (User::all() as $user) {
-        $usedDays = $user->absences()
-            ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
-            ->where(
-                fn($q) =>
-                $q->whereYear('start', '<=', Carbon::now()->subYear()->endOfYear()->year)
-                    ->orWhereYear('end', '>=', Carbon::now()->subYear()->startOfYear()->year)
-            )
-            ->get()
-            ->sum('duration');
-
-        $lastYearUserLeaveDays = $user->userLeaveDays()
-            ->where('type', 'annual')
-            ->whereYear('active_since', Carbon::now()->subYear()->year);
-
-        $previousUserLeaveDays = null;
-        if (!Carbon::parse($lastYearUserLeaveDays->whereMonth('active_since', 1)->first()))
-            $previousUserLeaveDays = $user->userLeaveDays()
-                ->where('type', 'annual')
-                ->whereYear('active_since', '<=', Carbon::now()->subYears(2)->year)
-                ->latest('active_since')
-                ->first();
-
-        $leaveDays = 0;
-        for ($i = 1; $i <= 12; $i++) {
-            $month = Carbon::now()->subYear()->setMonth($i)->startOfMonth();
-            $activeEntry = collect([$lastYearUserLeaveDays, ...$previousUserLeaveDays])
-                ->whereDate('active_since', '<=', $month)
-                ->latest('active_since')
-                ->first();
-            $leaveDays += $activeEntry->leave_days / 12;
-        }
-
-        $leaveDays += $user->userLeaveDays()
-            ->where('type', 'remaining')
-            ->whereYear('active_since', Carbon::now()->subYear()->year)->first()->leave_days;
-
-        $newRemainingLeaveDays = $leaveDays - $usedDays;
+    foreach (User::with('operatingSite')->get() as $user) {
+        $newRemainingLeaveDays = $user->leaveDaysForYear(Carbon::now()->subYear()) - $user->usedLeaveDaysForYear(Carbon::now()->subYear());
 
         UserLeaveDay::create([
             'user_id' => $user->id,
             'leave_days' => $newRemainingLeaveDays,
             'type' => 'remaining',
-            'active_since' => Carbon::now()->startOfYear()->subYear()
+            'active_since' => Carbon::now()->startOfYear()
         ]);
     }
-
-    dump('end');
-})->name('yearlyLeaveDaysCalculation')->yearlyOn();
+})->name('yearlyLeaveDaysCalculation')->yearlyOn($month = 1, $dayOfMonth = 1, $time = '0:0');

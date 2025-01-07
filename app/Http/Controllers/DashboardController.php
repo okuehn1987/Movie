@@ -66,8 +66,8 @@ class DashboardController extends Controller
             'overtime' => $user->overtime,
             'workingHours' => [
                 'should' => $user->userWorkingHours()->where('active_since', '<=', Carbon::now()->format('Y-m-d'))->orderBy('active_since', 'Desc')->first()['weekly_working_hours'],
-                'current' => User::getCurrentWeekWorkingHours($user)->totalHours,
-                'currentHomeOffice' => User::getCurrentWeekWorkingHours($user)->homeOfficeHours,
+                'current' => User::getCurrentWeekWorkingHours($user)['totalHours'],
+                'currentHomeOffice' => User::getCurrentWeekWorkingHours($user)['homeOfficeHours'],
             ],
         ]);
     }

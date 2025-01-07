@@ -229,7 +229,7 @@ class User extends Authenticatable
         return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->where('type', 'default'))->sum('balance');
     }
 
-    public static function getCurrentWeekWorkingHours(User $user): object
+    public static function getCurrentWeekWorkingHours(User $user)
     {
         //all logs that could be applicable
         $currentWeekWorkLogs = $user->workLogs()
@@ -282,9 +282,59 @@ class User extends Authenticatable
             }
         }
 
-        return (object)[
+        return [
             'totalHours' => $currentWeekHours,
             'homeOfficeHours' => $currentWeekHomeOfficeHours,
         ];
+    }
+
+    public function usedLeaveDaysForYear(CarbonInterface $year): int
+    {
+        $relevantAbsences = $this->absences()
+            ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
+            ->whereDate('start', '<=', $year->copy()->endOfYear())
+            ->whereDate('end', '>=', $year->copy()->startOfYear())
+            ->get();
+
+        $usedDays = 0;
+        foreach ($relevantAbsences as $absence) {
+            for ($day = Carbon::parse($absence->start)->startOfDay(); $day->lte(Carbon::parse($absence->end)); $day->addDay()) {
+                if ($day->year != $year->year) continue;
+                $currentWorkingWeek = $this->userWorkingWeekForDate($day);
+                $workingDaysInWeek = $currentWorkingWeek?->numberOfWorkingDays;
+
+                if (
+                    $workingDaysInWeek > 0 &&
+                    $currentWorkingWeek->hasWorkDay($day) &&
+                    !$this->operatingSite->hasHoliday($day)
+                ) {
+                    $usedDays++;
+                };
+            }
+        }
+
+        return $usedDays;
+    }
+
+    public function leaveDaysForYear(CarbonInterface $year): int
+    {
+        $leaveDays = 0;
+        for ($m = 1; $m <= 12; $m++) {
+            $month = $year->setMonth($m)->startOfMonth();
+            $activeEntry = $this->userLeaveDays()
+                ->where('type', 'annual')
+                ->whereDate('active_since', '<=', $month)
+                ->latest('active_since')
+                ->first();
+            if ($activeEntry) { //FIXME: should not be possible to be false
+                $leaveDays += $activeEntry->leave_days / 12;
+            }
+        }
+
+        $leaveDays += $this->userLeaveDays()
+            ->where('type', 'remaining')
+            ->whereYear('active_since', $year)->first()?->leave_days ?? 0;
+
+        return ceil($leaveDays);
     }
 }
