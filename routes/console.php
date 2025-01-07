@@ -40,7 +40,7 @@ Schedule::call(function () {
 Schedule::call(function () {
     dump('start');
 
-    $users = User::with('operatingSite')->get();
+    $users = User::with(['operatingSite', 'defaultTimeAccount'])->get();
     $workLogsToCut = WorkLog::whereBetween('start', [Carbon::yesterday()->startOfDay(), Carbon::yesterday()->endOfDay()])
         ->where('end', null)
         ->latest('start')
@@ -106,7 +106,6 @@ Schedule::call(function () {
             } else if ($currentWorkingHours != null) {
                 $istStunden = max($workLogs->sum('duration') - $currentWorkingHours['weekly_working_hours'] / $workingDaysInWeek, 0);
             }
-
             $user->defaultTimeAccount->addBalance($istStunden - $sollStunden, 'Tägliche Überstundenberechnung ' . $day->format('d.m.Y'));
 
             //TODO: add SWHF's & Nachtschicht, etc.
