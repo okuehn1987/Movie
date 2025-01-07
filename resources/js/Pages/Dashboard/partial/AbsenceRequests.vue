@@ -5,8 +5,9 @@ import { DateTime } from 'luxon';
 import { ref } from 'vue';
 
 type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'user_id'> & {
-    user: Pick<User, 'id' | 'first_name' | 'last_name'>;
+    user: Pick<User, 'id' | 'first_name' | 'last_name'> & { usedLeaveDaysForYear: number; leaveDaysForYear: number };
     absence_type: Pick<AbsenceType, 'id' | 'name'>;
+    usedDays: number;
 };
 
 const props = defineProps<{
@@ -75,9 +76,21 @@ function changeAbsenceStatus(accepted: boolean) {
                 </template>
                 <v-card-text>
                     <v-row>
-                        <v-col cols="12"
-                            ><v-text-field label="Abwesenheitsgrund" v-model="absenceDialog.absence_type.name" readonly></v-text-field
-                        ></v-col>
+                        <v-col cols="12">
+                            <v-alert :type="absenceDialog.user.leaveDaysForYear < absenceDialog.usedDays ? 'warning' : 'info'" class="w-100">
+                                <v-row>
+                                    <v-col cols="12" md="6">
+                                        <div>Verfügbare Urlaubstage: {{ absenceDialog.user.leaveDaysForYear }}</div>
+                                    </v-col>
+                                    <v-col cols="12" md="6">
+                                        <div>Genutzte Tage für diese Abwesenheit: {{ absenceDialog.usedDays }}</div>
+                                    </v-col>
+                                </v-row>
+                            </v-alert>
+                        </v-col>
+                        <v-col cols="12">
+                            <v-text-field label="Abwesenheitsgrund" v-model="absenceDialog.absence_type.name" readonly></v-text-field>
+                        </v-col>
                         <v-col cols="12" md="6">
                             <v-text-field
                                 label="Von:"

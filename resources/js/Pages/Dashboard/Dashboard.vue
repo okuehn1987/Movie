@@ -11,9 +11,7 @@ type PatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 
     user: Pick<User, 'id' | 'first_name' | 'last_name'>;
 };
 
-type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'user_id' | 'absence_type_id'> & {
-    user: Pick<User, 'id' | 'first_name' | 'last_name'>;
-};
+type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'user_id' | 'absence_type_id'>;
 
 defineProps<{
     lastWorkLog: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office'>;
@@ -22,8 +20,17 @@ defineProps<{
     operating_times: OperatingTime[];
     overtime: number;
     workingHours: { should: number; current: number; currentHomeOffice: number };
-    absenceRequests: (AbsenceProp & { absence_type: Pick<AbsenceType, 'id' | 'name'> })[] | null;
-    currentAbsences: (AbsenceProp & { absence_type: Pick<AbsenceType, 'id' | 'abbreviation'> })[];
+    absenceRequests:
+        | (AbsenceProp & {
+              user: Pick<User, 'id' | 'first_name' | 'last_name'> & { usedLeaveDaysForYear: number; leaveDaysForYear: number };
+              absence_type: Pick<AbsenceType, 'id' | 'name'>;
+              usedDays: number;
+          })[]
+        | null; //null means no absence requests accessible for this user
+    currentAbsences: (AbsenceProp & {
+        user: Pick<User, 'id' | 'first_name' | 'last_name'>;
+        absence_type: Pick<AbsenceType, 'id' | 'abbreviation'>;
+    })[];
 }>();
 </script>
 
