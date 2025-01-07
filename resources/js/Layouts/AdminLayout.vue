@@ -22,11 +22,13 @@ const appname = import.meta.env['VITE_APP_NAME'];
 
         <v-navigation-drawer color="background" style="border: none" v-model="showDrawer" image="/img/loggedin-background.png" :permanent="!isMobile">
             <v-list>
-                <v-list-item @click="router.get('/')" class="d-flex flex-row">
-                    <h1 class="text-center font-weight-medium">
-                        <v-icon icon="mdi-timer-lock" />
-                        <span class="ms-3">{{ appname }}</span>
-                    </h1>
+                <v-list-item @click="router.get('/')" class="d-flex">
+                    <div class="d-flex align-center">
+                        <v-img src="/img/logo-symbol.png" style="width: 40px"></v-img>
+                        <h1 class="text-center font-weight-medium">
+                            <span class="ms-3">{{ appname }}</span>
+                        </h1>
+                    </div>
                 </v-list-item>
             </v-list>
             <v-divider />

@@ -71,6 +71,7 @@ const absenceTypeForm = useForm({
                                         </v-col>
                                         <v-col cols="12" md="6">
                                             <v-select
+                                                data-testid="typeOfAbsence"
                                                 label="Typ"
                                                 :items="absence_type_defaults"
                                                 required

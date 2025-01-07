@@ -35,7 +35,7 @@ class ProfileController extends Controller
      */
     public function update(Request $request): RedirectResponse
     {
-        Gate::authorize('update', $request->user());
+        Gate::authorize('publicAuth', User::class);
 
         $validated = $request->validate([
             'first_name' => 'required|string',

@@ -60,11 +60,12 @@ const userForm = useForm({
     supervisor_id: null as null | User['id'],
     is_supervisor: false,
     home_office: false,
-    home_office_hours_per_week: null as number | null,
+    home_office_hours_per_week: null as null | number,
     userWorkingHours: 0,
     userWorkingHoursSince: new Date(),
     userWorkingWeek: [] as Weekday[],
     userWorkingWeekSince: new Date(),
+    overtime_calculations_start: DateTime.now().toFormat('yyyy-MM-dd'),
     organizationUser: {
         absence_permission: null,
         absenceType_permission: null,
@@ -120,16 +121,15 @@ if (props.user) {
     userForm.home_office_hours_per_week = props.user.home_office_hours_per_week;
     userForm.userWorkingHours = props.user.currentWorkingHours?.weekly_working_hours ?? 0;
     userForm.userWorkingHoursSince = new Date(props.user.currentWorkingHours.active_since);
+    userForm.overtime_calculations_start = DateTime.fromSQL(props.user.overtime_calculations_start).toFormat('yyyy-MM-dd');
     for (const weekday of Info.weekdays('long', { locale: 'en' }).map(e => e.toLowerCase()) as Weekday[]) {
         if (props.user.userWorkingWeek[weekday]) userForm.userWorkingWeek.push(weekday);
     }
     userForm.userWorkingWeekSince = new Date(props.user.userWorkingWeek.active_since);
-
     userForm.organizationUser = props.user.organization_user;
     userForm.groupUser = props.user.group_user ?? userForm.groupUser;
     userForm.operatingSiteUser = props.user.operating_site_user;
 }
-
 function submit() {
     const form = userForm.transform(data => ({
         ...data,
@@ -218,6 +218,7 @@ const steps = ref([
                                     <v-text-field
                                         v-model="userForm.first_name"
                                         label="Vorname"
+                                        required
                                         :error-messages="userForm.errors.first_name"
                                         :rules="steps[0].fields.first_name"
                                     ></v-text-field>
@@ -226,6 +227,7 @@ const steps = ref([
                                     <v-text-field
                                         v-model="userForm.last_name"
                                         label="Nachname"
+                                        required
                                         :error-messages="userForm.errors.last_name"
                                         :rules="steps[0].fields.last_name"
                                     ></v-text-field>
@@ -234,6 +236,7 @@ const steps = ref([
                                     <v-text-field
                                         v-model="userForm.email"
                                         label="Email"
+                                        required
                                         :error-messages="userForm.errors.email"
                                         :rules="steps[0].fields.email"
                                     ></v-text-field>
@@ -242,6 +245,7 @@ const steps = ref([
                                     <v-text-field
                                         v-model="userForm.password"
                                         label="Passwort"
+                                        required
                                         :error-messages="userForm.errors.password"
                                         :rules="steps[0].fields.password"
                                     ></v-text-field>
@@ -270,6 +274,7 @@ const steps = ref([
                                         type="number"
                                         v-model="userForm.userWorkingHours"
                                         label="Trage die wöchentliche Arbeitszeit des Mitarbeiters ein"
+                                        required
                                         :error-messages="userForm.errors.userWorkingHours"
                                         :rules="steps[0].fields.userWorkingHours"
                                     ></v-text-field>
@@ -279,6 +284,7 @@ const steps = ref([
                                         prepend-icon=""
                                         v-model="userForm.userWorkingHoursSince"
                                         label="seit"
+                                        required
                                         :error-messages="userForm.errors.userWorkingHoursSince"
                                         :rules="steps[0].fields.userWorkingHoursSince"
                                     ></v-date-input>
@@ -329,6 +335,16 @@ const steps = ref([
                                         :error-messages="userForm.errors.home_office_hours_per_week"
                                     ></v-text-field>
                                 </v-col>
+                                <v-col cols="12" md="6">
+                                    <v-text-field
+                                        type="date"
+                                        :min="DateTime.now().plus({ day: 1 }).toFormat('yyyy-MM-dd')"
+                                        v-model="userForm.overtime_calculations_start"
+                                        label="Überstundenberechnung ab"
+                                        :error-messages="userForm.errors.overtime_calculations_start"
+                                        :disabled="DateTime.fromSQL(userForm.overtime_calculations_start).diff(DateTime.now()).toMillis() < 0"
+                                    ></v-text-field>
+                                </v-col>
                             </v-row>
                         </v-card-text>
                     </v-stepper-window-item>
@@ -369,6 +385,7 @@ const steps = ref([
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-select
+                                        data-testid="land"
                                         label="Land"
                                         required
                                         :items="countries"
@@ -379,6 +396,7 @@ const steps = ref([
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-select
+                                        data-testid="federal_state"
                                         label="Bundesland"
                                         :items="getStates(userForm.country, countries)"
                                         :disabled="!userForm.country"
@@ -410,6 +428,7 @@ const steps = ref([
                                         label="Wähle die Betriebsstätte des Mitarbeiters aus."
                                         :error-messages="userForm.errors.operating_site_id"
                                         :rules="steps[2].fields.operating_site_id"
+                                        data-testid="userOperatingSiteSelection"
                                     ></v-select>
                                 </v-col>
                                 <PermissionSelector
@@ -418,6 +437,7 @@ const steps = ref([
                                     :permissions
                                     :errors="userForm.errors"
                                     label="Betriebstättenrechte"
+                                    data-testid="userOperatingSitePermissions"
                                 ></PermissionSelector>
                                 <v-col cols="12"><h4>Abteilung</h4></v-col>
                                 <v-col cols="12" md="6">
@@ -426,6 +446,7 @@ const steps = ref([
                                         :items="groups.map(g => ({ title: g.name, value: g.id }))"
                                         label="Wähle eine Abteilung aus, zu die der Mitarbeiter gehören soll."
                                         :error-messages="userForm.errors.group_id"
+                                        data-testid="userGroupSelection"
                                     ></v-select>
                                 </v-col>
                                 <PermissionSelector
@@ -443,6 +464,7 @@ const steps = ref([
                                         :items="supervisors.map(s => ({ title: s.first_name + ' ' + s.last_name, value: s.id }))"
                                         label="Wähle einen Vorgesetzten, falls vorhanden"
                                         :error-messages="userForm.errors.supervisor_id"
+                                        data-testid="userSupervisorSelection"
                                     ></v-select>
                                 </v-col>
                                 <v-col cols="12" md="6">
@@ -454,14 +476,15 @@ const steps = ref([
                 </v-stepper-window>
             </v-form>
             <template v-slot:actions="{ next, prev }">
-                <v-stepper-actions :disabled="false">
+                <v-stepper-actions :disabled="false" :class="`justify-${step !== 1 ? 'space-between' : 'end'}`">
                     <template v-slot:prev>
-                        <v-btn color="primary" variant="elevated" @click.stop="prev">Zurück</v-btn>
+                        <v-btn color="primary" variant="elevated" @click.stop="prev" v-if="step !== 1">Zurück</v-btn>
                     </template>
                     <template v-slot:next>
                         <v-btn
                             color="secondary"
                             variant="elevated"
+                            class="text-end"
                             @click.stop="
                                 () => {
                                     const s = steps[step - 1] as Writeable<typeof steps[number]>;

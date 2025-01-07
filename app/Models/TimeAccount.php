@@ -17,7 +17,7 @@ use Spatie\ErrorSolutions\Contracts\Solution;
 
 class TimeAccount extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, ScopeInOrganization;
 
     protected $guarded = [];
 

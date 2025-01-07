@@ -12,7 +12,7 @@ class WorkLog extends Model
     use HasFactory, SoftDeletes, ScopeInOrganization;
 
     protected $guarded = [];
-
+    
     protected $casts = ['is_home_office' => 'boolean'];
 
     public function user()

@@ -59,7 +59,7 @@ class UserController extends Controller
             'is_supervisor' => 'required|boolean',
 
             'home_office' => 'required|boolean',
-            'home_office_hours_per_week' => 'nullable|required_if,home_office,true|numeric',
+            'home_office_hours_per_week' => 'nullable|required_if:home_office,true|numeric',
 
             'userWorkingHours' => 'required|decimal:0,2',
             'userWorkingHoursSince' => 'required|date',
@@ -67,6 +67,8 @@ class UserController extends Controller
             'userWorkingWeek' => 'required|array',
             'userWorkingWeek.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'userWorkingWeekSince' => 'required|date',
+
+            "overtime_calculations_start" => "required|date",
 
             'organizationUser' => 'required|array',
             'organizationUser.*' => ['nullable', function ($attribute, $value, $fail) {
@@ -201,6 +203,7 @@ class UserController extends Controller
             'phone_number' => $validated['phone_number'],
             'staff_number' => $validated['staff_number'],
             'password' =>  Hash::make($validated['password']),
+            'overtime_calculations_start' => $validated['overtime_calculations_start'],
             'group_id' => $validated['group_id'],
             'is_supervisor' => $validated['is_supervisor'],
             'supervisor_id' => $validated['supervisor_id'],
@@ -302,7 +305,12 @@ class UserController extends Controller
         ]);
         $user->organizationUser->update($validated['organizationUser']);
         $user->operatingSiteUser->update($validated['operatingSiteUser']);
-        $user->groupUser->update($validated['groupUser']);
+        $user->groupUser?->update($validated['groupUser']);
+
+        $user->forceFill([
+            "overtime_calculations_start" => $validated['overtime_calculations_start'],
+        ]);
+        $user->save();
 
         $lastWorkingHour = $user->userWorkingHours()
             ->where('active_since', Carbon::parse($validated['userWorkingHoursSince']))

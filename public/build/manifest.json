@@ -1,6 +1,6 @@
 {
-  "_AbsenceRequests.vue_vue_type_script_setup_true_lang-NG-rDfTx.js": {
-    "file": "assets/AbsenceRequests.vue_vue_type_script_setup_true_lang-NG-rDfTx.js",
+  "_AbsenceRequests.vue_vue_type_script_setup_true_lang-D5L6cNd7.js": {
+    "file": "assets/AbsenceRequests.vue_vue_type_script_setup_true_lang-D5L6cNd7.js",
     "name": "AbsenceRequests.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts"
@@ -10,8 +10,8 @@
     "file": "assets/AbsenceTableCell-xhClh4eB.css",
     "src": "_AbsenceTableCell.vue_vue_type_style_index_0_lang-!~{00H}~.js"
   },
-  "_AbsenceTableCell.vue_vue_type_style_index_0_lang-LK5CqZ9j.js": {
-    "file": "assets/AbsenceTableCell.vue_vue_type_style_index_0_lang-LK5CqZ9j.js",
+  "_AbsenceTableCell.vue_vue_type_style_index_0_lang-Cye7iW6o.js": {
+    "file": "assets/AbsenceTableCell.vue_vue_type_style_index_0_lang-Cye7iW6o.js",
     "name": "AbsenceTableCell.vue_vue_type_style_index_0_lang",
     "imports": [
       "resources/js/app.ts"
@@ -20,15 +20,15 @@
       "assets/AbsenceTableCell-xhClh4eB.css"
     ]
   },
-  "_AbsenceTypeIndex.vue_vue_type_script_setup_true_lang-BcMD2x0S.js": {
-    "file": "assets/AbsenceTypeIndex.vue_vue_type_script_setup_true_lang-BcMD2x0S.js",
+  "_AbsenceTypeIndex.vue_vue_type_script_setup_true_lang-CQ8uhO6y.js": {
+    "file": "assets/AbsenceTypeIndex.vue_vue_type_script_setup_true_lang-CQ8uhO6y.js",
     "name": "AbsenceTypeIndex.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts"
     ]
   },
-  "_Absences.vue_vue_type_script_setup_true_lang-BNobhkSw.js": {
-    "file": "assets/Absences.vue_vue_type_script_setup_true_lang-BNobhkSw.js",
+  "_Absences.vue_vue_type_script_setup_true_lang-DAr_j5dW.js": {
+    "file": "assets/Absences.vue_vue_type_script_setup_true_lang-DAr_j5dW.js",
     "name": "Absences.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts"
@@ -38,8 +38,8 @@
     "file": "assets/AdminLayout-D35oWQr8.css",
     "src": "_AdminLayout.vue_vue_type_script_setup_true_lang-!~{00F}~.js"
   },
-  "_AdminLayout.vue_vue_type_script_setup_true_lang-BDtx9b2r.js": {
-    "file": "assets/AdminLayout.vue_vue_type_script_setup_true_lang-BDtx9b2r.js",
+  "_AdminLayout.vue_vue_type_script_setup_true_lang-CWpaLjrE.js": {
+    "file": "assets/AdminLayout.vue_vue_type_script_setup_true_lang-CWpaLjrE.js",
     "name": "AdminLayout.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts",
@@ -49,133 +49,133 @@
       "assets/AdminLayout-D35oWQr8.css"
     ]
   },
-  "_AktuelleArbeitszeiten.vue_vue_type_script_setup_true_lang-D2Jk4gcs.js": {
-    "file": "assets/AktuelleArbeitszeiten.vue_vue_type_script_setup_true_lang-D2Jk4gcs.js",
+  "_AktuelleArbeitszeiten.vue_vue_type_script_setup_true_lang-CVwVnMIt.js": {
+    "file": "assets/AktuelleArbeitszeiten.vue_vue_type_script_setup_true_lang-CVwVnMIt.js",
     "name": "AktuelleArbeitszeiten.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts"
     ]
   },
-  "_AllgemeineInformationen.vue_vue_type_script_setup_true_lang-3NVtw5O3.js": {
-    "file": "assets/AllgemeineInformationen.vue_vue_type_script_setup_true_lang-3NVtw5O3.js",
+  "_AllgemeineInformationen.vue_vue_type_script_setup_true_lang-Cyy-qiba.js": {
+    "file": "assets/AllgemeineInformationen.vue_vue_type_script_setup_true_lang-Cyy-qiba.js",
     "name": "AllgemeineInformationen.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts",
-      "_utils-DEcC2f3f.js"
+      "_utils-BB-b41cx.js"
     ]
   },
-  "_ConfirmDelete.vue_vue_type_script_setup_true_lang-IaQ0rVFj.js": {
-    "file": "assets/ConfirmDelete.vue_vue_type_script_setup_true_lang-IaQ0rVFj.js",
+  "_ConfirmDelete.vue_vue_type_script_setup_true_lang-B94gRBG3.js": {
+    "file": "assets/ConfirmDelete.vue_vue_type_script_setup_true_lang-B94gRBG3.js",
     "name": "ConfirmDelete.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts"
     ]
   },
-  "_GuestLayout.vue_vue_type_script_setup_true_lang-nF4qWzMK.js": {
-    "file": "assets/GuestLayout.vue_vue_type_script_setup_true_lang-nF4qWzMK.js",
+  "_GuestLayout.vue_vue_type_script_setup_true_lang-7vnVJxrY.js": {
+    "file": "assets/GuestLayout.vue_vue_type_script_setup_true_lang-7vnVJxrY.js",
     "name": "GuestLayout.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts"
     ]
   },
-  "_NewTimeAccountForm.vue_vue_type_script_setup_true_lang-Cm6RCzps.js": {
-    "file": "assets/NewTimeAccountForm.vue_vue_type_script_setup_true_lang-Cm6RCzps.js",
+  "_NewTimeAccountForm.vue_vue_type_script_setup_true_lang-DLAiZGI5.js": {
+    "file": "assets/NewTimeAccountForm.vue_vue_type_script_setup_true_lang-DLAiZGI5.js",
     "name": "NewTimeAccountForm.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts",
-      "_utils-DEcC2f3f.js"
+      "_utils-BB-b41cx.js"
     ]
   },
-  "_OrganizationSettings.vue_vue_type_script_setup_true_lang-KShnkMCS.js": {
-    "file": "assets/OrganizationSettings.vue_vue_type_script_setup_true_lang-KShnkMCS.js",
+  "_OrganizationSettings.vue_vue_type_script_setup_true_lang-CkU62SCt.js": {
+    "file": "assets/OrganizationSettings.vue_vue_type_script_setup_true_lang-CkU62SCt.js",
     "name": "OrganizationSettings.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts"
     ]
   },
-  "_PermissionSelector.vue_vue_type_script_setup_true_lang-BsPEp0NO.js": {
-    "file": "assets/PermissionSelector.vue_vue_type_script_setup_true_lang-BsPEp0NO.js",
+  "_PermissionSelector.vue_vue_type_script_setup_true_lang-DFswJvF9.js": {
+    "file": "assets/PermissionSelector.vue_vue_type_script_setup_true_lang-DFswJvF9.js",
     "name": "PermissionSelector.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts"
     ]
   },
-  "_SWHFIndex.vue_vue_type_script_setup_true_lang-YhQVQVkF.js": {
-    "file": "assets/SWHFIndex.vue_vue_type_script_setup_true_lang-YhQVQVkF.js",
+  "_SWHFIndex.vue_vue_type_script_setup_true_lang-Cjijc3en.js": {
+    "file": "assets/SWHFIndex.vue_vue_type_script_setup_true_lang-Cjijc3en.js",
     "name": "SWHFIndex.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts",
-      "_ConfirmDelete.vue_vue_type_script_setup_true_lang-IaQ0rVFj.js"
+      "_ConfirmDelete.vue_vue_type_script_setup_true_lang-B94gRBG3.js"
     ]
   },
-  "_TimeAccountDeleteForm.vue_vue_type_script_setup_true_lang-Bc6Fx0cC.js": {
-    "file": "assets/TimeAccountDeleteForm.vue_vue_type_script_setup_true_lang-Bc6Fx0cC.js",
+  "_TimeAccountDeleteForm.vue_vue_type_script_setup_true_lang-K2I9WwEr.js": {
+    "file": "assets/TimeAccountDeleteForm.vue_vue_type_script_setup_true_lang-K2I9WwEr.js",
     "name": "TimeAccountDeleteForm.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts",
-      "_utils-DEcC2f3f.js"
+      "_utils-BB-b41cx.js"
     ]
   },
-  "_TimeAccountSettingsForm.vue_vue_type_script_setup_true_lang-C2b44BaL.js": {
-    "file": "assets/TimeAccountSettingsForm.vue_vue_type_script_setup_true_lang-C2b44BaL.js",
+  "_TimeAccountSettingsForm.vue_vue_type_script_setup_true_lang-BR35KftD.js": {
+    "file": "assets/TimeAccountSettingsForm.vue_vue_type_script_setup_true_lang-BR35KftD.js",
     "name": "TimeAccountSettingsForm.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts",
-      "_utils-DEcC2f3f.js"
+      "_utils-BB-b41cx.js"
     ]
   },
-  "_TimeAccountSettingsIndex.vue_vue_type_script_setup_true_lang-Amch_tM4.js": {
-    "file": "assets/TimeAccountSettingsIndex.vue_vue_type_script_setup_true_lang-Amch_tM4.js",
+  "_TimeAccountSettingsIndex.vue_vue_type_script_setup_true_lang-Bo454fJd.js": {
+    "file": "assets/TimeAccountSettingsIndex.vue_vue_type_script_setup_true_lang-Bo454fJd.js",
     "name": "TimeAccountSettingsIndex.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts",
-      "_utils-DEcC2f3f.js"
+      "_utils-BB-b41cx.js"
     ]
   },
-  "_TimeAccountTransactionForm.vue_vue_type_script_setup_true_lang-BuxMPMSK.js": {
-    "file": "assets/TimeAccountTransactionForm.vue_vue_type_script_setup_true_lang-BuxMPMSK.js",
+  "_TimeAccountTransactionForm.vue_vue_type_script_setup_true_lang-BPhRjS5Q.js": {
+    "file": "assets/TimeAccountTransactionForm.vue_vue_type_script_setup_true_lang-BPhRjS5Q.js",
     "name": "TimeAccountTransactionForm.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts"
     ]
   },
-  "_TimeAccountTransactions.vue_vue_type_script_setup_true_lang-NgLQDyu9.js": {
-    "file": "assets/TimeAccountTransactions.vue_vue_type_script_setup_true_lang-NgLQDyu9.js",
+  "_TimeAccountTransactions.vue_vue_type_script_setup_true_lang-BWDraLsn.js": {
+    "file": "assets/TimeAccountTransactions.vue_vue_type_script_setup_true_lang-BWDraLsn.js",
     "name": "TimeAccountTransactions.vue_vue_type_script_setup_true_lang",
     "imports": [
-      "_utils-DEcC2f3f.js",
+      "_utils-BB-b41cx.js",
       "resources/js/app.ts"
     ]
   },
-  "_TimeAccountTransferForm.vue_vue_type_script_setup_true_lang-CgPni1PU.js": {
-    "file": "assets/TimeAccountTransferForm.vue_vue_type_script_setup_true_lang-CgPni1PU.js",
+  "_TimeAccountTransferForm.vue_vue_type_script_setup_true_lang-D5M4WiXq.js": {
+    "file": "assets/TimeAccountTransferForm.vue_vue_type_script_setup_true_lang-D5M4WiXq.js",
     "name": "TimeAccountTransferForm.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts"
     ]
   },
-  "_TimeAccounts.vue_vue_type_script_setup_true_lang--RvZxRpv.js": {
-    "file": "assets/TimeAccounts.vue_vue_type_script_setup_true_lang--RvZxRpv.js",
+  "_TimeAccounts.vue_vue_type_script_setup_true_lang-Dsk2NV5F.js": {
+    "file": "assets/TimeAccounts.vue_vue_type_script_setup_true_lang-Dsk2NV5F.js",
     "name": "TimeAccounts.vue_vue_type_script_setup_true_lang",
     "imports": [
-      "_utils-DEcC2f3f.js",
-      "_NewTimeAccountForm.vue_vue_type_script_setup_true_lang-Cm6RCzps.js",
-      "_TimeAccountDeleteForm.vue_vue_type_script_setup_true_lang-Bc6Fx0cC.js",
-      "_TimeAccountSettingsForm.vue_vue_type_script_setup_true_lang-C2b44BaL.js",
-      "_TimeAccountTransactionForm.vue_vue_type_script_setup_true_lang-BuxMPMSK.js",
-      "_TimeAccountTransferForm.vue_vue_type_script_setup_true_lang-CgPni1PU.js",
+      "_utils-BB-b41cx.js",
+      "_NewTimeAccountForm.vue_vue_type_script_setup_true_lang-DLAiZGI5.js",
+      "_TimeAccountDeleteForm.vue_vue_type_script_setup_true_lang-K2I9WwEr.js",
+      "_TimeAccountSettingsForm.vue_vue_type_script_setup_true_lang-BR35KftD.js",
+      "_TimeAccountTransactionForm.vue_vue_type_script_setup_true_lang-BPhRjS5Q.js",
+      "_TimeAccountTransferForm.vue_vue_type_script_setup_true_lang-D5M4WiXq.js",
       "resources/js/app.ts"
     ]
   },
-  "_UpdatePasswordForm.vue_vue_type_script_setup_true_lang--lUBijBz.js": {
-    "file": "assets/UpdatePasswordForm.vue_vue_type_script_setup_true_lang--lUBijBz.js",
+  "_UpdatePasswordForm.vue_vue_type_script_setup_true_lang-C0hPciKI.js": {
+    "file": "assets/UpdatePasswordForm.vue_vue_type_script_setup_true_lang-C0hPciKI.js",
     "name": "UpdatePasswordForm.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts"
     ]
   },
-  "_UpdateProfileInformationForm.vue_vue_type_script_setup_true_lang-Cko0Voaz.js": {
-    "file": "assets/UpdateProfileInformationForm.vue_vue_type_script_setup_true_lang-Cko0Voaz.js",
+  "_UpdateProfileInformationForm.vue_vue_type_script_setup_true_lang-BjafQEUh.js": {
+    "file": "assets/UpdateProfileInformationForm.vue_vue_type_script_setup_true_lang-BjafQEUh.js",
     "name": "UpdateProfileInformationForm.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts"
@@ -185,11 +185,11 @@
     "file": "assets/UserOrganigram-BEb2K_uv.css",
     "src": "_UserOrganigram-!~{00S}~.js"
   },
-  "_UserOrganigram-DwL-YhFR.js": {
-    "file": "assets/UserOrganigram-DwL-YhFR.js",
+  "_UserOrganigram-C50CzaB9.js": {
+    "file": "assets/UserOrganigram-C50CzaB9.js",
     "name": "UserOrganigram",
     "imports": [
-      "_utils-DEcC2f3f.js",
+      "_utils-BB-b41cx.js",
       "resources/js/app.ts",
       "__plugin-vue_export-helper-DlAUqK2U.js"
     ],
@@ -197,27 +197,27 @@
       "assets/UserOrganigram-BEb2K_uv.css"
     ]
   },
-  "_WorkLogPatches.vue_vue_type_script_setup_true_lang-Duv6Jk40.js": {
-    "file": "assets/WorkLogPatches.vue_vue_type_script_setup_true_lang-Duv6Jk40.js",
+  "_WorkLogPatches.vue_vue_type_script_setup_true_lang-CKoOazq4.js": {
+    "file": "assets/WorkLogPatches.vue_vue_type_script_setup_true_lang-CKoOazq4.js",
     "name": "WorkLogPatches.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts"
     ]
   },
-  "_WorkingHours.vue_vue_type_script_setup_true_lang-DbMb46IP.js": {
-    "file": "assets/WorkingHours.vue_vue_type_script_setup_true_lang-DbMb46IP.js",
+  "_WorkingHours.vue_vue_type_script_setup_true_lang-CT-cKX92.js": {
+    "file": "assets/WorkingHours.vue_vue_type_script_setup_true_lang-CT-cKX92.js",
     "name": "WorkingHours.vue_vue_type_script_setup_true_lang",
     "imports": [
       "resources/js/app.ts",
-      "_utils-DEcC2f3f.js"
+      "_utils-BB-b41cx.js"
     ]
   },
   "__plugin-vue_export-helper-DlAUqK2U.js": {
     "file": "assets/_plugin-vue_export-helper-DlAUqK2U.js",
     "name": "_plugin-vue_export-helper"
   },
-  "_utils-DEcC2f3f.js": {
-    "file": "assets/utils-DEcC2f3f.js",
+  "_utils-BB-b41cx.js": {
+    "file": "assets/utils-BB-b41cx.js",
     "name": "utils",
     "imports": [
       "resources/js/app.ts"
@@ -240,15 +240,15 @@
     "src": "node_modules/@mdi/font/fonts/materialdesignicons-webfont.woff2"
   },
   "resources/js/Pages/Absence/AbsenceIndex.vue": {
-    "file": "assets/AbsenceIndex-ClEVRQtL.js",
+    "file": "assets/AbsenceIndex-DYBtB7B1.js",
     "name": "AbsenceIndex",
     "src": "resources/js/Pages/Absence/AbsenceIndex.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.ts",
-      "_AdminLayout.vue_vue_type_script_setup_true_lang-BDtx9b2r.js",
-      "_utils-DEcC2f3f.js",
-      "_AbsenceTableCell.vue_vue_type_style_index_0_lang-LK5CqZ9j.js",
+      "_AdminLayout.vue_vue_type_script_setup_true_lang-CWpaLjrE.js",
+      "_utils-BB-b41cx.js",
+      "_AbsenceTableCell.vue_vue_type_style_index_0_lang-Cye7iW6o.js",
       "__plugin-vue_export-helper-DlAUqK2U.js"
     ],
     "css": [
@@ -256,457 +256,457 @@
     ]
   },
   "resources/js/Pages/Absence/partials/AbsenceTableCell.vue": {
-    "file": "assets/AbsenceTableCell-DFPoQOL3.js",
+    "file": "assets/AbsenceTableCell-DaBtAvck.js",
     "name": "AbsenceTableCell",
     "src": "resources/js/Pages/Absence/partials/AbsenceTableCell.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_AbsenceTableCell.vue_vue_type_style_index_0_lang-LK5CqZ9j.js",
+      "_AbsenceTableCell.vue_vue_type_style_index_0_lang-Cye7iW6o.js",
       "resources/js/app.ts"
     ]
   },
   "resources/js/Pages/AbsenceType/AbsenceTypeIndex.vue": {
-    "file": "assets/AbsenceTypeIndex-Cuwf71JB.js",
+    "file": "assets/AbsenceTypeIndex-Z-OuM3H6.js",
     "name": "AbsenceTypeIndex",
     "src": "resources/js/Pages/AbsenceType/AbsenceTypeIndex.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_AbsenceTypeIndex.vue_vue_type_script_setup_true_lang-BcMD2x0S.js",
+      "_AbsenceTypeIndex.vue_vue_type_script_setup_true_lang-CQ8uhO6y.js",
       "resources/js/app.ts"
     ]
   },
   "resources/js/Pages/Auth/ConfirmPassword.vue": {
-    "file": "assets/ConfirmPassword-BRBGn4hs.js",
+    "file": "assets/ConfirmPassword-JVnDU2yx.js",
     "name": "ConfirmPassword",
     "src": "resources/js/Pages/Auth/ConfirmPassword.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.ts",
-      "_GuestLayout.vue_vue_type_script_setup_true_lang-nF4qWzMK.js"
+      "_GuestLayout.vue_vue_type_script_setup_true_lang-7vnVJxrY.js"
     ]
   },
   "resources/js/Pages/Auth/ForgotPassword.vue": {
-    "file": "assets/ForgotPassword-CxiEsSuX.js",
+    "file": "assets/ForgotPassword-4i0BCWak.js",
     "name": "ForgotPassword",
     "src": "resources/js/Pages/Auth/ForgotPassword.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.ts",
-      "_GuestLayout.vue_vue_type_script_setup_true_lang-nF4qWzMK.js"
+      "_GuestLayout.vue_vue_type_script_setup_true_lang-7vnVJxrY.js"
     ]
   },
   "resources/js/Pages/Auth/Login.vue": {
-    "file": "assets/Login-Dmw0_p_N.js",
+    "file": "assets/Login-B9VQ6ZRX.js",
     "name": "Login",
     "src": "resources/js/Pages/Auth/Login.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.ts",
-      "_GuestLayout.vue_vue_type_script_setup_true_lang-nF4qWzMK.js"
+      "_GuestLayout.vue_vue_type_script_setup_true_lang-7vnVJxrY.js"
     ]
   },
   "resources/js/Pages/Auth/ResetPassword.vue": {
-    "file": "assets/ResetPassword-ppxyCIRm.js",
+    "file": "assets/ResetPassword-Da1td46_.js",
     "name": "ResetPassword",
     "src": "resources/js/Pages/Auth/ResetPassword.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.ts",
-      "_GuestLayout.vue_vue_type_script_setup_true_lang-nF4qWzMK.js"
+      "_GuestLayout.vue_vue_type_script_setup_true_lang-7vnVJxrY.js"
     ]
   },
   "resources/js/Pages/Dashboard/Dashboard.vue": {
-    "file": "assets/Dashboard-Bk5E9xZT.js",
+    "file": "assets/Dashboard-DnhTAmUP.js",
     "name": "Dashboard",
     "src": "resources/js/Pages/Dashboard/Dashboard.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_AdminLayout.vue_vue_type_script_setup_true_lang-BDtx9b2r.js",
-      "_WorkingHours.vue_vue_type_script_setup_true_lang-DbMb46IP.js",
-      "_WorkLogPatches.vue_vue_type_script_setup_true_lang-Duv6Jk40.js",
-      "_AbsenceRequests.vue_vue_type_script_setup_true_lang-NG-rDfTx.js",
-      "_Absences.vue_vue_type_script_setup_true_lang-BNobhkSw.js",
+      "_AdminLayout.vue_vue_type_script_setup_true_lang-CWpaLjrE.js",
+      "_WorkingHours.vue_vue_type_script_setup_true_lang-CT-cKX92.js",
+      "_WorkLogPatches.vue_vue_type_script_setup_true_lang-CKoOazq4.js",
+      "_AbsenceRequests.vue_vue_type_script_setup_true_lang-D5L6cNd7.js",
+      "_Absences.vue_vue_type_script_setup_true_lang-DAr_j5dW.js",
       "resources/js/app.ts",
       "__plugin-vue_export-helper-DlAUqK2U.js",
-      "_utils-DEcC2f3f.js"
+      "_utils-BB-b41cx.js"
     ]
   },
   "resources/js/Pages/Dashboard/partial/AbsenceRequests.vue": {
-    "file": "assets/AbsenceRequests-COFHHCgo.js",
+    "file": "assets/AbsenceRequests-Bc8cd0gU.js",
     "name": "AbsenceRequests",
     "src": "resources/js/Pages/Dashboard/partial/AbsenceRequests.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_AbsenceRequests.vue_vue_type_script_setup_true_lang-NG-rDfTx.js",
+      "_AbsenceRequests.vue_vue_type_script_setup_true_lang-D5L6cNd7.js",
       "resources/js/app.ts"
     ]
   },
   "resources/js/Pages/Dashboard/partial/Absences.vue": {
-    "file": "assets/Absences-CkTSUXbQ.js",
+    "file": "assets/Absences-Bzahhr60.js",
     "name": "Absences",
     "src": "resources/js/Pages/Dashboard/partial/Absences.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_Absences.vue_vue_type_script_setup_true_lang-BNobhkSw.js",
+      "_Absences.vue_vue_type_script_setup_true_lang-DAr_j5dW.js",
       "resources/js/app.ts"
     ]
   },
   "resources/js/Pages/Dashboard/partial/WorkLogPatches.vue": {
-    "file": "assets/WorkLogPatches-BTPYC7wx.js",
+    "file": "assets/WorkLogPatches-Cg_J0Uz7.js",
     "name": "WorkLogPatches",
     "src": "resources/js/Pages/Dashboard/partial/WorkLogPatches.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_WorkLogPatches.vue_vue_type_script_setup_true_lang-Duv6Jk40.js",
+      "_WorkLogPatches.vue_vue_type_script_setup_true_lang-CKoOazq4.js",
       "resources/js/app.ts"
     ]
   },
   "resources/js/Pages/Dashboard/partial/WorkingHours.vue": {
-    "file": "assets/WorkingHours-DgruSLoE.js",
+    "file": "assets/WorkingHours-A_9_0u2-.js",
     "name": "WorkingHours",
     "src": "resources/js/Pages/Dashboard/partial/WorkingHours.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_WorkingHours.vue_vue_type_script_setup_true_lang-DbMb46IP.js",
+      "_WorkingHours.vue_vue_type_script_setup_true_lang-CT-cKX92.js",
       "resources/js/app.ts",
-      "_utils-DEcC2f3f.js"
+      "_utils-BB-b41cx.js"
     ]
   },
   "resources/js/Pages/Group/GroupIndex.vue": {
-    "file": "assets/GroupIndex-BJjtKO3X.js",
+    "file": "assets/GroupIndex-BmV0XJK0.js",
     "name": "GroupIndex",
     "src": "resources/js/Pages/Group/GroupIndex.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.ts",
-      "_AdminLayout.vue_vue_type_script_setup_true_lang-BDtx9b2r.js",
-      "_utils-DEcC2f3f.js",
+      "_AdminLayout.vue_vue_type_script_setup_true_lang-CWpaLjrE.js",
+      "_utils-BB-b41cx.js",
       "__plugin-vue_export-helper-DlAUqK2U.js"
     ]
   },
   "resources/js/Pages/OperatingSite/OperatingSiteIndex.vue": {
-    "file": "assets/OperatingSiteIndex-9IBzPtGU.js",
+    "file": "assets/OperatingSiteIndex-fJL1rWve.js",
     "name": "OperatingSiteIndex",
     "src": "resources/js/Pages/OperatingSite/OperatingSiteIndex.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.ts",
-      "_ConfirmDelete.vue_vue_type_script_setup_true_lang-IaQ0rVFj.js",
-      "_AdminLayout.vue_vue_type_script_setup_true_lang-BDtx9b2r.js",
-      "_utils-DEcC2f3f.js",
+      "_ConfirmDelete.vue_vue_type_script_setup_true_lang-B94gRBG3.js",
+      "_AdminLayout.vue_vue_type_script_setup_true_lang-CWpaLjrE.js",
+      "_utils-BB-b41cx.js",
       "__plugin-vue_export-helper-DlAUqK2U.js"
     ]
   },
   "resources/js/Pages/OperatingSite/OperatingSiteShow.vue": {
-    "file": "assets/OperatingSiteShow-Dl9vAdsy.js",
+    "file": "assets/OperatingSiteShow-BzrbJqDp.js",
     "name": "OperatingSiteShow",
     "src": "resources/js/Pages/OperatingSite/OperatingSiteShow.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_AdminLayout.vue_vue_type_script_setup_true_lang-BDtx9b2r.js",
-      "_AktuelleArbeitszeiten.vue_vue_type_script_setup_true_lang-D2Jk4gcs.js",
-      "_AllgemeineInformationen.vue_vue_type_script_setup_true_lang-3NVtw5O3.js",
+      "_AdminLayout.vue_vue_type_script_setup_true_lang-CWpaLjrE.js",
+      "_AktuelleArbeitszeiten.vue_vue_type_script_setup_true_lang-CVwVnMIt.js",
+      "_AllgemeineInformationen.vue_vue_type_script_setup_true_lang-Cyy-qiba.js",
       "resources/js/app.ts",
       "__plugin-vue_export-helper-DlAUqK2U.js",
-      "_utils-DEcC2f3f.js"
+      "_utils-BB-b41cx.js"
     ]
   },
   "resources/js/Pages/OperatingSite/partials/AktuelleArbeitszeiten.vue": {
-    "file": "assets/AktuelleArbeitszeiten-C63V5qZW.js",
+    "file": "assets/AktuelleArbeitszeiten-DtJhVOUb.js",
     "name": "AktuelleArbeitszeiten",
     "src": "resources/js/Pages/OperatingSite/partials/AktuelleArbeitszeiten.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_AktuelleArbeitszeiten.vue_vue_type_script_setup_true_lang-D2Jk4gcs.js",
+      "_AktuelleArbeitszeiten.vue_vue_type_script_setup_true_lang-CVwVnMIt.js",
       "resources/js/app.ts"
     ]
   },
   "resources/js/Pages/OperatingSite/partials/AllgemeineInformationen.vue": {
-    "file": "assets/AllgemeineInformationen-BJ2b52BU.js",
+    "file": "assets/AllgemeineInformationen-78COTcD3.js",
     "name": "AllgemeineInformationen",
     "src": "resources/js/Pages/OperatingSite/partials/AllgemeineInformationen.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_AllgemeineInformationen.vue_vue_type_script_setup_true_lang-3NVtw5O3.js",
+      "_AllgemeineInformationen.vue_vue_type_script_setup_true_lang-Cyy-qiba.js",
       "resources/js/app.ts",
-      "_utils-DEcC2f3f.js"
+      "_utils-BB-b41cx.js"
     ]
   },
   "resources/js/Pages/Organization/OrganizationIndex.vue": {
-    "file": "assets/OrganizationIndex-DXZJ2SZF.js",
+    "file": "assets/OrganizationIndex-Cipt9uI4.js",
     "name": "OrganizationIndex",
     "src": "resources/js/Pages/Organization/OrganizationIndex.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.ts",
-      "_AdminLayout.vue_vue_type_script_setup_true_lang-BDtx9b2r.js",
-      "_utils-DEcC2f3f.js",
+      "_AdminLayout.vue_vue_type_script_setup_true_lang-CWpaLjrE.js",
+      "_utils-BB-b41cx.js",
       "__plugin-vue_export-helper-DlAUqK2U.js"
     ]
   },
   "resources/js/Pages/Organization/OrganizationOrganigram.vue": {
-    "file": "assets/OrganizationOrganigram-CYhrjybA.js",
+    "file": "assets/OrganizationOrganigram-6XYbBAG4.js",
     "name": "OrganizationOrganigram",
     "src": "resources/js/Pages/Organization/OrganizationOrganigram.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_UserOrganigram-DwL-YhFR.js",
-      "_AdminLayout.vue_vue_type_script_setup_true_lang-BDtx9b2r.js",
+      "_UserOrganigram-C50CzaB9.js",
+      "_AdminLayout.vue_vue_type_script_setup_true_lang-CWpaLjrE.js",
       "resources/js/app.ts",
-      "_utils-DEcC2f3f.js",
+      "_utils-BB-b41cx.js",
       "__plugin-vue_export-helper-DlAUqK2U.js"
     ]
   },
   "resources/js/Pages/Organization/OrganizationSettings.vue": {
-    "file": "assets/OrganizationSettings-CCGRawjo.js",
+    "file": "assets/OrganizationSettings-CoXrfRR2.js",
     "name": "OrganizationSettings",
     "src": "resources/js/Pages/Organization/OrganizationSettings.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_OrganizationSettings.vue_vue_type_script_setup_true_lang-KShnkMCS.js",
+      "_OrganizationSettings.vue_vue_type_script_setup_true_lang-CkU62SCt.js",
       "resources/js/app.ts"
     ]
   },
   "resources/js/Pages/Organization/OrganizationShow.vue": {
-    "file": "assets/OrganizationShow-CfX84Bir.js",
+    "file": "assets/OrganizationShow-BLxYbpFK.js",
     "name": "OrganizationShow",
     "src": "resources/js/Pages/Organization/OrganizationShow.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_AdminLayout.vue_vue_type_script_setup_true_lang-BDtx9b2r.js",
-      "_OrganizationSettings.vue_vue_type_script_setup_true_lang-KShnkMCS.js",
-      "_SWHFIndex.vue_vue_type_script_setup_true_lang-YhQVQVkF.js",
-      "_AbsenceTypeIndex.vue_vue_type_script_setup_true_lang-BcMD2x0S.js",
-      "_TimeAccountSettingsIndex.vue_vue_type_script_setup_true_lang-Amch_tM4.js",
+      "_AdminLayout.vue_vue_type_script_setup_true_lang-CWpaLjrE.js",
+      "_OrganizationSettings.vue_vue_type_script_setup_true_lang-CkU62SCt.js",
+      "_SWHFIndex.vue_vue_type_script_setup_true_lang-Cjijc3en.js",
+      "_AbsenceTypeIndex.vue_vue_type_script_setup_true_lang-CQ8uhO6y.js",
+      "_TimeAccountSettingsIndex.vue_vue_type_script_setup_true_lang-Bo454fJd.js",
       "resources/js/app.ts",
       "__plugin-vue_export-helper-DlAUqK2U.js",
-      "_ConfirmDelete.vue_vue_type_script_setup_true_lang-IaQ0rVFj.js",
-      "_utils-DEcC2f3f.js"
+      "_ConfirmDelete.vue_vue_type_script_setup_true_lang-B94gRBG3.js",
+      "_utils-BB-b41cx.js"
     ]
   },
   "resources/js/Pages/Profile/Edit.vue": {
-    "file": "assets/Edit-BUVoYk3X.js",
+    "file": "assets/Edit-BcI0Evat.js",
     "name": "Edit",
     "src": "resources/js/Pages/Profile/Edit.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_AdminLayout.vue_vue_type_script_setup_true_lang-BDtx9b2r.js",
-      "_UpdatePasswordForm.vue_vue_type_script_setup_true_lang--lUBijBz.js",
-      "_UpdateProfileInformationForm.vue_vue_type_script_setup_true_lang-Cko0Voaz.js",
+      "_AdminLayout.vue_vue_type_script_setup_true_lang-CWpaLjrE.js",
+      "_UpdatePasswordForm.vue_vue_type_script_setup_true_lang-C0hPciKI.js",
+      "_UpdateProfileInformationForm.vue_vue_type_script_setup_true_lang-BjafQEUh.js",
       "resources/js/app.ts",
       "__plugin-vue_export-helper-DlAUqK2U.js"
     ]
   },
   "resources/js/Pages/Profile/Partials/UpdatePasswordForm.vue": {
-    "file": "assets/UpdatePasswordForm-DdlEKyXf.js",
+    "file": "assets/UpdatePasswordForm-BI2FPqgY.js",
     "name": "UpdatePasswordForm",
     "src": "resources/js/Pages/Profile/Partials/UpdatePasswordForm.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_UpdatePasswordForm.vue_vue_type_script_setup_true_lang--lUBijBz.js",
+      "_UpdatePasswordForm.vue_vue_type_script_setup_true_lang-C0hPciKI.js",
       "resources/js/app.ts"
     ]
   },
   "resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.vue": {
-    "file": "assets/UpdateProfileInformationForm-BbJXwC0D.js",
+    "file": "assets/UpdateProfileInformationForm-BLFPRfZE.js",
     "name": "UpdateProfileInformationForm",
     "src": "resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_UpdateProfileInformationForm.vue_vue_type_script_setup_true_lang-Cko0Voaz.js",
+      "_UpdateProfileInformationForm.vue_vue_type_script_setup_true_lang-BjafQEUh.js",
       "resources/js/app.ts"
     ]
   },
   "resources/js/Pages/SWHF/SWHFIndex.vue": {
-    "file": "assets/SWHFIndex-ZJqICm4P.js",
+    "file": "assets/SWHFIndex-Bf4VToD5.js",
     "name": "SWHFIndex",
     "src": "resources/js/Pages/SWHF/SWHFIndex.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_SWHFIndex.vue_vue_type_script_setup_true_lang-YhQVQVkF.js",
+      "_SWHFIndex.vue_vue_type_script_setup_true_lang-Cjijc3en.js",
       "resources/js/app.ts",
-      "_ConfirmDelete.vue_vue_type_script_setup_true_lang-IaQ0rVFj.js"
+      "_ConfirmDelete.vue_vue_type_script_setup_true_lang-B94gRBG3.js"
     ]
   },
   "resources/js/Pages/TimeAccount/TimeAccountSettingsIndex.vue": {
-    "file": "assets/TimeAccountSettingsIndex-Bsqculdv.js",
+    "file": "assets/TimeAccountSettingsIndex-CsY0TczF.js",
     "name": "TimeAccountSettingsIndex",
     "src": "resources/js/Pages/TimeAccount/TimeAccountSettingsIndex.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_TimeAccountSettingsIndex.vue_vue_type_script_setup_true_lang-Amch_tM4.js",
+      "_TimeAccountSettingsIndex.vue_vue_type_script_setup_true_lang-Bo454fJd.js",
       "resources/js/app.ts",
-      "_utils-DEcC2f3f.js"
+      "_utils-BB-b41cx.js"
     ]
   },
   "resources/js/Pages/User/ShowPartials/NewTimeAccountForm.vue": {
-    "file": "assets/NewTimeAccountForm-y-5Jsr4q.js",
+    "file": "assets/NewTimeAccountForm-B34BsQA3.js",
     "name": "NewTimeAccountForm",
     "src": "resources/js/Pages/User/ShowPartials/NewTimeAccountForm.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_NewTimeAccountForm.vue_vue_type_script_setup_true_lang-Cm6RCzps.js",
+      "_NewTimeAccountForm.vue_vue_type_script_setup_true_lang-DLAiZGI5.js",
       "resources/js/app.ts",
-      "_utils-DEcC2f3f.js"
+      "_utils-BB-b41cx.js"
     ]
   },
   "resources/js/Pages/User/ShowPartials/TimeAccountDeleteForm.vue": {
-    "file": "assets/TimeAccountDeleteForm-J62WG-uL.js",
+    "file": "assets/TimeAccountDeleteForm-VXRcyfTs.js",
     "name": "TimeAccountDeleteForm",
     "src": "resources/js/Pages/User/ShowPartials/TimeAccountDeleteForm.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_TimeAccountDeleteForm.vue_vue_type_script_setup_true_lang-Bc6Fx0cC.js",
+      "_TimeAccountDeleteForm.vue_vue_type_script_setup_true_lang-K2I9WwEr.js",
       "resources/js/app.ts",
-      "_utils-DEcC2f3f.js"
+      "_utils-BB-b41cx.js"
     ]
   },
   "resources/js/Pages/User/ShowPartials/TimeAccountSettingsForm.vue": {
-    "file": "assets/TimeAccountSettingsForm-D_KgJXOn.js",
+    "file": "assets/TimeAccountSettingsForm-Bd_HP0vP.js",
     "name": "TimeAccountSettingsForm",
     "src": "resources/js/Pages/User/ShowPartials/TimeAccountSettingsForm.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_TimeAccountSettingsForm.vue_vue_type_script_setup_true_lang-C2b44BaL.js",
+      "_TimeAccountSettingsForm.vue_vue_type_script_setup_true_lang-BR35KftD.js",
       "resources/js/app.ts",
-      "_utils-DEcC2f3f.js"
+      "_utils-BB-b41cx.js"
     ]
   },
   "resources/js/Pages/User/ShowPartials/TimeAccountTransactionForm.vue": {
-    "file": "assets/TimeAccountTransactionForm-B_ITkwhk.js",
+    "file": "assets/TimeAccountTransactionForm-BbHUbYWV.js",
     "name": "TimeAccountTransactionForm",
     "src": "resources/js/Pages/User/ShowPartials/TimeAccountTransactionForm.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_TimeAccountTransactionForm.vue_vue_type_script_setup_true_lang-BuxMPMSK.js",
+      "_TimeAccountTransactionForm.vue_vue_type_script_setup_true_lang-BPhRjS5Q.js",
       "resources/js/app.ts"
     ]
   },
   "resources/js/Pages/User/ShowPartials/TimeAccountTransactions.vue": {
-    "file": "assets/TimeAccountTransactions-CPAh5A5u.js",
+    "file": "assets/TimeAccountTransactions-DzqPCgyH.js",
     "name": "TimeAccountTransactions",
     "src": "resources/js/Pages/User/ShowPartials/TimeAccountTransactions.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_TimeAccountTransactions.vue_vue_type_script_setup_true_lang-NgLQDyu9.js",
-      "_utils-DEcC2f3f.js",
+      "_TimeAccountTransactions.vue_vue_type_script_setup_true_lang-BWDraLsn.js",
+      "_utils-BB-b41cx.js",
       "resources/js/app.ts"
     ]
   },
   "resources/js/Pages/User/ShowPartials/TimeAccountTransferForm.vue": {
-    "file": "assets/TimeAccountTransferForm-CO7rhsCX.js",
+    "file": "assets/TimeAccountTransferForm-DmRpSucZ.js",
     "name": "TimeAccountTransferForm",
     "src": "resources/js/Pages/User/ShowPartials/TimeAccountTransferForm.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_TimeAccountTransferForm.vue_vue_type_script_setup_true_lang-CgPni1PU.js",
+      "_TimeAccountTransferForm.vue_vue_type_script_setup_true_lang-D5M4WiXq.js",
       "resources/js/app.ts"
     ]
   },
   "resources/js/Pages/User/ShowPartials/TimeAccounts.vue": {
-    "file": "assets/TimeAccounts-BTbeGZNy.js",
+    "file": "assets/TimeAccounts-5qqnpyVw.js",
     "name": "TimeAccounts",
     "src": "resources/js/Pages/User/ShowPartials/TimeAccounts.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_TimeAccounts.vue_vue_type_script_setup_true_lang--RvZxRpv.js",
-      "_utils-DEcC2f3f.js",
+      "_TimeAccounts.vue_vue_type_script_setup_true_lang-Dsk2NV5F.js",
+      "_utils-BB-b41cx.js",
       "resources/js/app.ts",
-      "_NewTimeAccountForm.vue_vue_type_script_setup_true_lang-Cm6RCzps.js",
-      "_TimeAccountDeleteForm.vue_vue_type_script_setup_true_lang-Bc6Fx0cC.js",
-      "_TimeAccountSettingsForm.vue_vue_type_script_setup_true_lang-C2b44BaL.js",
-      "_TimeAccountTransactionForm.vue_vue_type_script_setup_true_lang-BuxMPMSK.js",
-      "_TimeAccountTransferForm.vue_vue_type_script_setup_true_lang-CgPni1PU.js"
+      "_NewTimeAccountForm.vue_vue_type_script_setup_true_lang-DLAiZGI5.js",
+      "_TimeAccountDeleteForm.vue_vue_type_script_setup_true_lang-K2I9WwEr.js",
+      "_TimeAccountSettingsForm.vue_vue_type_script_setup_true_lang-BR35KftD.js",
+      "_TimeAccountTransactionForm.vue_vue_type_script_setup_true_lang-BPhRjS5Q.js",
+      "_TimeAccountTransferForm.vue_vue_type_script_setup_true_lang-D5M4WiXq.js"
     ]
   },
   "resources/js/Pages/User/UserForm.vue": {
-    "file": "assets/UserForm-BdX0Zpyk.js",
+    "file": "assets/UserForm-BgrHkcWx.js",
     "name": "UserForm",
     "src": "resources/js/Pages/User/UserForm.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.ts",
-      "_utils-DEcC2f3f.js",
-      "_PermissionSelector.vue_vue_type_script_setup_true_lang-BsPEp0NO.js",
+      "_utils-BB-b41cx.js",
+      "_PermissionSelector.vue_vue_type_script_setup_true_lang-DFswJvF9.js",
       "__plugin-vue_export-helper-DlAUqK2U.js"
     ],
     "css": [
-      "assets/UserForm-BxgHz8U-.css"
+      "assets/UserForm-CSwFgfbr.css"
     ]
   },
   "resources/js/Pages/User/UserFormPartials/PermissionSelector.vue": {
-    "file": "assets/PermissionSelector-DTlK5pUB.js",
+    "file": "assets/PermissionSelector-BYojR2JY.js",
     "name": "PermissionSelector",
     "src": "resources/js/Pages/User/UserFormPartials/PermissionSelector.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_PermissionSelector.vue_vue_type_script_setup_true_lang-BsPEp0NO.js",
+      "_PermissionSelector.vue_vue_type_script_setup_true_lang-DFswJvF9.js",
       "resources/js/app.ts"
     ]
   },
   "resources/js/Pages/User/UserIndex.vue": {
-    "file": "assets/UserIndex-C_49NwFi.js",
+    "file": "assets/UserIndex-DXLbX1CL.js",
     "name": "UserIndex",
     "src": "resources/js/Pages/User/UserIndex.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_AdminLayout.vue_vue_type_script_setup_true_lang-BDtx9b2r.js",
+      "_AdminLayout.vue_vue_type_script_setup_true_lang-CWpaLjrE.js",
       "resources/js/app.ts",
       "resources/js/Pages/User/UserForm.vue",
-      "_utils-DEcC2f3f.js",
-      "_ConfirmDelete.vue_vue_type_script_setup_true_lang-IaQ0rVFj.js",
+      "_utils-BB-b41cx.js",
+      "_ConfirmDelete.vue_vue_type_script_setup_true_lang-B94gRBG3.js",
       "__plugin-vue_export-helper-DlAUqK2U.js",
-      "_PermissionSelector.vue_vue_type_script_setup_true_lang-BsPEp0NO.js"
+      "_PermissionSelector.vue_vue_type_script_setup_true_lang-DFswJvF9.js"
     ]
   },
   "resources/js/Pages/User/UserShow.vue": {
-    "file": "assets/UserShow-D_3LjHi0.js",
+    "file": "assets/UserShow-BLHgAfzD.js",
     "name": "UserShow",
     "src": "resources/js/Pages/User/UserShow.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_AdminLayout.vue_vue_type_script_setup_true_lang-BDtx9b2r.js",
-      "_TimeAccounts.vue_vue_type_script_setup_true_lang--RvZxRpv.js",
-      "_TimeAccountTransactions.vue_vue_type_script_setup_true_lang-NgLQDyu9.js",
+      "_AdminLayout.vue_vue_type_script_setup_true_lang-CWpaLjrE.js",
+      "_TimeAccounts.vue_vue_type_script_setup_true_lang-Dsk2NV5F.js",
+      "_TimeAccountTransactions.vue_vue_type_script_setup_true_lang-BWDraLsn.js",
       "resources/js/Pages/User/UserForm.vue",
-      "_UserOrganigram-DwL-YhFR.js",
+      "_UserOrganigram-C50CzaB9.js",
       "resources/js/app.ts",
       "__plugin-vue_export-helper-DlAUqK2U.js",
-      "_utils-DEcC2f3f.js",
-      "_NewTimeAccountForm.vue_vue_type_script_setup_true_lang-Cm6RCzps.js",
-      "_TimeAccountDeleteForm.vue_vue_type_script_setup_true_lang-Bc6Fx0cC.js",
-      "_TimeAccountSettingsForm.vue_vue_type_script_setup_true_lang-C2b44BaL.js",
-      "_TimeAccountTransactionForm.vue_vue_type_script_setup_true_lang-BuxMPMSK.js",
-      "_TimeAccountTransferForm.vue_vue_type_script_setup_true_lang-CgPni1PU.js",
-      "_PermissionSelector.vue_vue_type_script_setup_true_lang-BsPEp0NO.js"
+      "_utils-BB-b41cx.js",
+      "_NewTimeAccountForm.vue_vue_type_script_setup_true_lang-DLAiZGI5.js",
+      "_TimeAccountDeleteForm.vue_vue_type_script_setup_true_lang-K2I9WwEr.js",
+      "_TimeAccountSettingsForm.vue_vue_type_script_setup_true_lang-BR35KftD.js",
+      "_TimeAccountTransactionForm.vue_vue_type_script_setup_true_lang-BPhRjS5Q.js",
+      "_TimeAccountTransferForm.vue_vue_type_script_setup_true_lang-D5M4WiXq.js",
+      "_PermissionSelector.vue_vue_type_script_setup_true_lang-DFswJvF9.js"
     ]
   },
   "resources/js/Pages/WorkLog/UserWorkLogIndex.vue": {
-    "file": "assets/UserWorkLogIndex-C4R3Kc3_.js",
+    "file": "assets/UserWorkLogIndex-DN2DEaJG.js",
     "name": "UserWorkLogIndex",
     "src": "resources/js/Pages/WorkLog/UserWorkLogIndex.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.ts",
-      "_AdminLayout.vue_vue_type_script_setup_true_lang-BDtx9b2r.js",
-      "_utils-DEcC2f3f.js",
+      "_AdminLayout.vue_vue_type_script_setup_true_lang-CWpaLjrE.js",
+      "_utils-BB-b41cx.js",
       "__plugin-vue_export-helper-DlAUqK2U.js"
     ]
   },
   "resources/js/Pages/WorkLog/WorkLogIndex.vue": {
-    "file": "assets/WorkLogIndex-e0K4eWt5.js",
+    "file": "assets/WorkLogIndex-ClwLSE4R.js",
     "name": "WorkLogIndex",
     "src": "resources/js/Pages/WorkLog/WorkLogIndex.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_AdminLayout.vue_vue_type_script_setup_true_lang-BDtx9b2r.js",
-      "_utils-DEcC2f3f.js",
+      "_AdminLayout.vue_vue_type_script_setup_true_lang-CWpaLjrE.js",
+      "_utils-BB-b41cx.js",
       "resources/js/app.ts",
       "__plugin-vue_export-helper-DlAUqK2U.js"
     ]
   },
   "resources/js/app.ts": {
-    "file": "assets/app-IX6v39Bc.js",
+    "file": "assets/app-CDQKGvzh.js",
     "name": "app",
     "src": "resources/js/app.ts",
     "isEntry": true,

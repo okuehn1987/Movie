@@ -63,6 +63,7 @@ function submit() {
                         <v-row>
                             <v-col cols="12" md="6">
                                 <v-select
+                                    data-testid="swhfWeekday"
                                     v-model="swhfForm.type"
                                     label="Wochentag"
                                     :error-messages="swhfForm.errors.type"
