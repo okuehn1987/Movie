@@ -68,6 +68,8 @@ class UserController extends Controller
             'userWorkingWeek.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'userWorkingWeekSince' => 'required|date',
 
+            "overtime_calculations_start" => "required|date",
+
             'organizationUser' => 'required|array',
             'organizationUser.*' => ['nullable', function ($attribute, $value, $fail) {
                 if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
@@ -201,6 +203,7 @@ class UserController extends Controller
             'phone_number' => $validated['phone_number'],
             'staff_number' => $validated['staff_number'],
             'password' =>  Hash::make($validated['password']),
+            'overtime_calculations_start' => $validated['overtime_calculations_start'],
             'group_id' => $validated['group_id'],
             'is_supervisor' => $validated['is_supervisor'],
             'supervisor_id' => $validated['supervisor_id'],
@@ -303,6 +306,11 @@ class UserController extends Controller
         $user->organizationUser->update($validated['organizationUser']);
         $user->operatingSiteUser->update($validated['operatingSiteUser']);
         $user->groupUser?->update($validated['groupUser']);
+
+        $user->forceFill([
+            "overtime_calculations_start" => $validated['overtime_calculations_start'],
+        ]);
+        $user->save();
 
         $lastWorkingHour = $user->userWorkingHours()
             ->where('active_since', Carbon::parse($validated['userWorkingHoursSince']))

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { OperatingTime, WorkLog } from '@/types/types';
-import { useNow } from '@/utils';
+import { roundTo, useNow } from '@/utils';
 import { router, usePage } from '@inertiajs/vue3';
 import { DateTime, Info } from 'luxon';
 import { computed } from 'vue';
@@ -108,7 +108,7 @@ const currentWorkingHours = computed(() =>
                         <div class="d-flex flex-column">
                             Überstunden
                             <div class="text-h6">
-                                {{ overtime }}
+                                {{ roundTo(overtime, 2) }}
                             </div>
                         </div>
                     </div>
