@@ -13,6 +13,7 @@ import {
     GroupUser,
     OperatingSiteUser,
     Writeable,
+    UserLeaveDays,
 } from '@/types/types';
 import { getMaxScrollHeight, getStates } from '@/utils';
 import { useForm } from '@inertiajs/vue3';
@@ -27,6 +28,7 @@ const props = defineProps<{
         organization_user: OrganizationUser;
         operating_site_user: OperatingSiteUser;
         group_user: GroupUser;
+        user_leave_days: UserLeaveDays[];
     };
     supervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];
@@ -65,6 +67,8 @@ const userForm = useForm({
     userWorkingHoursSince: new Date(),
     userWorkingWeek: [] as Weekday[],
     userWorkingWeekSince: new Date(),
+    userLeaveDays: 0,
+    userLeaveDaysSince: DateTime.now().toFormat('yyyy-MM'),
     overtime_calculations_start: DateTime.now().toFormat('yyyy-MM-dd'),
     organizationUser: {
         absence_permission: null,
@@ -126,6 +130,13 @@ if (props.user) {
         if (props.user.userWorkingWeek[weekday]) userForm.userWorkingWeek.push(weekday);
     }
     userForm.userWorkingWeekSince = new Date(props.user.userWorkingWeek.active_since);
+
+    const lastUserLeaveDays = props.user.user_leave_days[props.user.user_leave_days.length - 1];
+    if (lastUserLeaveDays) {
+        userForm.userLeaveDays = lastUserLeaveDays.leave_days;
+        userForm.userLeaveDaysSince = DateTime.fromSQL(lastUserLeaveDays.active_since).toFormat('yyyy-MM');
+    }
+
     userForm.organizationUser = props.user.organization_user;
     userForm.groupUser = props.user.group_user ?? userForm.groupUser;
     userForm.operatingSiteUser = props.user.operating_site_user;
@@ -169,6 +180,8 @@ const steps = ref([
             userWorkingHoursSince: [() => !!userForm.userWorkingHoursSince],
             userWorkingWeek: [() => !!userForm.userWorkingWeek],
             userWorkingWeekSince: [() => !!userForm.userWorkingWeekSince],
+            userLeaveDays: [() => !!userForm.userLeaveDays],
+            userLeaveDaysSince: [() => !!userForm.userLeaveDaysSince],
         },
     },
     {
@@ -273,7 +286,7 @@ const steps = ref([
                                     <v-text-field
                                         type="number"
                                         v-model="userForm.userWorkingHours"
-                                        label="Trage die wöchentliche Arbeitszeit des Mitarbeiters ein"
+                                        label="Trage die wöchentliche Arbeitszeit des Mitarbeitenden ein"
                                         required
                                         :error-messages="userForm.errors.userWorkingHours"
                                         :rules="steps[0].fields.userWorkingHours"
@@ -289,6 +302,7 @@ const steps = ref([
                                         :rules="steps[0].fields.userWorkingHoursSince"
                                     ></v-date-input>
                                 </v-col>
+
                                 <v-col cols="12" md="6">
                                     <v-select
                                         chips
@@ -300,11 +314,12 @@ const steps = ref([
                                                 value: Info.weekdays('long', { locale: 'en' })[i]?.toLowerCase(),
                                             }))
                                         "
-                                        label="Wähle die Arbeitstage des Mitarbeiters aus"
+                                        label="Wähle die Arbeitstage des Mitarbeitenden aus"
                                         :error-messages="userForm.errors.userWorkingWeek"
                                         :rules="steps[0].fields.userWorkingWeek"
                                     />
                                 </v-col>
+
                                 <v-col cols="12" md="6">
                                     <v-date-input
                                         prepend-icon=""
@@ -313,6 +328,25 @@ const steps = ref([
                                         :error-messages="userForm.errors.userWorkingWeekSince"
                                         :rules="steps[0].fields.userWorkingWeekSince"
                                     ></v-date-input>
+                                </v-col>
+                                <v-col cols="12" md="6">
+                                    <v-text-field
+                                        type="number"
+                                        v-model="userForm.userLeaveDays"
+                                        label="Trage die Jährlichen Urlaubstage des Mitarbeitenden ein"
+                                        :error-messages="userForm.errors.userLeaveDays"
+                                        :rules="steps[0].fields.userLeaveDays"
+                                    ></v-text-field>
+                                </v-col>
+                                <v-col cols="12" md="6">
+                                    <v-text-field
+                                        type="month"
+                                        prepend-icon=""
+                                        v-model="userForm.userLeaveDaysSince"
+                                        label="seit"
+                                        :error-messages="userForm.errors.userLeaveDaysSince"
+                                        :rules="steps[0].fields.userLeaveDaysSince"
+                                    ></v-text-field>
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-checkbox
@@ -486,22 +520,22 @@ const steps = ref([
                             variant="elevated"
                             class="text-end"
                             @click.stop="
-                                () => {
-                                    const s = steps[step - 1] as Writeable<typeof steps[number]>;
-                                    if (
-                                        s &&
-                                        Object.values(s.fields)
-                                            .flat()
-                                            .some(f => !f())
-                                    )
-                                        return
+                                    () => {
+                                        const s = steps[step - 1] as Writeable<typeof steps[number]>;
+                                        if (
+                                            s &&
+                                            Object.values(s.fields)
+                                                .flat()
+                                                .some(f => !f())
+                                        )
+                                            return
 
-                                    if (s) (s.isValidated as boolean) = true;
-
-                                    if (step == 3) submit();
-                                    else next();
-                                }
-                            "
+                                        if (s) (s.isValidated as boolean) = true;
+                                      
+                                        if (step == 3) submit();
+                                        else next();
+                                    }
+                                "
                             >{{ step == 3 ? 'Speichern' : 'Weiter' }}</v-btn
                         >
                     </template>

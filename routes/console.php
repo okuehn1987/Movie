@@ -3,6 +3,7 @@
 use App\Models\Absence;
 use App\Models\Organization;
 use App\Models\User;
+use App\Models\UserLeaveDay;
 use App\Models\WorkingHoursCalculation;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
@@ -128,3 +129,16 @@ Schedule::call(function () {
     }
     dump('end');
 })->name('dailyWorkLogCut')->dailyAt("00:00");
+
+Schedule::call(function () {
+    foreach (User::with('operatingSite')->get() as $user) {
+        $newRemainingLeaveDays = $user->leaveDaysForYear(Carbon::now()->subYear()) - $user->usedLeaveDaysForYear(Carbon::now()->subYear());
+
+        UserLeaveDay::create([
+            'user_id' => $user->id,
+            'leave_days' => $newRemainingLeaveDays,
+            'type' => 'remaining',
+            'active_since' => Carbon::now()->startOfYear()
+        ]);
+    }
+})->name('yearlyLeaveDaysCalculation')->yearlyOn($month = 1, $dayOfMonth = 1, $time = '0:0');

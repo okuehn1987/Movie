@@ -39,9 +39,18 @@ class DashboardController extends Controller
             $absenceRequests = Absence::inOrganization()
                 ->where('status', 'created')
                 ->whereIn('user_id', $visibleUsers)
-                ->with(['user:id,first_name,last_name', 'absenceType:id,name'])
+                ->with(['user:id,first_name,last_name,operating_site_id', 'absenceType:id,name'])
                 ->get(['id', 'start', 'end', 'user_id', 'absence_type_id'])
-                ->filter(fn($a) => $user->can('update', $a));
+                ->filter(fn($a) => $user->can('update', $a))
+                ->map(fn($a) => [
+                    ...$a->toArray(),
+                    'usedDays' => $a->usedDays,
+                    'user' => [
+                        ...$a->user->toArray(),
+                        'leaveDaysForYear' => $a->user->leaveDaysForYear(Carbon::parse($a->start)),
+                        'usedLeaveDaysForYear' => $a->user->usedLeaveDaysForYear(Carbon::parse($a->start)),
+                    ]
+                ]);
         }
 
         $currentAbsences = Absence::inOrganization()
@@ -66,8 +75,8 @@ class DashboardController extends Controller
             'overtime' => $user->overtime,
             'workingHours' => [
                 'should' => $user->userWorkingHours()->where('active_since', '<=', Carbon::now()->format('Y-m-d'))->orderBy('active_since', 'Desc')->first()['weekly_working_hours'],
-                'current' => User::getCurrentWeekWorkingHours($user)->totalHours,
-                'currentHomeOffice' => User::getCurrentWeekWorkingHours($user)->homeOfficeHours,
+                'current' => User::getCurrentWeekWorkingHours($user)['totalHours'],
+                'currentHomeOffice' => User::getCurrentWeekWorkingHours($user)['homeOfficeHours'],
             ],
         ]);
     }
