@@ -19,7 +19,7 @@ export type DBObject<Brand extends string> = {
 };
 
 type SoftDelete = {
-    deleted_at: Timestamp;
+    deleted_at: Timestamp | null;
 };
 
 export type Model =
