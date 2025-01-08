@@ -14,7 +14,7 @@ const props = defineProps<{
 const newTimeAccountForm = useForm({
     balance_limit: props.user.currentWorkingHours.weekly_working_hours * 2,
     balance: 0,
-    time_account_setting_id: props.time_account_settings[0]?.id ?? null,
+    time_account_setting_id: props.time_account_settings.filter(t => t.type != null)[0]?.id ?? null,
     name: '',
 });
 </script>
@@ -27,6 +27,11 @@ const newTimeAccountForm = useForm({
         </template>
         <template v-slot:default="{ isActive }">
             <v-card title="Neues Arbeitszeitkonto erstellen">
+                <template #append>
+                    <v-btn icon variant="text" @click.stop="isActive.value = false">
+                        <v-icon>mdi-close</v-icon>
+                    </v-btn>
+                </template>
                 <v-card-text>
                     <v-form
                         @submit.prevent="
@@ -49,10 +54,14 @@ const newTimeAccountForm = useForm({
                             <v-col cols="12" md="6">
                                 <v-select
                                     :items="
-                                        time_account_settings.map(s => ({
-                                            title: `${accountType(s.type)} (${getTruncationCycleDisplayName(s.truncation_cycle_length_in_months)})`,
-                                            value: s.id,
-                                        }))
+                                        time_account_settings
+                                            .filter(t => t.type != null)
+                                            .map(s => ({
+                                                title: `${accountType(s.type)} (${getTruncationCycleDisplayName(
+                                                    s.truncation_cycle_length_in_months,
+                                                )})`,
+                                                value: s.id,
+                                            }))
                                     "
                                     label="Typ"
                                     v-model="newTimeAccountForm.time_account_setting_id"

@@ -35,6 +35,11 @@ const timeAccountSettingForm = useForm({
                     </template>
                     <template v-slot:default="{ isActive }">
                         <v-card title="Neue Variante Erstellen">
+                            <template #append>
+                                <v-btn icon variant="text" @click.stop="isActive.value = false">
+                                    <v-icon>mdi-close</v-icon>
+                                </v-btn>
+                            </template>
                             <v-card-text>
                                 <v-form
                                     @submit.prevent="
@@ -50,7 +55,7 @@ const timeAccountSettingForm = useForm({
                                         <v-col cols="12" md="6">
                                             <v-select
                                                 :items="TRUNCATION_CYCLES.map(e => ({ title: getTruncationCycleDisplayName(e), value: e }))"
-                                                label="Berechnungszeitraum"
+                                                label="Berechnungszeitraum (optional)"
                                                 v-model="timeAccountSettingForm.truncation_cycle_length_in_months"
                                             ></v-select>
                                         </v-col>

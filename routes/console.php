@@ -41,7 +41,7 @@ Schedule::call(function () {
 Schedule::call(function () {
     dump('start');
 
-    $users = User::with('operatingSite')->get();
+    $users = User::with(['operatingSite', 'defaultTimeAccount'])->get();
     $workLogsToCut = WorkLog::whereBetween('start', [Carbon::yesterday()->startOfDay(), Carbon::yesterday()->endOfDay()])
         ->where('end', null)
         ->latest('start')
@@ -81,9 +81,10 @@ Schedule::call(function () {
         ]);
         //calculate overtime of $day
         foreach ($users as $user) {
+            if ($day->lt(Carbon::parse($user->overtime_calculations_start))) continue;
             $currentWorkingHours = $user->userWorkingHoursForDate($day);
-            $currentWorkingWeek = $user->userWorkingWeekForDate($day);
 
+            $currentWorkingWeek = $user->userWorkingWeekForDate($day);
             $workingDaysInWeek = $currentWorkingWeek?->numberOfWorkingDays;
 
             $hasAbsenceForDay = $user->absences()
@@ -92,23 +93,23 @@ Schedule::call(function () {
                 ->whereDate('end', '>=', $day)->exists();
 
             $shouldWorkYesterday =
-                !$hasAbsenceForDay &&
                 $workingDaysInWeek > 0 &&
                 $currentWorkingWeek->hasWorkDay($day) &&
                 !$user->operatingSite->hasHoliday($day);
 
-            $workLogs = $user->workLogs()->whereNotNull('end')->whereBetween('start', [$day->startOfDay(), $day->endOfDay()])->get();
+            $workLogsForDay = $user->workLogs()->whereNotNull('end')->whereBetween('start', [$day->copy()->startOfDay(), $day->copy()->endOfDay()])->get();
 
-            $sollStunden = 0;
-            $istStunden = 0;
-            if ($shouldWorkYesterday && $currentWorkingHours != null) {
-                $sollStunden = $currentWorkingHours['weekly_working_hours'] / $workingDaysInWeek;
-                $istStunden = $workLogs->sum('duration');
-            } else if ($currentWorkingHours != null) {
-                $istStunden = max($workLogs->sum('duration') - $currentWorkingHours['weekly_working_hours'] / $workingDaysInWeek, 0);
+            $istStunden = $workLogsForDay->sum('duration');
+            $sollStunden = $currentWorkingHours['weekly_working_hours'] / $workingDaysInWeek;
+
+            if (!$shouldWorkYesterday) {
+                $sollStunden = 0;
+            } else if ($hasAbsenceForDay) {
+                $istStunden = max($istStunden - $sollStunden, 0);
+                $sollStunden = 0;
             }
 
-            $user->defaultTimeAccount()->addBalance($istStunden - $sollStunden, 'Tägliche Überstundenberechnung ' . $day->format('d.m.Y'));
+            $user->defaultTimeAccount->addBalance($istStunden - $sollStunden, 'Tägliche Überstundenberechnung ' . $day->format('d.m.Y'));
 
             //TODO: add SWHF's & Nachtschicht, etc.
         }
@@ -116,6 +117,9 @@ Schedule::call(function () {
 
         foreach (WorkLogPatch::where('is_accounted', false)->whereDate('accepted_at', $day)->get() as $patch) {
             $patch->accountAsTransaction();
+            $patch->update([
+                'is_accounted' => true
+            ]);
         }
         dump('end patch calculations for ' . $day);
 

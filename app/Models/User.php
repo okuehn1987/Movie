@@ -18,7 +18,7 @@ class User extends Authenticatable
     use \Znck\Eloquent\Traits\BelongsToThrough;
     use HasFactory, Notifiable, SoftDeletes, ScopeInOrganization;
 
-    protected $guarded = ['password', 'role', 'email_verified_at'];
+    protected $guarded = ['password', 'role', 'email_verified_at', 'overtime_calculations_start'];
 
     protected $casts = [
         'home_office' => 'boolean',
@@ -187,9 +187,10 @@ class User extends Authenticatable
         return $this->hasMany(TimeAccount::class);
     }
 
-    public function defaultTimeAccount(): TimeAccount
+    /** @return \Illuminate\Database\Eloquent\Relations\HasOne<\App\Models\TimeAccount, \App\Models\User>*/
+    public function defaultTimeAccount()
     {
-        return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->whereNull('type'))->first();
+        return $this->hasOne(TimeAccount::class)->whereHas('timeAccountSetting', fn($q) => $q->whereNull('type'));
     }
 
     public function userWorkingWeeks()
@@ -226,7 +227,7 @@ class User extends Authenticatable
 
     public function getOvertimeAttribute()
     {
-        return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->where('type', 'default'))->sum('balance');
+        return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->whereNull('type'))->sum('balance');
     }
 
     public static function getCurrentWeekWorkingHours(User $user)
@@ -336,5 +337,12 @@ class User extends Authenticatable
             ->whereYear('active_since', $year)->first()?->leave_days ?? 0;
 
         return ceil($leaveDays);
+    }
+
+    public function getSollstundenForDate(CarbonInterface $date)
+    {
+        $currentWorkingHours = $this->userWorkingHoursForDate($date);
+        $currentWorkingWeek = $this->userWorkingWeekForDate($date);
+        return $currentWorkingHours['weekly_working_hours'] / $currentWorkingWeek->numberOfWorkingDays;
     }
 }

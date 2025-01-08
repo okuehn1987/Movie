@@ -82,6 +82,8 @@ class AbsenceController extends Controller
             'status' => $requires_approval ? 'created' : 'accepted',
         ]);
 
+        if ($absence->status == 'accepted') $absence->accountAsTransaction();
+
         if ($requires_approval) $user->supervisor->notify(new AbsenceNotification($user, $absence));
 
         return back()->with('success', 'Abwesenheit beantragt.');

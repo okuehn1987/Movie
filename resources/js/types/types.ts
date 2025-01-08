@@ -19,7 +19,7 @@ export type DBObject<Brand extends string> = {
 };
 
 type SoftDelete = {
-    deleted_at: Timestamp;
+    deleted_at: Timestamp | null;
 };
 
 export type Model =
@@ -98,6 +98,7 @@ export type User = DBObject<'user'> &
         phone_number: string | null;
         email_verified_at: string | null;
         weekly_working_hours: number;
+        overtime_calculations_start: Date;
         is_supervisor: boolean;
     } & (
         | {

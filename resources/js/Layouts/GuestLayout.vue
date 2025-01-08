@@ -12,10 +12,14 @@ const appname = import.meta.env['VITE_APP_NAME'];
     <v-app>
         <Head :title="title"></Head>
         <div class="d-flex align-center justify-center pa-4" style="min-height: 100vh">
+            <img lass="d-none d-md-block" src="/img/auth-mask.png" style="position: absolute; bottom: 0; width: 100%; height: 172px" />
             <v-card class="pa-4 pt-7" width="448">
                 <v-card-text>
-                    <h1 class="text-center font-weight-medium">
-                        <v-icon icon="mdi-timer-lock" /><span class="ms-3">{{ appname }} - {{ $page.props.organization.name }}</span>
+                    <div class="d-flex justify-center align-center">
+                        <v-img src="/img/logo.svg" class="mb-6" style="max-width: 200px"></v-img>
+                    </div>
+                    <h1 class="text-center font-weight-medium d-flex">
+                        <span class="ms-3">{{ appname }} - {{ $page.props.organization.name }}</span>
                     </h1>
                 </v-card-text>
 
@@ -34,7 +38,6 @@ const appname = import.meta.env['VITE_APP_NAME'];
                     <slot />
                 </v-card-text>
             </v-card>
-            <img lass="d-none d-md-block" src="/img/auth-mask.png" style="position: absolute; bottom: 0; width: 100%; height: 172px" />
         </div>
     </v-app>
 </template>

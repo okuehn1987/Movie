@@ -71,6 +71,7 @@ class UserController extends Controller
 
             'userLeaveDays' => 'required|integer',
             'userLeaveDaysSince' => 'required|date',
+            "overtime_calculations_start" => "required|date",
 
             'organizationUser' => 'required|array',
             'organizationUser.*' => ['nullable', function ($attribute, $value, $fail) {
@@ -160,7 +161,7 @@ class UserController extends Controller
                 ->get(['id', 'first_name', 'last_name']),
             'time_accounts' => $timeAccounts,
             'time_account_settings' => TimeAccountSetting::inOrganization()->get(['id', 'type', 'truncation_cycle_length_in_months']),
-            'defaultTimeAccountId' => $user->defaultTimeAccount()->id,
+            'defaultTimeAccountId' => $user->defaultTimeAccount->id,
             'groups' => Group::inOrganization()->get(),
             'operating_sites' => OperatingSite::inOrganization()->get(),
             'time_account_transactions' => $userTransactions,
@@ -217,6 +218,7 @@ class UserController extends Controller
             'phone_number' => $validated['phone_number'],
             'staff_number' => $validated['staff_number'],
             'password' =>  Hash::make($validated['password']),
+            'overtime_calculations_start' => $validated['overtime_calculations_start'],
             'group_id' => $validated['group_id'],
             'is_supervisor' => $validated['is_supervisor'],
             'supervisor_id' => $validated['supervisor_id'],
@@ -248,7 +250,7 @@ class UserController extends Controller
         ]);
 
         TimeAccount::create([
-            'name' => 'Standardkonto',
+            'name' => 'Gleitzeitkonto',
             'balance' => 0,
             'balance_limit' => $validated['userWorkingHours'] * 2,
             'time_account_setting_id' => TimeAccountSetting::inOrganization()->whereNull('type')->first()->id,
@@ -325,7 +327,12 @@ class UserController extends Controller
         ]);
         $user->organizationUser->update($validated['organizationUser']);
         $user->operatingSiteUser->update($validated['operatingSiteUser']);
-        $user->groupUser->update($validated['groupUser']);
+        $user->groupUser?->update($validated['groupUser']);
+
+        $user->forceFill([
+            "overtime_calculations_start" => $validated['overtime_calculations_start'],
+        ]);
+        $user->save();
 
         UserLeaveDay::updateOrCreate([
             'active_since' => Carbon::parse($validated['userLeaveDaysSince']),
