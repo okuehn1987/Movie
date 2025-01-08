@@ -126,6 +126,8 @@ export type UserLeaveDays = DBObject<'userLeaveDays'> &
     SoftDelete & {
         user_id: User['id'];
         leave_days: number;
+        active_since: Date;
+        type: 'annual' | 'remaining';
     };
 
 type Flags = {

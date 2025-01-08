@@ -32,16 +32,16 @@ function submit() {
                         <v-text-field v-model="organizationForm.name" label="Firmenname"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-text-field v-model="organizationForm.tax_registration_id" label="Umsatzsteuer-ID"></v-text-field>
+                        <v-text-field v-model="organizationForm.tax_registration_id" label="Umsatzsteuer-ID (optional)"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-text-field v-model="organizationForm.commercial_registration_id" label="Handelsregister"></v-text-field>
+                        <v-text-field v-model="organizationForm.commercial_registration_id" label="Handelsregister (optional)"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-text-field v-model="organizationForm.website" label="Webseite"></v-text-field>
+                        <v-text-field v-model="organizationForm.website" label="Webseite (optional)"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-file-input label="Firmenlogo" v-model="organizationForm.logo"></v-file-input>
+                        <v-file-input label="Firmenlogo (optional)" v-model="organizationForm.logo"></v-file-input>
                     </v-col>
 
                     <v-col cols="12" md="3">

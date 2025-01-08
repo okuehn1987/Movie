@@ -28,12 +28,11 @@ class AbsenceController extends Controller
 
         $user = $request->user();
 
-        $absences = Absence::inOrganization()->where('status', 'accepted')
+        $absences = [...Absence::inOrganization()->where('status', 'accepted')
             ->where(fn($q) => $q->where('start', '<=', $date->copy()->endOfMonth())->where('end', '>=', $date->copy()->startOfMonth()))
             ->with(['absenceType:id,abbreviation', 'user:id,group_id,operating_site_id,supervisor_id'])
             ->get(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status'])
-            ->filter(fn($a) => $user->can('viewShow', [Absence::class, $a->user]));
-
+            ->filter(fn($a) => $user->can('viewShow', [Absence::class, $a->user]))->toArray()];
 
         $holidays = collect(HolidayService::getHolidays($user->operatingSite->country, $user->operatingSite->federal_state, $date))
             ->mapWithKeys(
@@ -41,7 +40,7 @@ class AbsenceController extends Controller
             );
 
         return Inertia::render('Absence/AbsenceIndex', [
-            'users' => fn() => User::inOrganization()
+            'users' => fn() => [...User::inOrganization()
                 ->with([
                     'userWorkingWeeks:id,user_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday'
                 ])
@@ -54,7 +53,7 @@ class AbsenceController extends Controller
                             'create' => $user->can('create', [Absence::class, $u]),
                         ]
                     ]
-                ]),
+                ])->toArray()],
             'absence_types' => fn() => AbsenceType::inOrganization()->get(['id', 'name', 'abbreviation']),
             'absences' =>  Inertia::merge(fn() => $absences),
             'holidays' =>  Inertia::merge(fn() => $holidays->isEmpty() ? (object)[] : $holidays)
@@ -97,6 +96,13 @@ class AbsenceController extends Controller
         $validated = $request->validate([
             'accepted' => 'required|boolean'
         ]);
+
+        $absenceNotification = $request->user()
+            ->unreadNotifications()
+            ->where('notifiable_id', Auth::id())
+            ->where('data->absence_id', $absence->id)->first();
+
+        if ($absenceNotification) $absenceNotification->update(['read_at' => Carbon::now()]);
 
         if ($validated['accepted']) {
             $absence->accountAsTransaction();
