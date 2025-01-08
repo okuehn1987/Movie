@@ -73,7 +73,7 @@ class HandleInertiaRequests extends Middleware
                     'viewIndex' => Gate::allows('viewIndex', User::class),
                 ],
                 'dispute' => [
-                    'viewIndex' => !!$request->user()->is_supervisor,
+                    'viewIndex' => !!$request->user()?->is_supervisor,
                 ],
             ]
         ];
