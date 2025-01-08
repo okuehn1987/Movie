@@ -1,0 +1,17 @@
+version: '3.5'
+services:
+    app:
+        build:
+            context: '.'
+            dockerfile: Dockerfile
+    playwright:
+        image: mcr.microsoft.com/playwright:v1.49.0-jammy
+        environment:
+            - PLAYWRIGHT_BASE_URL=${PLAYWRIGHT_BASE_URL:-http://127.0.0.1:8000}
+            - PLAYWRIGHT_RUN_ARGS=${PLAYWRIGHT_RUN_ARGS}
+            - CI=true
+        working_dir: /app
+        volumes:
+            - .:/app
+        network_mode: service:app
+        entrypoint: bash -c "npm ci && echo 'Starting Playwright...' && npx playwright install && npx playwright ${PLAYWRIGHT_RUN_ARGS}"

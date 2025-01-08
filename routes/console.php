@@ -40,7 +40,7 @@ Schedule::call(function () {
 Schedule::call(function () {
     dump('start');
 
-    $users = User::with('operatingSite')->get();
+    $users = User::with(['operatingSite', 'defaultTimeAccount'])->get();
     $workLogsToCut = WorkLog::whereBetween('start', [Carbon::yesterday()->startOfDay(), Carbon::yesterday()->endOfDay()])
         ->where('end', null)
         ->latest('start')
@@ -80,6 +80,7 @@ Schedule::call(function () {
         ]);
         //calculate overtime of $day
         foreach ($users as $user) {
+            if ($day->lt(Carbon::parse($user->overtime_calculations_start))) continue;
             $currentWorkingHours = $user->userWorkingHoursForDate($day);
             $currentWorkingWeek = $user->userWorkingWeekForDate($day);
 

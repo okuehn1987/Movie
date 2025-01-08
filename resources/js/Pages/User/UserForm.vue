@@ -60,11 +60,12 @@ const userForm = useForm({
     supervisor_id: null as null | User['id'],
     is_supervisor: false,
     home_office: false,
-    home_office_hours_per_week: null as number | null,
+    home_office_hours_per_week: null as null | number,
     userWorkingHours: 0,
     userWorkingHoursSince: new Date(),
     userWorkingWeek: [] as Weekday[],
     userWorkingWeekSince: new Date(),
+    overtime_calculations_start: DateTime.now().toFormat('yyyy-MM-dd'),
     organizationUser: {
         absence_permission: null,
         absenceType_permission: null,
@@ -120,6 +121,7 @@ if (props.user) {
     userForm.home_office_hours_per_week = props.user.home_office_hours_per_week;
     userForm.userWorkingHours = props.user.currentWorkingHours?.weekly_working_hours ?? 0;
     userForm.userWorkingHoursSince = new Date(props.user.currentWorkingHours.active_since);
+    userForm.overtime_calculations_start = DateTime.fromSQL(props.user.overtime_calculations_start).toFormat('yyyy-MM-dd');
     for (const weekday of Info.weekdays('long', { locale: 'en' }).map(e => e.toLowerCase()) as Weekday[]) {
         if (props.user.userWorkingWeek[weekday]) userForm.userWorkingWeek.push(weekday);
     }
@@ -331,6 +333,16 @@ const steps = ref([
                                         label="Homeoffice Stunden pro Woche"
                                         :disabled="!userForm.home_office"
                                         :error-messages="userForm.errors.home_office_hours_per_week"
+                                    ></v-text-field>
+                                </v-col>
+                                <v-col cols="12" md="6">
+                                    <v-text-field
+                                        type="date"
+                                        :min="DateTime.now().plus({ day: 1 }).toFormat('yyyy-MM-dd')"
+                                        v-model="userForm.overtime_calculations_start"
+                                        label="Überstundenberechnung ab"
+                                        :error-messages="userForm.errors.overtime_calculations_start"
+                                        :disabled="DateTime.fromSQL(userForm.overtime_calculations_start).diff(DateTime.now()).toMillis() < 0"
                                     ></v-text-field>
                                 </v-col>
                             </v-row>
