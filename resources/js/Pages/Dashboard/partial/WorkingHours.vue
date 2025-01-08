@@ -2,7 +2,7 @@
 import { OperatingTime, WorkLog } from '@/types/types';
 import { roundTo, useNow } from '@/utils';
 import { router, usePage } from '@inertiajs/vue3';
-import { DateTime, Info } from 'luxon';
+import { DateTime } from 'luxon';
 import { computed } from 'vue';
 
 const props = defineProps<{
