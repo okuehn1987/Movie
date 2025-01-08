@@ -135,11 +135,14 @@ class UserController extends Controller
     {
         Gate::authorize('viewShow', $user);
 
-        $user->load(['groupUser', 'operatingSiteUser', 'organizationUser', 'userLeaveDays']);
-        $user['currentWorkingHours'] = $user->userWorkingHours()->latest()->first();
-        $user['userWorkingWeek'] = $user->userWorkingWeeks()->latest()->first();
+        $user->load(['groupUser', 'operatingSiteUser', 'organizationUser']);
+        $user['currentWorkingHours'] = $user->userWorkingHours()->latest('active_since')->first();
+        $user['futureWorkingHours'] = $user->userWorkingHours()->latest('active_since')->whereDate('active_since', '>', Carbon::now())->get();
+        $user['currentUserWorkingWeek'] = $user->userWorkingWeeks()->latest('active_since')->first();
+        $user['futureUserWorkingWeek'] = $user->userWorkingWeeks()->latest('active_since')->whereDate('active_since', '>', Carbon::now())->get();
         $user['leaveDaysForYear'] = $user->leaveDaysForYear(Carbon::now());
         $user['usedLeaveDaysForYear'] = $user->usedLeaveDaysForYear(Carbon::now());
+        $user['userLeaveDays'] = $user->userLeaveDays()->latest('active_since')->get();
         $user['absences'] = $user->absences()
             ->whereYear('start', '<=', Carbon::now()->year)
             ->whereYear('end', '>=', Carbon::now()->year)
@@ -201,6 +204,7 @@ class UserController extends Controller
         $validated = self::validateUser($request, [
             "password" => "required|string",
             "email" => "required|email|unique:users",
+            "remaining_leave_days" => "required|integer",
         ]);
 
         $user = (new User)->forceFill([
@@ -236,6 +240,15 @@ class UserController extends Controller
             'active_since' => Carbon::parse($validated['userLeaveDaysSince']),
             'type' => 'annual'
         ]);
+
+        if ($validated['remaining_leave_days'] > 0) {
+            UserLeaveDay::create([
+                'user_id' => $user->id,
+                'leave_days' => $validated['remaining_leave_days'],
+                'active_since' => Carbon::now()->startOfYear(),
+                'type' => 'remaining'
+            ]);
+        }
 
         UserWorkingHour::create([
             'user_id' => $user->id,

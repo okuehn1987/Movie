@@ -24,11 +24,13 @@ import PermissionSelector from './UserFormPartials/PermissionSelector.vue';
 const props = defineProps<{
     user?: User & {
         currentWorkingHours: UserWorkingHours;
-        userWorkingWeek: UserWorkingWeek;
+        futureWorkingHours: UserWorkingHours[];
+        currentUserWorkingWeek: UserWorkingWeek;
+        futureUserWorkingWeek: UserWorkingWeek[];
         organization_user: OrganizationUser;
         operating_site_user: OperatingSiteUser;
         group_user: GroupUser;
-        user_leave_days: UserLeaveDays[];
+        userLeaveDays: UserLeaveDays[];
     };
     supervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];
@@ -127,11 +129,11 @@ if (props.user) {
     userForm.userWorkingHoursSince = new Date(props.user.currentWorkingHours.active_since);
     userForm.overtime_calculations_start = DateTime.fromSQL(props.user.overtime_calculations_start).toFormat('yyyy-MM-dd');
     for (const weekday of Info.weekdays('long', { locale: 'en' }).map(e => e.toLowerCase()) as Weekday[]) {
-        if (props.user.userWorkingWeek[weekday]) userForm.userWorkingWeek.push(weekday);
+        if (props.user.currentUserWorkingWeek[weekday]) userForm.userWorkingWeek.push(weekday);
     }
-    userForm.userWorkingWeekSince = new Date(props.user.userWorkingWeek.active_since);
+    userForm.userWorkingWeekSince = new Date(props.user.currentUserWorkingWeek.active_since);
 
-    const lastUserLeaveDays = props.user.user_leave_days[props.user.user_leave_days.length - 1];
+    const lastUserLeaveDays = props.user.userLeaveDays[props.user.userLeaveDays.length - 1];
     if (lastUserLeaveDays) {
         userForm.userLeaveDays = lastUserLeaveDays.leave_days;
         userForm.userLeaveDaysSince = DateTime.fromSQL(lastUserLeaveDays.active_since).toFormat('yyyy-MM');
@@ -206,8 +208,8 @@ const steps = ref([
 ] as const);
 </script>
 <template>
-    <v-card>
-        <v-stepper v-model="step">
+    <v-card style="overflow: auto" :style="{ maxHeight: getMaxScrollHeight(48) }">
+        <!-- <v-stepper v-model="step">
             <v-stepper-header>
                 <template v-for="(s, index) in steps" :key="index">
                     <v-stepper-item
@@ -541,11 +543,259 @@ const steps = ref([
                     </template>
                 </v-stepper-actions>
             </template>
-        </v-stepper>
+        </v-stepper> -->
+        <v-card-item class="mb-4">
+            <v-card-title>Persönliche Daten</v-card-title>
+        </v-card-item>
+        <v-card-text>
+            <v-row>
+                <v-col cols="12" md="6">
+                    <v-text-field
+                        v-model="userForm.first_name"
+                        label="Vorname"
+                        required
+                        :error-messages="userForm.errors.first_name"
+                        :rules="steps[0].fields.first_name"
+                    ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6">
+                    <v-text-field
+                        v-model="userForm.last_name"
+                        label="Nachname"
+                        required
+                        :error-messages="userForm.errors.last_name"
+                        :rules="steps[0].fields.last_name"
+                    ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6">
+                    <v-text-field
+                        v-model="userForm.email"
+                        label="Email"
+                        required
+                        :error-messages="userForm.errors.email"
+                        :rules="steps[0].fields.email"
+                    ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6" v-if="mode == 'create'">
+                    <v-text-field
+                        v-model="userForm.password"
+                        label="Passwort"
+                        required
+                        :error-messages="userForm.errors.password"
+                        :rules="steps[0].fields.password"
+                    ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6">
+                    <v-text-field
+                        type="date"
+                        v-model="userForm.date_of_birth"
+                        label="Geburtsdatum (optional)"
+                        :error-messages="userForm.errors.date_of_birth"
+                        :rules="steps[0].fields.date_of_birth"
+                    ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6">
+                    <v-text-field
+                        v-model="userForm.staff_number"
+                        label="Personalnummer (optional)"
+                        :error-messages="userForm.errors.staff_number"
+                    ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6" v-if="mode == 'edit'"></v-col>
+                <v-col cols="12" md="6">
+                    <v-text-field
+                        v-model="userForm.street"
+                        label="Straße (optional)"
+                        :error-messages="userForm.errors.street"
+                        :rules="steps[1].fields.street"
+                    ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6">
+                    <v-text-field
+                        v-model="userForm.house_number"
+                        label="Hausnummer (optional)"
+                        :error-messages="userForm.errors.house_number"
+                        :rules="steps[1].fields.house_number"
+                    ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6">
+                    <v-text-field
+                        v-model="userForm.zip"
+                        label="Postleitzahl (optional)"
+                        :error-messages="userForm.errors.zip"
+                        :rules="steps[1].fields.zip"
+                    ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6">
+                    <v-text-field
+                        v-model="userForm.city"
+                        label="Ort (optional)"
+                        :error-messages="userForm.errors.city"
+                        :rules="steps[1].fields.city"
+                    ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6">
+                    <v-select
+                        data-testid="land"
+                        label="Land"
+                        required
+                        :items="countries"
+                        :error-messages="userForm.errors.country"
+                        v-model="userForm.country"
+                        :rules="steps[1].fields.country"
+                    ></v-select>
+                </v-col>
+                <v-col cols="12" md="6">
+                    <v-select
+                        data-testid="federal_state"
+                        label="Bundesland"
+                        :items="getStates(userForm.country, countries)"
+                        :disabled="!userForm.country"
+                        required
+                        :error-messages="userForm.errors.federal_state"
+                        v-model="userForm.federal_state"
+                        :rules="steps[1].fields.federal_state"
+                    ></v-select>
+                </v-col>
+            </v-row>
+        </v-card-text>
+        <v-card-item class="mb-4">
+            <v-card-title>Arbeitszeiten</v-card-title>
+        </v-card-item>
+        <v-card-text>
+            <v-row>
+                <v-col cols="12"><h4>Wochenarbeitszeit</h4></v-col>
+                <v-col cols="12" md="6">
+                    <v-text-field
+                        type="number"
+                        v-model="userForm.userWorkingHours"
+                        label="Trage die wöchentliche Arbeitszeit des Mitarbeitenden ein"
+                        required
+                        :error-messages="userForm.errors.userWorkingHours"
+                        :rules="steps[0].fields.userWorkingHours"
+                    ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6">
+                    <v-date-input
+                        prepend-icon=""
+                        v-model="userForm.userWorkingHoursSince"
+                        label="seit"
+                        required
+                        :error-messages="userForm.errors.userWorkingHoursSince"
+                        :rules="steps[0].fields.userWorkingHoursSince"
+                    ></v-date-input>
+                </v-col>
+                <template v-if="mode == 'edit'">
+                    <template v-for="entry of userForm" :key="entry">
+                        <v-col cols="12" md="6">
+                            <v-text-field
+                                type="number"
+                                v-model="userForm.userWorkingHours"
+                                label="Trage die wöchentliche Arbeitszeit des Mitarbeitenden ein"
+                                required
+                                :error-messages="userForm.errors.userWorkingHours"
+                                :rules="steps[0].fields.userWorkingHours"
+                            ></v-text-field>
+                        </v-col>
+                        <v-col cols="12" md="6">
+                            <v-date-input
+                                prepend-icon=""
+                                v-model="userForm.userWorkingHoursSince"
+                                label="seit"
+                                required
+                                :error-messages="userForm.errors.userWorkingHoursSince"
+                                :rules="steps[0].fields.userWorkingHoursSince"
+                            ></v-date-input>
+                        </v-col>
+                    </template>
+                </template>
+                <v-col cols="12"><h4>Arbeitstage</h4></v-col>
+                <v-col cols="12" md="6">
+                    <v-select
+                        chips
+                        v-model="userForm.userWorkingWeek"
+                        multiple
+                        :items="
+                            Info.weekdays().map((e, i) => ({
+                                title: e,
+                                value: Info.weekdays('long', { locale: 'en' })[i]?.toLowerCase(),
+                            }))
+                        "
+                        label="Wähle die Arbeitstage des Mitarbeitenden aus"
+                        :error-messages="userForm.errors.userWorkingWeek"
+                        :rules="steps[0].fields.userWorkingWeek"
+                    />
+                </v-col>
+
+                <v-col cols="12" md="6">
+                    <v-date-input
+                        prepend-icon=""
+                        v-model="userForm.userWorkingWeekSince"
+                        label="seit"
+                        :error-messages="userForm.errors.userWorkingWeekSince"
+                        :rules="steps[0].fields.userWorkingWeekSince"
+                    ></v-date-input>
+                </v-col>
+                <v-col cols="12"><h4>Urlaubstage</h4></v-col>
+
+                <v-col cols="12" md="6">
+                    <v-text-field
+                        type="number"
+                        v-model="userForm.userLeaveDays"
+                        label="Trage die Jährlichen Urlaubstage des Mitarbeitenden ein"
+                        :error-messages="userForm.errors.userLeaveDays"
+                        :rules="steps[0].fields.userLeaveDays"
+                    ></v-text-field>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                    <v-text-field
+                        type="month"
+                        prepend-icon=""
+                        v-model="userForm.userLeaveDaysSince"
+                        label="seit"
+                        :error-messages="userForm.errors.userLeaveDaysSince"
+                        :rules="steps[0].fields.userLeaveDaysSince"
+                    ></v-text-field>
+                </v-col>
+                <v-col cols="12"><h4>Homeoffice</h4></v-col>
+                <v-col cols="12" md="6">
+                    <v-checkbox
+                        v-model="userForm.home_office"
+                        label="Darf der Mitarbeitende Homeoffice machen?"
+                        :error-messages="userForm.errors.home_office"
+                        @update:model-value="
+                            v => {
+                                if (!v) userForm.home_office_hours_per_week = null;
+                            }
+                        "
+                    ></v-checkbox>
+                </v-col>
+                <v-col cols="12" md="6">
+                    <v-text-field
+                        type="number"
+                        v-model="userForm.home_office_hours_per_week"
+                        label="Homeoffice Stunden pro Woche (optional)"
+                        :disabled="!userForm.home_office"
+                        :error-messages="userForm.errors.home_office_hours_per_week"
+                    ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="6">
+                    <v-text-field
+                        type="date"
+                        :min="DateTime.now().plus({ day: 1 }).toFormat('yyyy-MM-dd')"
+                        v-model="userForm.overtime_calculations_start"
+                        label="Überstundenberechnung ab"
+                        :error-messages="userForm.errors.overtime_calculations_start"
+                        :disabled="DateTime.fromSQL(userForm.overtime_calculations_start).diff(DateTime.now()).toMillis() < 0"
+                    ></v-text-field>
+                </v-col>
+            </v-row>
+        </v-card-text>
     </v-card>
 </template>
 <style scoped>
-/** we have so many fields, we want to condense it down a lil */
+/* * we have so many fields, we want to condense it down a lil */
 .v-col-md-6,
 .v-col-md-12 {
     padding-block: 4px;
