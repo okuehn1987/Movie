@@ -19,6 +19,11 @@ import { router } from '@inertiajs/vue3';
                     value: route('workLog.index'),
                     title: 'Arbeitszeiten',
                 },
+                can('dispute', 'viewIndex') && {
+                    props: { active: route().current('dispute.index'), prependIcon: 'mdi-bookmark-outline' },
+                    value: route('dispute.index'),
+                    title: 'Anträge',
+                },
                 can('organization', 'viewShow') && {
                     title: 'Organisation',
                     subtitle: 'test',
