@@ -38,7 +38,7 @@ class WorkLogPatch extends Model
             'accepted_at' => Carbon::now()
         ]);
 
-        if (WorkingHoursCalculation::whereDate('created_at', $this->workLog->start)->exists()) {
+        if (WorkingHoursCalculation::whereDate('day', $this->workLog->start)->exists()) {
             $this->accountAsTransaction();
         }
     }
