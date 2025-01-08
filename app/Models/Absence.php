@@ -34,14 +34,17 @@ class Absence extends Model
     public function accountAsTransaction()
     {
         DB::transaction(function () {
-            $workLogs = WorkLog::where('user_id', $this->user_id)->lockForUpdate()->get();
+            WorkLog::where('user_id', $this->user_id)->lockForUpdate()->get();
 
             $this->accepted_at = Carbon::now();
             $this->status = 'accepted';
 
+            // check all days of absence until today
             $end = Carbon::parse($this->end)->gte(Carbon::now()) ? Carbon::now() : Carbon::parse($this->end);
 
             for ($day = Carbon::parse($this->start)->startOfDay(); $day->lte($end); $day->addDay()) {
+                if (!WorkingHoursCalculation::whereDate('day', $day)->exists()) continue;
+
                 $hasAppliedAbsenceForDay = $this->user()
                     ->absences()
                     ->where('id', '!=', $this->id)
@@ -51,18 +54,15 @@ class Absence extends Model
                     ->exists();
                 if ($hasAppliedAbsenceForDay) continue;
 
-                $currentWorkingHours = $this->user->userWorkingHoursForDate($day);
-                $currentWorkingWeek = $this->user->userWorkingWeekForDate($day);
-                $sollStunden = $currentWorkingHours['weekly_working_hours'] / $currentWorkingWeek->numberOfWorkingDays;
+                $sollStunden = $this->user->getSollstundenForDate($day);
 
-                $workLogs = WorkLog::whereDate('start', $day)
+                $istStunden =  WorkLog::whereDate('start', $day)
                     ->where('user_id', $this->user_id)
-                    ->get();
-
-                $duration = $workLogs->sum('duration');
+                    ->get()
+                    ->sum('duration');
 
                 $this->user->defaultTimeAccount->addBalance(
-                    -min($duration, $sollStunden),
+                    max($sollStunden - $istStunden, 0),
                     'Abwesenheit akzeptiert am ' . Carbon::parse($this->accepted_at)->format('d.m.Y H:i:s')
                 );
             }
