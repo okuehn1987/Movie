@@ -288,4 +288,11 @@ class User extends Authenticatable
             'homeOfficeHours' => $currentWeekHomeOfficeHours,
         ];
     }
+
+    public function getSollstundenForDate(CarbonInterface $date)
+    {
+        $currentWorkingHours = $this->userWorkingHoursForDate($date);
+        $currentWorkingWeek = $this->userWorkingWeekForDate($date);
+        return $currentWorkingHours['weekly_working_hours'] / $currentWorkingWeek->numberOfWorkingDays;
+    }
 }
