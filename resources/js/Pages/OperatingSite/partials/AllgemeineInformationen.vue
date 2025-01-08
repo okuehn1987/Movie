@@ -52,7 +52,11 @@ function submit() {
                         ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-text-field label="Fax" v-model="operatingSiteForm.fax" :error-messages="operatingSiteForm.errors.fax"></v-text-field>
+                        <v-text-field
+                            label="Fax (optional)"
+                            v-model="operatingSiteForm.fax"
+                            :error-messages="operatingSiteForm.errors.fax"
+                        ></v-text-field>
                     </v-col>
 
                     <v-col cols="12"><h3>Adresse</h3></v-col>
@@ -60,7 +64,7 @@ function submit() {
                     <v-col cols="12" md="6">
                         <v-select
                             label="Land"
-                            required
+                            disabled
                             :items="countries.map(country => ({ title: country.title, value: country.value }))"
                             :error-messages="operatingSiteForm.errors.country"
                             v-model="operatingSiteForm.country"
@@ -70,8 +74,7 @@ function submit() {
                         <v-select
                             label="Bundesland"
                             :items="getStates(operatingSiteForm.country, countries)"
-                            :disabled="!operatingSiteForm.country || !can('operatingSite', 'update')"
-                            required
+                            disabled
                             :error-messages="operatingSiteForm.errors.federal_state"
                             v-model="operatingSiteForm.federal_state"
                         ></v-select>
@@ -102,7 +105,7 @@ function submit() {
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-text-field
-                            label="Adresszusatz"
+                            label="Adresszusatz (optional)"
                             v-model="operatingSiteForm.address_suffix"
                             :error-messages="operatingSiteForm.errors.address_suffix"
                         ></v-text-field>

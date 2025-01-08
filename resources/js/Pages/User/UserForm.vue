@@ -254,7 +254,7 @@ const steps = ref([
                                     <v-text-field
                                         type="date"
                                         v-model="userForm.date_of_birth"
-                                        label="Geburtsdatum"
+                                        label="Geburtsdatum (optional)"
                                         :error-messages="userForm.errors.date_of_birth"
                                         :rules="steps[0].fields.date_of_birth"
                                     ></v-text-field>
@@ -262,7 +262,7 @@ const steps = ref([
                                 <v-col cols="12" md="6">
                                     <v-text-field
                                         v-model="userForm.staff_number"
-                                        label="Personalnummer"
+                                        label="Personalnummer (optional)"
                                         :error-messages="userForm.errors.staff_number"
                                     ></v-text-field>
                                 </v-col>
@@ -330,7 +330,7 @@ const steps = ref([
                                     <v-text-field
                                         type="number"
                                         v-model="userForm.home_office_hours_per_week"
-                                        label="Homeoffice Stunden pro Woche"
+                                        label="Homeoffice Stunden pro Woche (optional)"
                                         :disabled="!userForm.home_office"
                                         :error-messages="userForm.errors.home_office_hours_per_week"
                                     ></v-text-field>
@@ -354,7 +354,7 @@ const steps = ref([
                                 <v-col cols="12" md="6">
                                     <v-text-field
                                         v-model="userForm.street"
-                                        label="Straße"
+                                        label="Straße (optional)"
                                         :error-messages="userForm.errors.street"
                                         :rules="steps[1].fields.street"
                                     ></v-text-field>
@@ -362,7 +362,7 @@ const steps = ref([
                                 <v-col cols="12" md="6">
                                     <v-text-field
                                         v-model="userForm.house_number"
-                                        label="Hausnummer"
+                                        label="Hausnummer (optional)"
                                         :error-messages="userForm.errors.house_number"
                                         :rules="steps[1].fields.house_number"
                                     ></v-text-field>
@@ -370,7 +370,7 @@ const steps = ref([
                                 <v-col cols="12" md="6">
                                     <v-text-field
                                         v-model="userForm.zip"
-                                        label="Postleitzahl"
+                                        label="Postleitzahl (optional)"
                                         :error-messages="userForm.errors.zip"
                                         :rules="steps[1].fields.zip"
                                     ></v-text-field>
@@ -378,7 +378,7 @@ const steps = ref([
                                 <v-col cols="12" md="6">
                                     <v-text-field
                                         v-model="userForm.city"
-                                        label="Ort"
+                                        label="Ort (optional)"
                                         :error-messages="userForm.errors.city"
                                         :rules="steps[1].fields.city"
                                     ></v-text-field>
@@ -444,7 +444,7 @@ const steps = ref([
                                     <v-select
                                         v-model="userForm.group_id"
                                         :items="groups.map(g => ({ title: g.name, value: g.id }))"
-                                        label="Wähle eine Abteilung aus, zu die der Mitarbeiter gehören soll."
+                                        label="Wähle eine Abteilung aus, zu die der Mitarbeiter gehören soll. (optional)"
                                         :error-messages="userForm.errors.group_id"
                                         data-testid="userGroupSelection"
                                     ></v-select>
@@ -462,7 +462,7 @@ const steps = ref([
                                     <v-select
                                         v-model="userForm.supervisor_id"
                                         :items="supervisors.map(s => ({ title: s.first_name + ' ' + s.last_name, value: s.id }))"
-                                        label="Wähle einen Vorgesetzten, falls vorhanden"
+                                        label="Wähle einen Vorgesetzten, falls vorhanden (optional)"
                                         :error-messages="userForm.errors.supervisor_id"
                                         data-testid="userSupervisorSelection"
                                     ></v-select>
