@@ -7,6 +7,7 @@ use App\Models\WorkLogPatch;
 use App\Notifications\PatchNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
 class WorkLogPatchController extends Controller
@@ -47,6 +48,13 @@ class WorkLogPatchController extends Controller
         $validated = $request->validate([
             'accepted' => 'required|boolean'
         ]);
+
+        $patchNotification = $request->user()
+            ->unreadNotifications()
+            ->where('notifiable_id', Auth::id())
+            ->where('data->patch_id', $workLogPatch->id)->first();
+
+        if ($patchNotification) $patchNotification->update(['read_at' => Carbon::now()]);
 
         if ($validated['accepted']) $workLogPatch->accept();
         else

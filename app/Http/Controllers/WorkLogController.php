@@ -19,13 +19,13 @@ class WorkLogController extends Controller
         Gate::authorize('viewIndex', WorkLog::class);
 
         return Inertia::render('WorkLog/WorkLogIndex', [
-            'users' => User::inOrganization()->get(['id', 'first_name', 'last_name'])
-                ->filter(fn($u) => $request->user()->can('viewShow', [WorkLog::class, $u]))
-                ->map(fn($u) => [
-                    ...$u->toArray(),
-                    'isPresent' => $u->workLogs()->latest()->first()->end ? true : false,
-                    'latestWorkLog' => $u->workLogs()->latest()->first()
-                ])
+            'users' => [
+                ...User::inOrganization()
+                    ->whereHas('workLogs')->with(['defaultTimeAccount:id,balance,user_id', 'latestWorkLog'])
+                    ->select(['id', 'first_name', 'last_name', 'supervisor_id'])
+                    ->get()
+                    ->filter(fn($u) => $request->user()->can('viewShow', [WorkLog::class, $u]))
+            ],
         ]);
     }
 

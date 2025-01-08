@@ -13,19 +13,20 @@ class AbsencePolicy
     {
         return true;
     }
-    public function viewShow(User $authUser, Absence $absence): bool
+    public function viewShow(User $authUser, User $user): bool
     {
         return
-            $authUser->id === $absence->user_id ||
-            $authUser->supervisor_id === $absence->user_id ||
-            $authUser->hasPermissionOrDelegation($absence->user, 'absence_permission', 'read');
+            $authUser->id === $user->id ||
+            $authUser->id === $user->supervisor_id ||
+            $authUser->group_id === $user->group_id ||
+            $authUser->hasPermissionOrDelegation($user, 'absence_permission', 'read');
     }
 
     public function create(User $authUser, User $user): bool
     {
         return
             $authUser->id === $user->id ||
-            $authUser->supervisor_id === $user->id ||
+            $authUser->id === $user->supervisor_id ||
             $authUser->hasPermissionOrDelegation($user, 'absence_permission', 'write');
     }
 
@@ -33,14 +34,14 @@ class AbsencePolicy
     {
         return
             $user->id == $absence->user->id ||
-            $absence->user->supervisor_id === $user->id ||
+            $user->id === $absence->user->supervisor_id  ||
             $user->hasPermissionOrDelegation($absence->user, 'absence_permission', 'write');
     }
 
     public function delete(User $user, Absence $absence): bool
     {
         return
-            $absence->user->supervisor_id === $user->id ||
+            $user->id === $absence->user->supervisor_id ||
             $user->hasPermissionOrDelegation($absence->user, 'absence_permission', 'write');
     }
 }

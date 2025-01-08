@@ -10,7 +10,7 @@ class AbsenceType extends Model
 {
     use HasFactory, SoftDeletes, ScopeInOrganization;
 
-    protected $fillable = ['name', 'type', 'abbreviation', 'requires_approval'];
+    protected $fillable = ['name', 'type', 'abbreviation', 'requires_approval', 'organization_id'];
 
     public static $DEFAULTS = [
         ['name' => 'Unbezahlter Urlaub', 'abbreviation' => 'UB'],
@@ -20,7 +20,8 @@ class AbsenceType extends Model
         ['name' => 'Bildungsurlaub', 'abbreviation' => 'BU'],
         ['name' => 'Sonderurlaub', 'abbreviation' => 'SU'],
         ['name' => 'Elternzeit', 'abbreviation' => 'EZ'],
-        ['name' => 'Urlaub', 'abbreviation' => 'EU']
+        ['name' => 'Urlaub', 'abbreviation' => 'EU'],
+        ['name' => 'Arbeitsunfähigkeit', 'abbreviation' => 'AU']
     ];
 
     public static function getTypes()

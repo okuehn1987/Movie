@@ -38,7 +38,7 @@ class WorkLogPatch extends Model
             'accepted_at' => Carbon::now()
         ]);
 
-        if (WorkingHoursCalculation::whereDate('created_at', $this->workLog->start)->exists()) {
+        if (WorkingHoursCalculation::whereDate('day', $this->workLog->start)->exists()) {
             $this->accountAsTransaction();
         }
     }
@@ -56,7 +56,7 @@ class WorkLogPatch extends Model
             $patch
                 ->workLog
                 ->user
-                ->defaultTimeAccount()
+                ->defaultTimeAccount
                 ->addBalance(
                     $patch->getDurationAttribute() - $oldDuration,
                     'Korrektur akzeptiert am ' . Carbon::parse($patch->accepted_at)->format('d.m.Y H:i:s')

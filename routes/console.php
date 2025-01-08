@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\Absence;
 use App\Models\Organization;
 use App\Models\User;
+use App\Models\UserLeaveDay;
 use App\Models\WorkingHoursCalculation;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
@@ -39,7 +41,7 @@ Schedule::call(function () {
 Schedule::call(function () {
     dump('start');
 
-    $users = User::with('operatingSite')->get();
+    $users = User::with(['operatingSite', 'defaultTimeAccount'])->get();
     $workLogsToCut = WorkLog::whereBetween('start', [Carbon::yesterday()->startOfDay(), Carbon::yesterday()->endOfDay()])
         ->where('end', null)
         ->latest('start')
@@ -79,21 +81,35 @@ Schedule::call(function () {
         ]);
         //calculate overtime of $day
         foreach ($users as $user) {
+            if ($day->lt(Carbon::parse($user->overtime_calculations_start))) continue;
             $currentWorkingHours = $user->userWorkingHoursForDate($day);
-            $currentWorkingWeek = $user->userWorkingWeekForDate($day);
 
+            $currentWorkingWeek = $user->userWorkingWeekForDate($day);
             $workingDaysInWeek = $currentWorkingWeek?->numberOfWorkingDays;
 
-            $shouldWorkYesterday = $workingDaysInWeek > 0 && $currentWorkingWeek->hasWorkDay($day) && !$user->operatingSite->hasHoliday($day);
+            $hasAbsenceForDay = $user->absences()
+                ->where('status', 'accepted')
+                ->whereDate('start', '<=', $day)
+                ->whereDate('end', '>=', $day)->exists();
 
-            $sollStunden = 0;
-            if ($shouldWorkYesterday && $currentWorkingHours != null) $sollStunden = $currentWorkingHours['weekly_working_hours'] / $workingDaysInWeek;
+            $shouldWorkYesterday =
+                $workingDaysInWeek > 0 &&
+                $currentWorkingWeek->hasWorkDay($day) &&
+                !$user->operatingSite->hasHoliday($day);
 
-            $workLogs = $user->workLogs()->whereNotNull('end')->whereBetween('start', [$day->startOfDay(), $day->endOfDay()])->get();
+            $workLogsForDay = $user->workLogs()->whereNotNull('end')->whereBetween('start', [$day->copy()->startOfDay(), $day->copy()->endOfDay()])->get();
 
-            $istStunden = $workLogs->sum('duration');
+            $istStunden = $workLogsForDay->sum('duration');
+            $sollStunden = $currentWorkingHours['weekly_working_hours'] / $workingDaysInWeek;
 
-            $user->defaultTimeAccount()->addBalance($istStunden - $sollStunden, 'Tägliche Überstundenberechnung ' . $day->format('d.m.Y'));
+            if (!$shouldWorkYesterday) {
+                $sollStunden = 0;
+            } else if ($hasAbsenceForDay) {
+                $istStunden = max($istStunden - $sollStunden, 0);
+                $sollStunden = 0;
+            }
+
+            $user->defaultTimeAccount->addBalance($istStunden - $sollStunden, 'Tägliche Überstundenberechnung ' . $day->format('d.m.Y'));
 
             //TODO: add SWHF's & Nachtschicht, etc.
         }
@@ -101,6 +117,9 @@ Schedule::call(function () {
 
         foreach (WorkLogPatch::where('is_accounted', false)->whereDate('accepted_at', $day)->get() as $patch) {
             $patch->accountAsTransaction();
+            $patch->update([
+                'is_accounted' => true
+            ]);
         }
         dump('end patch calculations for ' . $day);
 
@@ -110,3 +129,16 @@ Schedule::call(function () {
     }
     dump('end');
 })->name('dailyWorkLogCut')->dailyAt("00:00");
+
+Schedule::call(function () {
+    foreach (User::with('operatingSite')->get() as $user) {
+        $newRemainingLeaveDays = $user->leaveDaysForYear(Carbon::now()->subYear()) - $user->usedLeaveDaysForYear(Carbon::now()->subYear());
+
+        UserLeaveDay::create([
+            'user_id' => $user->id,
+            'leave_days' => $newRemainingLeaveDays,
+            'type' => 'remaining',
+            'active_since' => Carbon::now()->startOfYear()
+        ]);
+    }
+})->name('yearlyLeaveDaysCalculation')->yearlyOn($month = 1, $dayOfMonth = 1, $time = '0:0');

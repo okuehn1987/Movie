@@ -43,6 +43,11 @@ class HolidayService
         return Holidays::for(self::$COUNTRIES[$countryCode]['class']::make($countryCode . ($region ? '-' . $region : '')))->isHoliday($date);
     }
 
+    public static function getHolidays($countryCode, $region = null, CarbonInterface $date)
+    {
+        return Holidays::for(self::$COUNTRIES[$countryCode]['class']::make($countryCode . ($region ? '-' . $region : '')))->getInRange($date->copy()->startOfMonth(), $date->copy()->endOfMonth());
+    }
+
     public static function getCountryCodes()
     {
         return array_keys(self::$COUNTRIES);

@@ -24,7 +24,6 @@ const groupForm = useForm({
                 :style="{ maxHeight: getMaxScrollHeight(0) }"
                 fixed-header
                 :headers="[
-                    { title: '#', key: 'id' },
                     { title: 'Abteilungsname', key: 'name' },
                     { title: 'Mitarbeitende', key: 'users_count' },
                     { title: '', key: 'actions', align: 'end' },
@@ -67,10 +66,11 @@ const groupForm = useForm({
                                             </v-col>
                                             <v-col cols="12" sm="6">
                                                 <v-select
+                                                    data-testid="employeeGroupAssignment"
                                                     v-model="groupForm.users"
                                                     :error-messages="groupForm.errors.users"
-                                                    :items="users.map(user => ({ id: user.id, title: user.name }))"
-                                                    label="Wähle Mitarbeiter aus, die zur Abteilung gehören"
+                                                    :items="users.map(user => ({ value: user.id, title: user.name }))"
+                                                    label="Wähle Mitarbeiter aus, die zur Abteilung gehören (optional)"
                                                     multiple
                                                 ></v-select>
                                             </v-col>

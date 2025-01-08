@@ -23,6 +23,11 @@ const timeAccountTransferForm = useForm({
         </template>
         <template v-slot:default="{ isActive }">
             <v-card title="Stundentransaktion durchführen">
+                <template #append>
+                    <v-btn icon variant="text" @click.stop="isActive.value = false">
+                        <v-icon>mdi-close</v-icon>
+                    </v-btn>
+                </template>
                 <v-card-text>
                     <v-form
                         @submit.prevent="
@@ -37,9 +42,10 @@ const timeAccountTransferForm = useForm({
                         <v-row>
                             <v-col cols="12" md="4">
                                 <v-select
+                                    data-testid="timeAccountTransactionStartAccount"
                                     :items="
                                         time_accounts
-                                            .filter(t => t.id != timeAccountTransferForm.to_id)
+                                            .filter(t => t.id != timeAccountTransferForm.to_id && t.deleted_at === null)
                                             .map(t => ({
                                                 title: t.name,
                                                 value: t.id,
@@ -52,9 +58,10 @@ const timeAccountTransferForm = useForm({
                             </v-col>
                             <v-col cols="12" md="4">
                                 <v-select
+                                    data-testid="timeAccountTransactionDestinationAccount"
                                     :items="
                                         time_accounts
-                                            .filter(t => t.id != timeAccountTransferForm.from_id)
+                                            .filter(t => t.id != timeAccountTransferForm.from_id && t.deleted_at === null)
                                             .map(t => ({
                                                 title: t.name,
                                                 value: t.id,

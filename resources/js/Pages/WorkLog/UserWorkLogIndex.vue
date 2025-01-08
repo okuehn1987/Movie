@@ -25,7 +25,7 @@ const patchMode = ref<'edit' | 'fix' | 'show' | null>(null);
 const patchLog = ref<WorkLog | PatchProp | null>(null);
 const inputVariant = computed(() => (patchLog.value ? 'plain' : 'underlined'));
 
-const editableWorkLogs = computed(() => props.workLogs.data.filter((_, i) => i < 5));
+const editableWorkLogs = computed(() => props.workLogs.data.filter((_, i) => i < 10 ** 10)); // 10 ** 10 to display for now but keep the feature
 
 onMounted(() => {
     const workLogId = route().params['workLog'];
@@ -61,7 +61,6 @@ function submit() {
         })
         .post(route('workLogPatch.store'), {
             onSuccess: () => {
-                workLogForm.reset();
                 showDialog.value = false;
             },
         });
@@ -84,10 +83,10 @@ function editWorkLog(id: WorkLog['id']) {
     let start = workLog.start;
     let end = workLog.end;
     let isHomeOffice = workLog.is_home_office;
-    if (lastPatch && lastPatch.status == 'accepted') {
-        start = lastPatch.start;
-        end = lastPatch.end;
-        isHomeOffice = lastPatch.is_home_office;
+    if (patchLog.value) {
+        start = patchLog.value.start;
+        end = patchLog.value.end;
+        isHomeOffice = patchLog.value.is_home_office;
     }
 
     workLogForm.id = id;
@@ -195,6 +194,7 @@ function retreatPatch() {
                                         <v-date-input
                                             :disabled="patchMode == 'fix'"
                                             label="Start"
+                                            data-testid="userTimeCorrectionStartDay"
                                             required
                                             :error-messages="workLogForm.errors.start"
                                             v-model="workLogForm.start"
@@ -207,6 +207,7 @@ function retreatPatch() {
                                             :disabled="patchMode == 'fix'"
                                             type="time"
                                             label="Start"
+                                            data-testid="userTimeCorrectionStartTime"
                                             required
                                             :error-messages="workLogForm.errors.start_time"
                                             v-model="workLogForm.start_time"
@@ -217,6 +218,7 @@ function retreatPatch() {
                                         <v-date-input
                                             :disabled="patchMode == 'fix'"
                                             label="Ende"
+                                            data-testid="userTimeCorrectionEndDay"
                                             required
                                             :error-messages="workLogForm.errors.end"
                                             v-model="workLogForm.end"
@@ -229,6 +231,7 @@ function retreatPatch() {
                                             :disabled="!!patchLog"
                                             type="time"
                                             label="Ende"
+                                            data-testid="userTimeCorrectionEndTime"
                                             required
                                             :error-messages="workLogForm.errors.end_time"
                                             v-model="workLogForm.end_time"

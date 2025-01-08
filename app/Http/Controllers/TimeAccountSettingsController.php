@@ -10,19 +10,6 @@ use Inertia\Inertia;
 
 class TimeAccountSettingsController extends Controller
 {
-    public function index()
-    {
-        Gate::authorize('viewIndex', TimeAccountSetting::class);
-
-        return Inertia::render('TimeAccount/TimeAccountSettingsIndex', [
-            'timeAccountSettings' => TimeAccountSetting::inOrganization()->get(),
-            'can' => [
-                'timeAccountSetting' => [
-                    'create' => Gate::allows('create', TimeAccountSetting::class),
-                ]
-            ]
-        ]);
-    }
 
     public function store(Request $request)
     {

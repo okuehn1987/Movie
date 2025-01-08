@@ -5,20 +5,8 @@ import { useForm } from '@inertiajs/vue3';
 defineProps<{
     absenceTypes: AbsenceType[];
     types?: string[];
+    absence_type_defaults: string[];
 }>();
-
-const DEFAULTS = [
-    { name: 'Unbezahlter Urlaub', abbreviation: 'UB' },
-    { name: 'Ausbildung/ Berufsschule', abbreviation: 'BS' },
-    { name: 'Fort- und Weiterbildung', abbreviation: 'FW' },
-    { name: 'AZV-Tag', abbreviation: 'AZ' },
-    { name: 'Bildungsurlaub', abbreviation: 'BU' },
-    { name: 'Sonderurlaub', abbreviation: 'SU' },
-    { name: 'Elternzeit', abbreviation: 'EZ' },
-    { name: 'Urlaub', abbreviation: 'EU' },
-    { name: 'Andere', abbreviation: 'AN' },
-];
-
 const absenceTypeForm = useForm({
     name: '',
     abbreviation: '',
@@ -31,7 +19,6 @@ const absenceTypeForm = useForm({
         <v-data-table-virtual
             hover
             :headers="[
-                { title: '#', key: 'id' },
                 { title: 'Abwesenheitsgrund', key: 'name' },
                 { title: 'Abkürzung', key: 'abbreviation' },
                 { title: 'Muss genehmigt werden', key: 'requires_approval' },
@@ -84,10 +71,9 @@ const absenceTypeForm = useForm({
                                         </v-col>
                                         <v-col cols="12" md="6">
                                             <v-select
+                                                data-testid="typeOfAbsence"
                                                 label="Typ"
-                                                :items="DEFAULTS"
-                                                item-value="name"
-                                                item-title="name"
+                                                :items="absence_type_defaults"
                                                 required
                                                 :error-messages="absenceTypeForm.errors.type"
                                                 v-model="absenceTypeForm.type"

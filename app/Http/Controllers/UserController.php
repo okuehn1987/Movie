@@ -12,6 +12,7 @@ use App\Models\TimeAccount;
 use App\Models\TimeAccountSetting;
 use App\Models\TimeAccountTransaction;
 use App\Models\User;
+use App\Models\UserLeaveDay;
 use App\Models\UserWorkingHour;
 use App\Models\UserWorkingWeek;
 use App\Services\HolidayService;
@@ -58,12 +59,19 @@ class UserController extends Controller
 
             'is_supervisor' => 'required|boolean',
 
+            'home_office' => 'required|boolean',
+            'home_office_hours_per_week' => 'nullable|required_if:home_office,true|numeric',
+
             'userWorkingHours' => 'required|decimal:0,2',
             'userWorkingHoursSince' => 'required|date',
 
             'userWorkingWeek' => 'required|array',
             'userWorkingWeek.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'userWorkingWeekSince' => 'required|date',
+
+            'userLeaveDays' => 'required|integer',
+            'userLeaveDaysSince' => 'required|date',
+            "overtime_calculations_start" => "required|date",
 
             'organizationUser' => 'required|array',
             'organizationUser.*' => ['nullable', function ($attribute, $value, $fail) {
@@ -127,22 +135,33 @@ class UserController extends Controller
     {
         Gate::authorize('viewShow', $user);
 
+        $user->load(['groupUser', 'operatingSiteUser', 'organizationUser', 'userLeaveDays']);
         $user['currentWorkingHours'] = $user->userWorkingHours()->latest()->first();
         $user['userWorkingWeek'] = $user->userWorkingWeeks()->latest()->first();
+        $user['leaveDaysForYear'] = $user->leaveDaysForYear(Carbon::now());
+        $user['usedLeaveDaysForYear'] = $user->usedLeaveDaysForYear(Carbon::now());
+        $user['absences'] = $user->absences()
+            ->whereYear('start', '<=', Carbon::now()->year)
+            ->whereYear('end', '>=', Carbon::now()->year)
+            ->with(['absenceType:id,name', 'user:id,operating_site_id'])
+            ->get(['id', 'start', 'end', 'absence_type_id', 'status', 'user_id'])->append('usedDays');
 
-        $timeAccounts =  $user->timeAccounts()->withTrashed()->with(['timeAccountSetting'])->get(["id", "user_id", "balance", "balance_limit", "time_account_setting_id", "name", "deleted_at"]);
+        $timeAccounts =  $user->timeAccounts()
+            ->withTrashed()
+            ->with(['timeAccountSetting'])
+            ->get(["id", "user_id", "balance", "balance_limit", "time_account_setting_id", "name", "deleted_at"]);
 
         $userTransactions = TimeAccountTransaction::forUser($user)->with('user:id,first_name,last_name')->latest()->paginate(15);
 
         return Inertia::render('User/UserShow', [
-            'user' => $user->load(['groupUser', 'operatingSiteUser', 'organizationUser']),
+            'user' => $user,
             'supervisors' => User::inOrganization()
                 ->where('is_supervisor', true)
                 ->whereNotIn('id', $user->allSuperviseesFlat()->pluck('id'))
                 ->get(['id', 'first_name', 'last_name']),
             'time_accounts' => $timeAccounts,
             'time_account_settings' => TimeAccountSetting::inOrganization()->get(['id', 'type', 'truncation_cycle_length_in_months']),
-            'defaultTimeAccountId' => $user->defaultTimeAccount()->id,
+            'defaultTimeAccountId' => $user->defaultTimeAccount->id,
             'groups' => Group::inOrganization()->get(),
             'operating_sites' => OperatingSite::inOrganization()->get(),
             'time_account_transactions' => $userTransactions,
@@ -169,6 +188,7 @@ class UserController extends Controller
                 ],
                 'user' => [
                     'viewIndex' => Gate::allows('viewIndex', User::class),
+                    'update' => Gate::allows('update', $user),
                 ]
             ],
         ]);
@@ -197,17 +217,25 @@ class UserController extends Controller
             'federal_state' => $validated['federal_state'],
             'phone_number' => $validated['phone_number'],
             'staff_number' => $validated['staff_number'],
-            'password' => $validated['password'],
+            'password' =>  Hash::make($validated['password']),
+            'overtime_calculations_start' => $validated['overtime_calculations_start'],
             'group_id' => $validated['group_id'],
             'is_supervisor' => $validated['is_supervisor'],
             'supervisor_id' => $validated['supervisor_id'],
             'operating_site_id' => $validated['operating_site_id'],
             'date_of_birth' => Carbon::parse($validated['date_of_birth']),
+            'home_office' => $validated['home_office'],
+            'home_office_hours_per_week' => $validated['home_office_hours_per_week'],
             'email_verified_at' => now(),
         ]);
-
-        $user->password = Hash::make($validated['password']);
         $user->save();
+
+        UserLeaveDay::create([
+            'user_id' => $user->id,
+            'leave_days' => $validated['userLeaveDays'],
+            'active_since' => Carbon::parse($validated['userLeaveDaysSince']),
+            'type' => 'annual'
+        ]);
 
         UserWorkingHour::create([
             'user_id' => $user->id,
@@ -222,7 +250,7 @@ class UserController extends Controller
         ]);
 
         TimeAccount::create([
-            'name' => 'Standardkonto',
+            'name' => 'Gleitzeitkonto',
             'balance' => 0,
             'balance_limit' => $validated['userWorkingHours'] * 2,
             'time_account_setting_id' => TimeAccountSetting::inOrganization()->whereNull('type')->first()->id,
@@ -294,10 +322,25 @@ class UserController extends Controller
             'supervisor_id' => $validated['supervisor_id'],
             'is_supervisor' => $validated['is_supervisor'],
             'date_of_birth' => Carbon::parse(Carbon::parse($validated['date_of_birth'])->format('d-m-Y')),
+            'home_office' => $validated['home_office'],
+            'home_office_hours_per_week' => $validated['home_office_hours_per_week'],
         ]);
         $user->organizationUser->update($validated['organizationUser']);
         $user->operatingSiteUser->update($validated['operatingSiteUser']);
-        $user->groupUser->update($validated['groupUser']);
+        $user->groupUser?->update($validated['groupUser']);
+
+        $user->forceFill([
+            "overtime_calculations_start" => $validated['overtime_calculations_start'],
+        ]);
+        $user->save();
+
+        UserLeaveDay::updateOrCreate([
+            'active_since' => Carbon::parse($validated['userLeaveDaysSince']),
+            'user_id' => $user->id,
+            'type' => 'annual'
+        ], [
+            'leave_days' => $validated['userLeaveDays'],
+        ]);
 
         $lastWorkingHour = $user->userWorkingHours()
             ->where('active_since', Carbon::parse($validated['userWorkingHoursSince']))
@@ -317,7 +360,7 @@ class UserController extends Controller
             ->firstOrNew();
 
         foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $day) {
-            $workingWeek[$day] = in_array($day, $validated['userWorkingWeek']) ? 1 : 0;
+            $workingWeek[$day] = (int)in_array($day, $validated['userWorkingWeek']);
         }
 
         if ($workingWeek->isDirty()) $workingWeek->replicate()->save();

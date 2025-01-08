@@ -40,7 +40,6 @@ function submit() {
             <v-data-table-virtual
                 hover
                 :headers="[
-                    { title: '#', key: 'id' },
                     { title: 'Name', key: 'name' },
                     { title: 'Anschrift', key: 'streetAddress' },
                     { title: 'Stadt', key: 'cityAddress' },
@@ -103,11 +102,19 @@ function submit() {
                                                     v-model="operatingSiteForm.phone_number"
                                                 ></v-text-field>
                                             </v-col>
+                                            <v-col cols="12" md="6">
+                                                <v-text-field
+                                                    label="Fax (optional)"
+                                                    v-model="operatingSiteForm.fax"
+                                                    :error-messages="operatingSiteForm.errors.fax"
+                                                ></v-text-field>
+                                            </v-col>
 
                                             <v-col cols="12"><h3>Adresse</h3></v-col>
 
                                             <v-col cols="12" md="6">
                                                 <v-select
+                                                    data-testid="land"
                                                     label="Land"
                                                     required
                                                     :items="countries.map(country => ({ title: country.title, value: country.value }))"
@@ -117,6 +124,7 @@ function submit() {
                                             </v-col>
                                             <v-col cols="12" md="6">
                                                 <v-select
+                                                    data-testid="bundesland"
                                                     label="Bundesland"
                                                     :items="getStates(operatingSiteForm.country, countries)"
                                                     :disabled="!operatingSiteForm.country"
@@ -159,7 +167,7 @@ function submit() {
                                             </v-col>
                                             <v-col cols="12" md="6">
                                                 <v-text-field
-                                                    label="Addresszusatz"
+                                                    label="Addresszusatz (optional)"
                                                     :error-messages="operatingSiteForm.errors.address_suffix"
                                                     v-model="operatingSiteForm.address_suffix"
                                                 ></v-text-field>

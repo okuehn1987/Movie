@@ -23,6 +23,8 @@ class HasOrganizationAccess
     {
         $organization = Organization::getCurrent();
 
+        if($request->user()->role == 'super-admin') return $next($request);
+
         foreach ($request->route()->parameters as $key => $instanceObject) {
             $targetOrgId = match (true) {
                 $instanceObject instanceof \App\Models\OperatingSite, $instanceObject instanceof \App\Models\AbsenceType,

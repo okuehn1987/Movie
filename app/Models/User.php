@@ -18,14 +18,16 @@ class User extends Authenticatable
     use \Znck\Eloquent\Traits\BelongsToThrough;
     use HasFactory, Notifiable, SoftDeletes, ScopeInOrganization;
 
-    protected $guarded = ['password', 'role', 'email_verified_at'];
+    protected $guarded = ['password', 'role', 'email_verified_at', 'overtime_calculations_start'];
+
+    protected $casts = [
+        'home_office' => 'boolean',
+    ];
 
     protected $hidden = [
         'password',
         'remember_token',
     ];
-
-
 
     public static $PERMISSIONS = [
         'all' => [
@@ -53,6 +55,7 @@ class User extends Authenticatable
      *   */
     public function hasPermissionOrDelegation(User | null $user, string $permissionName, string $permissionLevel)
     {
+        $this->load(['isSubstitutionFor']);
         return $this->hasPermission($user, $permissionName,  $permissionLevel) ||
             $this->isSubstitutionFor->some(fn($substitution) => $substitution->hasPermission($user, $permissionName,  $permissionLevel));
     }
@@ -66,11 +69,17 @@ class User extends Authenticatable
     {
         if ($permissionLevel != 'read' && $permissionLevel != 'write') abort(404);
 
+        $this->load(['organizationUser']);
+        if ($user) $user->load(['organizationUser']);
+
         if (
             array_key_exists($permissionName, $this->organizationUser->toArray()) &&
             ($this->organizationUser->{$permissionName} == 'write' || $this->organizationUser->{$permissionName} == $permissionLevel) &&
             (!$user || $user->organizationUser->organization_id == $this->organizationUser->organization_id)
         ) return true;
+
+        $this->load(['groupUser']);
+        if ($user) $user->load(['groupUser']);
 
         if (
             $this->groupUser &&
@@ -78,6 +87,9 @@ class User extends Authenticatable
             ($this->groupUser->{$permissionName} == 'write' || $this->groupUser->{$permissionName} == $permissionLevel) &&
             (!$user || $user->group_id == $this->groupUser->group_id)
         ) return true;
+
+        $this->load(['operatingSiteUser']);
+        if ($user) $user->load(['operatingSiteUser']);
 
         if (
             array_key_exists($permissionName, $this->operatingSiteUser->toArray()) &&
@@ -175,9 +187,10 @@ class User extends Authenticatable
         return $this->hasMany(TimeAccount::class);
     }
 
-    public function defaultTimeAccount(): TimeAccount
+    /** @return \Illuminate\Database\Eloquent\Relations\HasOne<\App\Models\TimeAccount, \App\Models\User>*/
+    public function defaultTimeAccount()
     {
-        return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->whereNull('type'))->first();
+        return $this->hasOne(TimeAccount::class)->whereHas('timeAccountSetting', fn($q) => $q->whereNull('type'));
     }
 
     public function userWorkingWeeks()
@@ -214,10 +227,10 @@ class User extends Authenticatable
 
     public function getOvertimeAttribute()
     {
-        return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->where('type', 'default'))->sum('balance');
+        return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->whereNull('type'))->sum('balance');
     }
 
-    public static function getCurrentWeekWorkingHours(User $user): float
+    public static function getCurrentWeekWorkingHours(User $user)
     {
         //all logs that could be applicable
         $currentWeekWorkLogs = $user->workLogs()
@@ -244,16 +257,21 @@ class User extends Authenticatable
 
         $handledWorklogs = [];
         $currentWeekHours = 0;
+        $currentWeekHomeOfficeHours = 0;
 
         foreach ($currentWeekWorkLogs as $worklog) {
             $handledWorklogs[] = $worklog->id;
 
             if (!$worklog['patch']) {
-                $currentWeekHours += Carbon::parse($worklog->start)->diffInMinutes(Carbon::parse($worklog->end)) / 60;
+                $t = Carbon::parse($worklog->start)->diffInMinutes(Carbon::parse($worklog->end)) / 60;
+                $currentWeekHours += $t;
+                if ($worklog->is_home_office) $currentWeekHomeOfficeHours += $t;
             } else {
                 foreach ($currentWeekPatches as $p) {
                     if ($p->work_log_id == $worklog['patch']->work_log_id) {
-                        $currentWeekHours += Carbon::parse($p->start)->diffInMinutes(Carbon::parse($p->end)) / 60;
+                        $t = Carbon::parse($p->start)->diffInMinutes(Carbon::parse($p->end)) / 60;
+                        $currentWeekHours += $t;
+                        if ($worklog['patch']->is_home_office) $currentWeekHomeOfficeHours += $t;
                     }
                 }
             }
@@ -265,6 +283,66 @@ class User extends Authenticatable
             }
         }
 
-        return $currentWeekHours;
+        return [
+            'totalHours' => $currentWeekHours,
+            'homeOfficeHours' => $currentWeekHomeOfficeHours,
+        ];
+    }
+
+    public function usedLeaveDaysForYear(CarbonInterface $year): int
+    {
+        $relevantAbsences = $this->absences()
+            ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
+            ->whereDate('start', '<=', $year->copy()->endOfYear())
+            ->whereDate('end', '>=', $year->copy()->startOfYear())
+            ->get();
+
+        $usedDays = 0;
+        foreach ($relevantAbsences as $absence) {
+            for ($day = Carbon::parse($absence->start)->startOfDay(); $day->lte(Carbon::parse($absence->end)); $day->addDay()) {
+                if ($day->year != $year->year) continue;
+                $currentWorkingWeek = $this->userWorkingWeekForDate($day);
+                $workingDaysInWeek = $currentWorkingWeek?->numberOfWorkingDays;
+
+                if (
+                    $workingDaysInWeek > 0 &&
+                    $currentWorkingWeek->hasWorkDay($day) &&
+                    !$this->operatingSite->hasHoliday($day)
+                ) {
+                    $usedDays++;
+                };
+            }
+        }
+
+        return $usedDays;
+    }
+
+    public function leaveDaysForYear(CarbonInterface $year): int
+    {
+        $leaveDays = 0;
+        for ($m = 1; $m <= 12; $m++) {
+            $month = $year->setMonth($m)->startOfMonth();
+            $activeEntry = $this->userLeaveDays()
+                ->where('type', 'annual')
+                ->whereDate('active_since', '<=', $month)
+                ->latest('active_since')
+                ->first();
+            if ($activeEntry) { //FIXME: should not be possible to be false
+                $leaveDays += $activeEntry->leave_days / 12;
+            }
+        }
+
+        $leaveDays += $this->userLeaveDays()
+            ->where('type', 'remaining')
+            ->whereYear('active_since', $year)->first()?->leave_days ?? 0;
+
+        return ceil($leaveDays);
+    }
+
+    public function getSollstundenForDate(CarbonInterface $date)
+    {
+        $currentWorkingHours = $this->userWorkingHoursForDate($date);
+        $currentWorkingWeek = $this->userWorkingWeekForDate($date);
+        return $currentWorkingHours['weekly_working_hours'] / $currentWorkingWeek->numberOfWorkingDays;
     }
 }
