@@ -12,13 +12,13 @@ function readNotification(notification: Notification) {
             onSuccess: () => {
                 if (notification.type == 'App\\Notifications\\PatchNotification')
                     return router.get(
-                        route('dashboard', {
+                        route('dispute.index', {
                             openPatch: notification.data.patch_id,
                         }),
                     );
                 if (notification.type == 'App\\Notifications\\AbsenceNotification')
                     return router.get(
-                        route('dashboard', {
+                        route('dispute.index', {
                             openAbsence: notification.data.absence_id,
                         }),
                     );
