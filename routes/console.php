@@ -116,6 +116,9 @@ Schedule::call(function () {
 
         foreach (WorkLogPatch::where('is_accounted', false)->whereDate('accepted_at', $day)->get() as $patch) {
             $patch->accountAsTransaction();
+            $patch->update([
+                'is_accounted' => true
+            ]);
         }
         dump('end patch calculations for ' . $day);
 
