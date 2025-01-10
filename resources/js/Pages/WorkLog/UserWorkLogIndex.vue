@@ -236,7 +236,7 @@ function retreatPatch() {
                                     </v-col>
                                     <v-col cols="12">
                                         <v-textarea
-                                            label="Bemerkung"
+                                            label="Bemerkung (optional)"
                                             v-model="workLogForm.comment"
                                             :error-messages="workLogForm.errors.comment"
                                             variant="filled"
