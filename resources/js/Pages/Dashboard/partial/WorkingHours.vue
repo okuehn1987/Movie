@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { OperatingTime, WorkLog } from '@/types/types';
-import { useNow } from '@/utils';
+import { roundTo, useNow } from '@/utils';
 import { router, usePage } from '@inertiajs/vue3';
-import { DateTime, Info } from 'luxon';
+import { DateTime } from 'luxon';
 import { computed } from 'vue';
 
 const props = defineProps<{
@@ -22,9 +22,9 @@ function changeWorkStatus(is_home_office = false) {
     });
 }
 
-const currentOperatingTime = props.operating_times.find(
-    t => t.type == Info.weekdays('long', { locale: 'en' })[DateTime.now().weekday - 1]?.toLowerCase(),
-);
+// const currentOperatingTime = props.operating_times.find(
+//     t => t.type == Info.weekdays('long', { locale: 'en' })[DateTime.now().weekday - 1]?.toLowerCase(),
+// );
 
 const currentWorkingHours = computed(() =>
     props.lastWorkLog?.end
@@ -49,20 +49,6 @@ const currentWorkingHours = computed(() =>
         </template>
         <v-card-text>
             <v-row>
-                <!-- <v-col cols="12" sm="6">
-                    <div class="d-flex align-center ga-3">
-                        <v-avatar color="blue-grey" rounded size="40" class="elevation-2">
-                            <v-icon size="24" icon="mdi-clock" />
-                        </v-avatar>
-
-                        <div class="d-flex flex-column">
-                            Woche Soll
-                            <div class="text-h6">
-                                {{ workingHours.should }}
-                            </div>
-                        </div>
-                    </div>
-                </v-col> -->
                 <v-col cols="12" sm="6">
                     <div class="d-flex align-center ga-3">
                         <v-avatar color="blue-grey" rounded size="40" class="elevation-2">
@@ -70,7 +56,7 @@ const currentWorkingHours = computed(() =>
                         </v-avatar>
 
                         <div class="d-flex flex-column">
-                            gesamt Woche
+                            Woche gesamt
                             <div class="text-h6">
                                 {{ Math.floor(currentWorkingHours || 0) }}:{{
                                     Math.floor(((currentWorkingHours || 0) % 1) * 60)
@@ -88,7 +74,7 @@ const currentWorkingHours = computed(() =>
                         </v-avatar>
 
                         <div class="d-flex flex-column">
-                            Homeoffice Woche
+                            Woche Homeoffice
                             <div class="text-h6">
                                 {{ Math.floor(workingHours.currentHomeOffice || 0) }}:{{
                                     Math.floor(((workingHours.currentHomeOffice || 0) % 1) * 60)
@@ -108,7 +94,7 @@ const currentWorkingHours = computed(() =>
                         <div class="d-flex flex-column">
                             Überstunden
                             <div class="text-h6">
-                                {{ overtime }}
+                                {{ roundTo(overtime, 2) }}
                             </div>
                         </div>
                     </div>
@@ -127,15 +113,17 @@ const currentWorkingHours = computed(() =>
                 </v-col>
 
                 <v-col cols="12">
-                    <v-alert
+                    <!-- <v-alert
                         color="error"
-                        v-if="currentOperatingTime && now.diff(DateTime.fromFormat(currentOperatingTime.end, 'HH:mm')).as('minutes') > 0"
+                        v-if="currentOperatingTime && now.diff(DateTime.fromFormat(currentOperatingTime.end, 'HH:mm:ss')).as('minutes') < 0"
                     >
                         Es fehlt eine Meldung. Bitte Zeitkorrektur.
                         <v-btn color="error" :href="`/user/${page.props.auth.user.id}/workLogs?workLog=${lastWorkLog?.id}`"> Zeitkorrektur </v-btn>
-                    </v-alert>
+                    </v-alert> 
+                    TODO: determine how to handle working outside of operating hours
+                    -->
                     <div
-                        v-else-if="
+                        v-if="
                             (page.props.auth.user.home_office && (!lastWorkLog || lastWorkLog.end)) ||
                             (lastWorkLog && lastWorkLog.is_home_office && !lastWorkLog.end)
                         "

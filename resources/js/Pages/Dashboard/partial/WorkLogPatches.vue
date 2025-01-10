@@ -44,58 +44,56 @@ function changePatchStatus(accepted: boolean) {
 }
 </script>
 <template>
-    <v-card title="Zeitkorrekturen">
-        <v-data-table
-            hover
-            items-per-page="5"
-            v-model:page="currentPage"
-            no-data-text="keine Zeitkorrekturen vorhanden."
-            @click:row="openPatch"
-            :items="
-                patches.map(patch => ({
-                    id: patch.id,
-                    user: patch.user.first_name + ' ' + patch.user.last_name,
-                    date: DateTime.fromSQL(patch.start).toFormat('dd.MM.yyyy'),
-                }))
-            "
-            :headers="[
-                { title: 'Mitarbeiter', key: 'user' },
-                { title: 'Datum', key: 'date' },
-            ]"
-            ><template v-slot:bottom>
-                <v-pagination v-if="patches.length > 5" v-model="currentPage" :length="Math.ceil(patches.length / 5)"></v-pagination>
+    <v-data-table
+        hover
+        items-per-page="5"
+        v-model:page="currentPage"
+        no-data-text="keine Zeitkorrekturen vorhanden."
+        @click:row="openPatch"
+        :items="
+            patches.map(patch => ({
+                id: patch.id,
+                user: patch.user.first_name + ' ' + patch.user.last_name,
+                date: DateTime.fromSQL(patch.start).toFormat('dd.MM.yyyy'),
+            }))
+        "
+        :headers="[
+            { title: 'Mitarbeiter', key: 'user' },
+            { title: 'Datum', key: 'date' },
+        ]"
+        ><template v-slot:bottom>
+            <v-pagination v-if="patches.length > 5" v-model="currentPage" :length="Math.ceil(patches.length / 5)"></v-pagination>
+        </template>
+    </v-data-table>
+
+    <v-dialog v-if="patchDialog" v-model="showPatchDialog" max-width="1000">
+        <v-card :title="'Zeitkorrektur von ' + patchDialog.user.first_name + ' ' + patchDialog.user.last_name">
+            <template #append>
+                <v-btn icon variant="text" @click="showPatchDialog = false">
+                    <v-icon>mdi-close</v-icon>
+                </v-btn>
             </template>
-        </v-data-table>
+            <v-data-table-virtual
+                :headers="[
+                    { title: '', key: 'version', sortable: false },
+                    { title: 'Start', key: 'start', sortable: false },
+                    { title: 'Ende', key: 'end', sortable: false },
+                    { title: 'Homeoffice', key: 'is_home_office', sortable: false },
+                ]"
+                :items="
+                    [patchDialog.work_log, patchDialog].map((p, i) => ({
+                        version: i == 0 ? 'Alter Stand:' : 'Neuer Stand:',
+                        start: DateTime.fromSQL(p.start).toFormat('dd.MM.yyyy HH:mm'),
+                        end: p.end ? DateTime.fromSQL(p.end).toFormat('dd.MM.yyyy HH:mm') : 'kein Ende',
+                        is_home_office: p.is_home_office ? 'Ja' : 'Nein',
+                    }))
+                "
+            ></v-data-table-virtual>
 
-        <v-dialog v-if="patchDialog" v-model="showPatchDialog" max-width="1000">
-            <v-card :title="'Zeitkorrektur von ' + patchDialog.user.first_name + ' ' + patchDialog.user.last_name">
-                <template #append>
-                    <v-btn icon variant="text" @click="showPatchDialog = false">
-                        <v-icon>mdi-close</v-icon>
-                    </v-btn>
-                </template>
-                <v-data-table-virtual
-                    :headers="[
-                        { title: '', key: 'version', sortable: false },
-                        { title: 'Start', key: 'start', sortable: false },
-                        { title: 'Ende', key: 'end', sortable: false },
-                        { title: 'Homeoffice', key: 'is_home_office', sortable: false },
-                    ]"
-                    :items="
-                        [patchDialog.work_log, patchDialog].map((p, i) => ({
-                            version: i == 0 ? 'Alter Stand:' : 'Neuer Stand:',
-                            start: DateTime.fromSQL(p.start).toFormat('dd.MM.yyyy HH:mm'),
-                            end: p.end ? DateTime.fromSQL(p.end).toFormat('dd.MM.yyyy HH:mm') : 'kein Ende',
-                            is_home_office: p.is_home_office ? 'Ja' : 'Nein',
-                        }))
-                    "
-                ></v-data-table-virtual>
-
-                <v-col cols="12" class="d-flex justify-end ga-3">
-                    <v-btn color="error" @click.stop="changePatchStatus(false)">Ablehnen</v-btn>
-                    <v-btn color="success" @click.stop="changePatchStatus(true)">Akzeptieren</v-btn>
-                </v-col>
-            </v-card>
-        </v-dialog>
-    </v-card>
+            <v-col cols="12" class="d-flex justify-end ga-3">
+                <v-btn color="error" @click.stop="changePatchStatus(false)">Ablehnen</v-btn>
+                <v-btn color="success" @click.stop="changePatchStatus(true)">Akzeptieren</v-btn>
+            </v-col>
+        </v-card>
+    </v-dialog>
 </template>

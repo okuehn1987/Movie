@@ -57,7 +57,7 @@ class WorkLog extends Model
      */
     public function currentAccountedPatch()
     {
-        return $this->hasOne(WorkLogPatch::class)->latest('updated_at')->where('status', 'accepted')->where('is_accounted', true);
+        return $this->hasOne(WorkLogPatch::class)->latest('accepted_at')->where('status', 'accepted')->where('is_accounted', true);
     }
 
     public function getDurationAttribute(): int | float

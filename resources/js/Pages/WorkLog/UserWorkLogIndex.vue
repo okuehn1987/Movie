@@ -25,7 +25,7 @@ const patchMode = ref<'edit' | 'fix' | 'show' | null>(null);
 const patchLog = ref<WorkLog | PatchProp | null>(null);
 const inputVariant = computed(() => (patchLog.value ? 'plain' : 'underlined'));
 
-const editableWorkLogs = computed(() => props.workLogs.data.filter((_, i) => i < 5));
+const editableWorkLogs = computed(() => props.workLogs.data.filter((_, i) => i < 10 ** 10)); // 10 ** 10 to display for now but keep the feature
 
 onMounted(() => {
     const workLogId = route().params['workLog'];

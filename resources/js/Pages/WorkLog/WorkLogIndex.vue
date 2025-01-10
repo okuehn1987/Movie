@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { TimeAccount, User, WorkLog } from '@/types/types';
-import { getMaxScrollHeight } from '@/utils';
+import { getMaxScrollHeight, roundTo } from '@/utils';
 import { Link } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 
@@ -18,7 +18,7 @@ defineProps<{
             :items="
                 users.map(u => ({
                     ...u,
-                    defaultTimeAccount: u.default_time_account.balance,
+                    defaultTimeAccount: roundTo(u.default_time_account.balance, 2),
                     lastAction: u.latest_work_log.end ? 'Gehen' : 'Kommen',
                     time: DateTime.fromSQL(u.latest_work_log.end ? u.latest_work_log.end : u.latest_work_log.start).toFormat('dd.MM.yyyy HH:mm'),
                 }))

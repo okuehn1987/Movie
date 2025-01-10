@@ -37,6 +37,8 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::resource('timeAccountTransaction', TimeAccountTransactionController::class)->only(['store']);
     Route::resource('timeAccountSetting', TimeAccountSettingsController::class)->only(['store']);
 
+    Route::get('dispute', [DisputeController::class, 'index'])->name('dispute.index');
+
     Route::post('notifications/{notification}/update', [NotificationController::class, 'update'])->name('notification.update');
 
     Route::singleton('profile', ProfileController::class)->only(['edit', 'update']);

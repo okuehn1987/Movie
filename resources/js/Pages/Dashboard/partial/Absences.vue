@@ -25,8 +25,8 @@ const currentPage = ref(1);
                 absences.map(absence => ({
                     id: absence.id,
                     user: absence.user.first_name + ' ' + absence.user.last_name,
-                    start: DateTime.fromSQL(absence.start).toFormat('dd.MM'),
-                    end: DateTime.fromSQL(absence.end).toFormat('dd.MM'),
+                    start: DateTime.fromSQL(absence.start).toFormat('dd.MM.'),
+                    end: DateTime.fromSQL(absence.end).toFormat('dd.MM.'),
                     absenceType: absence.absence_type?.abbreviation ?? '-',
                 }))
             "

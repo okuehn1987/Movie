@@ -19,39 +19,37 @@ import { router } from '@inertiajs/vue3';
                     value: route('workLog.index'),
                     title: 'Arbeitszeiten',
                 },
-                ...(['organization', 'operatingSite', 'group', 'user', 'timeAccountSetting'].some(m => can(m, 'viewIndex')) ||
-                can('organization', 'viewShow')
-                    ? [
-                          { type: 'divider' },
-                          { type: 'subheader', title: 'Admin' },
-                          can('organization', 'viewShow') && {
-                              title: 'Organisation',
-                              subtitle: 'test',
-                              value: route('organization.show', { organization: $page.props.organization.id }),
-                              props: { prependIcon: 'mdi-domain', active: route().current('organization.show') },
-                          },
-                          can('operatingSite', 'viewIndex') && {
-                              props: { active: route().current('operatingSite.index'), prependIcon: 'mdi-map-marker' },
-                              value: route('operatingSite.index'),
-                              title: 'Betriebsstätten',
-                          },
-                          can('group', 'viewIndex') && {
-                              props: { active: route().current('group.index'), prependIcon: 'mdi-dots-circle' },
-                              value: route('group.index'),
-                              title: 'Abteilungen',
-                          },
-                          can('user', 'viewIndex') && {
-                              props: { active: route().current('user.index'), prependIcon: 'mdi-account-group' },
-                              value: route('user.index'),
-                              title: 'Mitarbeitende',
-                          },
-                          can('user', 'viewIndex') && {
-                              props: { prependIcon: 'mdi-tree', active: route().current('organization.tree') },
-                              value: route('organization.tree', { organization: $page.props.organization.id }),
-                              title: 'Organigramm',
-                          },
-                      ]
-                    : []),
+                can('dispute', 'viewIndex') && {
+                    props: { active: route().current('dispute.index'), prependIcon: 'mdi-bookmark-outline' },
+                    value: route('dispute.index'),
+                    title: 'Anträge',
+                },
+                can('organization', 'viewShow') && {
+                    title: 'Organisation',
+                    subtitle: 'test',
+                    value: route('organization.show', { organization: $page.props.organization.id }),
+                    props: { prependIcon: 'mdi-domain', active: route().current('organization.show') },
+                },
+                can('operatingSite', 'viewIndex') && {
+                    props: { active: route().current('operatingSite.index'), prependIcon: 'mdi-map-marker' },
+                    value: route('operatingSite.index'),
+                    title: 'Betriebsstätten',
+                },
+                can('group', 'viewIndex') && {
+                    props: { active: route().current('group.index'), prependIcon: 'mdi-dots-circle' },
+                    value: route('group.index'),
+                    title: 'Abteilungen',
+                },
+                can('user', 'viewIndex') && {
+                    props: { active: route().current('user.index'), prependIcon: 'mdi-account-group' },
+                    value: route('user.index'),
+                    title: 'Mitarbeitende',
+                },
+                can('user', 'viewIndex') && {
+                    props: { prependIcon: 'mdi-tree', active: route().current('organization.tree') },
+                    value: route('organization.tree', { organization: $page.props.organization.id }),
+                    title: 'Organigramm',
+                },
                 ...(can('organization', 'viewIndex')
                     ? [
                           { type: 'divider' },

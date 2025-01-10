@@ -55,7 +55,7 @@ const timeAccountSettingForm = useForm({
                                         <v-col cols="12" md="6">
                                             <v-select
                                                 :items="TRUNCATION_CYCLES.map(e => ({ title: getTruncationCycleDisplayName(e), value: e }))"
-                                                label="Berechnungszeitraum"
+                                                label="Berechnungszeitraum (optional)"
                                                 v-model="timeAccountSettingForm.truncation_cycle_length_in_months"
                                             ></v-select>
                                         </v-col>
