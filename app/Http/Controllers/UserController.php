@@ -108,8 +108,9 @@ class UserController extends Controller
     public function index()
     {
         Gate::authorize('viewIndex', User::class);
+
         return Inertia::render('User/UserIndex', [
-            'users' => User::inOrganization()->with('group:id,name')->paginate(12)->through(fn($u) => [
+            'users' => User::inOrganization()->with('group:id,name')->get()->map(fn($u) => [
                 ...$u->toArray(),
                 'can' => [
                     'user' => [
