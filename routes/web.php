@@ -41,7 +41,7 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
 
     Route::post('notifications/{notification}/update', [NotificationController::class, 'update'])->name('notification.update');
 
-    Route::singleton('profile', ProfileController::class)->only(['edit', 'update']);
+    Route::singleton('profile', ProfileController::class)->only(['update']);
 });
 
 
