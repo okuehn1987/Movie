@@ -173,13 +173,14 @@ const loading = usePageIsLoading();
                     {
                         title: '',
                         key: 'action',
-                        width: '48px'
+                        width: '48px',
                     },
                 ...getDaysInMonth().map(e => ({
                     title: e.weekdayShort + '\n' + e.day.toString(),
                     key: e.day.toString(),
                     sortable: false,
                     align: 'center',
+                    headerProps:{ class: {'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate() }}
                 } as const)),
             ]"
             >
