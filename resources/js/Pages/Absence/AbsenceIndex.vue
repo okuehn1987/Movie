@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Absence, AbsenceType, Canable, User, UserWorkingWeek, Weekday } from '@/types/types';
-import { getMaxScrollHeight, throttle, usePageIsLoading } from '@/utils';
+import { getMaxScrollHeight, throttle } from '@/utils';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { ref, watch } from 'vue';
@@ -60,13 +60,17 @@ const reload = throttle(() => {
     router.reload({
         only: ['absences', 'holidays'],
         data: { date: date.value.toFormat('yyyy-MM') },
-        onStart: () => loadedMonths.value.push(date.value.toFormat('yyyy-MM')),
+        onStart: () => {
+            loadedMonths.value.push(date.value.toFormat('yyyy-MM'));
+            loading.value = true;
+        },
         onError: () => (loadedMonths.value = loadedMonths.value.filter(e => e != date.value.toFormat('yyyy-MM'))),
+        onFinish: () => (loading.value = false),
     });
 }, 500);
 watch(date, reload);
 
-const loading = usePageIsLoading();
+const loading = ref(false);
 </script>
 <template>
     <AdminLayout title="Abwesenheiten">
@@ -167,7 +171,7 @@ const loading = usePageIsLoading();
                 style="white-space: pre"
                 :style="{ maxHeight: getMaxScrollHeight(80 + 1) }"
                 id="absence-table"
-                :items="users"
+                :items="users.map(u => ({ ...u, name: u.last_name + ', ' + u.first_name }))"
                 :headers="[
                 {
                     title: 'Name',
