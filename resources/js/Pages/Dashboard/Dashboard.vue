@@ -28,20 +28,20 @@ defineProps<{
 <template>
     <AdminLayout :title="'Dashboard von ' + $page.props.auth.user.first_name + ' ' + $page.props.auth.user.last_name">
         <v-row>
-            <v-col cols="12" md="12" lg="6">
+            <v-col cols="12" md="12" lg="6" xl="4">
                 <WorkingHours :lastWorkLog :operating_times :overtime :workingHours />
             </v-col>
-            <v-col cols="12" md="12" lg="6">
+            <v-col cols="12" md="12" lg="6" xl="4">
                 <Absences :absences="currentAbsences" />
             </v-col>
-            <!-- <v-col cols="12" md="12" lg="6" xl="4" v-if="supervisor">
+            <v-col cols="12" md="12" lg="6" xl="4" v-if="supervisor">
                 <v-card title="Vorgesetzter">
                     <v-card-text>
                         {{ supervisor.first_name }}
                         {{ supervisor.last_name }}
                     </v-card-text>
                 </v-card>
-            </v-col> -->
+            </v-col>
 
             <!-- <v-col cols="12" sm="6" lg="4">
                 <v-card>

@@ -4,6 +4,8 @@ import { Head } from '@inertiajs/vue3';
 defineProps<{
     title: string;
 }>();
+
+const appname = import.meta.env['VITE_APP_NAME'];
 </script>
 
 <template>
@@ -17,7 +19,7 @@ defineProps<{
                         <v-img src="/img/logo.svg" class="mb-6" style="max-width: 200px"></v-img>
                     </div>
                     <h1 class="text-center font-weight-medium d-flex">
-                        <span class="ms-3">{{ $page.props.organization.name }}</span>
+                        <span class="ms-3">{{ appname }} - {{ $page.props.organization.name }}</span>
                     </h1>
                 </v-card-text>
 
