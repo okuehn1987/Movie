@@ -63,7 +63,10 @@ defineProps<{
 const tab = ref(route().params['tab'] ?? 'generalInformation');
 </script>
 <template>
-    <AdminLayout :title="`${user.first_name} ${user.last_name} ${can('user', 'update') ? 'bearbeiten' : ''}`" :backurl="route('user.index')">
+    <AdminLayout
+        :title="`${user.first_name} ${user.last_name} ${can('user', 'update') ? 'bearbeiten' : ''}`"
+        :backurl="can('user', 'viewIndex') ? route('user.index') : route('dashboard')"
+    >
         <v-tabs v-model="tab">
             <v-tab value="generalInformation">Allgemeine Informationen</v-tab>
             <v-tab value="absences">Abwesenheiten</v-tab>
