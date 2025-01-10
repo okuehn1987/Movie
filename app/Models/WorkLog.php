@@ -21,20 +21,20 @@ class WorkLog extends Model
         self::updating(function ($model) {
             if (!$model->end) return;
 
-            $workLogs = WorkLog::where('end', '>=', Carbon::parse($model->start)->subHours(6.5));
+            //if the worklog exceeds 6 hours force the next 30 mins to be break
+            if (Carbon::parse($model->start)->floatDiffInHours(Carbon::parse($model->end)) > 6) {
 
-            if ($workLogs->sum('duration') > 6) {
-                $sum = $workLogs->sum('duration');
-                for ($time = Carbon::parse($model->start)->startOfMinute(); $time->lte(Carbon::parse($model->end)); $time->addMinute()) {
-                    if (Carbon::parse($model->start)->floatDiffInHours($time) + $sum >= 6) {
-                        ForcedWorkLogBreak::create([
-                            'start' => $time,
-                            'end' => $time->copy()->addMinutes(15),
-                            'work_log_id' => $model->id
-                        ]);
-                    }
-                }
-            };
+                $maxEnd = Carbon::parse($model->start)->addHours(6)->addMinutes(30);
+
+                if (Carbon::parse($model->end)->lt($maxEnd)) $end = $maxEnd;
+                else $end = Carbon::parse($model->end);
+
+                ForcedWorkLogBreak::create([
+                    'start' => Carbon::parse($model->start)->addHours(6),
+                    'end' => $end,
+                    'work_log_id' => $model->id
+                ]);
+            }
         });
     }
 
@@ -50,6 +50,39 @@ class WorkLog extends Model
     public function forcedWorkLogBreaks()
     {
         return $this->hasMany(ForcedWorkLogBreak::class);
+    }
+
+    public function nextShiftLog(): WorkLog | null
+    {
+        return $this->user->workLogs()
+            ->where('start', '>', $this->end)
+            ->where('start', '<', Carbon::parse($this->end)->addHours(9))
+            ->orderBy('start')
+            ->first();
+    }
+
+    public function previousShiftLog(): WorkLog | null
+    {
+        return $this->user->workLogs()
+            ->where('end', '<', $this->start)
+            ->where('end', '>', Carbon::parse($this->start)->subHours(9))
+            ->orderByDesc('start')
+            ->first();
+    }
+
+    public function shiftLogs()
+    {
+        //get the next and previous shiftLogs recoursively until there is a 9 hour gap
+        $shiftLogs = collect([$this]);
+        $nextShiftLog = $this->nextShiftLog();
+        $previousShiftLog = $this->previousShiftLog();
+        if ($nextShiftLog && Carbon::parse($nextShiftLog->start)->floatDiffInHours($this->end) < 9) {
+            $shiftLogs = $shiftLogs->merge($nextShiftLog->shiftLogs());
+        }
+        if ($previousShiftLog && Carbon::parse($this->start)->floatDiffInHours($previousShiftLog->end) < 9) {
+            $shiftLogs = $shiftLogs->merge($previousShiftLog->shiftLogs());
+        }
+        return $shiftLogs;
     }
 
     /**

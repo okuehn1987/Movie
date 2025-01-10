@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('forced_work_log_breaks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('work_log_id');
-            $table->timestamp('start');
-            $table->timestamp('end');
+            $table->dateTime('start');
+            $table->dateTime('end');
             $table->timestamps();
         });
     }
