@@ -99,20 +99,19 @@ const currentWorkingHours = computed(() =>
                         </div>
                     </div>
                 </v-col>
-                <v-col cols="12" sm="6" v-if="lastWorkLog && lastWorkLog.end == null">
+                <v-col cols="12" sm="6" v-if="lastWorkLog">
                     <div class="d-flex align-center ga-3">
                         <v-avatar color="blue" rounded size="40" class="elevation-2">
                             <v-icon size="24" icon="mdi-timer" />
                         </v-avatar>
 
                         <div class="d-flex flex-column">
-                            Hier seit
-                            <div class="text-h6">{{ DateTime.fromSQL(lastWorkLog.start).toFormat('HH:mm') }} Uhr</div>
+                            {{ lastWorkLog.end ? 'Gehen' : 'Kommen' }}
+                            <div class="text-h6">{{ DateTime.fromSQL(lastWorkLog.end ?? lastWorkLog.start).toFormat('HH:mm') }} Uhr</div>
                         </div>
                     </div>
                 </v-col>
-
-                <v-col cols="12">
+                <v-col cols="12" md="6">
                     <!-- <v-alert
                         color="error"
                         v-if="currentOperatingTime && now.diff(DateTime.fromFormat(currentOperatingTime.end, 'HH:mm:ss')).as('minutes') < 0"
@@ -134,7 +133,7 @@ const currentWorkingHours = computed(() =>
                     </div>
                 </v-col>
 
-                <v-col cols="12">
+                <v-col cols="12" md="6">
                     <v-btn
                         block
                         size="large"
