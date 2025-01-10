@@ -127,6 +127,7 @@ function retreatPatch() {
                 :headers="[
                     { title: 'Start', key: 'start' },
                     { title: 'Ende', key: 'end' },
+                    { title: 'Dauer', key: 'duration' },
                     { title: 'Homeoffice', key: 'is_home_office' },
                     { title: 'Korrektur', key: 'status' },
                     {
@@ -151,6 +152,7 @@ function retreatPatch() {
                         .map(workLog => ({
                             start: DateTime.fromSQL(workLog.start).toFormat('dd.MM.yyyy HH:mm'),
                             end: workLog.end ? DateTime.fromSQL(workLog.end).toFormat('dd.MM.yyyy HH:mm') : 'Noch nicht beendet',
+                            duration: workLog.end ? DateTime.fromSQL(workLog.end).diff(DateTime.fromSQL(workLog.start)).toFormat('hh:mm') : '',
                             is_home_office: workLog.is_home_office ? 'Ja' : 'Nein',
                             id: workLog.id,
                             status: {
