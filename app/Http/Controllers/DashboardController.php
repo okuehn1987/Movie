@@ -34,6 +34,16 @@ class DashboardController extends Controller
             ->get(['id', 'start', 'end', 'user_id', 'absence_type_id'])
             ->toArray();
 
+        $lastWeekWorkLogs = $user->workLogs()
+            ->where(
+                fn($q) => $q
+                    ->where('start', '>=', Carbon::now()->subDays(6)->startOfDay()->format('Y-m-d'))
+                    ->orWhere('end', '>=', Carbon::now()->subDays(6)->startOfDay()->format('Y-m-d'))
+            )
+            ->whereNotNull('end')
+            ->get(['id', 'start', 'end'])
+            ->append('duration');
+
         return Inertia::render('Dashboard/Dashboard', [
             'lastWorkLog' => WorkLog::select('id', 'start', 'end', 'is_home_office')
                 ->inOrganization()
@@ -48,6 +58,7 @@ class DashboardController extends Controller
                 'current' => User::getCurrentWeekWorkingHours($user)['totalHours'],
                 'currentHomeOffice' => User::getCurrentWeekWorkingHours($user)['homeOfficeHours'],
             ],
+            'lastWeekWorkLogs' => $lastWeekWorkLogs,
         ]);
     }
 }

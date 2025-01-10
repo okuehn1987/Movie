@@ -1,6 +1,6 @@
 type Date = string & { __date__: void };
 type Time = string & { __time__: void };
-type Timestamp = string & { __datetime__: void };
+export type Timestamp = string & { __datetime__: void };
 
 type Branded<T, Brand extends string> = T & { [x in `__${Brand}__`]: void };
 

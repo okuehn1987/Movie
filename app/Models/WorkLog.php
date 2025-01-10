@@ -12,7 +12,7 @@ class WorkLog extends Model
     use HasFactory, SoftDeletes, ScopeInOrganization;
 
     protected $guarded = [];
-    
+
     protected $casts = ['is_home_office' => 'boolean'];
 
     public function user()
@@ -30,6 +30,14 @@ class WorkLog extends Model
     public function currentAccountedPatch()
     {
         return $this->hasOne(WorkLogPatch::class)->latest('accepted_at')->where('status', 'accepted')->where('is_accounted', true);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne<\App\Models\WorkLogPatch, \App\Models\WorkLog>
+     */
+    public function currentAcceptedPatch()
+    {
+        return $this->hasOne(WorkLogPatch::class)->latest('accepted_at')->where('status', 'accepted');
     }
 
     public function getDurationAttribute(): int | float

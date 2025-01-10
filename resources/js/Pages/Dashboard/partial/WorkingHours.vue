@@ -34,19 +34,6 @@ const currentWorkingHours = computed(() =>
 </script>
 <template>
     <v-card title="Arbeitszeit">
-        <template #append>
-            <v-btn
-                icon="mdi-eye"
-                variant="text"
-                @click="
-                    router.get(
-                        route('user.workLog.index', {
-                            user: page.props.auth.user.id,
-                        }),
-                    )
-                "
-            />
-        </template>
         <v-card-text>
             <v-row>
                 <v-col cols="12" sm="6">
