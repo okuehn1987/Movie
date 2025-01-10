@@ -26,6 +26,8 @@ import TimeAccountTransactions from './ShowPartials/TimeAccountTransactions.vue'
 import UserForm from './UserForm.vue';
 import UserOrganigram from '../../Components/UserOrganigram.vue';
 import { DateTime } from 'luxon';
+import UpdateProfileInformationForm from '../Profile/Partials/UpdateProfileInformationForm.vue';
+import UpdatePasswordForm from '../Profile/Partials/UpdatePasswordForm.vue';
 
 defineProps<{
     user: User & {
@@ -58,22 +60,30 @@ defineProps<{
     organigramUsers: Tree<Pick<User, 'id' | 'first_name' | 'last_name' | 'email' | 'supervisor_id'>, 'all_supervisees'>[];
     supervisor: Pick<User, 'id' | 'first_name' | 'last_name' | 'email'> | null;
     countries: CountryProp[];
+
+    mustVerifyEmail?: boolean;
+    status?: string;
 }>();
 
 const tab = ref(route().params['tab'] ?? 'generalInformation');
 </script>
 <template>
-    <AdminLayout :title="`${user.first_name} ${user.last_name} ${can('user', 'update') ? 'bearbeiten' : ''}`" :backurl="route('user.index')">
+    <AdminLayout
+        :title="`${user.first_name} ${user.last_name} ${can('user', 'update') ? 'bearbeiten' : ''}`"
+        :backurl="user.id == $page.props.auth.user.id ? route('dashboard') : route('user.index')"
+    >
         <v-tabs v-model="tab">
             <v-tab value="generalInformation">Allgemeine Informationen</v-tab>
             <v-tab value="absences">Abwesenheiten</v-tab>
             <v-tab v-if="can('timeAccount', 'viewIndex')" value="timeAccounts">Arbeitszeitkonten</v-tab>
             <v-tab v-if="can('timeAccountTransaction', 'viewIndex')" value="timeAccountTransactions">Transaktionen</v-tab>
             <v-tab v-if="can('user', 'viewIndex')" value="userOrganigram">Organigramm</v-tab>
+            <v-tab v-if="user.id == $page.props.auth.user.id" value="profile">Profil</v-tab>
         </v-tabs>
-        <v-card>
-            <v-tabs-window v-model="tab">
-                <v-tabs-window-item style="overflow-y: auto" value="absences">
+
+        <v-tabs-window v-model="tab">
+            <v-tabs-window-item style="overflow-y: auto" value="absences">
+                <v-card>
                     <v-card-title>Abwesenheiten für das Jahr {{ DateTime.now().year }}</v-card-title>
                     <v-card-text>
                         <v-row>
@@ -117,23 +127,33 @@ const tab = ref(route().params['tab'] ?? 'generalInformation');
                             </v-col>
                         </v-row>
                     </v-card-text>
-                </v-tabs-window-item>
-                <v-tabs-window-item style="overflow-y: auto" value="generalInformation">
-                    <UserForm :countries :supervisors :user :groups :operating_sites mode="edit" :permissions></UserForm>
-                </v-tabs-window-item>
+                </v-card>
+            </v-tabs-window-item>
+            <v-tabs-window-item style="overflow-y: auto" value="generalInformation">
+                <UserForm :countries :supervisors :user :groups :operating_sites mode="edit" :permissions></UserForm>
+            </v-tabs-window-item>
 
-                <v-tabs-window-item v-if="can('timeAccount', 'viewIndex')" style="overflow-y: auto" value="timeAccounts">
-                    <TimeAccounts :user :time_accounts :time_account_settings :defaultTimeAccountId />
-                </v-tabs-window-item>
+            <v-tabs-window-item v-if="can('timeAccount', 'viewIndex')" style="overflow-y: auto" value="timeAccounts">
+                <TimeAccounts :user :time_accounts :time_account_settings :defaultTimeAccountId />
+            </v-tabs-window-item>
 
-                <v-tabs-window-item v-if="can('timeAccountTransaction', 'viewIndex')" style="overflow-y: auto" value="timeAccountTransactions">
-                    <TimeAccountTransactions :time_accounts :time_account_transactions />
-                </v-tabs-window-item>
+            <v-tabs-window-item v-if="can('timeAccountTransaction', 'viewIndex')" style="overflow-y: auto" value="timeAccountTransactions">
+                <TimeAccountTransactions :time_accounts :time_account_transactions />
+            </v-tabs-window-item>
 
-                <v-tabs-window-item v-if="can('user', 'viewIndex')" style="overflow-y: auto" value="userOrganigram">
-                    <UserOrganigram :users="organigramUsers" :supervisor :currentUser="user" />
-                </v-tabs-window-item>
-            </v-tabs-window>
-        </v-card>
+            <v-tabs-window-item v-if="can('user', 'viewIndex')" style="overflow-y: auto" value="userOrganigram">
+                <UserOrganigram :users="organigramUsers" :supervisor :currentUser="user" />
+            </v-tabs-window-item>
+            <v-tabs-window-item v-if="user.id == $page.props.auth.user.id" value="profile">
+                <v-row>
+                    <v-col cols="12" sm="6">
+                        <UpdateProfileInformationForm :must-verify-email="mustVerifyEmail" :status="status" />
+                    </v-col>
+                    <v-col cols="12" sm="6">
+                        <UpdatePasswordForm />
+                    </v-col>
+                </v-row>
+            </v-tabs-window-item>
+        </v-tabs-window>
     </AdminLayout>
 </template>

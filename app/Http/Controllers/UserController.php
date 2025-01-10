@@ -17,6 +17,7 @@ use App\Models\UserWorkingHour;
 use App\Models\UserWorkingWeek;
 use App\Services\HolidayService;
 use Carbon\Carbon;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
@@ -175,6 +176,9 @@ class UserController extends Controller
             'supervisor' => $user->supervisor()->first(['id', 'first_name', 'last_name', 'email']),
             'countries' => HolidayService::getCountries(),
             'permissions' => collect(User::$PERMISSIONS)->flatten(1),
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
+            'status' => session('status'),
+
             'can' => [
                 'timeAccount' => [
                     'viewIndex' => Gate::allows('viewIndex', [TimeAccount::class, $user]),
