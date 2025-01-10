@@ -18,19 +18,6 @@ use Inertia\Response;
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
-     */
-    public function edit(Request $request): Response
-    {
-        Gate::authorize('publicAuth', User::class);
-
-        return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
-            'status' => session('status'),
-        ]);
-    }
-
-    /**
      * Update the user's profile information.
      */
     public function update(Request $request): RedirectResponse
