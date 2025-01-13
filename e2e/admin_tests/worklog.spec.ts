@@ -1,17 +1,17 @@
-// import { test, expect } from '@playwright/test';
-// import { adminLogin, resetAndSeedDatabase } from '../utils';
+import { test, expect } from '@playwright/test';
+import { adminLogin, resetAndSeedDatabase } from '../utils';
 
-// test.beforeEach('admin login', async ({ page }) => {
-//     await resetAndSeedDatabase(page);
-//     await adminLogin(page);
-//     await expect(page).toHaveURL('/dashboard');
-// });
+test.beforeEach('admin login', async ({ page }) => {
+    await resetAndSeedDatabase(page);
+    await adminLogin(page);
+    await expect(page).toHaveURL('/dashboard');
+});
 
-// test('admin can decline time correction', async ({ page }) => {
-//     await expect(page.getByText('Zeitkorrekturen')).toBeVisible();
-//     await page.getByRole('cell', { name: 'user user' }).click();
-//     await expect(page.getByText('Zeitkorrektur von user user')).toBeVisible();
-//     await page.getByRole('button', { name: 'Ablehnen' }).click();
-//     await expect(page.getByText('Zeitkorrektur erfolgreich')).toBeVisible();
-//     await expect(page.getByRole('cell', { name: 'keine Zeitkorrekturen' })).toBeVisible();
-// });
+test('admin can decline time correction', async ({ page }) => {
+    await expect(page.getByText('Zeitkorrekturen')).toBeVisible();
+    await page.getByRole('cell', { name: 'user user' }).click();
+    await expect(page.getByText('Zeitkorrektur von user user')).toBeVisible();
+    await page.getByRole('button', { name: 'Ablehnen' }).click();
+    await expect(page.getByText('Zeitkorrektur erfolgreich')).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'keine Zeitkorrekturen' })).toBeVisible();
+});
