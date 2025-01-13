@@ -5,6 +5,8 @@ test.beforeEach('admin login', async ({ page }) => {
     await resetAndSeedDatabase(page);
     await adminLogin(page);
     await expect(page).toHaveURL('/dashboard');
+    await page.getByRole('navigation').getByText('Anträge').click();
+    await expect(page).toHaveURL('/dispute');
 });
 
 test('admin can decline time correction', async ({ page }) => {

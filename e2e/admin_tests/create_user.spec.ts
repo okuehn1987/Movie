@@ -46,22 +46,19 @@ test('creates, changes and deletes a new user', async ({ page }) => {
     await page.getByText('Dienstag').click();
     await page.getByText('Donnerstag').click();
     await page.getByText('Freitag').click();
+    await page.getByText('DienstagDonnerstagFreitag').click();
+    await page.getByLabel('Trage die Jährlichen').fill('1');
     await page.getByRole('button', { name: 'Weiter' }).click();
 
     //Adresse
     await page.getByLabel('Straße').fill('test lane');
     await page.getByLabel('Hausnummer').fill('11');
     await page.getByLabel('Postleitzahl').fill('11111');
-    await page.getByLabel('Ort', { exact: true }).fill('Testhausen');
-    await page
-        .locator('div')
-        .filter({ hasText: /^BundeslandBundesland$/ })
-        .first()
-        .click();
-    await page.getByTestId('land').click();
+    await page.getByLabel('Ort (optional)').fill('Testhausen');
+    await page.getByTestId('land').locator('i').click();
     await page.getByRole('option', { name: 'Deutschland' }).click();
-    await page.getByTestId('federal_state').click();
-    await page.getByRole('option', { name: 'Berlin' }).click();
+    await page.getByTestId('federal_state').locator('i').click();
+    await page.getByRole('option', { name: 'Saarland' }).click();
     await page.getByRole('button', { name: 'Weiter' }).click();
 
     //Berechtigungen

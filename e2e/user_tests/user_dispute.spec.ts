@@ -44,6 +44,8 @@ test('withdraws pre seeded time correction and ads another, accepts as admin and
     await page.getByRole('button', { name: 'Abmelden' }).click();
     await adminLogin(page);
     await expect(page).toHaveURL('/dashboard');
+    await page.getByText('Anträge').click();
+    await expect(page).toHaveURL('/dispute');
     await page.getByRole('cell', { name: 'user user' }).click();
     await expect(page.getByText('Zeitkorrektur von user user')).toBeVisible();
     await expect(page.getByRole('cell', { name: '10:30' })).toBeVisible();
