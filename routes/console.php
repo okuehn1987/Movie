@@ -82,9 +82,11 @@ Schedule::call(function () {
         //calculate overtime of $day
         foreach ($users as $user) {
             if ($day->lt(Carbon::parse($user->overtime_calculations_start))) continue;
-            $currentWorkingHours = $user->userWorkingHoursForDate($day);
 
+            $currentWorkingHours = $user->userWorkingHoursForDate($day);
             $currentWorkingWeek = $user->userWorkingWeekForDate($day);
+            if (!$currentWorkingHours || !$currentWorkingWeek) continue;
+
             $workingDaysInWeek = $currentWorkingWeek?->numberOfWorkingDays;
 
             $hasAbsenceForDay = $user->absences()
@@ -100,7 +102,7 @@ Schedule::call(function () {
             $workLogsForDay = $user->workLogs()->whereNotNull('end')->whereBetween('start', [$day->copy()->startOfDay(), $day->copy()->endOfDay()])->get();
 
             $istStunden = $workLogsForDay->sum('duration');
-            $sollStunden = $currentWorkingHours['weekly_working_hours'] / $workingDaysInWeek;
+            $sollStunden = $currentWorkingHours->weekly_working_hours / $workingDaysInWeek;
 
             if (!$shouldWorkYesterday) {
                 $sollStunden = 0;
