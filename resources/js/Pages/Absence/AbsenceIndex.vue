@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Absence, AbsenceType, Canable, User, UserWorkingWeek, Weekday } from '@/types/types';
-import { getMaxScrollHeight, throttle, usePageIsLoading } from '@/utils';
+import { getMaxScrollHeight, throttle } from '@/utils';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { ref, watch } from 'vue';
@@ -34,8 +34,8 @@ function getDaysInMonth() {
 const openModal = ref(false);
 const absenceForm = useForm({
     user_id: page.props.auth.user.id,
-    start: null as Date | null,
-    end: null as Date | null,
+    start: null as string | null,
+    end: null as string | null,
     absence_type_id: null as null | AbsenceType['id'],
 });
 
@@ -46,8 +46,8 @@ function createAbsenceModal(user_id: User['id'], start?: DateTime) {
         .find(a => start && DateTime.fromSQL(a.start) <= start && start <= DateTime.fromSQL(a.end));
 
     absenceForm.user_id = user_id;
-    absenceForm.end = start?.toJSDate() ?? null;
-    absenceForm.start = start?.toJSDate() ?? null;
+    absenceForm.start = (start ?? date.value.startOf('month')).toFormat('yyyy-MM-dd');
+    absenceForm.end = (start ?? date.value.startOf('month')).toFormat('yyyy-MM-dd');
     absenceForm.absence_type_id = absenceToEdit?.absence_type_id ?? null;
 
     openModal.value = true;
@@ -60,13 +60,17 @@ const reload = throttle(() => {
     router.reload({
         only: ['absences', 'holidays'],
         data: { date: date.value.toFormat('yyyy-MM') },
-        onStart: () => loadedMonths.value.push(date.value.toFormat('yyyy-MM')),
+        onStart: () => {
+            loadedMonths.value.push(date.value.toFormat('yyyy-MM'));
+            loading.value = true;
+        },
         onError: () => (loadedMonths.value = loadedMonths.value.filter(e => e != date.value.toFormat('yyyy-MM'))),
+        onFinish: () => (loading.value = false),
     });
 }, 500);
 watch(date, reload);
 
-const loading = usePageIsLoading();
+const loading = ref(false);
 </script>
 <template>
     <AdminLayout title="Abwesenheiten">
@@ -92,18 +96,12 @@ const loading = usePageIsLoading();
                     <v-card-text>
                         <v-form
                             @submit.prevent="
-                                absenceForm
-                                    .transform(data => ({
-                                        ...data,
-                                        start: data.start?.toLocaleDateString(),
-                                        end: data.end?.toLocaleDateString(),
-                                    }))
-                                    .post(route('absence.store'), {
-                                        onSuccess: () => {
-                                            absenceForm.reset();
-                                            isActive.value = false;
-                                        },
-                                    })
+                                absenceForm.post(route('absence.store'), {
+                                    onSuccess: () => {
+                                        absenceForm.reset();
+                                        isActive.value = false;
+                                    },
+                                })
                             "
                         >
                             <v-row>
@@ -116,10 +114,20 @@ const loading = usePageIsLoading();
                                     ></v-select>
                                 </v-col>
                                 <v-col cols="12" md="6">
-                                    <v-date-input label="Von" v-model="absenceForm.start" :error-messages="absenceForm.errors.start"></v-date-input>
+                                    <v-text-field
+                                        type="date"
+                                        label="Von"
+                                        v-model="absenceForm.start"
+                                        :error-messages="absenceForm.errors.start"
+                                    ></v-text-field>
                                 </v-col>
                                 <v-col cols="12" md="6">
-                                    <v-date-input label="Bis" v-model="absenceForm.end" :error-messages="absenceForm.errors.end"></v-date-input>
+                                    <v-text-field
+                                        type="date"
+                                        label="Bis"
+                                        v-model="absenceForm.end"
+                                        :error-messages="absenceForm.errors.end"
+                                    ></v-text-field>
                                 </v-col>
                                 <v-col cols="12" class="text-end">
                                     <v-btn :loading="absenceForm.processing" type="submit" color="primary">beantragen</v-btn>
@@ -132,8 +140,7 @@ const loading = usePageIsLoading();
         </v-dialog>
         <v-card>
             <v-card-text>
-                <div class="d-flex flex-wrap justify-space-between align-center">
-                    <div style="width: 30px"><v-progress-circular v-if="loading" indeterminate></v-progress-circular></div>
+                <div class="d-flex flex-wrap justify-center align-center">
                     <div class="d-flex flex-wrap align-center">
                         <div class="d-flex">
                             <v-btn @click.stop="date = date.minus({ year: 1 })" variant="text" icon color="primary">
@@ -145,6 +152,7 @@ const loading = usePageIsLoading();
                         </div>
                         <h2 class="mx-4 text-center" style="min-width: 170px">
                             {{ date.toFormat('MMMM yyyy') }}
+                            <v-progress-linear v-if="loading" indeterminate></v-progress-linear>
                         </h2>
                         <div class="d-flex">
                             <v-btn @click.stop="date = date.plus({ month: 1 })" variant="text" icon color="primary">
@@ -155,7 +163,6 @@ const loading = usePageIsLoading();
                             </v-btn>
                         </div>
                     </div>
-                    <div style="width: 30px"></div>
                 </div>
             </v-card-text>
             <v-divider></v-divider>
@@ -164,7 +171,7 @@ const loading = usePageIsLoading();
                 style="white-space: pre"
                 :style="{ maxHeight: getMaxScrollHeight(80 + 1) }"
                 id="absence-table"
-                :items="users"
+                :items="users.map(u => ({ ...u, name: u.last_name + ', ' + u.first_name }))"
                 :headers="[
                 {
                     title: 'Name',
@@ -173,13 +180,14 @@ const loading = usePageIsLoading();
                     {
                         title: '',
                         key: 'action',
-                        width: '48px'
+                        width: '48px',
                     },
                 ...getDaysInMonth().map(e => ({
                     title: e.weekdayShort + '\n' + e.day.toString(),
                     key: e.day.toString(),
                     sortable: false,
                     align: 'center',
+                    headerProps:{ class: {'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate() }}
                 } as const)),
             ]"
             >

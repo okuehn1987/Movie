@@ -97,6 +97,13 @@ class AbsenceController extends Controller
             'accepted' => 'required|boolean'
         ]);
 
+        $absenceNotification = $request->user()
+            ->unreadNotifications()
+            ->where('notifiable_id', Auth::id())
+            ->where('data->absence_id', $absence->id)->first();
+
+        if ($absenceNotification) $absenceNotification->update(['read_at' => Carbon::now()]);
+
         if ($validated['accepted']) {
             $absence->accountAsTransaction();
         } else {

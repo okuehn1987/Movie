@@ -12,13 +12,13 @@ function readNotification(notification: Notification) {
             onSuccess: () => {
                 if (notification.type == 'App\\Notifications\\PatchNotification')
                     return router.get(
-                        route('dashboard', {
+                        route('dispute.index', {
                             openPatch: notification.data.patch_id,
                         }),
                     );
                 if (notification.type == 'App\\Notifications\\AbsenceNotification')
                     return router.get(
-                        route('dashboard', {
+                        route('dispute.index', {
                             openAbsence: notification.data.absence_id,
                         }),
                     );
@@ -53,7 +53,7 @@ function readNotification(notification: Notification) {
         </v-list>
     </v-menu>
 
-    <Link :href="route('profile.edit')">
+    <Link :href="route('user.show', { user: $page.props.auth.user.id })">
         <v-btn stacked color="black" prepend-icon="mdi-account" title="Profil" />
     </Link>
 
