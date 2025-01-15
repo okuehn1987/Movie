@@ -26,12 +26,16 @@ function shouldUserWork(user: UserProp, day: DateTime) {
 </script>
 <template>
     <td
+        class="pa-0"
         :style="{ backgroundColor: shouldUserWork(user, date) ? '' : 'lightgray' }"
         :class="{ 'editable-cell': can('absence', 'create', props.user) }"
         :role="can('absence', 'create', props.user) ? 'button' : 'cell'"
         :title="props.holidays?.[props.date.toFormat('yyyy-MM-dd')]"
     >
-        {{ absence && shouldUserWork(user, date) ? absenceTypes.find(a => a.id === absence?.absence_type_id)?.abbreviation ?? '❌' : '' }}
+        <template v-if="absence && shouldUserWork(user, date)">
+            <span v-if="absence.absence_type_id">{{ absenceTypes.find(t => t.id === absence?.absence_type_id)?.abbreviation }}</span>
+            <div v-else class="h-100 w-100" style="background-color: #f99"></div>
+        </template>
     </td>
 </template>
 
