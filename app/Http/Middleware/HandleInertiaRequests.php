@@ -54,7 +54,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'globalCan' => [
                 'absence' => [
-                    'viewIndex' => Gate::allows('viewIndex', Absence::class),
+                    'viewIndex' => Gate::allows('publicAuth', User::class),
                 ],
                 'workLog' => [
                     'viewIndex' => Gate::allows('viewIndex', WorkLog::class),
