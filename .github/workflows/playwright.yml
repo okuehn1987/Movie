@@ -35,7 +35,7 @@ jobs:
 
     merge-reports-and-upload:
         # Merge reports after playwright tests, even if some shards have failed
-        if: always()
+        if: '!cancelled()'
         needs: [setup-and-run-tests]
         runs-on: ubuntu-latest
         permissions:
