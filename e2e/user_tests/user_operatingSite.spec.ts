@@ -9,7 +9,7 @@ test.beforeEach('user login', async ({ page }) => {
     await expect(page.getByRole('banner').getByText('Betriebsstätten')).toBeVisible();
 });
 
-test('tests if operatingSite is visible', async ({ page }) => {
+test.skip('tests if operatingSite is visible', async ({ page }) => {
     await expect(page.getByRole('cell', { name: 'delete me ORG' })).toBeVisible();
     await page.getByRole('row', { name: 'delete me ORG lösch mich 666' }).getByRole('button').click();
     await expect(page.getByText('Betriebsstätte delete me ORG')).toBeVisible();

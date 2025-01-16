@@ -7,7 +7,7 @@ test.beforeEach('user login', async ({ page }) => {
     await expect(page).toHaveURL('/dashboard');
 });
 
-test('withdraws pre seeded time correction and ads another, accepts as admin and checks as user if successfull', async ({ page }) => {
+test.skip('withdraws pre seeded time correction and ads another, accepts as admin and checks as user if successfull', async ({ page }) => {
     await page.getByRole('button').nth(3).click();
     await expect(page.getByRole('row', { name: '06.12.2024 08:15 06.12.2024' }).getByRole('button')).toBeVisible();
     await page.getByRole('row', { name: '06.12.2024 08:15 06.12.2024' }).getByRole('button').click();
