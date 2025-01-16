@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Absence;
 use App\Models\Group;
 use App\Models\GroupUser;
 use App\Models\OperatingSite;
@@ -61,17 +62,24 @@ class UserController extends Controller
             'is_supervisor' => 'required|boolean',
 
             'home_office' => 'required|boolean',
-            'home_office_hours_per_week' => 'nullable|required_if:home_office,true|numeric',
+            'home_office_hours_per_week' => 'nullable|min:0|numeric',
 
-            'userWorkingHours' => 'required|decimal:0,2',
-            'userWorkingHoursSince' => 'required|date',
+            'userWorkingHours' => 'required|array',
+            'userWorkingHours.*.id' => 'nullable|exists:user_working_hours,id',
+            'userWorkingHours.*.weekly_working_hours' => 'required|min:0|decimal:0,2',
+            'userWorkingHours.*.active_since' => 'required|date',
 
-            'userWorkingWeek' => 'required|array',
-            'userWorkingWeek.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
-            'userWorkingWeekSince' => 'required|date',
+            'userWorkingWeeks' => 'required|array',
+            'userWorkingWeeks.*.id' => 'nullable|exists:user_working_weeks,id',
+            'userWorkingWeeks.*.weekdays' => 'required|array',
+            'userWorkingWeeks.*.weekdays.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
+            'userWorkingWeeks.*.active_since' => 'required|date',
 
-            'userLeaveDays' => 'required|integer',
-            'userLeaveDaysSince' => 'required|date',
+            'userLeaveDays' => 'required|array',
+            'userLeaveDays.*.id' => 'nullable|exists:user_leave_days,id',
+            'userLeaveDays.*.leave_days' => 'required|integer|min:0',
+            'userLeaveDays.*.active_since' => 'required|date',
+
             "overtime_calculations_start" => "required|date",
 
             'organizationUser' => 'required|array',
@@ -133,23 +141,100 @@ class UserController extends Controller
         ]);
     }
 
-    public function show(User $user)
+    public function generalInformation(User $user)
     {
         Gate::authorize('viewShow', $user);
 
-        $user->load(['groupUser', 'operatingSiteUser', 'organizationUser']);
-        $user['currentWorkingHours'] = $user->userWorkingHours()->latest('active_since')->first();
-        $user['futureWorkingHours'] = $user->userWorkingHours()->latest('active_since')->whereDate('active_since', '>', Carbon::now())->get();
-        $user['currentUserWorkingWeek'] = $user->userWorkingWeeks()->latest('active_since')->first();
-        $user['futureUserWorkingWeek'] = $user->userWorkingWeeks()->latest('active_since')->whereDate('active_since', '>', Carbon::now())->get();
+        $user->load(['groupUser', 'operatingSiteUser', 'organizationUser', 'supervisor:id']);
+
+        $user['userWorkingHours'] = [
+            $user->userWorkingHours()->orderBy('active_since', 'asc')->whereDate('active_since', '<=', Carbon::now())->first(),
+            ...$user->userWorkingHours()->orderBy('active_since', 'asc')->whereDate('active_since', '>', Carbon::now())->get()->toArray(),
+        ];
+
+        $user['userWorkingWeeks'] = [
+            $user->userWorkingWeeks()->orderBy('active_since', 'asc')->whereDate('active_since', '<=', Carbon::now())->first(),
+            ...$user->userWorkingWeeks()->orderBy('active_since', 'asc')->whereDate('active_since', '>', Carbon::now())->get()->toArray(),
+        ];
+
+        $user['userLeaveDays'] = [
+            $user->userLeaveDays()->where('type', 'annual')->orderBy('active_since', 'asc')->whereDate('active_since', '<=', Carbon::now())->first(),
+            ...$user->userLeaveDays()->where('type', 'annual')->orderBy('active_since', 'asc')->whereDate('active_since', '>', Carbon::now())->get()->toArray(),
+        ];
+
+        return Inertia::render('User/UserShow/GeneralInformation', [
+            'user' => $user,
+
+            'operating_sites' => OperatingSite::inOrganization()->get(),
+            'groups' => Group::inOrganization()->get(),
+
+            'possibleSupervisors' => User::inOrganization()
+                ->where('is_supervisor', true)
+                ->whereNotIn('id', $user->allSuperviseesFlat()->pluck('id'))
+                ->get(['id', 'first_name', 'last_name']),
+            'countries' => HolidayService::getCountries(),
+            'permissions' => collect(User::$PERMISSIONS)->flatten(1),
+
+            'can' => self::getUserShowCans($user),
+        ]);
+    }
+
+    public function profile(Request $request)
+    {
+        Gate::authorize('publicAuth', User::class);
+
+        $user = $request->user();
+        return Inertia::render('User/UserShow/Profile', [
+            'user' => $user,
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
+            'status' => session('status'),
+            'can' => self::getUserShowCans($user),
+        ]);
+    }
+
+    public function absences(User $user)
+    {
+        Gate::authorize('viewIndex', [Absence::class, $user]);
+
         $user['leaveDaysForYear'] = $user->leaveDaysForYear(Carbon::now());
         $user['usedLeaveDaysForYear'] = $user->usedLeaveDaysForYear(Carbon::now());
-        $user['userLeaveDays'] = $user->userLeaveDays()->latest('active_since')->get();
         $user['absences'] = $user->absences()
             ->whereYear('start', '<=', Carbon::now()->year)
             ->whereYear('end', '>=', Carbon::now()->year)
             ->with(['absenceType:id,name', 'user:id,operating_site_id'])
             ->get(['id', 'start', 'end', 'absence_type_id', 'status', 'user_id'])->append('usedDays');
+
+        return Inertia::render('User/UserShow/Absences', [
+            'user' => $user,
+            'can' => self::getUserShowCans($user),
+        ]);
+    }
+
+    public function timeAccounts(User $user)
+    {
+        Gate::authorize('viewIndex', [TimeAccount::class, $user]);
+
+        $user['currentWorkingHours'] = $user->userWorkingHours()->latest('active_since')->first();
+        $user['currentWorkingWeek'] = $user->userWorkingWeeks()->latest('active_since')->first();
+
+        $timeAccounts =  $user->timeAccounts()
+            ->withTrashed()
+            ->with(['timeAccountSetting'])
+            ->get(["id", "user_id", "balance", "balance_limit", "time_account_setting_id", "name", "deleted_at"]);
+
+        return Inertia::render('User/UserShow/TimeAccounts', [
+            'user' => $user,
+            'time_accounts' => $timeAccounts,
+            'time_account_settings' => TimeAccountSetting::inOrganization()->get(['id', 'type', 'truncation_cycle_length_in_months']),
+            'defaultTimeAccountId' => $user->defaultTimeAccount->id,
+
+            'can' => self::getUserShowCans($user),
+        ]);
+    }
+
+    public function timeAccountTransactions(User $user)
+    {
+        Gate::authorize('viewIndex', [TimeAccountTransaction::class, $user]);
 
         $timeAccounts =  $user->timeAccounts()
             ->withTrashed()
@@ -158,18 +243,21 @@ class UserController extends Controller
 
         $userTransactions = TimeAccountTransaction::forUser($user)->with('user:id,first_name,last_name')->latest()->paginate(15);
 
-        return Inertia::render('User/UserShow', [
+        return Inertia::render('User/UserShow/TimeAccountTransactions', [
             'user' => $user,
-            'supervisors' => User::inOrganization()
-                ->where('is_supervisor', true)
-                ->whereNotIn('id', $user->allSuperviseesFlat()->pluck('id'))
-                ->get(['id', 'first_name', 'last_name']),
             'time_accounts' => $timeAccounts,
-            'time_account_settings' => TimeAccountSetting::inOrganization()->get(['id', 'type', 'truncation_cycle_length_in_months']),
-            'defaultTimeAccountId' => $user->defaultTimeAccount->id,
-            'groups' => Group::inOrganization()->get(),
-            'operating_sites' => OperatingSite::inOrganization()->get(),
             'time_account_transactions' => $userTransactions,
+
+            'can' => self::getUserShowCans($user),
+        ]);
+    }
+
+    public function userOrganigram(User $user)
+    {
+        Gate::authorize('viewIndex', User::class);
+
+        return Inertia::render('User/UserShow/Organigramm', [
+            'user' => $user,
             'organigramUsers' => ($user->supervisor ?: $user)->allSupervisees()->get([
                 'id',
                 'first_name',
@@ -178,27 +266,8 @@ class UserController extends Controller
                 'email'
             ]),
             'supervisor' => $user->supervisor()->first(['id', 'first_name', 'last_name', 'email']),
-            'countries' => HolidayService::getCountries(),
-            'permissions' => collect(User::$PERMISSIONS)->flatten(1),
-            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
-            'status' => session('status'),
 
-            'can' => [
-                'timeAccount' => [
-                    'viewIndex' => Gate::allows('viewIndex', [TimeAccount::class, $user]),
-                    'create' => Gate::allows('create', [TimeAccount::class, $user]),
-                    'update' => Gate::allows('update', [TimeAccount::class, $user]),
-                    'delete' => Gate::allows('delete', [TimeAccount::class, $user]),
-                ],
-                'timeAccountTransaction' => [
-                    'viewIndex' => Gate::allows('viewIndex', [TimeAccountTransaction::class, $user]),
-                    'create' => Gate::allows('create', [TimeAccountTransaction::class, $user]),
-                ],
-                'user' => [
-                    'viewIndex' => Gate::allows('viewIndex', User::class),
-                    'update' => Gate::allows('update', $user),
-                ]
-            ],
+            'can' => self::getUserShowCans($user),
         ]);
     }
 
@@ -209,7 +278,7 @@ class UserController extends Controller
         $validated = self::validateUser($request, [
             "password" => "required|string",
             "email" => "required|email|unique:users",
-            "remaining_leave_days" => "required|integer",
+            "initialRemainingLeaveDays" => "required|integer",
         ]);
 
         $user = (new User)->forceFill([
@@ -234,38 +303,40 @@ class UserController extends Controller
             'operating_site_id' => $validated['operating_site_id'],
             'date_of_birth' => Carbon::parse($validated['date_of_birth']),
             'home_office' => $validated['home_office'],
-            'home_office_hours_per_week' => $validated['home_office_hours_per_week'],
+            'home_office_hours_per_week' => $validated['home_office'] ? $validated['home_office_hours_per_week'] ?? 0 : null,
             'email_verified_at' => now(),
         ]);
         $user->save();
 
         UserLeaveDay::create([
             'user_id' => $user->id,
-            'leave_days' => $validated['userLeaveDays'],
-            'active_since' => Carbon::parse($validated['userLeaveDaysSince']),
-            'type' => 'annual'
+            'leave_days' => $validated['initialRemainingLeaveDays'],
+            'active_since' => Carbon::now()->startOfYear(),
+            'type' => 'remaining'
         ]);
 
-        if ($validated['remaining_leave_days'] > 0) {
+        foreach ($validated['userLeaveDays'] as $leaveDay) {
             UserLeaveDay::create([
                 'user_id' => $user->id,
-                'leave_days' => $validated['remaining_leave_days'],
-                'active_since' => Carbon::now()->startOfYear(),
-                'type' => 'remaining'
+                'leave_days' => $leaveDay['leave_days'],
+                'active_since' => Carbon::parse($leaveDay['active_since']),
+                'type' => 'annual'
             ]);
         }
-
-        UserWorkingHour::create([
-            'user_id' => $user->id,
-            'weekly_working_hours' => $validated['userWorkingHours'],
-            'active_since' => Carbon::parse($validated['userWorkingHoursSince'])
-        ]);
-
-        UserWorkingWeek::create([
-            'user_id' => $user->id,
-            ...collect($validated['userWorkingWeek'])->flatMap(fn($e) => [$e => true]),
-            'active_since' => Carbon::parse($validated['userWorkingWeekSince'])
-        ]);
+        foreach ($validated['userWorkingHours'] as $workingHour) {
+            UserWorkingHour::create([
+                'user_id' => $user->id,
+                'weekly_working_hours' => $workingHour['weekly_working_hours'],
+                'active_since' => Carbon::parse($workingHour['active_since'])
+            ]);
+        }
+        foreach ($validated['userWorkingWeeks'] as $workingWeek) {
+            UserWorkingWeek::create([
+                'user_id' => $user->id,
+                ...collect($workingWeek['weekdays'])->flatMap(fn($e) => [$e => true]),
+                'active_since' => Carbon::parse($workingWeek['active_since'])
+            ]);
+        }
 
         TimeAccount::create([
             'name' => 'Gleitzeitkonto',
@@ -341,48 +412,100 @@ class UserController extends Controller
             'is_supervisor' => $validated['is_supervisor'],
             'date_of_birth' => Carbon::parse(Carbon::parse($validated['date_of_birth'])->format('d-m-Y')),
             'home_office' => $validated['home_office'],
-            'home_office_hours_per_week' => $validated['home_office_hours_per_week'],
+            'home_office_hours_per_week' => $validated['home_office'] ? $validated['home_office_hours_per_week'] ?? 0 : null,
+            "overtime_calculations_start" => $validated['overtime_calculations_start'],
         ]);
         $user->organizationUser->update($validated['organizationUser']);
         $user->operatingSiteUser->update($validated['operatingSiteUser']);
         $user->groupUser?->update($validated['groupUser']);
 
-        $user->forceFill([
-            "overtime_calculations_start" => $validated['overtime_calculations_start'],
-        ]);
-        $user->save();
+        $user->userLeaveDays()
+            ->where('type', 'annual')
+            ->whereDate('active_since', '>', Carbon::now())
+            ->whereNotIn('id', collect($validated['userLeaveDays'])->map(fn($e) => $e['id'])->toArray())
+            ->delete();
 
-        UserLeaveDay::updateOrCreate([
-            'active_since' => Carbon::parse($validated['userLeaveDaysSince']),
-            'user_id' => $user->id,
-            'type' => 'annual'
-        ], [
-            'leave_days' => $validated['userLeaveDays'],
-        ]);
+        foreach ($validated['userLeaveDays'] as $leaveDay) {
+            if (Carbon::now()->startOfDay()->gt(Carbon::parse($leaveDay['active_since'])))
+                continue;
 
-        $lastWorkingHour = $user->userWorkingHours()
-            ->where('active_since', Carbon::parse($validated['userWorkingHoursSince']))
-            ->latest()
-            ->firstOrNew();
-
-        $lastWorkingHour->fill([
-            'weekly_working_hours' => floatval($validated['userWorkingHours']),
-            'active_since' => Carbon::parse($validated['userWorkingHoursSince'])->format("Y-m-d")
-        ]);
-
-        if ($lastWorkingHour->isDirty()) $lastWorkingHour->replicate()->save();
-
-        $workingWeek = $user->userWorkingWeeks()
-            ->where('active_since', Carbon::parse($validated['userWorkingWeekSince']))
-            ->latest()
-            ->firstOrNew();
-
-        foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $day) {
-            $workingWeek[$day] = (int)in_array($day, $validated['userWorkingWeek']);
+            UserLeaveDay::updateOrCreate([
+                'id' => $leaveDay['id'],
+            ], [
+                'user_id' => $user->id,
+                'leave_days' => $leaveDay['leave_days'],
+                'active_since' => Carbon::parse($leaveDay['active_since']),
+                'type' => 'annual'
+            ]);
         }
 
-        if ($workingWeek->isDirty()) $workingWeek->replicate()->save();
+        $user->userWorkingWeeks()
+            ->whereDate('active_since', '>', Carbon::now())
+            ->whereNotIn('id', collect($validated['userWorkingWeeks'])->map(fn($e) => $e['id'])->toArray())
+            ->delete();
+
+        foreach ($validated['userWorkingWeeks'] as $workingWeek) {
+            if (Carbon::now()->startOfDay()->gt(Carbon::parse($workingWeek['active_since'])))
+                continue;
+
+            UserWorkingWeek::updateOrCreate(
+                [
+                    'id' => $workingWeek['id'],
+                ],
+                [
+                    'user_id' => $user->id,
+                    'active_since' => Carbon::parse($workingWeek['active_since']),
+                    ...collect(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'])
+                        ->flatMap(
+                            fn($e) =>
+                            [$e => (int)in_array($e, $workingWeek['weekdays'])]
+                        )->toArray()
+                ]
+            );
+        }
+
+        $user->userWorkingHours()
+            ->whereDate('active_since', '>', Carbon::now())
+            ->whereNotIn('id', collect($validated['userWorkingHours'])->map(fn($e) => $e['id'])->toArray())
+            ->delete();
+
+        foreach ($validated['userWorkingHours'] as $workingHour) {
+            if (Carbon::now()->startOfDay()->gt(Carbon::parse($workingHour['active_since'])))
+                continue;
+
+            UserWorkingHour::updateOrCreate([
+                'id' => $workingHour['id'],
+            ], [
+                'active_since' => Carbon::parse($workingHour['active_since']),
+                'user_id' => $user->id,
+                'weekly_working_hours' => $workingHour['weekly_working_hours'],
+            ]);
+        }
 
         return back()->with("success", "Mitarbeitenden erfolgreich aktualisiert.");
+    }
+
+    private function getUserShowCans(User $user)
+    {
+        return [
+            'absences' => [
+                'viewIndex' =>  Gate::allows('viewIndex', [Absence::class, $user]),
+            ],
+            'timeAccount' => [
+                'viewIndex' => Gate::allows('viewIndex', [TimeAccount::class, $user]),
+                'create' => Gate::allows('create', [TimeAccount::class, $user]),
+                'update' => Gate::allows('update', [TimeAccount::class, $user]),
+                'delete' => Gate::allows('delete', [TimeAccount::class, $user]),
+            ],
+            'timeAccountTransaction' => [
+                'viewIndex' => Gate::allows('viewIndex', [TimeAccountTransaction::class, $user]),
+                'create' => Gate::allows('create', [TimeAccountTransaction::class, $user]),
+            ],
+            'user' => [
+                'update' => Gate::allows('update', $user),
+                'viewShow' => Gate::allows('viewShow', $user),
+                'viewIndex' => Gate::allows('viewIndex', User::class),
+            ]
+        ];
     }
 }

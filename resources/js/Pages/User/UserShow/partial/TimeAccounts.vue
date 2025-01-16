@@ -11,7 +11,7 @@ import { computed } from 'vue';
 const props = defineProps<{
     user: User & {
         currentWorkingHours: UserWorkingHours;
-        userWorkingWeek: UserWorkingWeek;
+        currentWorkingWeek: UserWorkingWeek;
     };
     time_accounts: (Pick<TimeAccount, 'id' | 'user_id' | 'balance' | 'balance_limit' | 'time_account_setting_id' | 'name' | 'deleted_at'> & {
         time_account_setting: TimeAccountSetting;

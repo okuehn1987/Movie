@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { TimeAccount, TimeAccountSetting, User, UserWorkingHours, UserWorkingWeek } from '@/types/types';
 import { accountType, getTruncationCycleDisplayName, roundTo } from '@/utils';
-import { useForm } from '@inertiajs/vue3';
 import { watch } from 'vue';
 
 defineProps<{
     user: User & {
         currentWorkingHours: UserWorkingHours;
-        userWorkingWeek: UserWorkingWeek;
+        currentWorkingWeek: UserWorkingWeek;
     };
     item: Pick<TimeAccount, 'id' | 'user_id' | 'balance' | 'balance_limit' | 'time_account_setting_id' | 'name' | 'deleted_at'> & {
         time_account_setting: TimeAccountSetting;

@@ -1,25 +1,25 @@
-type Date = string & { __date__: void };
-type Time = string & { __time__: void };
-type Timestamp = string & { __datetime__: void };
-
 type Branded<T, Brand extends string> = T & { [x in `__${Brand}__`]: void };
+
+type DateString = Branded<string, 'date'>;
+type TimeString = Branded<string, 'time'>;
+type DateTimeString = Branded<string, 'dateTime'>;
 
 export type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
 export type Country = Branded<string, 'country'>;
 
-export type State = Branded<string, 'state'>;
+export type FederalState = Branded<string, 'state'>;
 
-export type CountryProp = { title: string; value: Country; regions: Record<State, string> };
+export type CountryProp = { title: string; value: Country; regions: Record<FederalState, string> };
 
 export type DBObject<Brand extends string> = {
     id: Branded<number, Brand>;
-    created_at: Timestamp;
-    updated_at: Timestamp;
+    created_at: DateTimeString;
+    updated_at: DateTimeString;
 };
 
 type SoftDelete = {
-    deleted_at: Timestamp | null;
+    deleted_at: DateTimeString | null;
 };
 
 export type Model =
@@ -76,7 +76,7 @@ type Address = {
     country: Country;
     city: string | null;
     zip: string | null;
-    federal_state: State;
+    federal_state: FederalState;
 };
 
 export type Status = 'created' | 'declined' | 'accepted';
@@ -94,11 +94,11 @@ export type User = DBObject<'user'> &
         supervisor_id: User['id'] | null;
         organization_id: Organization['id'] | null;
         staff_number: string | null;
-        date_of_birth: Date;
+        date_of_birth: DateString;
         phone_number: string | null;
         email_verified_at: string | null;
         weekly_working_hours: number;
-        overtime_calculations_start: Date;
+        overtime_calculations_start: DateString;
         is_supervisor: boolean;
     } & (
         | {
@@ -119,14 +119,14 @@ export type UserWorkingHours = DBObject<'userWorkingHours'> &
     SoftDelete & {
         user_id: User['id'];
         weekly_working_hours: number;
-        active_since: Date;
+        active_since: DateString;
     };
 
 export type UserLeaveDays = DBObject<'userLeaveDays'> &
     SoftDelete & {
         user_id: User['id'];
         leave_days: number;
-        active_since: Date;
+        active_since: DateString;
         type: 'annual' | 'remaining';
     };
 
@@ -160,8 +160,8 @@ export type OperatingSite = DBObject<'operatingSite'> &
 export type OperatingTime = DBObject<'operatingTime'> &
     SoftDelete & {
         type: Weekday;
-        start: Time;
-        end: Time;
+        start: TimeString;
+        end: TimeString;
         operating_site_id: OperatingSite['id'];
     };
 
@@ -169,8 +169,8 @@ export type Absence = DBObject<'absence'> &
     SoftDelete & {
         absence_type_id?: AbsenceType['id'];
         user_id: User['id'];
-        start: Date;
-        end: Date;
+        start: DateString;
+        end: DateString;
         status: Status;
     };
 
@@ -215,8 +215,8 @@ export type TravelLog = DBObject<'travelLog'> &
         user_id: User['id'];
         start_location_id: User['id'] | OperatingSite['id'] | CustomAddress['id'];
         start_location_type: 'user' | 'operating_site' | 'custom_address';
-        start: Timestamp;
-        end: Timestamp;
+        start: DateTimeString;
+        end: DateTimeString;
         end_location_type: 'user' | 'operating_site' | 'custom_address';
         end_location_id: User['id'] | OperatingSite['id'] | CustomAddress['id'];
     };
@@ -230,21 +230,21 @@ export type CustomAddress = DBObject<'customAddress'> &
 export type WorkLog = DBObject<'workLog'> &
     SoftDelete & {
         user_id: User['id'];
-        start: Timestamp;
-        end: Timestamp | null;
+        start: DateTimeString;
+        end: DateTimeString | null;
         is_home_office: boolean;
     };
 
 export type WorkLogPatch = DBObject<'workLogPatch'> &
     SoftDelete & {
         user_id: User['id'];
-        start: Timestamp;
+        start: DateTimeString;
         is_home_office: boolean;
     } & {
-        end: Timestamp;
+        end: DateTimeString;
         status: Status;
         work_log_id: WorkLog['id'];
-        accepted_at: Timestamp;
+        accepted_at: DateTimeString;
         is_accounted: boolean;
     };
 
@@ -279,14 +279,14 @@ export type UserWorkingWeek = DBObject<'userWorkingWeek'> &
     SoftDelete &
     Record<Weekday, boolean> & {
         user_id: User['id'];
-        active_since: Date;
+        active_since: DateString;
     };
 
 export type Notification = Omit<DBObject<'notification'>, 'id'> & {
     id: Branded<string, 'notification'>;
     notifiable_type: 'App\\Models\\User';
     notifiable_id: User['id'];
-    read_at: Timestamp;
+    read_at: DateTimeString;
 } & (
         | {
               type: 'App\\Notifications\\PatchNotification';
