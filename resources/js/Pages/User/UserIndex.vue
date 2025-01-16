@@ -1,28 +1,27 @@
 <script setup lang="ts">
-import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Canable, CountryProp, Group, OperatingSite, Paginator, Permission, User } from '@/types/types';
-import { Link } from '@inertiajs/vue3';
-import UserForm from './UserForm.vue';
-import { fillNullishValues, usePagination } from '@/utils';
-import { DateTime } from 'luxon';
-import { toRefs } from 'vue';
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
+import AdminLayout from '@/Layouts/AdminLayout.vue';
+import { Canable, CountryProp, Group, OperatingSite, Permission, User } from '@/types/types';
+import { fillNullishValues, getMaxScrollHeight } from '@/utils';
+import { Link } from '@inertiajs/vue3';
+import { DateTime } from 'luxon';
+import UserForm from './UserForm.vue';
 
-const props = defineProps<{
-    users: Paginator<User & Canable & { group: Pick<Group, 'id' | 'name'> }>;
+defineProps<{
+    users: (User & Canable & { group: Pick<Group, 'id' | 'name'> })[];
     supervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
     groups: Pick<Group, 'id' | 'name'>[];
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];
     permissions: { name: Permission[keyof Permission]; label: string }[];
     countries: CountryProp[];
 }>();
-
-const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
 </script>
 <template>
     <AdminLayout title="Mitarbeiter">
         <v-card>
             <v-data-table-virtual
+                fixed-header
+                :style="{ maxHeight: getMaxScrollHeight(0) }"
                 no-data-text="Es wurden keine Mitarbeiter gefunden"
                 :headers="[
                     { title: 'Vorname', key: 'first_name' },
@@ -34,7 +33,7 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
                     { title: '', key: 'actions', align: 'end' },
                 ]"
                 :items="
-                    data
+                    users
                         .map(u => ({
                             ...fillNullishValues(u),
                             date_of_birth: DateTime.fromFormat(u.date_of_birth, 'yyyy-MM-dd').toFormat('dd.MM.yyyy'),
@@ -85,9 +84,6 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
                         ></ConfirmDelete>
                         <div style="width: 48px" v-else></div>
                     </div>
-                </template>
-                <template v-slot:bottom>
-                    <v-pagination v-if="lastPage > 1" v-model="currentPage" :length="lastPage"></v-pagination>
                 </template>
             </v-data-table-virtual>
         </v-card>
