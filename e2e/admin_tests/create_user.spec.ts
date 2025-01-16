@@ -7,7 +7,7 @@ test.beforeEach('admin login', async ({ page }) => {
     await page.getByRole('navigation').locator('div').filter({ hasText: 'Mitarbeitende' }).nth(2).click();
     await expect(page).toHaveURL('/user');
 
-    //creates time account type
+    //creates time account type because otherwise not testable
 
     await page.getByText('Organisation', { exact: true }).click();
     await page.getByRole('tab', { name: 'Zeitkontoeinstellungen' }).click();

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('login and logout for admin successfull', async ({ page }) => {
+test('login visible', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveURL('/login');
     await expect(page.getByLabel('Email', { exact: true })).toBeVisible();
