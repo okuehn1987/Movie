@@ -18,6 +18,7 @@ use App\Models\UserWorkingHour;
 use App\Models\UserWorkingWeek;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
+use Carbon\Carbon;
 use Database\Factories\OperatingSiteFactory;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
@@ -83,19 +84,21 @@ class DatabaseSeederE2E extends Seeder
             ->has(UserWorkingWeek::factory(1))
             ->create();
 
+        // $date=Carbon::now()->subYear()->format('y-M-d H:i:s')
+
         $testWorklog = WorkLog::factory([
             'user_id' => $testUser->id,
-            'start' => '2025-01-01 08:15:12',
-            'end' => '2025-01-01 18:00:01',
+            'start' => Carbon::now()->subDays(3)->subHours(8)->format('Y-m-d H:i:s'),
+            'end' => Carbon::now()->subDays(3)->subHours(1)->format('Y-m-d H:i:s')
 
         ])->create();
 
         $testWorklogPatch = WorkLogPatch::factory([
             'work_log_id' => $testWorklog->id,
             'user_id' => $testUser->id,
-            'start' => '2025-01-01 08:00:12',
-            'end' => '2025-01-01 16:00:01',
-            'created_at' => '2025-01-02 09:15:01',
+            'start' => Carbon::now()->subDays(3)->subHours(8)->format('Y-m-d H:i:s'),
+            'end' => Carbon::now()->subDays(3)->subHours(4)->format('Y-m-d H:i:s'),
+            'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
             'status' => 'created',
         ])->create();
 
