@@ -61,12 +61,13 @@ class WorkLogController extends Controller
             'user' => $user->only('id', 'first_name', 'last_name'),
             'workLogs' => WorkLog::where('user_id', $user->id)
                 ->whereNotNull('end')
-                ->with('workLogPatches:id,work_log_id,updated_at,status,start,end,is_home_office')
+                ->with('workLogPatches:id,work_log_id,updated_at,status,start,end,is_home_office,comment')
                 ->orderBy('start', 'DESC')
                 ->paginate(12),
             'can' => [
                 'workLogPatch' => [
                     'create' => Gate::allows('create', [WorkLogPatch::class, $user]),
+                    'update' => Gate::allows('update', [WorkLogPatch::class, $user]),
                 ]
             ]
         ]);

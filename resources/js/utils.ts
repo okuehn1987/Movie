@@ -1,7 +1,7 @@
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { computed, onMounted, onUnmounted, ref, Ref, watch } from 'vue';
-import { Country, Paginator, State, TimeAccountSetting, Tree } from './types/types';
+import { Country, Paginator, FederalState, TimeAccountSetting, Tree } from './types/types';
 
 export function useNow() {
     const now = ref(DateTime.now());
@@ -117,7 +117,7 @@ export const mapTree = <K extends string & keyof T, T extends { [x in K]?: T[] }
     return tree.map(e => ({ ...fn(e), [k]: e[k] ? mapTree(e[k], k, fn) : [] } as Tree<MappedType, K>));
 };
 
-export function getStates(country: Country, countries: { title: string; value: Country; regions: Record<State, string> }[]) {
+export function getStates(country: Country, countries: { title: string; value: Country; regions: Record<FederalState, string> }[]) {
     return Object.entries(countries.find(c => c.value === country)?.regions ?? []).map(([k, v]) => ({
         title: v,
         value: k,

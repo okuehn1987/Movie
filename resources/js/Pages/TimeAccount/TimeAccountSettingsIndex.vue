@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { TimeAccountSetting, TRUNCATION_CYCLES } from '@/types/types';
 import { accountType, getTruncationCycleDisplayName } from '@/utils';
-import { useForm } from '@inertiajs/vue3';
 
 defineProps<{ timeAccountSettings: TimeAccountSetting[] }>();
 

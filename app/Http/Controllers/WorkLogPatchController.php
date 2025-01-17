@@ -19,6 +19,7 @@ class WorkLogPatchController extends Controller
         $validated = $request->validate([
             'start' => 'required|date',
             'end' => 'required|date',
+            'comment' => 'nullable|string',
             'is_home_office' => 'required|boolean',
             'workLog' => 'required|exists:work_logs,id'
         ]);
@@ -30,6 +31,7 @@ class WorkLogPatchController extends Controller
             'start' => Carbon::parse($validated['start']),
             'end' => Carbon::parse($validated['end']),
             'status' => 'created',
+            'comment' => $validated['comment'],
             'work_log_id' => $workLog->id,
             'user_id' => $workLog->user_id
         ]);

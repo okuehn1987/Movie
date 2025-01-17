@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useForm, usePage, router } from '@inertiajs/vue3';
+import { usePage, router } from '@inertiajs/vue3';
 
 defineProps<{
     mustVerifyEmail?: boolean;
