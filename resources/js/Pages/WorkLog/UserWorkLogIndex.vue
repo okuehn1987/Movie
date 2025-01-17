@@ -21,7 +21,7 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'workLogs')
 
 const showDialog = ref(false);
 
-const patchMode = ref<'edit' | 'fix' | 'show' | null>(null);
+const patchMode = ref<'edit' | 'show' | null>(null);
 const patchLog = ref<WorkLog | PatchProp | null>(null);
 const inputVariant = computed(() => (patchLog.value ? 'plain' : 'underlined'));
 
@@ -36,6 +36,7 @@ const workLogForm = useForm({
     id: -1,
     start: new Date(),
     end: new Date(),
+    comment: null as null | string,
     start_time: '',
     end_time: '',
     is_home_office: false,
@@ -70,10 +71,7 @@ function editWorkLog(id: WorkLog['id']) {
     const workLog = props.workLogs.data.find(e => e.id === id);
     if (!workLog) return;
     const lastPatch = workLog.work_log_patches.at(-1);
-    if (!workLog.end) {
-        patchMode.value = 'fix';
-        patchLog.value = workLog;
-    } else if (!lastPatch) {
+    if (!lastPatch) {
         patchLog.value = null;
         patchMode.value = 'edit';
     } else if (lastPatch && lastPatch.status === 'created') {
@@ -87,6 +85,7 @@ function editWorkLog(id: WorkLog['id']) {
         start = patchLog.value.start;
         end = patchLog.value.end;
         isHomeOffice = patchLog.value.is_home_office;
+        workLogForm.comment = 'comment' in patchLog.value ? patchLog.value?.comment : null;
     }
 
     workLogForm.id = id;
@@ -194,7 +193,6 @@ function retreatPatch() {
                                 <v-row>
                                     <v-col cols="12" md="3">
                                         <v-date-input
-                                            :disabled="patchMode == 'fix'"
                                             label="Start"
                                             data-testid="userTimeCorrectionStartDay"
                                             required
@@ -206,7 +204,6 @@ function retreatPatch() {
                                     </v-col>
                                     <v-col cols="12" md="3">
                                         <v-text-field
-                                            :disabled="patchMode == 'fix'"
                                             type="time"
                                             label="Start"
                                             data-testid="userTimeCorrectionStartTime"
@@ -218,7 +215,6 @@ function retreatPatch() {
                                     </v-col>
                                     <v-col cols="12" md="3">
                                         <v-date-input
-                                            :disabled="patchMode == 'fix'"
                                             label="Ende"
                                             data-testid="userTimeCorrectionEndDay"
                                             required
@@ -240,7 +236,16 @@ function retreatPatch() {
                                             :variant="inputVariant"
                                         ></v-text-field>
                                     </v-col>
-
+                                    <v-col cols="12">
+                                        <v-textarea
+                                            label="Bemerkung (optional)"
+                                            v-model="workLogForm.comment"
+                                            :error-messages="workLogForm.errors.comment"
+                                            variant="filled"
+                                            rows="3"
+                                        >
+                                        </v-textarea>
+                                    </v-col>
                                     <v-col cols="12" md="3">
                                         <v-checkbox
                                             :disabled="!!patchLog"
@@ -255,13 +260,19 @@ function retreatPatch() {
 
                                     <v-col cols="12" class="text-end">
                                         <v-btn
-                                            v-if="patchLog && $page.props.auth.user.id == user.id"
+                                            v-if="patchLog && can('workLogPatch', 'update') && patchMode === 'show'"
                                             :loading="workLogForm.processing"
                                             @click.stop="retreatPatch"
                                             color="primary"
                                             >Antrag zurückziehen</v-btn
                                         >
-                                        <v-btn v-else :loading="workLogForm.processing" type="submit" color="primary">Korrektur beantragen</v-btn>
+                                        <v-btn
+                                            v-else-if="can('workLogPatch', 'create') && patchMode === 'edit'"
+                                            :loading="workLogForm.processing"
+                                            type="submit"
+                                            color="primary"
+                                            >Korrektur beantragen</v-btn
+                                        >
                                     </v-col>
                                 </v-row>
                             </v-form>
