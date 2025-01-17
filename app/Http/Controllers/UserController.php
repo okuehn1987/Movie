@@ -338,10 +338,15 @@ class UserController extends Controller
             ]);
         }
 
+        $currentWorkingHours = UserWorkingHour::where('user_id', $user->id)
+            ->latest('active_since')
+            ->where('active_since', '<', Carbon::now()->startOfDay())
+            ->first();
+
         TimeAccount::create([
             'name' => 'Gleitzeitkonto',
             'balance' => 0,
-            'balance_limit' => $validated['userWorkingHours'] * 2,
+            'balance_limit' => ($currentWorkingHours?->weekly_working_hours ?? 40) * 2,
             'time_account_setting_id' => TimeAccountSetting::inOrganization()->whereNull('type')->first()->id,
             'user_id' => $user->id
         ]);
