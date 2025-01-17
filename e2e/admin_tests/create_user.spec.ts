@@ -1,6 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { adminLogin, resetAndSeedDatabase } from '../utils';
 import { php } from '../laravel-helpers';
+import { DateTime } from 'luxon';
+
+const date = DateTime.now().setLocale('de-DE');
+// await page.getByLabel('Von').fill(date.plus({ day: 5 }).toFormat('yyyy-MM-dd'));
 
 test.beforeEach('admin login', async ({ page }) => {
     await resetAndSeedDatabase(page);
@@ -40,7 +44,7 @@ test('creates and deletes a new user', async ({ page }) => {
     await page.getByLabel('Email').fill('test@test.de');
     await page.getByLabel('Passwort').click();
     await page.getByLabel('Passwort').fill('test');
-    await page.getByLabel('Geburtsdatum').fill('1111-11-11');
+    await page.getByLabel('Geburtsdatum').fill('1970-11-11');
 
     //Adresse
     await page.getByLabel('Straße').fill('test lane');
@@ -60,7 +64,10 @@ test('creates and deletes a new user', async ({ page }) => {
     //Wochenarbeitszeit
     await page.getByRole('row', { name: 'Stunden pro Woche Aktiv seit' }).getByRole('button').click();
     await page.getByTestId('userWorkingHours-hours').getByLabel('').fill('40');
-    await page.getByTestId('userWorkingHours-since').getByLabel('').fill('2025-01-10');
+    await page
+        .getByTestId('userWorkingHours-since')
+        .getByLabel('')
+        .fill(date.minus({ day: 5 }).toFormat('yyyy-MM-dd'));
 
     //Arbeitswoche
     await page.getByRole('row', { name: 'Beschäftigungstage Aktiv seit' }).getByRole('button').click();
@@ -70,12 +77,18 @@ test('creates and deletes a new user', async ({ page }) => {
     await page.getByText('Donnerstag').click();
     await page.getByText('Freitag').click();
     await page.getByTestId('userWorkingDays').click();
-    await page.getByTestId('userWorkingDays-since').getByLabel('').fill('2025-01-10');
+    await page
+        .getByTestId('userWorkingDays-since')
+        .getByLabel('')
+        .fill(date.minus({ day: 5 }).toFormat('yyyy-MM-dd'));
 
     //Urlaubstage
     await page.getByRole('row', { name: 'Anzahl der Urlaubstage Aktiv' }).getByRole('button').click();
     await page.getByTestId('userLeaveDays').getByLabel('').fill('40');
-    await page.getByTestId('userLeaveDays-since').getByLabel('').fill('2025-01');
+    await page
+        .getByTestId('userLeaveDays-since')
+        .getByLabel('')
+        .fill(date.minus({ day: 5 }).toFormat('yyyy-MM'));
 
     //Homeoffice
     await page.getByLabel('Darf der Mitarbeitende').check();
@@ -143,7 +156,6 @@ test('creates and deletes a new user', async ({ page }) => {
 });
 
 test('changes seeded user', async ({ page }) => {
-    // changes information of previously added user
     // Allgemeine Angaben
     await expect(page.getByRole('cell', { name: 'user', exact: true }).first()).toBeVisible();
     await page.getByRole('row', { name: 'user user user@user.com' }).getByRole('link').getByRole('button').click();
@@ -154,7 +166,12 @@ test('changes seeded user', async ({ page }) => {
     // Wochenarbeitszeit
     await page.getByRole('row', { name: 'Stunden pro Woche Aktiv seit' }).getByRole('button').click();
     await page.getByTestId('userWorkingHours-hours').getByLabel('').nth(1).fill('35');
-    await page.getByTestId('userWorkingHours-since').getByLabel('').nth(1).fill('2026-01-10');
+    await page
+        .getByTestId('userWorkingHours-since')
+        .getByLabel('')
+        .nth(1)
+        .fill(date.plus({ day: 2 }).toFormat('yyyy-MM-dd'));
+    //TODO: add check if things in past cannot be saved, use reload window
 
     //Arbeitswoche
     await page.getByRole('row', { name: 'Beschäftigungstage Aktiv seit' }).getByRole('button').click();
@@ -162,12 +179,22 @@ test('changes seeded user', async ({ page }) => {
     await page.getByText('Samstag').click();
     await page.getByText('Sonntag').click();
     await page.getByTestId('userWorkingDays').nth(1).click();
-    await page.getByTestId('userWorkingDays-since').getByLabel('').nth(1).fill('2026-01-10');
+    await page
+        .getByTestId('userWorkingDays-since')
+        .getByLabel('')
+        .nth(1)
+        .fill(date.plus({ day: 2 }).toFormat('yyyy-MM-dd'));
+    //TODO: add check if things in past cannot be saved, use reload window
 
     //Urlaubstage
     await page.getByRole('row', { name: 'Anzahl der Urlaubstage Aktiv' }).getByRole('button').click();
     await page.getByTestId('userLeaveDays').getByLabel('').nth(1).fill('20');
-    await page.getByTestId('userLeaveDays-since').getByLabel('').nth(1).fill('2026-01');
+    await page
+        .getByTestId('userLeaveDays-since')
+        .getByLabel('')
+        .nth(1)
+        .fill(date.plus({ month: 1 }).toFormat('yyyy-MM'));
+    //TODO: add check if things in past cannot be saved, use reload window
 
     //Homeoffice
     await page.getByLabel('Darf der Mitarbeitende').check();
