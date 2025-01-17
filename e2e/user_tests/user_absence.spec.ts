@@ -25,17 +25,26 @@ test('checks calendar function', async ({ page }) => {
 });
 
 //TODO: absences can be stacked, also in database, no edit nor delete option
-test('tests absence entry button', async ({ page }) => {
+test('can request a vacation', async ({ page }) => {
+    await page.getByRole('cell', { name: 'user user' }).click();
     await page.getByRole('row', { name: 'user user' }).locator('button').click();
-    await expect(page.getByText('Abwesenheit beantragen')).toBeVisible();
-    await page.locator('.v-field__input').first().click();
-    await page.getByRole('option', { name: 'Bildungsurlaub' }).click();
-    await page.getByLabel('Von', { exact: true }).click();
-    await page.getByRole('button', { name: '10' }).click();
-    await page.getByRole('button', { name: 'OK' }).click();
-    await page.getByLabel('Bis', { exact: true }).click();
-    await page.getByRole('button', { name: '12' }).click();
-    await page.getByRole('button', { name: 'OK' }).click();
+    await page.locator('form').filter({ hasText: 'Abwesenheitsgrund' }).locator('i').click();
+    await page.getByText('Urlaub', { exact: true }).click();
+    await page.getByLabel('Von').fill('2025-01-10');
+    await page.getByLabel('Bis').fill('2025-01-20');
     await page.getByRole('button', { name: 'beantragen' }).click();
-    await expect(page.getByText('Abwesenheit beantragen')).not.toBeVisible();
+
+    //admin login
+    await page.getByRole('button', { name: 'Abmelden' }).click();
+    await page.getByLabel('Email').fill('admin@admin.com');
+    await page.getByLabel('Passwort').fill('admin');
+    await page.getByRole('button', { name: 'Login' }).click();
+
+    //admin checks absences
+    await page.getByText('Mitarbeitende').click();
+    await page.getByRole('row', { name: 'user user user@user.com /' }).getByRole('link').getByRole('button').click();
+    await page.getByRole('tab', { name: 'Abwesenheiten' }).click();
+    await expect(page.getByRole('cell', { name: 'Genutzte Urlaubstage für das' })).toBeVisible();
+    await expect(page.getByRole('cell', { name: '7 von 0' })).toBeVisible();
+    await expect(page.getByText('Genehmigt')).toBeVisible();
 });

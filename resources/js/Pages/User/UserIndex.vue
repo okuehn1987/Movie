@@ -43,20 +43,37 @@ defineProps<{
                 hover
             >
                 <template v-slot:header.actions>
-                    <v-dialog max-width="1000" v-if="can('user', 'create')">
+                    <v-dialog max-width="1200" v-if="can('user', 'create')">
                         <template v-slot:activator="{ props: activatorProps }">
                             <v-btn v-bind="activatorProps" color="primary">
                                 <v-icon icon="mdi-plus"></v-icon>
                             </v-btn>
                         </template>
                         <template v-slot:default="{ isActive }">
-                            <UserForm :countries :supervisors :groups :operating_sites :permissions mode="create" @success="isActive.value = false">
-                                <template #append>
-                                    <v-btn icon variant="text" @click="isActive.value = false">
-                                        <v-icon>mdi-close</v-icon>
-                                    </v-btn>
-                                </template>
-                            </UserForm>
+                            <v-card style="overflow: auto" :style="{ maxHeight: getMaxScrollHeight(48) }">
+                                <v-card-text>
+                                    <v-row>
+                                        <v-col cols="12">
+                                            <UserForm
+                                                :countries
+                                                :supervisors
+                                                :groups
+                                                :operating_sites
+                                                :permissions
+                                                mode="create"
+                                                @success="isActive.value = false"
+                                            >
+                                                <!-- TODO: add close icon back to dialog (this is the wrong spot) -->
+                                                <!-- <template #append>
+                                                    <v-btn icon variant="text" @click="isActive.value = false">
+                                                        <v-icon>mdi-close</v-icon>
+                                                    </v-btn>
+                                                </template> -->
+                                            </UserForm>
+                                        </v-col>
+                                    </v-row>
+                                </v-card-text>
+                            </v-card>
                         </template>
                     </v-dialog>
                 </template>
@@ -65,7 +82,7 @@ defineProps<{
                         <Link
                             v-if="can('user', 'viewShow', item)"
                             :href="
-                                route('user.show', {
+                                route('user.generalInformation', {
                                     user: item.id,
                                 })
                             "

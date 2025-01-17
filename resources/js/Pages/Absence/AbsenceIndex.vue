@@ -2,7 +2,7 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Absence, AbsenceType, Canable, User, UserWorkingWeek, Weekday } from '@/types/types';
 import { getMaxScrollHeight, throttle } from '@/utils';
-import { router, useForm, usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { ref, watch } from 'vue';
 import AbsenceTableCell from './partials/AbsenceTableCell.vue';

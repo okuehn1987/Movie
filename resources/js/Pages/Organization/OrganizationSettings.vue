@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Organization } from '@/types/types';
-import { useForm } from '@inertiajs/vue3';
 
 const props = defineProps<{
     organization: Organization;

@@ -29,24 +29,15 @@ test('create operating Site', async ({ page }) => {
     await expect(page.getByText('Betriebsstätte erfolgreich')).toBeVisible();
 });
 
-test('show and edit created operating site', async ({ page }) => {
+test('show and edit seeded operating site', async ({ page }) => {
     await page.getByRole('row', { name: 'delete me ORG lösch mich 666' }).getByRole('link').getByRole('button').click();
     await expect(page.getByText('delete me ORG')).toBeVisible();
-    await page
-        .locator('div')
-        .filter({ hasText: /^Schleswig-Holstein$/ })
-        .first()
-        .click();
-    await page.getByText('Saarland').click();
+    await page.getByLabel('Ort').click();
+    await page.getByLabel('Ort').fill('untested');
     await page.getByRole('button', { name: 'Aktualisieren' }).click();
     await expect(page.getByText('Betriebsstätte erfolgreich')).toBeVisible();
     await page.getByRole('banner').getByRole('button').first().click();
-    await page
-        .getByRole('row', { name: /.*delete me ORG/ })
-        .getByRole('link')
-        .getByRole('button')
-        .click();
-    await expect(page.getByText('Saarland')).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'untested' })).toBeVisible();
 });
 
 test('add and delete working hours to operating site', async ({ page }) => {
