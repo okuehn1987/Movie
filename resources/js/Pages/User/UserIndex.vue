@@ -63,11 +63,12 @@ defineProps<{
                                                 mode="create"
                                                 @success="isActive.value = false"
                                             >
-                                                <template #append>
+                                                <!-- TODO: add close icon back to dialog (this is the wrong spot) -->
+                                                <!-- <template #append>
                                                     <v-btn icon variant="text" @click="isActive.value = false">
                                                         <v-icon>mdi-close</v-icon>
                                                     </v-btn>
-                                                </template>
+                                                </template> -->
                                             </UserForm>
                                         </v-col>
                                     </v-row>

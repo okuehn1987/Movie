@@ -302,6 +302,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             </template>
                             <template v-slot:item.weekly_working_hours="{ item, index }">
                                 <v-text-field
+                                    data-testid="userWorkingHours-hours"
                                     type="number"
                                     variant="underlined"
                                     v-model="item.weekly_working_hours"
@@ -311,6 +312,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             </template>
                             <template v-slot:item.active_since="{ item, index }">
                                 <v-text-field
+                                    data-testid="userWorkingHours-since"
                                     type="date"
                                     variant="underlined"
                                     :min="mode == 'edit' ? DateTime.now().toFormat('yyyy-MM-dd') : undefined"
@@ -367,6 +369,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             </template>
                             <template v-slot:item.weekdays="{ item, index }">
                                 <v-select
+                                    data-testid="userWorkingDays"
                                     chips
                                     v-model="item.weekdays"
                                     multiple
@@ -381,6 +384,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             </template>
                             <template v-slot:item.active_since="{ item, index }">
                                 <v-text-field
+                                    data-testid="userWorkingDays-since"
                                     type="date"
                                     variant="underlined"
                                     :min="mode == 'edit' ? DateTime.now().toFormat('yyyy-MM-dd') : undefined"
@@ -438,6 +442,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             </template>
                             <template v-slot:item.leave_days="{ item, index }">
                                 <v-text-field
+                                    data-testid="userLeaveDays"
                                     type="number"
                                     variant="underlined"
                                     v-model="item.leave_days"
@@ -447,6 +452,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             </template>
                             <template v-slot:item.active_since="{ item, index }">
                                 <v-text-field
+                                    data-testid="userLeaveDays-since"
                                     type="month"
                                     :min="mode == 'edit' ? DateTime.now().startOf('month').toFormat('yyyy-MM-dd') : undefined"
                                     variant="underlined"
@@ -569,6 +575,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                         :permissions
                         :errors="userForm.errors"
                         label="Abteilungsrechte"
+                        data-testid="userGroupPermissions"
                     />
                 </v-row>
             </v-card-text>
