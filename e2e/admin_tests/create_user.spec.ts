@@ -4,7 +4,6 @@ import { php } from '../laravel-helpers';
 import { DateTime } from 'luxon';
 
 const date = DateTime.now().setLocale('de-DE');
-// await page.getByLabel('Von').fill(date.plus({ day: 5 }).toFormat('yyyy-MM-dd'));
 
 test.beforeEach('admin login', async ({ page }) => {
     await resetAndSeedDatabase(page);
@@ -13,7 +12,6 @@ test.beforeEach('admin login', async ({ page }) => {
     await expect(page).toHaveURL('/user');
 
     //creates time account type because otherwise not testable
-
     await page.getByText('Organisation', { exact: true }).click();
     await page.getByRole('tab', { name: 'Zeitkontoeinstellungen' }).click();
     await page.getByRole('row', { name: 'Art Berechnungszeitraum' }).getByRole('button').click();

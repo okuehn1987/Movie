@@ -12,7 +12,7 @@ test.beforeEach('user login', async ({ page }) => {
 
 const date = DateTime.now().setLocale('de-DE');
 
-test.skip('checks calendar function', async ({ page }) => {
+test('checks calendar function', async ({ page }) => {
     await expect(page.getByRole('heading', { name: date.toFormat('MMMM yyyy') })).toBeVisible();
     await page.locator('div:nth-child(3) > button').first().click();
     await expect(page.getByRole('heading', { name: date.plus({ month: 1 }).toFormat('MMMM yyyy') })).toBeVisible();

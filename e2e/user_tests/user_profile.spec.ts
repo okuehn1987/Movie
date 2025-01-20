@@ -7,7 +7,7 @@ test.beforeEach('user login', async ({ page }) => {
     await expect(page).toHaveURL('/dashboard');
 });
 
-test.skip('changes profile information, after success changes back', async ({ page }) => {
+test('changes profile information, after success changes back', async ({ page }) => {
     await page.getByRole('button', { name: 'Profil' }).click();
     await expect(page.getByText('Profil', { exact: true })).toBeVisible();
     await expect(page.getByText('Profil-Informationen')).toBeVisible();
@@ -25,7 +25,7 @@ test.skip('changes profile information, after success changes back', async ({ pa
     await expect(page.getByText('Profilinformationen erfolgreich gespeichert.')).toBeVisible();
 });
 
-test.skip('trys to fill false password length then changes password', async ({ page }) => {
+test('trys to fill false password length then changes password', async ({ page }) => {
     //trys to fill password with less than 8 characters
     await page.getByRole('button', { name: 'Profil' }).click();
     await page.getByLabel('Aktuelles Passwort').fill('user');
