@@ -21,7 +21,7 @@ export default defineConfig({
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
     reporter: [['list'], ['html']],
     /* Timeout for find, since our server is on the slower side of things 1 min instead of 30s  */
-    timeout: 30000,
+    timeout: 60000,
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
         /* Base URL to use in actions like `await page.goto('/')`. */
