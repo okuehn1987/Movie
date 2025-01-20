@@ -67,7 +67,7 @@ class WorkLogController extends Controller
             'can' => [
                 'workLogPatch' => [
                     'create' => Gate::allows('create', [WorkLogPatch::class, $user]),
-                    'update' => Gate::allows('update', [WorkLogPatch::class, $user]),
+                    'delete' => Gate::allows('delete', [WorkLogPatch::class, $user]),
                 ]
             ]
         ]);
