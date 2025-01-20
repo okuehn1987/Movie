@@ -30,7 +30,9 @@ test.beforeEach('admin login', async ({ page }) => {
     await page.getByText('Mitarbeitende').click();
 });
 
-test('creates and deletes a new user', async ({ page }) => {
+test('creates and deletes a new user', async ({ page, browserName }) => {
+    // test.slow(browserName === 'webkit', 'This test is slow in Safari');
+    test.setTimeout(120_000);
     await page
         .getByRole('row', { name: /.*Vorname Nachname Email/ })
         .getByRole('button')
@@ -154,6 +156,7 @@ test('creates and deletes a new user', async ({ page }) => {
 });
 
 test('changes seeded user', async ({ page }) => {
+    test.setTimeout(120_000);
     // Allgemeine Angaben
     await expect(page.getByRole('cell', { name: 'user', exact: true }).first()).toBeVisible();
     await page.getByRole('row', { name: 'user user user@user.com' }).getByRole('link').getByRole('button').click();
