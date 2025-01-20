@@ -61,7 +61,9 @@ class DatabaseSeederE2E extends Seeder
                             'sunday',
                         ][$sequence->index % 7]]))
             )
-            ->has(Group::factory(3))->create();
+            ->has(Group::factory(1, ['name' => 'Beispiel']))
+            ->has(Group::factory(3))
+            ->create();
 
         foreach (AbsenceType::$DEFAULTS as $type) {
             AbsenceType::factory([
