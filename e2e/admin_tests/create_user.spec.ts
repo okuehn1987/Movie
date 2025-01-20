@@ -366,8 +366,8 @@ test('tests time_account function', async ({ page }) => {
     await expect(page.getByRole('cell', { name: '+ 40' }).locator('span').first()).toBeVisible();
 });
 
-test.skip('trys organigramm', async ({ page }) => {
-    await page.getByRole('row', { name: 'user user user@' }).getByRole('link').getByRole('button').click();
-    await page.getByRole('tab', { name: 'Organigramm' }).click();
-    await expect(page.getByText('user user', { exact: true })).toBeVisible();
-});
+// test('trys organigramm', async ({ page }) => {
+//     await page.getByRole('row', { name: 'user user user@' }).getByRole('link').getByRole('button').click();
+//     await page.getByRole('tab', { name: 'Organigramm' }).click();
+//     await expect(page.getByText('user user', { exact: true })).toBeVisible();
+// });
