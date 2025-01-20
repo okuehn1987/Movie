@@ -44,10 +44,10 @@ function submitOperatingTime() {
                         :key="operatingTime.id"
                         :title="WEEKDAYS.find(e => e.key === operatingTime.type)?.value"
                         :subtitle="
-                            DateTime.fromFormat(operatingTime.start, 'HH:mm:ss').toFormat('HH:mm') +
+                            DateTime.fromSQL(operatingTime.start).toFormat('HH:mm') +
                             ' Uhr' +
                             ' - ' +
-                            DateTime.fromFormat(operatingTime.end, 'HH:mm:ss').toFormat('HH:mm') +
+                            DateTime.fromSQL(operatingTime.end).toFormat('HH:mm') +
                             ' Uhr'
                         "
                     >
