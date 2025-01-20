@@ -172,6 +172,7 @@ function retreatPatch() {
                             workLogs.data.find(log => log.id === item.id)?.work_log_patches.at(-1)?.status === 'created' ? 'mdi-eye' : 'mdi-pencil'
                         "
                         variant="text"
+                        data-testid="eye"
                     >
                     </v-btn>
                 </template>
