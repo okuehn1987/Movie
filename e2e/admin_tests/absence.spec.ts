@@ -36,11 +36,10 @@ test('creates an absence in the calendar', async ({ page }) => {
             .first(),
     ).toBeVisible();
     await page.getByLabel('Von', { exact: true }).click();
-    await page.getByRole('button', { name: '12' }).click();
-    await page.getByRole('button', { name: 'OK' }).click();
-    await page.getByLabel('Bis', { exact: true }).click();
-    await page.getByRole('button', { name: '15' }).click();
-    await page.getByRole('button', { name: 'OK' }).click();
+    await page.getByLabel('Von').fill('2025-03-01');
+    await page.getByLabel('Von').press('ArrowLeft');
+    await page.getByLabel('Von').fill('2025-01-31');
+    await page.getByLabel('Bis').fill('2025-02-10');
     await page.getByRole('button', { name: 'beantragen' }).click();
     await expect(page.getByText('Abwesenheit beantragt.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'BU' }).first()).toBeVisible();

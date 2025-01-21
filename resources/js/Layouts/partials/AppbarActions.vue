@@ -53,7 +53,7 @@ function readNotification(notification: Notification) {
         </v-list>
     </v-menu>
 
-    <Link :href="route('user.show', { user: $page.props.auth.user.id })">
+    <Link :href="route('user.profile', { user: $page.props.auth.user.id })">
         <v-btn stacked color="black" prepend-icon="mdi-account" title="Profil" />
     </Link>
 

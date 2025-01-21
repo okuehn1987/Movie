@@ -9,12 +9,7 @@ class UserLeaveDay extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'leave_days',
-        'type',
-        'active_since',
-    ];
+    protected $guarded = [];
 
     public function user()
     {

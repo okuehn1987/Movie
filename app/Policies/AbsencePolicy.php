@@ -9,9 +9,12 @@ class AbsencePolicy
 {
     use _AllowSuperAdminAndOrganizationOwner;
 
-    public function viewIndex(User $user)
+    public function viewIndex(User $authUser, User $user)
     {
-        return true;
+        return
+            $authUser->id === $user->id ||
+            $authUser->id === $user->supervisor_id ||
+            $authUser->hasPermissionOrDelegation($user, 'absence_permission', 'read');
     }
     public function viewShow(User $authUser, User $user): bool
     {

@@ -16,7 +16,13 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::resource('user', UserController::class)->only(['index', 'store', 'destroy', 'update', 'show']);
+    Route::resource('user', UserController::class)->only(['index', 'store', 'destroy', 'update']);
+    Route::get('/user/{user}/generalInformation', [UserController::class, 'generalInformation'])->name('user.generalInformation');
+    Route::get('/user/{user}/absences', [UserController::class, 'absences'])->name('user.absences');
+    Route::get('/user/{user}/timeAccounts', [UserController::class, 'timeAccounts'])->name('user.timeAccounts');
+    Route::get('/user/{user}/timeAccountTransactions', [UserController::class, 'timeAccountTransactions'])->name('user.timeAccountTransactions');
+    Route::get('/user/{user}/userOrganigram', [UserController::class, 'userOrganigram'])->name('user.userOrganigram');
+    Route::get('/user/profile', [UserController::class, 'profile'])->name('user.profile');
 
     Route::resource('organization', OrganizationController::class)->only(['show', 'update']);
     Route::resource('absence', AbsenceController::class)->only(['index', 'update', 'store']);
