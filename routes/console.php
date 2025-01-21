@@ -43,15 +43,15 @@ Schedule::call(function () {
 
     $users = User::with(['operatingSite', 'defaultTimeAccount'])->get();
     $workLogsToCut = WorkLog::whereBetween('start', [Carbon::yesterday()->startOfDay(), Carbon::yesterday()->endOfDay()])
-        ->where('end', null)
-        ->latest('start')
+        ->whereNull('end')
+        ->orderBy('start','asc')
         ->get();
 
     //cut the current active worklog at 23:59:59 to make calculations easier
     foreach ($users as $user) {
         $lastWorkLog = $workLogsToCut->first(fn($w) => $w->user_id == $user->id);
 
-        if ($lastWorkLog && $lastWorkLog->end != null) {
+        if ($lastWorkLog && is_null($lastWorkLog->end)) {
             $user->latestWorkLog->update([
                 'end' => Carbon::yesterday()->endOfDay()
             ]);
