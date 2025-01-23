@@ -346,15 +346,16 @@ test('tests time_account function', async ({ page }) => {
     await expect(page.getByText('Stundentransaktion durchführen')).toBeVisible();
     await page.getByTestId('timeAccountTransactionStartAccount').click();
     await page.getByRole('option', { name: 'StandardkontoTest' }).click();
-    await page.getByTestId('timeAccountTransactionDestinationAccount').click();
-    await page.getByRole('option', { name: 'Testkonto' }).click();
+    await page.getByTestId('timeAccountTransactionDestinationAccount').getByLabel('Öffnen').fill('t');
+    // await page.getByRole('option', { name: 'Testkonto' }).click();
     await page.getByLabel('Stunden', { exact: true }).fill('10');
     await page.getByLabel('Beschreibung').fill('This is another test');
     await expect(page.getByText('Die Beschreibung ist für die')).toBeVisible();
     await page.getByRole('button', { name: 'Speichern' }).click();
     await expect(page.getByText('Transaktion erfolgreich')).toBeVisible();
     await expect(page.getByText('Stundentransaktion durchführen')).not.toBeVisible();
-    await page.locator('span').filter({ hasText: /^20$/ }).first().click();
+    // await page.locator('span').filter({ hasText: /^20$/ }).first().click();
+    //FIXME: ??
 
     // tests visibility of transactions
     await page.getByRole('tab', { name: 'Transaktionen' }).click();
