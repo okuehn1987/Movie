@@ -226,6 +226,7 @@ test('changes seeded user', async ({ page }) => {
         .locator('span')
         .click();
     await page.getByRole('option', { name: 'Lesen' }).click();
+
     await page
         .getByTestId('userOperatingSitePermissions')
         .locator('div')

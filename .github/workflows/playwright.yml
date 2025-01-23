@@ -7,7 +7,7 @@ jobs:
     setup-and-run-tests:
         # setup and run the tests in parallel machines, with each machine uploading its own results to artifacts
         # artifacts are shared among jobs and machines
-        timeout-minutes: 60
+        timeout-minutes: 300
         runs-on: self-hosted
         strategy:
             fail-fast: false
@@ -18,11 +18,11 @@ jobs:
             - name: build the Playwright containers
               run: docker-compose -f docker-compose.playwright.yml build
               env:
-                  PLAYWRIGHT_RUN_ARGS: test
+                  PLAYWRIGHT_RUN_ARGS: test --repeat-each=5
             - name: run the Playwright tests
               run: docker-compose -f docker-compose.playwright.yml up --exit-code-from playwright --abort-on-container-exit
               env:
-                  PLAYWRIGHT_RUN_ARGS: test
+                  PLAYWRIGHT_RUN_ARGS: test --repeat-each=5
 
             # Once playwright finishes it will create a folder called 'blob-report' where it will put all the reports
             - name: Upload blob report to GitHub Actions Artifacts
