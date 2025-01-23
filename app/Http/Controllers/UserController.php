@@ -431,7 +431,7 @@ class UserController extends Controller
             ->delete();
 
         foreach ($validated['userLeaveDays'] as $leaveDay) {
-            if (Carbon::now()->startOfDay()->gt(Carbon::parse($leaveDay['active_since'])))
+            if (Carbon::now()->startOfYear()->gt(Carbon::parse($leaveDay['active_since'])))
                 continue;
 
             UserLeaveDay::updateOrCreate([
