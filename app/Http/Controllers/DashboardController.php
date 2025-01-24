@@ -40,9 +40,10 @@ class DashboardController extends Controller
                     ->where('start', '>=', Carbon::now()->subDays(6)->startOfDay()->format('Y-m-d'))
                     ->orWhere('end', '>=', Carbon::now()->subDays(6)->startOfDay()->format('Y-m-d'))
             )
+            ->orderBy('start', 'desc')
             ->whereNotNull('end')
-            ->get(['id', 'start', 'end'])
-            ->append('duration');
+            ->with(['currentAcceptedPatch'])
+            ->get(['id', 'start', 'end']);
 
         return Inertia::render('Dashboard/Dashboard', [
             'lastWorkLog' => WorkLog::select('id', 'start', 'end', 'is_home_office')
