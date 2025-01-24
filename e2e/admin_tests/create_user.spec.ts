@@ -101,12 +101,6 @@ test('creates and deletes a new user', async ({ page, browserName }) => {
         .locator('span')
         .click();
     await page.getByText('Schreiben').click();
-    await page
-        .locator('div')
-        .filter({ hasText: /^Abteilungen verwaltenKeine Rechte$/ })
-        .locator('span')
-        .click();
-    await page.getByText('Lesen').click();
 
     //Betriebsstätte
     await page.getByTestId('userOperatingSiteSelection').locator('i').click();
@@ -118,13 +112,6 @@ test('creates and deletes a new user', async ({ page, browserName }) => {
         .locator('span')
         .click();
     await page.getByRole('option', { name: 'Lesen' }).click();
-    await page
-        .getByTestId('userOperatingSitePermissions')
-        .locator('div')
-        .filter({ hasText: /^Zeitkonten verwaltenKeine Rechte$/ })
-        .locator('span')
-        .click();
-    await page.getByRole('option', { name: 'Schreiben' }).click();
 
     //Abteilung
     const group = await php({ page, command: 'App\\Models\\Group::first()->name' });
