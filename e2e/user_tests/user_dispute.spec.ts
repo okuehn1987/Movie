@@ -11,7 +11,6 @@ test('withdraws pre seeded time correction and ads another, accepts as admin and
     //withdraws seeded time correction
     await page.getByRole('button').nth(3).click();
     await expect(page.getByRole('cell', { name: 'Beantragt' })).toBeVisible();
-    // await page.getByRole('row', { name: '14.01.2025 06:06 14.01.2025' }).getByRole('button').click();
     await page.getByTestId('entryToWorkLog').click();
     await page.getByRole('button', { name: 'Antrag zurückziehen' }).click();
     await expect(page.getByText('Antrag auf Zeitkorrektur')).toBeVisible();

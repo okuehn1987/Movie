@@ -31,8 +31,7 @@ test.beforeEach('admin login', async ({ page }) => {
 });
 
 test('creates and deletes a new user', async ({ page, browserName }) => {
-    // test.slow(browserName === 'webkit', 'This test is slow in Safari');
-    test.setTimeout(120_000);
+    test.slow();
     await page
         .getByRole('row', { name: /.*Vorname Nachname Email/ })
         .getByRole('button')
@@ -156,9 +155,8 @@ test('creates and deletes a new user', async ({ page, browserName }) => {
 });
 
 test('changes seeded user', async ({ page }) => {
-    // const group = await php({ page, command: 'App\\Models\\Group::first()->name' });
+    test.slow();
 
-    test.setTimeout(120_000);
     // Allgemeine Angaben
     await expect(page.getByRole('cell', { name: 'user', exact: true }).first()).toBeVisible();
     await page.getByRole('row', { name: 'user user user@user.com' }).getByRole('link').getByRole('button').click();
@@ -350,6 +348,7 @@ test('tests time_account function', async ({ page }) => {
     await page.getByTestId('timeAccountTransactionStartAccount').click();
     await page.getByRole('option', { name: 'StandardkontoTest' }).click();
     await page.getByTestId('timeAccountTransactionDestinationAccount').getByLabel('Öffnen').fill('t');
+
     // await page.getByRole('option', { name: 'Testkonto' }).click();
     await page.getByLabel('Stunden', { exact: true }).fill('10');
     await page.getByLabel('Beschreibung').fill('This is another test');
@@ -357,8 +356,6 @@ test('tests time_account function', async ({ page }) => {
     await page.getByRole('button', { name: 'Speichern' }).click();
     await expect(page.getByText('Transaktion erfolgreich')).toBeVisible();
     await expect(page.getByText('Stundentransaktion durchführen')).not.toBeVisible();
-    // await page.locator('span').filter({ hasText: /^20$/ }).first().click();
-    //FIXME: ??
 
     // tests visibility of transactions
     await page.getByRole('tab', { name: 'Transaktionen' }).click();
