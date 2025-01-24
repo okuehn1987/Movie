@@ -31,6 +31,16 @@ const currentWorkingHours = computed(() =>
         ? props.workingHours.current
         : now.value.diff(DateTime.fromSQL(props.lastWorkLog?.start || '')).as('hours') + props.workingHours.current,
 );
+
+const lastActionText = computed(() => {
+    if (!props.lastWorkLog) return;
+    const endTime = DateTime.fromSQL(props.lastWorkLog.end ?? props.lastWorkLog.start);
+    const diff = now.value.diff(endTime);
+    if (diff.as('hours') < 1) {
+        return 'vor ' + Math.floor(diff.as('minutes')) + ' minuten';
+    }
+    return endTime.toFormat('HH:mm') + 'Uhr';
+});
 </script>
 <template>
     <v-card title="Arbeitszeit">
@@ -107,7 +117,7 @@ const currentWorkingHours = computed(() =>
 
                         <div class="d-flex flex-column">
                             {{ lastWorkLog.end ? 'Gehen' : 'Kommen' }}
-                            <div class="text-h6">{{ DateTime.fromSQL(lastWorkLog.end ?? lastWorkLog.start).toFormat('HH:mm') }} Uhr</div>
+                            <div class="text-h6">{{ lastActionText }}</div>
                         </div>
                     </div>
                 </v-col>
