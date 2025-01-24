@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 import { SpecialWorkingHoursFactor, Weekday } from '@/types/types';
-import { useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 defineProps<{

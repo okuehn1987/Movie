@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { OperatingSite, OperatingTime } from '@/types/types';
-import { Link, useForm } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 
 const props = defineProps<{

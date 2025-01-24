@@ -61,6 +61,7 @@ const vuetify = createVuetify({
 });
 
 import canPlugin from './canPlugin';
+import useFormPlugin from './useFormPlugin';
 
 createInertiaApp({
     title: title => `${title} - ${appName}`,
@@ -70,6 +71,7 @@ createInertiaApp({
             .use(plugin)
             .use(ZiggyVue)
             .use(canPlugin)
+            .use(useFormPlugin)
             .use(vuetify)
             .mount(el);
     },

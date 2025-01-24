@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import GuestLayout from '@/Layouts/GuestLayout.vue';
-import { useForm } from '@inertiajs/vue3';
 
 const form = useForm({
     password: '',

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { CountryProp, OperatingSite } from '@/types/types';
 import { getStates } from '@/utils';
-import { useForm } from '@inertiajs/vue3';
 
 const props = defineProps<{
     operatingSite: OperatingSite;

@@ -43,16 +43,16 @@ Schedule::call(function () {
 
     $users = User::with(['operatingSite', 'defaultTimeAccount'])->get();
     $workLogsToCut = WorkLog::whereBetween('start', [Carbon::yesterday()->startOfDay(), Carbon::yesterday()->endOfDay()])
-        ->where('end', null)
-        ->latest('start')
+        ->whereNull('end')
+        ->orderBy('start', 'asc')
         ->get();
 
     //cut the current active worklog at 23:59:59 to make calculations easier
     foreach ($users as $user) {
         $lastWorkLog = $workLogsToCut->first(fn($w) => $w->user_id == $user->id);
 
-        if ($lastWorkLog && $lastWorkLog->end != null) {
-            $user->latestWorkLog->update([
+        if ($lastWorkLog) {
+            $lastWorkLog->update([
                 'end' => Carbon::yesterday()->endOfDay()
             ]);
 
@@ -60,7 +60,7 @@ Schedule::call(function () {
                 'start' => Carbon::now()->startOfDay(),
                 'end' => null,
                 'user_id' => $user->id,
-                'is_home_office' => $user->latestWorkLog->is_home_office
+                'is_home_office' => $lastWorkLog->is_home_office
             ]);
         }
     }
@@ -82,9 +82,11 @@ Schedule::call(function () {
         //calculate overtime of $day
         foreach ($users as $user) {
             if ($day->lt(Carbon::parse($user->overtime_calculations_start))) continue;
-            $currentWorkingHours = $user->userWorkingHoursForDate($day);
 
+            $currentWorkingHours = $user->userWorkingHoursForDate($day);
             $currentWorkingWeek = $user->userWorkingWeekForDate($day);
+            if (!$currentWorkingHours || !$currentWorkingWeek) continue;
+
             $workingDaysInWeek = $currentWorkingWeek?->numberOfWorkingDays;
 
             $hasAbsenceForDay = $user->absences()
@@ -100,7 +102,7 @@ Schedule::call(function () {
             $workLogsForDay = $user->workLogs()->whereNotNull('end')->whereBetween('start', [$day->copy()->startOfDay(), $day->copy()->endOfDay()])->get();
 
             $istStunden = $workLogsForDay->sum('duration');
-            $sollStunden = $currentWorkingHours['weekly_working_hours'] / $workingDaysInWeek;
+            $sollStunden = $currentWorkingHours->weekly_working_hours / $workingDaysInWeek;
 
             if (!$shouldWorkYesterday) {
                 $sollStunden = 0;
