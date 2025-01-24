@@ -1,8 +1,8 @@
 type Branded<T, Brand extends string> = T & { [x in `__${Brand}__`]: void };
 
-type DateString = Branded<string, 'date'>;
-type TimeString = Branded<string, 'time'>;
-type DateTimeString = Branded<string, 'dateTime'>;
+export type DateString = Branded<string, 'date'>;
+export type TimeString = Branded<string, 'time'>;
+export type DateTimeString = Branded<string, 'dateTime'>;
 
 export type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
