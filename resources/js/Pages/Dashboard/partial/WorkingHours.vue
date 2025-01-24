@@ -2,7 +2,7 @@
 import { OperatingTime, WorkLog } from '@/types/types';
 import { roundTo, useNow } from '@/utils';
 import { router, usePage } from '@inertiajs/vue3';
-import { DateTime } from 'luxon';
+import { DateTime, Duration } from 'luxon';
 import { computed } from 'vue';
 
 const props = defineProps<{
@@ -58,7 +58,7 @@ const lastActionText = computed(() => {
                         <div class="d-flex flex-column">
                             Woche gesamt
                             <div class="text-h6">
-                                {{ DateTime.now().startOf('day').plus({ hours: currentWorkingHours }).toFormat('H:mm') }}
+                                {{ Duration.fromObject({ hours: currentWorkingHours }).toFormat('h:mm') }}
                             </div>
                         </div>
                     </div>
@@ -72,7 +72,7 @@ const lastActionText = computed(() => {
                         <div class="d-flex flex-column">
                             Woche Homeoffice
                             <div class="text-h6">
-                                {{ DateTime.now().startOf('day').plus({ hours: workingHours.currentHomeOffice }).toFormat('H:mm') }}
+                                {{ Duration.fromObject({ hours: workingHours.currentHomeOffice }).toFormat('h:mm') }}
                             </div>
                         </div>
                     </div>
