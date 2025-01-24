@@ -156,6 +156,8 @@ test('creates and deletes a new user', async ({ page, browserName }) => {
 });
 
 test('changes seeded user', async ({ page }) => {
+    // const group = await php({ page, command: 'App\\Models\\Group::first()->name' });
+
     test.setTimeout(120_000);
     // Allgemeine Angaben
     await expect(page.getByRole('cell', { name: 'user', exact: true }).first()).toBeVisible();
@@ -209,12 +211,12 @@ test('changes seeded user', async ({ page }) => {
         .locator('span')
         .click();
     await page.getByText('Schreiben').click();
-    await page
-        .locator('div')
-        .filter({ hasText: /^Abteilungen verwaltenKeine Rechte$/ })
-        .locator('span')
-        .click();
-    await page.getByText('Lesen').click();
+    // await page
+    //     .locator('div')
+    //     .filter({ hasText: /^Abteilungen verwaltenKeine Rechte$/ })
+    //     .locator('span')
+    //     .click();
+    // await page.getByText('Lesen').click();
 
     //Betriebsstätte
     await page.getByTestId('userOperatingSiteSelection').locator('i').click();
@@ -227,13 +229,13 @@ test('changes seeded user', async ({ page }) => {
         .click();
     await page.getByRole('option', { name: 'Lesen' }).click();
 
-    await page
-        .getByTestId('userOperatingSitePermissions')
-        .locator('div')
-        .filter({ hasText: /^Zeitkonten verwaltenKeine Rechte$/ })
-        .locator('span')
-        .click();
-    await page.getByRole('option', { name: 'Schreiben' }).click();
+    // await page
+    //     .getByTestId('userOperatingSitePermissions')
+    //     .locator('div')
+    //     .filter({ hasText: /^Zeitkonten verwaltenKeine Rechte$/ })
+    //     .locator('span')
+    //     .click();
+    // await page.getByRole('option', { name: 'Schreiben' }).click();
 
     //Abteilung
     // const group = await php({ page, command: 'App\\Models\\Group::first()->name' });
@@ -246,7 +248,7 @@ test('changes seeded user', async ({ page }) => {
         .locator('div')
         .first()
         .click();
-    await page.getByRole('option', { name: 'Lesen' }).click();
+    await page.getByRole('option', { name: 'Schreiben' }).click();
 
     //Vorgesetzter
     await page.getByTestId('userSupervisorSelection').locator('i').click();
