@@ -39,7 +39,10 @@ const lastActionText = computed(() => {
     if (diff.as('hours') < 1) {
         return 'vor ' + Math.floor(diff.as('minutes')) + ' minuten';
     }
-    return endTime.toFormat('HH:mm') + 'Uhr';
+    if (endTime.day !== now.value.day) {
+        return endTime.toFormat('dd.MM - HH:mm') + ' Uhr';
+    }
+    return endTime.toFormat('HH:mm') + ' Uhr';
 });
 </script>
 <template>
@@ -68,16 +71,12 @@ const lastActionText = computed(() => {
                         <div class="d-flex flex-column">
                             Woche gesamt
                             <div class="text-h6">
-                                {{ Math.floor(currentWorkingHours || 0) }}:{{
-                                    Math.floor(((currentWorkingHours || 0) % 1) * 60)
-                                        .toString()
-                                        .padStart(2, '0')
-                                }}
+                                {{ DateTime.now().startOf('day').plus({ hours: currentWorkingHours }).toFormat('H:mm') }}
                             </div>
                         </div>
                     </div>
                 </v-col>
-                <v-col cols="12" sm="6" v-if="$page.props.auth.user.home_office">
+                <v-col cols="12" sm="6" v-if="$page.props.auth.user.home_office || workingHours.currentHomeOffice">
                     <div class="d-flex align-center ga-3">
                         <v-avatar color="green" rounded size="40" class="elevation-2">
                             <v-icon size="24" icon="mdi-clock-check" />
@@ -86,11 +85,7 @@ const lastActionText = computed(() => {
                         <div class="d-flex flex-column">
                             Woche Homeoffice
                             <div class="text-h6">
-                                {{ Math.floor(workingHours.currentHomeOffice || 0) }}:{{
-                                    Math.floor(((workingHours.currentHomeOffice || 0) % 1) * 60)
-                                        .toString()
-                                        .padStart(2, '0')
-                                }}
+                                {{ DateTime.now().startOf('day').plus({ hours: workingHours.currentHomeOffice }).toFormat('H:mm') }}
                             </div>
                         </div>
                     </div>
@@ -121,7 +116,16 @@ const lastActionText = computed(() => {
                         </div>
                     </div>
                 </v-col>
-                <v-col cols="12" md="6">
+            </v-row>
+            <v-row>
+                <v-col
+                    cols="12"
+                    md="6"
+                    v-if="
+                        (page.props.auth.user.home_office && (!lastWorkLog || lastWorkLog.end)) ||
+                        (lastWorkLog && lastWorkLog.is_home_office && !lastWorkLog.end)
+                    "
+                >
                     <!-- <v-alert
                         color="error"
                         v-if="currentOperatingTime && now.diff(DateTime.fromFormat(currentOperatingTime.end, 'HH:mm:ss')).as('minutes') < 0"
@@ -131,16 +135,9 @@ const lastActionText = computed(() => {
                     </v-alert> 
                     TODO: determine how to handle working outside of operating hours
                     -->
-                    <div
-                        v-if="
-                            (page.props.auth.user.home_office && (!lastWorkLog || lastWorkLog.end)) ||
-                            (lastWorkLog && lastWorkLog.is_home_office && !lastWorkLog.end)
-                        "
-                    >
-                        <v-btn block size="large" @click.stop="changeWorkStatus(true)" color="primary" class="me-2">
-                            {{ !lastWorkLog || lastWorkLog.end ? 'Kommen Homeoffice' : 'Gehen Homeoffice' }}
-                        </v-btn>
-                    </div>
+                    <v-btn block size="large" @click.stop="changeWorkStatus(true)" color="primary" class="me-2">
+                        {{ !lastWorkLog || lastWorkLog.end ? 'Kommen Homeoffice' : 'Gehen Homeoffice' }}
+                    </v-btn>
                 </v-col>
 
                 <v-col cols="12" md="6">
