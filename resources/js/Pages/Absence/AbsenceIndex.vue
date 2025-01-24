@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Absence, AbsenceType, Canable, User, UserWorkingWeek, Weekday } from '@/types/types';
-import { getMaxScrollHeight, throttle } from '@/utils';
+import { throttle, useMaxScrollHeight } from '@/utils';
 import { router, usePage } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { ref, watch } from 'vue';
@@ -71,6 +71,8 @@ const reload = throttle(() => {
 watch(date, reload);
 
 const loading = ref(false);
+
+const absenceTableHeight = useMaxScrollHeight(80 + 1);
 </script>
 <template>
     <AdminLayout title="Abwesenheiten">
@@ -169,7 +171,7 @@ const loading = ref(false);
             <v-data-table-virtual
                 fixed-header
                 style="white-space: pre"
-                :style="{ maxHeight: getMaxScrollHeight(80 + 1) }"
+                :style="{ maxHeight: absenceTableHeight }"
                 id="absence-table"
                 :items="users.map(u => ({ ...u, name: u.last_name + ', ' + u.first_name }))"
                 :headers="[

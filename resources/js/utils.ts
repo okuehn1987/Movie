@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { computed, onMounted, onUnmounted, ref, Ref, watch } from 'vue';
 import { Country, Paginator, FederalState, TimeAccountSetting, Tree } from './types/types';
@@ -9,6 +9,23 @@ export function useNow() {
     onMounted(() => (interval = setInterval(() => (now.value = DateTime.now()), 1000)));
     onUnmounted(() => clearInterval(interval));
     return now;
+}
+
+export function useMaxScrollHeight(extraHeight: number) {
+    const page = usePage();
+    const height = ref(`calc(100vh - ${80 + extraHeight}px)`);
+    watch(page, () => {
+        if (page.props.flash.error || page.props.flash.success) height.value = `calc(100vh - ${80 + 88 + extraHeight}px)`;
+        else height.value = `calc(100vh - ${80 + extraHeight}px)`;
+    });
+    return height;
+    //  80px = toolbar height + padding-bottom
+    //  88px = flash message height
+}
+
+export function getMaxScrollHeight(extraHeight: number) {
+    //  80px = toolbar height + padding-bottom
+    return `calc(100vh - ${80 + extraHeight}px)`;
 }
 
 export function usePageIsLoading() {
@@ -76,11 +93,6 @@ export function fillNullishValues<T extends Record<string, unknown>, Default ext
             ? Exclude<T[K], null | undefined> | Default
             : T[K];
     };
-}
-
-export function getMaxScrollHeight(extraHeight: number) {
-    //  80px = toolbar height + padding-bottom
-    return `calc(100vh - ${80 + extraHeight}px)`;
 }
 
 export function getTruncationCycleDisplayName(cycleLength: TimeAccountSetting['truncation_cycle_length_in_months']) {
