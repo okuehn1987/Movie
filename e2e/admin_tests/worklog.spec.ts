@@ -8,6 +8,11 @@ test.beforeEach('admin login', async ({ page }) => {
 });
 
 test('admin can decline time correction', async ({ page }) => {
+    await page
+        .locator('div')
+        .filter({ hasText: /^Anträge$/ })
+        .first()
+        .click();
     await expect(page.getByText('Zeitkorrekturen')).toBeVisible();
     await page.getByRole('cell', { name: 'user user' }).click();
     await expect(page.getByText('Zeitkorrektur von user user')).toBeVisible();

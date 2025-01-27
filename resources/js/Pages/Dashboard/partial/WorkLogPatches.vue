@@ -4,7 +4,7 @@ import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { ref } from 'vue';
 
-type PatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id' | 'work_log_id'> & {
+type PatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id' | 'work_log_id' | 'comment'> & {
     work_log: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office'>;
     user: Pick<User, 'id' | 'first_name' | 'last_name'>;
 };
@@ -73,22 +73,31 @@ function changePatchStatus(accepted: boolean) {
                     <v-icon>mdi-close</v-icon>
                 </v-btn>
             </template>
-            <v-data-table-virtual
-                :headers="[
-                    { title: '', key: 'version', sortable: false },
-                    { title: 'Start', key: 'start', sortable: false },
-                    { title: 'Ende', key: 'end', sortable: false },
-                    { title: 'Homeoffice', key: 'is_home_office', sortable: false },
-                ]"
-                :items="
-                    [patchDialog.work_log, patchDialog].map((p, i) => ({
-                        version: i == 0 ? 'Alter Stand:' : 'Neuer Stand:',
-                        start: DateTime.fromSQL(p.start).toFormat('dd.MM.yyyy HH:mm'),
-                        end: p.end ? DateTime.fromSQL(p.end).toFormat('dd.MM.yyyy HH:mm') : 'kein Ende',
-                        is_home_office: p.is_home_office ? 'Ja' : 'Nein',
-                    }))
-                "
-            ></v-data-table-virtual>
+            <v-card-text>
+                <v-row>
+                    <v-col cols="12">
+                        <v-data-table-virtual
+                            :headers="[
+                                { title: '', key: 'version', sortable: false },
+                                { title: 'Start', key: 'start', sortable: false },
+                                { title: 'Ende', key: 'end', sortable: false },
+                                { title: 'Homeoffice', key: 'is_home_office', sortable: false },
+                            ]"
+                            :items="
+                                [patchDialog.work_log, patchDialog].map((p, i) => ({
+                                    version: i == 0 ? 'Alter Stand:' : 'Neuer Stand:',
+                                    start: DateTime.fromSQL(p.start).toFormat('dd.MM.yyyy HH:mm'),
+                                    end: p.end ? DateTime.fromSQL(p.end).toFormat('dd.MM.yyyy HH:mm') : 'kein Ende',
+                                    is_home_office: p.is_home_office ? 'Ja' : 'Nein',
+                                }))
+                            "
+                        ></v-data-table-virtual>
+                    </v-col>
+                    <v-col cols="12">
+                        <v-textarea v-model="patchDialog.comment" readonly label="Bemerkung" variant="filled" rows="3"></v-textarea>
+                    </v-col>
+                </v-row>
+            </v-card-text>
 
             <v-col cols="12" class="d-flex justify-end ga-3">
                 <v-btn color="error" @click.stop="changePatchStatus(false)">Ablehnen</v-btn>

@@ -85,17 +85,17 @@ class DatabaseSeederE2E extends Seeder
 
         $testWorklog = WorkLog::factory([
             'user_id' => $testUser->id,
-            'start' => '2024-12-06 08:15:12',
-            'end' => '2024-12-06 18:00:01',
+            'start' => '2025-01-01 08:15:12',
+            'end' => '2025-01-01 18:00:01',
 
         ])->create();
 
         $testWorklogPatch = WorkLogPatch::factory([
             'work_log_id' => $testWorklog->id,
             'user_id' => $testUser->id,
-            'start' => '2024-12-06 08:00:12',
-            'end' => '2024-12-06 16:00:01',
-            'created_at' => '2024-12-09 09:15:01',
+            'start' => '2025-01-01 08:00:12',
+            'end' => '2025-01-01 16:00:01',
+            'created_at' => '2025-01-02 09:15:01',
             'status' => 'created',
         ])->create();
 

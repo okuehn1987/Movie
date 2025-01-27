@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { AbsenceType } from '@/types/types';
-import { useForm } from '@inertiajs/vue3';
 
 defineProps<{
     absenceTypes: AbsenceType[];

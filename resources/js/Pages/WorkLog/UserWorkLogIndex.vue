@@ -1,31 +1,27 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Paginator, User, WorkLog, WorkLogPatch } from '@/types/types';
-import { usePagination } from '@/utils';
-import { router, useForm } from '@inertiajs/vue3';
+import { User, WorkLog, WorkLogPatch } from '@/types/types';
+import { useMaxScrollHeight } from '@/utils';
+import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
-import { computed, onMounted, ref, toRefs } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 type PatchProp = Omit<WorkLogPatch, 'deleted_at' | 'created_at' | 'user_id'>;
 
 const props = defineProps<{
     user: Pick<User, 'id' | 'first_name' | 'last_name'>;
-    workLogs: Paginator<
-        WorkLog & {
-            work_log_patches: PatchProp[];
-        }
-    >;
+    workLogs: (WorkLog & {
+        work_log_patches: PatchProp[];
+    })[];
 }>();
-
-const { currentPage, lastPage, data } = usePagination(toRefs(props), 'workLogs');
 
 const showDialog = ref(false);
 
-const patchMode = ref<'edit' | 'fix' | 'show' | null>(null);
+const patchMode = ref<'edit' | 'show' | null>(null);
 const patchLog = ref<WorkLog | PatchProp | null>(null);
 const inputVariant = computed(() => (patchLog.value ? 'plain' : 'underlined'));
 
-const editableWorkLogs = computed(() => props.workLogs.data.filter((_, i) => i < 10 ** 10)); // 10 ** 10 to display for now but keep the feature
+const editableWorkLogs = computed(() => props.workLogs.filter((_, i) => i < 10 ** 10)); // 10 ** 10 to display for now but keep the feature
 
 onMounted(() => {
     const workLogId = route().params['workLog'];
@@ -36,6 +32,7 @@ const workLogForm = useForm({
     id: -1,
     start: new Date(),
     end: new Date(),
+    comment: null as null | string,
     start_time: '',
     end_time: '',
     is_home_office: false,
@@ -67,13 +64,10 @@ function submit() {
 }
 
 function editWorkLog(id: WorkLog['id']) {
-    const workLog = props.workLogs.data.find(e => e.id === id);
+    const workLog = props.workLogs.find(e => e.id === id);
     if (!workLog) return;
     const lastPatch = workLog.work_log_patches.at(-1);
-    if (!workLog.end) {
-        patchMode.value = 'fix';
-        patchLog.value = workLog;
-    } else if (!lastPatch) {
+    if (!lastPatch) {
         patchLog.value = null;
         patchMode.value = 'edit';
     } else if (lastPatch && lastPatch.status === 'created') {
@@ -87,6 +81,7 @@ function editWorkLog(id: WorkLog['id']) {
         start = patchLog.value.start;
         end = patchLog.value.end;
         isHomeOffice = patchLog.value.is_home_office;
+        workLogForm.comment = 'comment' in patchLog.value ? patchLog.value?.comment : null;
     }
 
     workLogForm.id = id;
@@ -99,7 +94,7 @@ function editWorkLog(id: WorkLog['id']) {
 }
 
 function retreatPatch() {
-    const workLog = props.workLogs.data.find(e => e.id === workLogForm.id);
+    const workLog = props.workLogs.find(e => e.id === workLogForm.id);
     if (!workLog) return;
 
     const lastPatch = workLog.work_log_patches.at(-1);
@@ -116,6 +111,8 @@ function retreatPatch() {
         },
     );
 }
+
+const tableHeight = useMaxScrollHeight(0);
 </script>
 <template>
     <AdminLayout
@@ -123,10 +120,13 @@ function retreatPatch() {
         :backurl="route().params['fromUserWorkLogs'] ? route('workLog.index') : route('dashboard')"
     >
         <v-card>
-            <v-data-table
+            <v-data-table-virtual
+                fixed-header
+                :style="{ maxHeight: tableHeight }"
                 :headers="[
                     { title: 'Start', key: 'start' },
                     { title: 'Ende', key: 'end' },
+                    { title: 'Dauer', key: 'duration' },
                     { title: 'Homeoffice', key: 'is_home_office' },
                     { title: 'Korrektur', key: 'status' },
                     {
@@ -137,7 +137,7 @@ function retreatPatch() {
                     },
                 ]"
                 :items="
-                    data
+                    workLogs
                         .map(workLog => {
                             const lastAcceptedPatch = workLog.work_log_patches
                                 .filter(e => e.status === 'accepted')
@@ -151,6 +151,7 @@ function retreatPatch() {
                         .map(workLog => ({
                             start: DateTime.fromSQL(workLog.start).toFormat('dd.MM.yyyy HH:mm'),
                             end: workLog.end ? DateTime.fromSQL(workLog.end).toFormat('dd.MM.yyyy HH:mm') : 'Noch nicht beendet',
+                            duration: workLog.end ? DateTime.fromSQL(workLog.end).diff(DateTime.fromSQL(workLog.start)).toFormat('hh:mm') : '',
                             is_home_office: workLog.is_home_office ? 'Ja' : 'Nein',
                             id: workLog.id,
                             status: {
@@ -158,7 +159,7 @@ function retreatPatch() {
                                 declined: 'Abgelehnt',
                                 accepted: 'Akzeptiert',
                                 none: 'Nicht vorhanden',
-                            }[workLogs.data.find(e => e.id === workLog.id)?.work_log_patches.at(-1)?.status || 'none'],
+                            }[workLogs.find(e => e.id === workLog.id)?.work_log_patches.at(-1)?.status || 'none'],
                         }))
                 "
             >
@@ -167,17 +168,12 @@ function retreatPatch() {
                         v-if="editableWorkLogs.find(e => e.id === item.id) && can('workLogPatch', 'create')"
                         color="primary"
                         @click.stop="editWorkLog(item.id)"
-                        :icon="
-                            workLogs.data.find(log => log.id === item.id)?.work_log_patches.at(-1)?.status === 'created' ? 'mdi-eye' : 'mdi-pencil'
-                        "
+                        :icon="workLogs.find(log => log.id === item.id)?.work_log_patches.at(-1)?.status === 'created' ? 'mdi-eye' : 'mdi-pencil'"
                         variant="text"
                     >
                     </v-btn>
                 </template>
-                <template v-slot:bottom>
-                    <v-pagination v-if="lastPage > 1" v-model="currentPage" :length="lastPage"></v-pagination>
-                </template>
-            </v-data-table>
+            </v-data-table-virtual>
 
             <v-dialog max-width="1000" v-model="showDialog">
                 <template v-slot:default="{ isActive }">
@@ -192,7 +188,6 @@ function retreatPatch() {
                                 <v-row>
                                     <v-col cols="12" md="3">
                                         <v-date-input
-                                            :disabled="patchMode == 'fix'"
                                             label="Start"
                                             data-testid="userTimeCorrectionStartDay"
                                             required
@@ -204,7 +199,6 @@ function retreatPatch() {
                                     </v-col>
                                     <v-col cols="12" md="3">
                                         <v-text-field
-                                            :disabled="patchMode == 'fix'"
                                             type="time"
                                             label="Start"
                                             data-testid="userTimeCorrectionStartTime"
@@ -216,7 +210,6 @@ function retreatPatch() {
                                     </v-col>
                                     <v-col cols="12" md="3">
                                         <v-date-input
-                                            :disabled="patchMode == 'fix'"
                                             label="Ende"
                                             data-testid="userTimeCorrectionEndDay"
                                             required
@@ -238,7 +231,16 @@ function retreatPatch() {
                                             :variant="inputVariant"
                                         ></v-text-field>
                                     </v-col>
-
+                                    <v-col cols="12">
+                                        <v-textarea
+                                            label="Bemerkung (optional)"
+                                            v-model="workLogForm.comment"
+                                            :error-messages="workLogForm.errors.comment"
+                                            variant="filled"
+                                            rows="3"
+                                        >
+                                        </v-textarea>
+                                    </v-col>
                                     <v-col cols="12" md="3">
                                         <v-checkbox
                                             :disabled="!!patchLog"
@@ -253,13 +255,19 @@ function retreatPatch() {
 
                                     <v-col cols="12" class="text-end">
                                         <v-btn
-                                            v-if="patchLog && $page.props.auth.user.id == user.id"
+                                            v-if="patchLog && can('workLogPatch', 'delete') && patchMode === 'show'"
                                             :loading="workLogForm.processing"
                                             @click.stop="retreatPatch"
                                             color="primary"
                                             >Antrag zurückziehen</v-btn
                                         >
-                                        <v-btn v-else :loading="workLogForm.processing" type="submit" color="primary">Korrektur beantragen</v-btn>
+                                        <v-btn
+                                            v-else-if="can('workLogPatch', 'create') && patchMode === 'edit'"
+                                            :loading="workLogForm.processing"
+                                            type="submit"
+                                            color="primary"
+                                            >Korrektur beantragen</v-btn
+                                        >
                                     </v-col>
                                 </v-row>
                             </v-form>

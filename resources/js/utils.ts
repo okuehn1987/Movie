@@ -1,7 +1,7 @@
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { computed, onMounted, onUnmounted, ref, Ref, watch } from 'vue';
-import { Country, Paginator, State, TimeAccountSetting, Tree } from './types/types';
+import { Country, Paginator, FederalState, TimeAccountSetting, Tree } from './types/types';
 
 export function useNow() {
     const now = ref(DateTime.now());
@@ -9,6 +9,23 @@ export function useNow() {
     onMounted(() => (interval = setInterval(() => (now.value = DateTime.now()), 1000)));
     onUnmounted(() => clearInterval(interval));
     return now;
+}
+
+export function useMaxScrollHeight(extraHeight: number) {
+    const page = usePage();
+    const height = ref(`calc(100vh - ${80 + extraHeight}px)`);
+    watch(page, () => {
+        if (page.props.flash.error || page.props.flash.success) height.value = `calc(100vh - ${80 + 88 + extraHeight}px)`;
+        else height.value = `calc(100vh - ${80 + extraHeight}px)`;
+    });
+    return height;
+    //  80px = toolbar height + padding-bottom
+    //  88px = flash message height
+}
+
+export function getMaxScrollHeight(extraHeight: number) {
+    //  80px = toolbar height + padding-bottom
+    return `calc(100vh - ${80 + extraHeight}px)`;
 }
 
 export function usePageIsLoading() {
@@ -78,11 +95,6 @@ export function fillNullishValues<T extends Record<string, unknown>, Default ext
     };
 }
 
-export function getMaxScrollHeight(extraHeight: number) {
-    //  80px = toolbar height + padding-bottom
-    return `calc(100vh - ${80 + extraHeight}px)`;
-}
-
 export function getTruncationCycleDisplayName(cycleLength: TimeAccountSetting['truncation_cycle_length_in_months']) {
     return ({ 'null': 'Unbegrenzt', '1': 'Monatlich', '3': 'Quartalsweise', '6': 'Halbjährlich', '12': 'Jährlich' } as const)[cycleLength ?? 'null'];
 }
@@ -117,7 +129,7 @@ export const mapTree = <K extends string & keyof T, T extends { [x in K]?: T[] }
     return tree.map(e => ({ ...fn(e), [k]: e[k] ? mapTree(e[k], k, fn) : [] } as Tree<MappedType, K>));
 };
 
-export function getStates(country: Country, countries: { title: string; value: Country; regions: Record<State, string> }[]) {
+export function getStates(country: Country, countries: { title: string; value: Country; regions: Record<FederalState, string> }[]) {
     return Object.entries(countries.find(c => c.value === country)?.regions ?? []).map(([k, v]) => ({
         title: v,
         value: k,

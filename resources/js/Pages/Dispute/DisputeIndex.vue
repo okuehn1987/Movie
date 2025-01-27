@@ -4,7 +4,7 @@ import { Absence, AbsenceType, User, WorkLog, WorkLogPatch } from '@/types/types
 import AbsenceRequests from '../Dashboard/partial/AbsenceRequests.vue';
 import WorkLogPatches from '../Dashboard/partial/WorkLogPatches.vue';
 
-type PatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id' | 'work_log_id'> & {
+type PatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id' | 'work_log_id' | 'comment'> & {
     work_log: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office'>;
     user: Pick<User, 'id' | 'first_name' | 'last_name'>;
 };

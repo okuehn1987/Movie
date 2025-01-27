@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Canable, CountryProp, Group, OperatingSite, Paginator, Permission, User } from '@/types/types';
-import { Link } from '@inertiajs/vue3';
-import UserForm from './UserForm.vue';
-import { fillNullishValues, usePagination } from '@/utils';
-import { DateTime } from 'luxon';
-import { toRefs } from 'vue';
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
+import AdminLayout from '@/Layouts/AdminLayout.vue';
+import { Canable, CountryProp, Group, OperatingSite, Permission, User } from '@/types/types';
+import { fillNullishValues, getMaxScrollHeight, useMaxScrollHeight } from '@/utils';
+import { Link } from '@inertiajs/vue3';
+import { DateTime } from 'luxon';
+import UserForm from './UserForm.vue';
 
-const props = defineProps<{
-    users: Paginator<User & Canable & { group: Pick<Group, 'id' | 'name'> }>;
+defineProps<{
+    users: (User & Canable & { group: Pick<Group, 'id' | 'name'> })[];
     supervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
     groups: Pick<Group, 'id' | 'name'>[];
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];
@@ -17,12 +16,14 @@ const props = defineProps<{
     countries: CountryProp[];
 }>();
 
-const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
+const userTableHeight = useMaxScrollHeight(0);
 </script>
 <template>
     <AdminLayout title="Mitarbeiter">
         <v-card>
             <v-data-table-virtual
+                fixed-header
+                :style="{ maxHeight: userTableHeight }"
                 no-data-text="Es wurden keine Mitarbeiter gefunden"
                 :headers="[
                     { title: 'Vorname', key: 'first_name' },
@@ -34,7 +35,7 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
                     { title: '', key: 'actions', align: 'end' },
                 ]"
                 :items="
-                    data
+                    users
                         .map(u => ({
                             ...fillNullishValues(u),
                             date_of_birth: DateTime.fromFormat(u.date_of_birth, 'yyyy-MM-dd').toFormat('dd.MM.yyyy'),
@@ -44,20 +45,37 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
                 hover
             >
                 <template v-slot:header.actions>
-                    <v-dialog max-width="1000" v-if="can('user', 'create')">
+                    <v-dialog max-width="1200" v-if="can('user', 'create')">
                         <template v-slot:activator="{ props: activatorProps }">
                             <v-btn v-bind="activatorProps" color="primary">
                                 <v-icon icon="mdi-plus"></v-icon>
                             </v-btn>
                         </template>
                         <template v-slot:default="{ isActive }">
-                            <UserForm :countries :supervisors :groups :operating_sites :permissions mode="create" @success="isActive.value = false">
-                                <template #append>
-                                    <v-btn icon variant="text" @click="isActive.value = false">
-                                        <v-icon>mdi-close</v-icon>
-                                    </v-btn>
-                                </template>
-                            </UserForm>
+                            <v-card style="overflow: auto" :style="{ maxHeight: getMaxScrollHeight(48) }">
+                                <v-card-text>
+                                    <v-row>
+                                        <v-col cols="12">
+                                            <UserForm
+                                                :countries
+                                                :supervisors
+                                                :groups
+                                                :operating_sites
+                                                :permissions
+                                                mode="create"
+                                                @success="isActive.value = false"
+                                            >
+                                                <!-- TODO: add close icon back to dialog (this is the wrong spot) -->
+                                                <!-- <template #append>
+                                                    <v-btn icon variant="text" @click="isActive.value = false">
+                                                        <v-icon>mdi-close</v-icon>
+                                                    </v-btn>
+                                                </template> -->
+                                            </UserForm>
+                                        </v-col>
+                                    </v-row>
+                                </v-card-text>
+                            </v-card>
                         </template>
                     </v-dialog>
                 </template>
@@ -66,7 +84,7 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
                         <Link
                             v-if="can('user', 'viewShow', item)"
                             :href="
-                                route('user.show', {
+                                route('user.generalInformation', {
                                     user: item.id,
                                 })
                             "
@@ -85,9 +103,6 @@ const { currentPage, lastPage, data } = usePagination(toRefs(props), 'users');
                         ></ConfirmDelete>
                         <div style="width: 48px" v-else></div>
                     </div>
-                </template>
-                <template v-slot:bottom>
-                    <v-pagination v-if="lastPage > 1" v-model="currentPage" :length="lastPage"></v-pagination>
                 </template>
             </v-data-table-virtual>
         </v-card>

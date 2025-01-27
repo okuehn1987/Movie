@@ -18,7 +18,7 @@ class User extends Authenticatable
     use \Znck\Eloquent\Traits\BelongsToThrough;
     use HasFactory, Notifiable, SoftDeletes, ScopeInOrganization;
 
-    protected $guarded = ['password', 'role', 'email_verified_at', 'overtime_calculations_start'];
+    protected $guarded = ['password', 'role', 'email_verified_at'];
 
     protected $casts = [
         'home_office' => 'boolean',
@@ -105,6 +105,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_supervisor' => 'boolean'
         ];
     }
 
