@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\FloorToMinutes;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class WorkLogPatch extends Model
 {
-    use HasFactory, SoftDeletes, ScopeInOrganization;
+    use HasFactory, SoftDeletes;
+    use ScopeInOrganization, FloorToMinutes;
 
     protected $guarded = [];
 
