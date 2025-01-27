@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 import { adminLogin, resetAndSeedDatabase } from '../utils';
-import { php } from '../laravel-helpers';
 import { DateTime } from 'luxon';
 
 const date = DateTime.now().setLocale('de-DE');
