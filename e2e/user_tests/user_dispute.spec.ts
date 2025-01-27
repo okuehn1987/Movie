@@ -9,7 +9,7 @@ test.beforeEach('user login', async ({ page }) => {
 
 test('withdraws pre seeded time correction and ads another, accepts as admin and checks as user if successfull', async ({ page }) => {
     //withdraws seeded time correction
-    await page.getByRole('button').nth(3).click();
+    await page.getByTestId('workingHours').click();
     await expect(page.getByRole('cell', { name: 'Beantragt' })).toBeVisible();
     await page.getByTestId('entryToWorkLog').click();
     await page.getByRole('button', { name: 'Antrag zurückziehen' }).click();

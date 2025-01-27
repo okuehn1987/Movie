@@ -36,6 +36,7 @@ const currentWorkingHours = computed(() =>
     <v-card title="Arbeitszeit">
         <template #append>
             <v-btn
+                data-testid="workingHours"
                 icon="mdi-eye"
                 variant="text"
                 @click="
