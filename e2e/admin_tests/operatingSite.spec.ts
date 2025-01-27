@@ -48,7 +48,8 @@ test('add and delete working hours to operating site', async ({ page }) => {
     await page.getByLabel('Beginn des Arbeitstages').fill('08:00');
     await page.getByLabel('Ende des Arbeitstages').fill('17:00');
     await page.getByRole('button', { name: 'Hinzufügen' }).click();
-    await expect(page.getByText('Betriebszeit erfolgreich')).toBeVisible();
+    await page.reload();
+    await page.getByRole('tab', { name: 'Betriebszeiten' }).click();
     await expect(page.getByRole('main').getByRole('listbox').getByText('Montag')).toBeVisible();
 
     //delete working hours
