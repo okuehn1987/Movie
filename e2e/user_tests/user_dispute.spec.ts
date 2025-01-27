@@ -46,7 +46,7 @@ test('withdraws pre seeded time correction and ads another, accepts as admin and
     await page.getByRole('button', { name: 'Abmelden' }).click();
     await userLogin(page);
     await expect(page).toHaveURL('/dashboard');
-    await page.getByRole('button').nth(3).click();
+    await page.getByTestId('workingHours').click();
     await expect(page.getByRole('cell', { name: '10:30' })).toBeVisible();
     await expect(page.getByRole('cell', { name: 'Akzeptiert' })).toBeVisible();
 });
