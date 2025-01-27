@@ -14,7 +14,7 @@ trait FloorToMinutes
                 $latestWorkLog = $model->user->latestWorkLog;
                 $lastEnd = $latestWorkLog ? Carbon::parse($latestWorkLog->end) : null;
                 if ($lastEnd && $lastEnd->eq(Carbon::parse($model->start)->startOfMinute()->subMinute()))
-                    $model->start = Carbon::parse($latestWorkLog->end)->startOfMinute()->format('Y-m-d H:i:s');
+                    $model->start = $lastEnd->startOfMinute()->format('Y-m-d H:i:s');
                 else
                     $model->start = Carbon::parse($model->start)->startOfMinute()->format('Y-m-d H:i:s');
             }
