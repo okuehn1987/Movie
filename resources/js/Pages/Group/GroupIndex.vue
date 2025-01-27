@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Count, Group, Paginator, User, UserAppends } from '@/types/types';
-import { getMaxScrollHeight, usePagination } from '@/utils';
+import { useMaxScrollHeight, usePagination } from '@/utils';
 import { toRefs } from 'vue';
 
 const props = defineProps<{
@@ -15,12 +15,13 @@ const groupForm = useForm({
     name: '',
     users: [] as User['id'][],
 });
+const tableHeight = useMaxScrollHeight(0);
 </script>
 <template>
     <AdminLayout title="Abteilungen">
         <v-card>
             <v-data-table-virtual
-                :style="{ maxHeight: getMaxScrollHeight(0) }"
+                :style="{ maxHeight: tableHeight }"
                 fixed-header
                 :headers="[
                     { title: 'Abteilungsname', key: 'name' },

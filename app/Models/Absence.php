@@ -69,7 +69,7 @@ class Absence extends Model
             for ($day = Carbon::parse($this->start)->startOfDay(); $day->lte($end); $day->addDay()) {
                 if (!WorkingHoursCalculation::whereDate('day', $day)->exists()) continue;
 
-                $hasAppliedAbsenceForDay = $this->user()
+                $hasAppliedAbsenceForDay = $this->user
                     ->absences()
                     ->where('id', '!=', $this->id)
                     ->where('status', 'accepted')

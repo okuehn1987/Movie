@@ -2,7 +2,7 @@
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Canable, CountryProp, Group, OperatingSite, Permission, User } from '@/types/types';
-import { fillNullishValues, getMaxScrollHeight } from '@/utils';
+import { fillNullishValues, getMaxScrollHeight, useMaxScrollHeight } from '@/utils';
 import { Link } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import UserForm from './UserForm.vue';
@@ -15,13 +15,15 @@ defineProps<{
     permissions: { name: Permission[keyof Permission]; label: string }[];
     countries: CountryProp[];
 }>();
+
+const userTableHeight = useMaxScrollHeight(0);
 </script>
 <template>
     <AdminLayout title="Mitarbeiter">
         <v-card>
             <v-data-table-virtual
                 fixed-header
-                :style="{ maxHeight: getMaxScrollHeight(0) }"
+                :style="{ maxHeight: userTableHeight }"
                 no-data-text="Es wurden keine Mitarbeiter gefunden"
                 :headers="[
                     { title: 'Vorname', key: 'first_name' },

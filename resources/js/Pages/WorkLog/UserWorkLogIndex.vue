@@ -1,23 +1,19 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Paginator, User, WorkLog, WorkLogPatch } from '@/types/types';
-import { usePagination } from '@/utils';
+import { User, WorkLog, WorkLogPatch } from '@/types/types';
+import { useMaxScrollHeight } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
-import { computed, onMounted, ref, toRefs } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 type PatchProp = Omit<WorkLogPatch, 'deleted_at' | 'created_at' | 'user_id'>;
 
 const props = defineProps<{
     user: Pick<User, 'id' | 'first_name' | 'last_name'>;
-    workLogs: Paginator<
-        WorkLog & {
-            work_log_patches: PatchProp[];
-        }
-    >;
+    workLogs: (WorkLog & {
+        work_log_patches: PatchProp[];
+    })[];
 }>();
-
-const { currentPage, lastPage, data } = usePagination(toRefs(props), 'workLogs');
 
 const showDialog = ref(false);
 
@@ -25,7 +21,7 @@ const patchMode = ref<'edit' | 'show' | null>(null);
 const patchLog = ref<WorkLog | PatchProp | null>(null);
 const inputVariant = computed(() => (patchLog.value ? 'plain' : 'underlined'));
 
-const editableWorkLogs = computed(() => props.workLogs.data.filter((_, i) => i < 10 ** 10)); // 10 ** 10 to display for now but keep the feature
+const editableWorkLogs = computed(() => props.workLogs.filter((_, i) => i < 10 ** 10)); // 10 ** 10 to display for now but keep the feature
 
 onMounted(() => {
     const workLogId = route().params['workLog'];
@@ -68,7 +64,7 @@ function submit() {
 }
 
 function editWorkLog(id: WorkLog['id']) {
-    const workLog = props.workLogs.data.find(e => e.id === id);
+    const workLog = props.workLogs.find(e => e.id === id);
     if (!workLog) return;
     const lastPatch = workLog.work_log_patches.at(-1);
     if (!lastPatch) {
@@ -98,7 +94,7 @@ function editWorkLog(id: WorkLog['id']) {
 }
 
 function retreatPatch() {
-    const workLog = props.workLogs.data.find(e => e.id === workLogForm.id);
+    const workLog = props.workLogs.find(e => e.id === workLogForm.id);
     if (!workLog) return;
 
     const lastPatch = workLog.work_log_patches.at(-1);
@@ -115,6 +111,8 @@ function retreatPatch() {
         },
     );
 }
+
+const tableHeight = useMaxScrollHeight(0);
 </script>
 <template>
     <AdminLayout
@@ -122,7 +120,9 @@ function retreatPatch() {
         :backurl="route().params['fromUserWorkLogs'] ? route('workLog.index') : route('dashboard')"
     >
         <v-card>
-            <v-data-table
+            <v-data-table-virtual
+                fixed-header
+                :style="{ maxHeight: tableHeight }"
                 :headers="[
                     { title: 'Start', key: 'start' },
                     { title: 'Ende', key: 'end' },
@@ -137,7 +137,7 @@ function retreatPatch() {
                     },
                 ]"
                 :items="
-                    data
+                    workLogs
                         .map(workLog => {
                             const lastAcceptedPatch = workLog.work_log_patches
                                 .filter(e => e.status === 'accepted')
@@ -159,7 +159,7 @@ function retreatPatch() {
                                 declined: 'Abgelehnt',
                                 accepted: 'Akzeptiert',
                                 none: 'Nicht vorhanden',
-                            }[workLogs.data.find(e => e.id === workLog.id)?.work_log_patches.at(-1)?.status || 'none'],
+                            }[workLogs.find(e => e.id === workLog.id)?.work_log_patches.at(-1)?.status || 'none'],
                         }))
                 "
             >
@@ -168,18 +168,13 @@ function retreatPatch() {
                         v-if="editableWorkLogs.find(e => e.id === item.id) && can('workLogPatch', 'create')"
                         color="primary"
                         @click.stop="editWorkLog(item.id)"
-                        :icon="
-                            workLogs.data.find(log => log.id === item.id)?.work_log_patches.at(-1)?.status === 'created' ? 'mdi-eye' : 'mdi-pencil'
-                        "
+                        :icon="workLogs.find(log => log.id === item.id)?.work_log_patches.at(-1)?.status === 'created' ? 'mdi-eye' : 'mdi-pencil'"
                         variant="text"
                         data-testid="entryToWorkLog"
                     >
                     </v-btn>
                 </template>
-                <template v-slot:bottom>
-                    <v-pagination v-if="lastPage > 1" v-model="currentPage" :length="lastPage"></v-pagination>
-                </template>
-            </v-data-table>
+            </v-data-table-virtual>
 
             <v-dialog max-width="1000" v-model="showDialog">
                 <template v-slot:default="{ isActive }">

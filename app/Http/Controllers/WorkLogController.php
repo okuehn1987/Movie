@@ -63,7 +63,7 @@ class WorkLogController extends Controller
                 ->whereNotNull('end')
                 ->with('workLogPatches:id,work_log_id,updated_at,status,start,end,is_home_office,comment')
                 ->orderBy('start', 'DESC')
-                ->paginate(12),
+                ->get(),
             'can' => [
                 'workLogPatch' => [
                     'create' => Gate::allows('create', [WorkLogPatch::class, $user]),
