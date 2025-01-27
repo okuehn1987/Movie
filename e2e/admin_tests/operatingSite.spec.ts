@@ -52,7 +52,7 @@ test('add and delete working hours to operating site', async ({ page }) => {
     await page.getByRole('tab', { name: 'Betriebszeiten' }).click();
     await expect(page.getByRole('main').getByRole('listbox').getByText('Montag')).toBeVisible();
 
-    //delete working hours
+    //delete working hours.
     await page.getByRole('tab', { name: 'Betriebszeiten' }).click();
     await expect(page.getByText('08:00 Uhr - 17:00 Uhr')).toBeVisible();
     await page.locator('.v-list-item__append > button > .v-btn').first().click();

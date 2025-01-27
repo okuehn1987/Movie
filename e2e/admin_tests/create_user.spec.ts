@@ -140,9 +140,3 @@ test('creates and deletes a new user', async ({ page, browserName }) => {
     await expect(page.getByText('Mitarbeiter löschen')).not.toBeVisible();
     await expect(page.getByRole('cell', { name: 'Test Tester' })).not.toBeVisible();
 });
-
-// test('trys organigramm', async ({ page }) => {
-//     await page.getByRole('row', { name: 'user user user@' }).getByRole('link').getByRole('button').click();
-//     await page.getByRole('tab', { name: 'Organigramm' }).click();
-//     await expect(page.getByText('user user', { exact: true })).toBeVisible();
-// });
