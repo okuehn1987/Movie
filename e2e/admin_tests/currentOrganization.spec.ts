@@ -89,7 +89,8 @@ test('adds absence type', async ({ page }) => {
     await expect(page.getByRole('cell', { name: 'gelber Schein' })).toBeVisible();
 });
 
-test('adds time_account settings', async ({ page }) => {
+test('adds time_account settings', async ({ page, browserName }) => {
+    test.slow(browserName === 'webkit');
     await page.getByRole('tab', { name: 'Zeitkontoeinstellungen' }).click();
     await page.getByRole('row', { name: 'Art Berechnungszeitraum' }).getByRole('button').click();
     await expect(page.getByText('Neue Variante Erstellen')).toBeVisible();
