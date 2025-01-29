@@ -53,8 +53,6 @@ class WorkLog extends Model
     public function getDurationAttribute(): int | float
     {
         if ($this->end == null) return 0;
-        $forcedBreaks = ForcedWorkLogBreak::where('work_log_id', $this->id)->get();
-        $forcedBreaks->sum('duration');
         return Carbon::parse($this->start)->floatDiffInHours($this->end);
     }
 }
