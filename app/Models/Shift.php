@@ -74,10 +74,9 @@ class Shift extends Model
                         ($this->required_break_duration - $this->break_duration) * -1,
                         'Pflichtpause für Schicht gestartet am ' . Carbon::parse($this->start)->format('d.m.Y H:i')
                     );
-
-                $this['is_accounted'] = true;
-                $this->save();
             }
+            $this['is_accounted'] = true;
+            $this->save();
         });
     }
 }
