@@ -18,7 +18,6 @@ const now = useNow();
 function changeWorkStatus(is_home_office = false) {
     router.post(route('workLog.store'), {
         is_home_office,
-        id: props.lastWorkLog?.end ? null : props.lastWorkLog?.id,
     });
 }
 
