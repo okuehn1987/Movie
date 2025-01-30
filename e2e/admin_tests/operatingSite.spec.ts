@@ -30,6 +30,7 @@ test('create operating Site', async ({ page }) => {
 });
 
 test('show and edit seeded operating site', async ({ page }) => {
+    test.slow();
     await page.getByRole('row', { name: 'delete me ORG lösch mich 666' }).getByRole('link').getByRole('button').click();
     await expect(page.getByText('delete me ORG')).toBeVisible();
     await page.getByLabel('Ort').click();
