@@ -123,16 +123,18 @@ Schedule::call(function () {
             $patch->accountAsTransaction();
         }
 
-        foreach (Shift::where('is_accounted', false)->get()->filter(fn($shift) => $shift->has_ended) as $shift) {
-            $shift->accountRequiredBreakAsTransaction();
-        }
-
         $workingHourCalculation->update([
             'status' => 'completed'
         ]);
     }
     Log::info('Daily worklog calculation end');
-})->name('dailyWorkLogCut')->dailyAt("09:00");
+})->name('dailyWorkLogCalculation')->dailyAt("00:00");
+
+Schedule::call(function () {
+    foreach (Shift::where('is_accounted', false)->with('user')->get()->filter(fn($shift) => $shift->has_ended) as $shift) {
+        $shift->accountRequiredBreakAsTransaction();
+    }
+})->name('shiftBreakCalculation')->dailyAt("09:00");
 
 Schedule::call(function () {
     foreach (User::with('operatingSite')->get() as $user) {

@@ -50,28 +50,57 @@ class Shift extends Model
         return $this->duration - $this->workLogs->sum('duration');
     }
 
-    public function getRequiredBreakDurationAttribute()
+    public function getWorkDurationAttribute()
     {
-        if ($this->duration <= 4.5) return 0;
-        if ($this->duration <= 6 && $this->user->age >= 18) return 0;
+        return $this->workLogs->sum('duration');
+    }
 
-        if ($this->duration <= 6 && $this->user->age < 18) return 0.5;
-        if ($this->duration > 6 && $this->user->age < 18) return 1;
+    public function requiredBreakDuration(float $duration)
+    {
+        return match ($this->durationThreshold($duration)) {
+            0 => 0,
+            4.5 => 0.5,
+            6 => $this->user->age >= 18 ? 0.5 : 1,
+            9 => 0.75,
+        };
+    }
 
-        if ($this->duration <= 9) return 0.5;
-        return 0.75;
+    public function durationThreshold(float $duration)
+    {
+        if ($duration > 9 && $this->user->age > 18) return 9;
+        if ($duration > 6) return 6;
+        if ($duration > 4.5 && $this->user->age < 18) return 4.5;
+        return 0;
+    }
+
+    public function getMissingBreakDurationAttribute()
+    {
+        return min((
+                ($this->work_duration - $this->durationThreshold($this->work_duration)) +
+                max(
+                    0,
+                    // get the missing break from the previous threshold
+                    $this->requiredBreakDuration($this->durationThreshold($this->work_duration))
+                        - $this->break_duration
+                )
+            ),
+            max(
+                0,
+                $this->requiredBreakDuration($this->work_duration) - $this->break_duration
+            )
+        );
     }
 
     public function accountRequiredBreakAsTransaction()
     {
         if (!$this->has_ended || $this->is_accounted) return;
         DB::transaction(function () {
-            if ($this->break_duration < $this->required_break_duration) {
+            if ($this->break_duration < $this->requiredBreakDuration($this->work_duration)) {
                 $this
                     ->user
                     ->defaultTimeAccount
                     ->addBalance(
-                        ($this->required_break_duration - $this->break_duration) * -1,
+                        -1 * $this->missing_break_duration,
                         'Pflichtpause für Schicht gestartet am ' . Carbon::parse($this->start)->format('d.m.Y H:i')
                     );
             }
