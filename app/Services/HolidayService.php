@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Spatie\Holidays\Countries\Germany;
 use Spatie\Holidays\Holidays;
@@ -45,6 +46,7 @@ class HolidayService
 
     public static function getHolidays($countryCode, $region = null, CarbonInterface $date)
     {
+        if ($date->gte(Carbon::createFromFormat('Y-m-d', '2038-01-01'))) return [];
         return Holidays::for(self::$COUNTRIES[$countryCode]['class']::make($countryCode . ($region ? '-' . $region : '')))->getInRange($date->copy()->startOfMonth(), $date->copy()->endOfMonth());
     }
 
