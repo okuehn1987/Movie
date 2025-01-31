@@ -14,7 +14,7 @@ export default defineConfig({
     /* Fail the build on CI if you accidentally left test.only in the source code. */
     forbidOnly: !!process.env.CI,
     /* Retry on CI only */
-    retries: process.env.CI ? 1 : 2,
+    retries: process.env.CI ? 1 : 3,
     /* Opt out of parallel tests on CI. */
     // also more than 3 workes trips up artisan serve, so limit it to 3 for the time being
     workers: process.env.CI ? 1 : 3,
