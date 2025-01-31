@@ -17,6 +17,7 @@ import {
 import { getStates } from '@/utils';
 import { DateTime, Info } from 'luxon';
 import PermissionSelector from './UserFormPartials/PermissionSelector.vue';
+import { nextTick } from 'vue';
 
 const props = defineProps<{
     user?: User & {
@@ -179,6 +180,17 @@ function submit() {
                 userForm.reset();
                 emit('success');
             },
+            onError: () =>
+                nextTick(() => {
+                    const alerts = [...document.querySelectorAll('#userForm [role="alert"]')];
+                    const error = alerts.filter(e => e.children.length > 0)[0] as HTMLElement | undefined;
+                    if (error) {
+                        // offsetParent is the nearest positioned ancestor (in this case luckily the card in which the error is located)
+                        error.offsetParent?.scrollIntoView({
+                            behavior: 'smooth',
+                        });
+                    }
+                }),
         });
     }
 }
@@ -190,9 +202,9 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
 }
 </script>
 <template>
-    <v-form @submit.prevent="submit">
+    <v-form id="userForm" @submit.prevent="submit">
         <v-card class="mb-4">
-            <v-card-item class="mb-4">
+            <v-card-item>
                 <v-card-title class="mb-2">Persönliche Daten</v-card-title>
             </v-card-item>
             <v-card-text>
@@ -269,7 +281,10 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
             </v-card-item>
             <v-card-text>
                 <v-row>
-                    <v-col>
+                    <v-col cols="12">
+                        <v-alert type="error" v-if="userForm.errors.userWorkingHours">{{ userForm.errors.userWorkingHours }}</v-alert>
+                    </v-col>
+                    <v-col cols="12">
                         <v-data-table-virtual
                             :items="userForm.userWorkingHours"
                             :headers="[
@@ -339,7 +354,10 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
             </v-card-item>
             <v-card-text>
                 <v-row>
-                    <v-col>
+                    <v-col cols="12">
+                        <v-alert type="error" v-if="userForm.errors.userWorkingWeeks">{{ userForm.errors.userWorkingWeeks }}</v-alert>
+                    </v-col>
+                    <v-col cols="12">
                         <v-data-table-virtual
                             :items="userForm.userWorkingWeeks"
                             :headers="[
@@ -412,7 +430,10 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
             </v-card-item>
             <v-card-text>
                 <v-row>
-                    <v-col>
+                    <v-col cols="12">
+                        <v-alert type="error" v-if="userForm.errors.userLeaveDays">{{ userForm.errors.userLeaveDays }}</v-alert>
+                    </v-col>
+                    <v-col cols="12">
                         <v-data-table-virtual
                             :items="userForm.userLeaveDays"
                             :headers="[
