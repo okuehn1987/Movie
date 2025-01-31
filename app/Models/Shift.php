@@ -11,6 +11,8 @@ class Shift extends Model
 {
     use HasFactory;
 
+    private static $MINIMUM_SHIFT_SEPARATION_TIME_IN_HOURS = 9;
+
     protected $guarded = [];
 
     public function workLogs()
@@ -42,7 +44,7 @@ class Shift extends Model
 
     public function getHasEndedAttribute()
     {
-        return Carbon::parse($this->end)->lte(Carbon::now()->subHours(9));
+        return Carbon::parse($this->end)->lte(Carbon::now()->subHours(self::$MINIMUM_SHIFT_SEPARATION_TIME_IN_HOURS));
     }
 
     public function getBreakDurationAttribute()
