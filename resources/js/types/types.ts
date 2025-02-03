@@ -224,12 +224,19 @@ export type CustomAddress = DBObject<'customAddress'> &
         organization_id: Organization['id'];
     };
 
+export type Shift = DBObject<'shift'> & {
+    user_id: User['id'];
+    is_accounted: boolean;
+};
+
 export type WorkLog = DBObject<'workLog'> &
     SoftDelete & {
         user_id: User['id'];
         start: DateTimeString;
         end: DateTimeString | null;
         is_home_office: boolean;
+        /** shift_id is only null for all workLogs before the introduction of shifts */
+        shift_id: Shift['id'] | null;
     };
 
 export type WorkLogPatch = DBObject<'workLogPatch'> &

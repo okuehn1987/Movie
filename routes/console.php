@@ -2,6 +2,7 @@
 
 use App\Models\Absence;
 use App\Models\Organization;
+use App\Models\Shift;
 use App\Models\User;
 use App\Models\UserLeaveDay;
 use App\Models\WorkingHoursCalculation;
@@ -11,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
@@ -39,7 +41,7 @@ Schedule::call(function () {
 
 
 Schedule::call(function () {
-    dump('start');
+    Log::info('Daily worklog calculation started');
 
     $users = User::with(['operatingSite', 'defaultTimeAccount'])->get();
     $workLogsToCut = WorkLog::whereBetween('start', [Carbon::yesterday()->startOfDay(), Carbon::yesterday()->endOfDay()])
@@ -73,7 +75,6 @@ Schedule::call(function () {
     )->reverse();
 
     foreach ($daysWithoutCalculation as $day) {
-        dump('start calculation for ' . $day);
         // save that the calculation has started for this day (if it fails, it will not be started again automatically)
         $workingHourCalculation = WorkingHoursCalculation::create([
             'day' => $day,
@@ -99,7 +100,10 @@ Schedule::call(function () {
                 $currentWorkingWeek->hasWorkDay($day) &&
                 !$user->operatingSite->hasHoliday($day);
 
-            $workLogsForDay = $user->workLogs()->whereNotNull('end')->whereBetween('start', [$day->copy()->startOfDay(), $day->copy()->endOfDay()])->get();
+            $workLogsForDay = $user->workLogs()
+                ->whereNotNull('end')
+                ->whereBetween('start', [$day->copy()->startOfDay(), $day->copy()->endOfDay()])
+                ->get();
 
             $istStunden = $workLogsForDay->sum('duration');
             $sollStunden = $currentWorkingHours->weekly_working_hours / $workingDaysInWeek;
@@ -110,27 +114,27 @@ Schedule::call(function () {
                 $istStunden = max($istStunden - $sollStunden, 0);
                 $sollStunden = 0;
             }
-
             $user->defaultTimeAccount->addBalance($istStunden - $sollStunden, 'Tägliche Überstundenberechnung ' . $day->format('d.m.Y'));
 
             //TODO: add SWHF's & Nachtschicht, etc.
         }
-        dump('end worklog calculations for ' . $day);
 
         foreach (WorkLogPatch::where('is_accounted', false)->whereDate('accepted_at', $day)->get() as $patch) {
             $patch->accountAsTransaction();
-            $patch->update([
-                'is_accounted' => true
-            ]);
         }
-        dump('end patch calculations for ' . $day);
 
         $workingHourCalculation->update([
             'status' => 'completed'
         ]);
     }
-    dump('end');
-})->name('dailyWorkLogCut')->dailyAt("00:00");
+    Log::info('Daily worklog calculation end');
+})->name('dailyWorkLogCalculation')->dailyAt("00:00");
+
+Schedule::call(function () {
+    foreach (Shift::where('is_accounted', false)->with('user')->get()->filter(fn($shift) => $shift->has_ended) as $shift) {
+        $shift->accountRequiredBreakAsTransaction();
+    }
+})->name('shiftBreakCalculation')->dailyAt("09:00");
 
 Schedule::call(function () {
     foreach (User::with('operatingSite')->get() as $user) {

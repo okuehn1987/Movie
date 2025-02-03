@@ -22,6 +22,9 @@ class User extends Authenticatable
 
     protected $casts = [
         'home_office' => 'boolean',
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'is_supervisor' => 'boolean',
     ];
 
     protected $hidden = [
@@ -98,15 +101,6 @@ class User extends Authenticatable
         ) return true;
 
         return false;
-    }
-
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'is_supervisor' => 'boolean'
-        ];
     }
 
     public function getNameAttribute()
@@ -228,7 +222,12 @@ class User extends Authenticatable
 
     public function getOvertimeAttribute()
     {
-        return $this->timeAccounts()->whereHas('timeAccountSetting', fn($q) => $q->whereNull('type'))->sum('balance');
+        return $this->defaultTimeAccount->balance;
+    }
+
+    public function getAgeAttribute()
+    {
+        return Carbon::parse($this->date_of_birth)->age;
     }
 
     public static function getCurrentWeekWorkingHours(User $user)

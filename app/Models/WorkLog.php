@@ -17,13 +17,21 @@ class WorkLog extends Model
 
     protected $casts = ['is_home_office' => 'boolean'];
 
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+
     public function workLogPatches()
     {
         return $this->hasMany(WorkLogPatch::class);
+    }
+
+    /** @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Shift|null, \App\Models\WorkLog> */
+    public function shift()
+    {
+        return $this->belongsTo(Shift::class);
     }
 
     /**
