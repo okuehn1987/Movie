@@ -34,7 +34,7 @@ class AbsenceController extends Controller
             ->get(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status'])
             ->filter(fn($a) => $user->can('viewShow', [Absence::class, $a->user]))->toArray()];
 
-        $holidays = collect(HolidayService::getHolidays($user->operatingSite->country, $user->operatingSite->federal_state, $date))
+        $holidays = HolidayService::getHolidaysForMonth($user->operatingSite->country, $user->operatingSite->federal_state, $date)
             ->mapWithKeys(
                 fn($val, $key) => [Carbon::parse($key)->format('Y-m-d') => $val]
             );

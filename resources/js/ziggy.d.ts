@@ -25,6 +25,14 @@ declare module 'ziggy-js' {
     "ignition.healthCheck": [],
     "ignition.executeSolution": [],
     "ignition.updateConfig": [],
+    "playwright.factory": [],
+    "playwright.login": [],
+    "playwright.logout": [],
+    "playwright.artisan": [],
+    "playwright.run-php": [],
+    "playwright.csrf-token": [],
+    "playwright.routes": [],
+    "playwright.current-user": [],
     "home": [],
     "organization.index": [],
     "organization.store": [],
@@ -109,6 +117,7 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "organization.saveSettings": [],
     "absence.index": [],
     "absence.store": [],
     "absence.update": [

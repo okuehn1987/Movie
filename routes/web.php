@@ -24,7 +24,9 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::get('/user/{user}/userOrganigram', [UserController::class, 'userOrganigram'])->name('user.userOrganigram');
     Route::get('/user/profile', [UserController::class, 'profile'])->name('user.profile');
 
+    Route::patch('organization/saveSettings', [OrganizationController::class, 'saveSettings'])->name('organization.saveSettings');
     Route::resource('organization', OrganizationController::class)->only(['show', 'update']);
+
     Route::resource('absence', AbsenceController::class)->only(['index', 'update', 'store']);
     Route::resource('absenceType', AbsenceTypeController::class)->only(['store', 'update', 'destroy']);
     Route::resource('specialWorkingHoursFactor', SpecialWorkingHoursFactorController::class)->only(['store', 'update', 'destroy']);
