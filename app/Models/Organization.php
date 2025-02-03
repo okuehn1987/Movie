@@ -13,9 +13,12 @@ class Organization extends Model
 
     protected $guarded = [];
 
-    protected $casts = [
-        'night_surcharges' => 'boolean',
-        'vacation_limitation_period' => 'boolean'
+    public static $FLAGS = [
+        // "night_surcharges" => 'Nachtzuschüsse',
+        // "vacation_limitation_period" => "Verjährungsfrist bei Urlaub",
+        // "auto_accept_travel_logs" => "Dienstreisen standardmäßig genehmigen",
+        "christmas_vacation_day" => "24.12 als Urlaubstag",
+        "new_year_vacation_day" => "31.12 als Urlaubstag"
     ];
 
     public function operatingSites()

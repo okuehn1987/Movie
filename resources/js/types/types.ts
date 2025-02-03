@@ -130,14 +130,11 @@ export type UserLeaveDays = DBObject<'userLeaveDays'> &
         type: 'annual' | 'remaining';
     };
 
-type Flags = {
-    night_surcharges: boolean; // nachtzuschläge
-    vacation_limitation_period: boolean; // verjährungsfrist bei urlaub
-};
+export type Flag = 'auto_accept_travel_logs' | 'christmas_vacation_day' | 'new_year_vacation_day' | 'vacation_limitation_period' | 'night_surcharges';
 
 export type Organization = DBObject<'organization'> &
     SoftDelete &
-    Flags & {
+    Record<Flag, boolean> & {
         name: string;
         owner_id: User['id'] | null;
         tax_registration_id: string | null;
