@@ -28,7 +28,7 @@ const absenceTypeForm = useForm({
             <template v-slot:header.action>
                 <v-dialog max-width="1000" v-if="can('absenceType', 'create')">
                     <template v-slot:activator="{ props: activatorProps }">
-                        <v-btn v-bind="activatorProps" color="primary">
+                        <v-btn data-testid="absenceCreation" v-bind="activatorProps" color="primary">
                             <v-icon icon="mdi-plus"></v-icon>
                         </v-btn>
                     </template>
