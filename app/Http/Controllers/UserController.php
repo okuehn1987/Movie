@@ -346,7 +346,7 @@ class UserController extends Controller
         TimeAccount::create([
             'name' => 'Gleitzeitkonto',
             'balance' => 0,
-            'balance_limit' => ($currentWorkingHours?->weekly_working_hours ?? 40) * 2,
+            'balance_limit' => ($currentWorkingHours?->weekly_working_hours ?? 40) * 2 * 3600,
             'time_account_setting_id' => TimeAccountSetting::inOrganization()->whereNull('type')->first()->id,
             'user_id' => $user->id
         ]);

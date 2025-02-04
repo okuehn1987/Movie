@@ -51,7 +51,7 @@ class HolidayService
     public static function isHoliday($countryCode, $region = null, CarbonInterface $date)
     {
         return Holidays::for(self::$COUNTRIES[$countryCode]['class']::make($countryCode . ($region ? '-' . $region : '')))->isHoliday($date) ||
-            self::getCustomHolidays()[$date->copy()->format('m-d')];
+            array_key_exists($date->copy()->format('m-d'), self::getCustomHolidays());
     }
 
     public static function getHolidaysForMonth($countryCode, $region = null, CarbonInterface $date)

@@ -339,10 +339,10 @@ class User extends Authenticatable
         return ceil($leaveDays);
     }
 
-    public function getSollstundenForDate(CarbonInterface $date)
+    public function getSollsekundenForDate(CarbonInterface $date)
     {
         $currentWorkingHours = $this->userWorkingHoursForDate($date);
         $currentWorkingWeek = $this->userWorkingWeekForDate($date);
-        return $currentWorkingHours['weekly_working_hours'] / $currentWorkingWeek->numberOfWorkingDays;
+        return $currentWorkingHours['weekly_working_hours'] / $currentWorkingWeek->numberOfWorkingDays * 3600;
     }
 }

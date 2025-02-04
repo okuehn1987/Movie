@@ -7,6 +7,7 @@ import TimeAccountSettingsForm from './TimeAccountSettingsForm.vue';
 import TimeAccountTransactionForm from './TimeAccountTransactionForm.vue';
 import TimeAccountTransferForm from './TimeAccountTransferForm.vue';
 import { computed } from 'vue';
+import { Duration } from 'luxon';
 
 const props = defineProps<{
     user: User & {
@@ -27,7 +28,8 @@ const timeAccounts = computed(() => props.time_accounts.filter(t => t.deleted_at
         :items="
             timeAccounts.map(account => ({
                 ...account,
-                balance: roundTo(account.balance, 2),
+                formatted_balance_limit: Duration.fromObject({ seconds: account.balance_limit }).toFormat('h:mm'),
+                formatted_balance: Duration.fromObject({ seconds: account.balance }).toFormat('h:mm'),
                 type: accountType(account.time_account_setting.type),
                 truncation_cycle_length_in_months: getTruncationCycleDisplayName(account.time_account_setting.truncation_cycle_length_in_months),
             }))
@@ -70,9 +72,12 @@ const timeAccounts = computed(() => props.time_accounts.filter(t => t.deleted_at
             </div>
         </template>
         <template v-slot:item.balance="{ item }">
-            <v-chip color="success" v-if="item.balance > 0">{{ item.balance }}</v-chip>
-            <v-chip color="error" v-if="item.balance < 0">{{ item.balance }}</v-chip>
-            <v-chip color="black" v-if="item.balance == 0">{{ item.balance }}</v-chip>
+            <v-chip color="success" v-if="item.balance > 0">{{ item.formatted_balance }}</v-chip>
+            <v-chip color="error" v-if="item.balance < 0">{{ item.formatted_balance }}</v-chip>
+            <v-chip color="black" v-if="item.balance == 0">{{ item.formatted_balance }}</v-chip>
+        </template>
+        <template v-slot:item.balance_limit="{ item }">
+            {{ item.formatted_balance_limit }}
         </template>
         <template v-slot:item.type="{ item }">
             <v-chip color="purple-darken-1" v-if="item.id == defaultTimeAccountId">{{ item.type }}</v-chip>

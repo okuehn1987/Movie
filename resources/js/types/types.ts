@@ -3,6 +3,7 @@ type Branded<T, Brand extends string> = T & { [x in `__${Brand}__`]: void };
 export type DateString = Branded<string, 'date'>;
 export type TimeString = Branded<string, 'time'>;
 export type DateTimeString = Branded<string, 'dateTime'>;
+export type Seconds = number;
 
 export type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -265,8 +266,8 @@ export type TimeAccountSetting = DBObject<'timeAccountSetting'> &
 export type TimeAccount = DBObject<'timeAccount'> &
     SoftDelete & {
         user_id: User['id'];
-        balance: number;
-        balance_limit: number;
+        balance: Seconds;
+        balance_limit: Seconds;
         time_account_setting_id: TimeAccountSetting['id'];
         name: string;
     };
@@ -276,7 +277,7 @@ export type TimeAccountTransaction = DBObject<'timeAccountTransaction'> &
         from_id: TimeAccount['id'] | null;
         to_id: TimeAccount['id'] | null;
         modified_by: User['id'] | null;
-        amount: number;
+        amount: Seconds;
         description: string;
     };
 

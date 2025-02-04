@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Paginator, TimeAccount, TimeAccountSetting, TimeAccountTransaction, User } from '@/types/types';
-import { roundTo, usePagination } from '@/utils';
-import { DateTime } from 'luxon';
+import { usePagination } from '@/utils';
+import { DateTime, Duration } from 'luxon';
 import { toRefs } from 'vue';
 
 const props = defineProps<{
@@ -39,7 +39,8 @@ function getAccountName(id: TimeAccountTransaction['from_id'] | TimeAccountTrans
                 transactionType: getTransactionType(t),
                 from: getAccountName(t.from_id),
                 to: getAccountName(t.to_id),
-                amount: roundTo(t.amount, 2),
+                amount: t.amount * (getTransactionType(t) == 'negative' ? -1 : 1),
+                formatted_amount: Duration.fromObject({ seconds: t.amount }).toFormat('hh:mm'),
             }))
         "
         :headers="[
@@ -67,13 +68,13 @@ function getAccountName(id: TimeAccountTransaction['from_id'] | TimeAccountTrans
 
         <template v-slot:item.amount="{ item }">
             <v-chip color="success" v-if="item.transactionType == 'positive'">
-                <span>+ {{ item.amount }}</span>
+                <span>+ {{ item.formatted_amount }}</span>
             </v-chip>
             <v-chip color="error" v-else-if="item.transactionType == 'negative'">
-                <span>- {{ item.amount }}</span>
+                <span>- {{ item.formatted_amount }}</span>
             </v-chip>
             <v-chip color="grey" v-else-if="item.transactionType == 'transfer'">
-                <span class="text-black"> {{ item.amount }}</span>
+                <span class="text-black"> {{ item.formatted_amount }}</span>
             </v-chip>
         </template>
 

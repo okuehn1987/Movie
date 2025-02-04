@@ -29,7 +29,7 @@ class Shift extends Model
     {
         $start = Carbon::parse($this->workLogs->min('start'));
         $end = Carbon::parse($this->workLogs->max('end'));
-        return $start->floatDiffInHours($end);
+        return $start->diffInSeconds($end);
     }
 
     public function getEndAttribute()
@@ -49,7 +49,7 @@ class Shift extends Model
 
     public function getBreakDurationAttribute()
     {
-        return $this->duration - $this->workLogs->sum('duration');
+        return $this->duration - $this->work_duration;
     }
 
     public function getWorkDurationAttribute()
@@ -64,15 +64,17 @@ class Shift extends Model
             4.5 => 0.5,
             6 => $this->user->age >= 18 ? 0.5 : 1,
             9 => 0.75,
-        };
+        } * 3600;
     }
 
     public function durationThreshold(float $duration)
     {
-        if ($duration > 9 && $this->user->age > 18) return 9;
-        if ($duration > 6) return 6;
-        if ($duration > 4.5 && $this->user->age < 18) return 4.5;
-        return 0;
+        return match (true) {
+            $duration > 9 && $this->user->age > 18 => 9,
+            $duration > 6 => 6,
+            $duration > 4.5 && $this->user->age < 18 => 4.5,
+            default => 0,
+        } * 3600;
     }
 
     public function getMissingBreakDurationAttribute()
