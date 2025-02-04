@@ -30,7 +30,7 @@ test('creates an organization', async ({ page }) => {
     await page.getByLabel('Nachname').fill('Grumpicus');
     await page.getByLabel('E-Mail').fill('testtest@test.com');
     await page.getByLabel('Password').fill('test');
-    await page.getByLabel('Geburtsdatum').fill('2024-12-02');
+    await page.getByLabel('Geburtsdatum').fill('2004-12-02');
     await page.getByRole('button', { name: 'Erstellen' }).click();
     await page.getByRole('dialog').getByRole('button').first().click();
     await expect(page.getByText('Organisation erfolgreich')).toBeVisible();
