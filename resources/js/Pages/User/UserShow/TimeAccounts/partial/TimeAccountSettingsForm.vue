@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { TimeAccount, TimeAccountSetting, User, UserWorkingHours, UserWorkingWeek } from '@/types/types';
 import { accountType, getTruncationCycleDisplayName, roundTo } from '@/utils';
-import { watch } from 'vue';
 
 defineProps<{
     user: User & {
@@ -19,16 +18,6 @@ const timeAccountSettingsForm = useForm({
     time_account_setting_id: null as null | TimeAccountSetting['id'],
     balance_limit: 0,
 });
-
-watch(
-    () => timeAccountSettingsForm.balance_limit,
-    () => {
-        timeAccountSettingsForm.balance_limit = +timeAccountSettingsForm.balance_limit
-            .toString()
-            .replace(/[^\d,.]/g, '')
-            .replace(/,/, '.');
-    },
-);
 </script>
 <template>
     <v-dialog @after-leave="timeAccountSettingsForm.reset()" max-width="1000">
@@ -38,7 +27,7 @@ watch(
                 @click="
                     () => {
                         timeAccountSettingsForm.name = item.name;
-                        timeAccountSettingsForm.balance_limit = item.balance_limit;
+                        timeAccountSettingsForm.balance_limit = roundTo(item.balance_limit / 3600, 2);
                         timeAccountSettingsForm.time_account_setting_id = item.time_account_setting_id;
                     }
                 "
@@ -96,6 +85,7 @@ watch(
                             <v-col cols="12" md="6">
                                 <v-text-field
                                     v-model="timeAccountSettingsForm.balance_limit"
+                                    type="number"
                                     label="Limit in Stunden"
                                     :hint="
                                         'entspricht ' +

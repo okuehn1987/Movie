@@ -28,9 +28,14 @@ class TimeAccountController extends Controller
             ],
         ]);
 
-        $timeAccount = TimeAccount::create([...collect($validated)->except('balance')->toArray(), 'user_id' => $user->id]);
+        $timeAccount = TimeAccount::create([
+            'name' => $validated['name'],
+            'balance_limit' => $validated['balance_limit'] * 3600,
+            'user_id' => $user->id,
+            'time_account_setting_id' => $validated['time_account_setting_id'],
+        ]);
 
-        $timeAccount->addBalance($validated['balance'], 'Initialer Kontostand');
+        $timeAccount->addBalance($validated['balance'] * 3600, 'Initialer Kontostand');
 
         return back()->with('success', 'Arbeitszeitkonto erfolgreich erstellt.');
     }
@@ -57,7 +62,11 @@ class TimeAccountController extends Controller
             ],
         ]);
 
-        $timeAccount->update($validated);
+        $timeAccount->update([
+            'name' => $validated['name'],
+            'balance_limit' => $validated['balance_limit'] * 3600,
+            'time_account_setting_id' => $validated['time_account_setting_id']
+        ]);
 
         return back()->with('success', 'Arbeitszeitkonto erfolgreich aktualisiert.');
     }

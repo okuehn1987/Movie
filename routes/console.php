@@ -89,15 +89,12 @@ Schedule::call(function () {
             $currentWorkingWeek = $user->userWorkingWeekForDate($day);
             if (!$currentWorkingHours || !$currentWorkingWeek) continue;
 
-            $workingDaysInWeek = $currentWorkingWeek?->numberOfWorkingDays;
-
             $hasAbsenceForDay = $user->absences()
                 ->where('status', 'accepted')
                 ->whereDate('start', '<=', $day)
                 ->whereDate('end', '>=', $day)->exists();
 
             $shouldWorkYesterday =
-                $workingDaysInWeek > 0 &&
                 $currentWorkingWeek->hasWorkDay($day) &&
                 !$user->operatingSite->hasHoliday($day);
 
@@ -106,16 +103,16 @@ Schedule::call(function () {
                 ->whereBetween('start', [$day->copy()->startOfDay(), $day->copy()->endOfDay()])
                 ->get();
 
-            $istStunden = $workLogsForDay->sum('duration');
-            $sollStunden = $currentWorkingHours->weekly_working_hours / $workingDaysInWeek;
+            $istSekunden = $workLogsForDay->sum('duration');
+            $sollSekunden = $user->getSollsekundenForDate($day);
 
             if (!$shouldWorkYesterday) {
-                $sollStunden = 0;
+                $sollSekunden = 0;
             } else if ($hasAbsenceForDay) {
-                $istStunden = max($istStunden - $sollStunden, 0);
-                $sollStunden = 0;
+                $istSekunden = max($istSekunden - $sollSekunden, 0);
+                $sollSekunden = 0;
             }
-            $user->defaultTimeAccount->addBalance($istStunden - $sollStunden, 'Tägliche Überstundenberechnung ' . $day->format('d.m.Y'));
+            $user->defaultTimeAccount->addBalance($istSekunden - $sollSekunden, 'Tägliche Überstundenberechnung ' . $day->format('d.m.Y'));
 
             //TODO: add SWHF's & Nachtschicht, etc.
         }

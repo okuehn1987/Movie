@@ -83,7 +83,7 @@ test('tests time_account function', async ({ page }) => {
     await page.getByRole('button', { name: 'Speichern' }).click();
     await expect(page.getByText('Transaktion erfolgreich')).toBeVisible();
     await expect(page.getByText('Stunden für Konto')).not.toBeVisible();
-    await expect(page.locator('span').filter({ hasText: '40' }).first()).toBeVisible();
+    await expect(page.getByRole('cell', { name: '50:00' }).locator('span').first()).toBeVisible();
 
     //updates time_account information
     await page.getByRole('row', { name: 'Gleitzeitkonto' }).getByRole('button').nth(1).click();
@@ -93,7 +93,7 @@ test('tests time_account function', async ({ page }) => {
     await page.getByRole('button', { name: 'Speichern' }).click();
     await expect(page.getByText('Arbeitszeitkonto erfolgreich')).toBeVisible();
     await expect(page.getByText('Einstellungen für Konto')).not.toBeVisible();
-    await expect(page.getByRole('cell', { name: '50' })).toBeVisible();
+    await expect(page.locator('span').filter({ hasText: '50:00' }).first()).toBeVisible();
 
     // creates a new time account
     await page.getByRole('row', { name: 'Name Überstunden Limit Typ' }).getByRole('button').nth(1).click();
@@ -127,5 +127,5 @@ test('tests time_account function', async ({ page }) => {
     await expect(page.getByRole('cell', { name: 'Initialer Kontostand' }).first()).toBeVisible();
     await expect(page.getByRole('cell', { name: '+ 10' }).locator('span').first()).toBeVisible();
     await expect(page.getByRole('cell', { name: 'This is a test' })).toBeVisible();
-    await expect(page.getByRole('cell', { name: '+ 40' }).locator('span').first()).toBeVisible();
+    await expect(page.getByRole('cell', { name: '+ 40:00' }).locator('span').first()).toBeVisible();
 });

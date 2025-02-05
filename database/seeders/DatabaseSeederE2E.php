@@ -156,7 +156,7 @@ class DatabaseSeederE2E extends Seeder
         foreach (User::with(['organization', 'organization.groups', 'timeAccounts', 'operatingSite'])->get() as $user) {
             // $group = $user->organization->groups->random();
             // $user->group_id = $group->id;
-            $user->timeAccounts()->first()->addBalance(100, 'seeder balance');
+            $user->timeAccounts()->first()->addBalance(10 * 3600, 'seeder balance');
             $user->supervisor_id = User::whereIn('operating_site_id', $user->organization->operatingSites()->get()->pluck('id'))->where('id', '!=', $user->id)
                 ->whereNotIn('id', $user->allSuperviseesFlat()->pluck('id'))
                 ->inRandomOrder()->first()?->id;

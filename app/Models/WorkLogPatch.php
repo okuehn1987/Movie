@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\FloorToMinutes;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 class WorkLogPatch extends Model
 {
     use HasFactory, SoftDeletes;
-    use ScopeInOrganization, FloorToMinutes;
+    use ScopeInOrganization;
 
     protected $guarded = [];
 
@@ -30,7 +29,7 @@ class WorkLogPatch extends Model
 
     public function getDurationAttribute(): int | float
     {
-        return Carbon::parse($this->start)->floatDiffInHours($this->end);
+        return Carbon::parse($this->start)->diffInSeconds($this->end);
     }
 
     public function accept()

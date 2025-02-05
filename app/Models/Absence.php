@@ -78,15 +78,15 @@ class Absence extends Model
                     ->exists();
                 if ($hasAppliedAbsenceForDay) continue;
 
-                $sollStunden = $this->user->getSollstundenForDate($day);
+                $sollSekunden = $this->user->getSollsekundenForDate($day);
 
-                $istStunden =  WorkLog::whereDate('start', $day)
+                $istSekunden =  WorkLog::whereDate('start', $day)
                     ->where('user_id', $this->user_id)
                     ->get()
                     ->sum('duration');
 
                 $this->user->defaultTimeAccount->addBalance(
-                    max($sollStunden - $istStunden, 0),
+                    max($sollSekunden - $istSekunden, 0),
                     'Abwesenheit akzeptiert am ' . Carbon::parse($this->accepted_at)->format('d.m.Y H:i:s')
                 );
             }
