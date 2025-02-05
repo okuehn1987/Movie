@@ -62,7 +62,8 @@ Schedule::call(function () {
                 'start' => Carbon::now()->startOfDay(),
                 'end' => null,
                 'user_id' => $user->id,
-                'is_home_office' => $lastWorkLog->is_home_office
+                'is_home_office' => $lastWorkLog->is_home_office,
+                'shift_id' => $lastWorkLog->shift_id
             ]);
         }
     }

@@ -47,6 +47,7 @@ const currentPage = ref(1);
                             icon="mdi-eye"
                             variant="text"
                             title="Alle Zeiten anzeigen"
+                            data-testid="workingHours"
                             @click="
                                 router.get(
                                     route('user.workLog.index', {

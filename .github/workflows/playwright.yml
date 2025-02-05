@@ -1,0 +1,115 @@
+name: Playwright-Tests
+on:
+    pull_request:
+        branches: [master]
+
+jobs:
+    setup-and-run-tests:
+        # setup and run the tests in parallel machines, with each machine uploading its own results to artifacts
+        # artifacts are shared among jobs and machines
+        timeout-minutes: 300
+        runs-on: self-hosted
+        strategy:
+            fail-fast: false
+            matrix:
+                shard: [1/1]
+        steps:
+            - uses: actions/checkout@v3
+            - name: build the Playwright containers
+              run: docker-compose -f docker-compose.playwright.yml build
+              env:
+                  # PLAYWRIGHT_RUN_ARGS: test --repeat-each=10
+                  PLAYWRIGHT_RUN_ARGS: test
+            - name: run the Playwright tests
+              run: docker-compose -f docker-compose.playwright.yml up --exit-code-from playwright --abort-on-container-exit
+              env:
+                  # PLAYWRIGHT_RUN_ARGS: test --repeat-each=10
+                  PLAYWRIGHT_RUN_ARGS: test
+
+            # Once playwright finishes it will create a folder called 'blob-report' where it will put all the reports
+            - name: Upload blob report to GitHub Actions Artifacts
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: playwright-report # name of the file you want to have once its uploaded
+                  path: playwright-report/ # path where the reports are, from where to take the files.
+                  retention-days: 14
+
+    merge-reports-and-upload:
+        # Merge reports after playwright tests, even if some shards have failed
+        if: '!cancelled()'
+        needs: [setup-and-run-tests]
+        runs-on: ubuntu-latest
+        permissions:
+            pull-requests: write
+            contents: write
+
+        outputs:
+            timestamp: ${{ steps.timestampid.outputs.timestamp }}
+
+        steps:
+            # We want a unique identifier to be used when we create subdirectories for our github pages with reports
+            - name: Set a timestamp
+              id: timestampid
+              # this will store current time with UTC in outputs.timestamp (eg of value: 20231028_233147Z)
+              run: echo "timestamp=$(date --utc +%Y%m%d_%H%M%SZ)_${{github.sha}}" >> "$GITHUB_OUTPUT"
+
+            - uses: actions/checkout@v3
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: 18
+            - name: Install dependencies
+              run: npm ci
+
+            # we now download the reports uploaded previously to merge them and create one single html report
+            - name: Download blob reports from GitHub Actions Artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: playwright-report # name of the file stored as artifact (as uploaded at the previous job)
+                  path: downloaded-playwright-reports # name of the folder where the download will be saved
+
+            - name: /[OPTIONAL] Upload full html report to artifacts for history
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: playwright-report-${{ steps.timestampid.outputs.timestamp }} # name of the file you want to have once its uploaded
+                  path: downloaded-playwright-reports # path where the reports are, from where to take the files
+                  retention-days: 14
+
+            - name: Push the new files to github pages
+              # This will create a separate branch called gh-pages where it will store only reports. And from where it will push all future changes
+              # to github pages. Having a separate branch will keep the reports and changes commits separate to your main/master
+              uses: peaceiris/actions-gh-pages@v3
+              with:
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
+                  publish_dir: ./downloaded-playwright-reports # from what folder to take files. It takes only contents
+                  destination_dir: ${{ steps.timestampid.outputs.timestamp }} # a sub-directory where to publish to avoid overwriting other reports
+
+            - name: Write URL in summary
+              run: echo "### Test results (link available after 20 secs) - https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ steps.timestampid.outputs.timestamp}}/index.html" >> $GITHUB_STEP_SUMMARY
+
+            - name: Comment PR
+              uses: thollander/actions-comment-pull-request@v3
+              with:
+                  message: '### Test results (link available after 20 secs) - https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${{ steps.timestampid.outputs.timestamp}}/index.html'
+
+    delete_old_folders:
+        needs: [merge-reports-and-upload]
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  ref: gh-pages
+
+            - name: Run bash command for folder cleanup
+              run: find . -maxdepth 1 -type d -regextype posix-extended -regex './[0-9]{8}_[0-9]{6}Z_.*' -exec bash -c 'timestamp=$(echo {} | sed -E "s,.*/([0-9]{8})_([0-9]{6})Z_.*,\\1-\\2,"); timestamp=$(echo $timestamp | sed "s/\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)-\([0-9]\{2\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)/\\1-\\2-\\3 \\4:\\5:\\6/"); folder_date=$(date -d "$timestamp" +%s); current_date=$(date +%s); ((current_date - folder_date > 630000)) && rm -rf {}' \;
+
+            - name: Commit all changed files back to the repository
+              uses: stefanzweifel/git-auto-commit-action@v5
+              with:
+                  branch: gh-pages
+                  commit_message: Delete folders older than 7 days
