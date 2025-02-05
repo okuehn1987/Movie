@@ -49,6 +49,7 @@ export function usePagination<
     const currentPage = ref(props[key].value.current_page);
     const lastPage = computed(() => props[key].value.last_page);
     const data = computed(() => props[key].value.data);
+    const itemsPerPage = computed(() => props[key].value.per_page);
 
     watch(currentPage, () => {
         const currentRoute = route().current();
@@ -65,7 +66,7 @@ export function usePagination<
         );
     });
 
-    return { currentPage, lastPage, data };
+    return { currentPage, lastPage, data, itemsPerPage };
 }
 
 /**
