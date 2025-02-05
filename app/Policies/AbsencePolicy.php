@@ -33,18 +33,18 @@ class AbsencePolicy
             $authUser->hasPermissionOrDelegation($user, 'absence_permission', 'write');
     }
 
-    public function update(User $user, Absence $absence): bool
+    public function update(User $authUser, User $user): bool
     {
         return
-            $user->id == $absence->user->id ||
-            $user->id === $absence->user->supervisor_id  ||
-            $user->hasPermissionOrDelegation($absence->user, 'absence_permission', 'write');
+            $authUser->id == $user->id ||
+            $authUser->id === $user->supervisor_id  ||
+            $authUser->hasPermissionOrDelegation($user, 'absence_permission', 'write');
     }
 
-    public function delete(User $user, Absence $absence): bool
+    public function delete(User $authUser, User $user): bool
     {
         return
-            $user->id === $absence->user->supervisor_id ||
-            $user->hasPermissionOrDelegation($absence->user, 'absence_permission', 'write');
+            $authUser->id === $user->supervisor_id ||
+            $authUser->hasPermissionOrDelegation($user, 'absence_permission', 'write');
     }
 }

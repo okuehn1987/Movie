@@ -48,7 +48,7 @@ class AbsenceTypeController extends Controller
 
     public function destroy(Request $request, AbsenceType $absenceType)
     {
-        Gate::authorize('update', AbsenceType::class);
+        Gate::authorize('delete', AbsenceType::class);
 
         $absenceType->delete();
 
