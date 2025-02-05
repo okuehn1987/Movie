@@ -186,6 +186,7 @@ export type AbsenceType = DBObject<'absenceType'> &
             | 'Elternzeit'
             | 'Urlaub'
             | 'Andere';
+        requires_approval: boolean;
         organization_id: Organization['id'];
     };
 

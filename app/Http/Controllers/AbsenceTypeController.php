@@ -27,7 +27,7 @@ class AbsenceTypeController extends Controller
         $absenceType->organization_id = Organization::getCurrent()->id;
         $absenceType->save();
 
-        return back()->with('success', "Abwesenheitstyp erfolgreich gespeichert.");
+        return back()->with('success', "Abwesenheitsgrund erfolgreich gespeichert.");
     }
 
     public function update(Request $request, AbsenceType $absenceType)
@@ -41,17 +41,17 @@ class AbsenceTypeController extends Controller
             "requires_approval" => "required|boolean"
         ]);
 
-        $absenceType->update([$validated]);
+        $absenceType->update($validated);
 
         return back()->with('success', "Abwesenheitsgrund erfolgreich aktualisiert.");
     }
 
-    public function destroy(Request $request, AbsenceType $absenceType)
+    public function destroy(AbsenceType $absenceType)
     {
         Gate::authorize('delete', AbsenceType::class);
 
         $absenceType->delete();
 
-        return back()->with('success', "Abwesenheitstyp erfolgreich gelöscht.");
+        return back()->with('success', "Abwesenheitsgrund erfolgreich gelöscht.");
     }
 }
