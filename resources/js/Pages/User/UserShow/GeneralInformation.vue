@@ -14,7 +14,7 @@ import {
     UserWorkingWeek,
 } from '@/types/types';
 import UserShowNavBar from './partial/UserShowNavBar.vue';
-import UserForm from '../UserForm.vue';
+import UserForm from '../partial/UserForm.vue';
 import { useMaxScrollHeight } from '@/utils';
 
 defineProps<{
