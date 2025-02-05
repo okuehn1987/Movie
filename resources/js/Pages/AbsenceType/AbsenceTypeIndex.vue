@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { AbsenceType } from '@/types/types';
+import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 
 defineProps<{
     absenceTypes: AbsenceType[];
@@ -95,6 +96,17 @@ const absenceTypeForm = useForm({
                         </v-card>
                     </template>
                 </v-dialog>
+                <ConfirmDelete
+                    v-if="can('absenceType', 'delete')"
+                    :content="`Bist du dir sicher das du den Abwesenheitsgrund '${item.name}' entfernen möchtest?`"
+                    :route="
+                        route('absenceType.destroy', {
+                            absenceType: item.id,
+                        })
+                    "
+                    title="Abwesenheitsgrund löschen"
+                ></ConfirmDelete>
+                <div style="width: 48px" v-else></div>
             </template>
         </v-data-table-virtual>
     </v-card>
