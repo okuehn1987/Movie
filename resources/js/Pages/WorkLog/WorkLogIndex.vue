@@ -19,7 +19,6 @@ defineProps<{
                 users.map(u => ({
                     ...u,
                     timeAccountBalance: u.default_time_account.balance,
-                    formatted_timeAccountBalance: Duration.fromObject({ seconds: u.default_time_account.balance }).toFormat('h:mm'),
                     lastAction: u.latest_work_log.end ? 'Gehen' : 'Kommen',
                     time: DateTime.fromSQL(u.latest_work_log.end ? u.latest_work_log.end : u.latest_work_log.start).toFormat('dd.MM.yyyy HH:mm'),
                 }))
@@ -38,7 +37,7 @@ defineProps<{
                 <v-icon icon="mdi-circle" :color="item.latest_work_log.end ? 'error' : 'success'" size="md"></v-icon>
             </template>
             <template v-slot:item.timeAccountBalance="{ item }">
-                {{ item.formatted_timeAccountBalance }}
+                {{ Duration.fromObject({ seconds: item.default_time_account.balance }).toFormat('h:mm') }}
             </template>
             <template #item.actions="{ item }">
                 <Link

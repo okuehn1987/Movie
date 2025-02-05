@@ -30,7 +30,7 @@ test.beforeEach('admin login', async ({ page }) => {
     await page.getByText('Mitarbeitende').click();
 });
 
-test('creates and deletes a new user', async ({ page, browserName }) => {
+test('creates and deletes a new user', async ({ page }) => {
     test.slow();
     await page
         .getByRole('row', { name: /.*Vorname Nachname Email/ })

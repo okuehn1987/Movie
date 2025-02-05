@@ -16,7 +16,6 @@ class WorkLog extends Model
 
     protected $casts = ['is_home_office' => 'boolean'];
 
-
     public function user()
     {
         return $this->belongsTo(User::class);
