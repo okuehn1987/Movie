@@ -62,18 +62,29 @@ class AbsenceController extends Controller
 
     public function store(Request $request)
     {
-        Gate::authorize('create', [Absence::class, User::find($request['user_id'])]);
+        $absenceUser = User::find($request['user_id']);
+        Gate::authorize('create', [Absence::class, $absenceUser]);
 
         $validated = $request->validate([
-            'start' => 'required|date',
-            'end' => 'required|date',
+            'start' => ['required', 'date', 'before_or_equal:end', function ($attr, $val, $fail) use ($absenceUser, $request) {
+                if ($absenceUser->absences()->where('status', 'accepted')
+                    ->where('start', '<=', $request['end'])
+                    ->where('end', '>=', $request['start'])
+                    ->exists()
+                )
+                    $fail('In diesem Zeitraum besteht bereits eine Abwesenheit.');
+            }],
+            'end' => 'required|date|after_or_equal:start',
             'absence_type_id' => 'required|exists:absence_types,id',
             'user_id' => 'required|exists:users,id'
         ]);
 
         $user = User::find(Auth::id());
 
-        $requires_approval = $user->supervisor_id && $user->supervisor_id != Auth::id() && AbsenceType::find($validated['absence_type_id'])->requires_approval;
+        $requires_approval =
+            $user->supervisor_id &&
+            $user->supervisor_id != Auth::id() &&
+            AbsenceType::find($validated['absence_type_id'])->requires_approval;
 
         $absence = Absence::create([
             ...$validated,
@@ -86,7 +97,7 @@ class AbsenceController extends Controller
 
         if ($requires_approval) $user->supervisor->notify(new AbsenceNotification($user, $absence));
 
-        return back()->with('success', 'Abwesenheit beantragt.');
+        return back()->with('success', 'Abwesenheit erfolgreich beantragt.');
     }
 
     public function update(Request $request, Absence $absence)
