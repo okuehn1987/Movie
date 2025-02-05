@@ -44,7 +44,9 @@ class Shift extends Model
 
     public function getHasEndedAttribute()
     {
-        return Carbon::parse($this->end)->lte(Carbon::now()->subHours(self::$MINIMUM_SHIFT_SEPARATION_TIME_IN_HOURS));
+        return
+            !$this->workLogs()->whereNull('end')->exists() &&
+            Carbon::parse($this->end)->lte(Carbon::now()->subHours(self::$MINIMUM_SHIFT_SEPARATION_TIME_IN_HOURS));
     }
 
     public function getBreakDurationAttribute()
