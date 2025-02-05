@@ -100,9 +100,16 @@ class AbsenceController extends Controller
         return back()->with('success', 'Abwesenheit erfolgreich beantragt.');
     }
 
-    public function update(Request $request, Absence $absence)
+    // public function update(Request $request, Absence $absence)
+    // {
+    //     // TODO: implement with e2e test
+    //     $absenceUser = User::find($request['user_id']);
+    //     Gate::authorize('update', [Absence::class, $absenceUser]);
+    // }
+
+    public function updateStatus(Request $request, Absence $absence)
     {
-        Gate::authorize('update', $absence);
+        Gate::authorize('update', [Absence::class, $absence->user]);
 
         $validated = $request->validate([
             'accepted' => 'required|boolean'
