@@ -28,7 +28,7 @@ class AbsenceController extends Controller
 
         $user = $request->user();
 
-        $absences = [...Absence::inOrganization()->where('status', 'accepted')
+        $absences = [...Absence::inOrganization()->whereIn('status', ['accepted', 'created'])
             ->where(fn($q) => $q->where('start', '<=', $date->copy()->endOfMonth())->where('end', '>=', $date->copy()->startOfMonth()))
             ->with(['absenceType' => fn($q) => $q->select(['id', 'abbreviation'])->withTrashed(), 'user:id,group_id,operating_site_id,supervisor_id'])
             ->get(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status'])

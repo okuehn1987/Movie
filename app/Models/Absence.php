@@ -18,7 +18,7 @@ class Absence extends Model
     public function getHidden()
     {
         $user = User::find(Auth::id());
-        if ($user->cannot('viewShow', [AbsenceType::class, $this->user])) return ['absence_type_id', 'absenceType'];
+        if ($user && $user->cannot('viewShow', [AbsenceType::class, $this->user])) return ['absence_type_id', 'absenceType'];
         return [];
     }
 

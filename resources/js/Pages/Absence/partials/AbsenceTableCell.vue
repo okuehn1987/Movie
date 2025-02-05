@@ -35,8 +35,12 @@ function shouldUserWork(user: UserProp, day: DateTime) {
         :title="props.holidays?.[props.date.toFormat('yyyy-MM-dd')]"
     >
         <template v-if="absence && shouldUserWork(user, date)">
-            <span v-if="absence.absence_type_id">{{ absence.absence_type?.abbreviation }}</span>
-            <div v-else class="h-100 w-100" style="background-color: #f99"></div>
+            <div
+                class="h-100 w-100 d-flex justify-center align-center"
+                :style="{ backgroundColor: absence.status == 'accepted' ? '#f99' : 'lightblue' }"
+            >
+                <span v-if="absence.absence_type_id">{{ absence.absence_type?.abbreviation }}</span>
+            </div>
         </template>
     </td>
 </template>
