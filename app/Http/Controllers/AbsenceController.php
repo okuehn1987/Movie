@@ -30,7 +30,7 @@ class AbsenceController extends Controller
 
         $absences = [...Absence::inOrganization()->where('status', 'accepted')
             ->where(fn($q) => $q->where('start', '<=', $date->copy()->endOfMonth())->where('end', '>=', $date->copy()->startOfMonth()))
-            ->with(['absenceType:id,abbreviation', 'user:id,group_id,operating_site_id,supervisor_id'])
+            ->with(['absenceType' => fn($q) => $q->select(['id', 'abbreviation'])->withTrashed(), 'user:id,group_id,operating_site_id,supervisor_id'])
             ->get(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status'])
             ->filter(fn($a) => $user->can('viewShow', [Absence::class, $a->user]))->toArray()];
 
@@ -63,6 +63,7 @@ class AbsenceController extends Controller
     public function store(Request $request)
     {
         $absenceUser = User::find($request['user_id']);
+
         Gate::authorize('create', [Absence::class, $absenceUser]);
 
         $validated = $request->validate([

@@ -11,7 +11,7 @@ trait ScopeInOrganization
         $org = Organization::getCurrent();
         if (!$org) return $builder;
         if (new self instanceof \App\Models\Absence) {
-            return $builder->whereIn('absence_type_id', AbsenceType::select('id')->inOrganization());
+            return $builder->whereIn('absence_type_id', AbsenceType::select('id')->withTrashed()->inOrganization());
         }
         if (new self instanceof \App\Models\OperatingTime || new self instanceof \App\Models\User) {
             return  $builder->whereIn(

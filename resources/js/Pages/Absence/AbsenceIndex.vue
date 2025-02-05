@@ -14,7 +14,9 @@ type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'> 
 
 const props = defineProps<{
     users: UserProp[];
-    absences: Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id' | 'user_id'>[];
+    absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id' | 'user_id'> & {
+        absence_type: Pick<AbsenceType, 'id' | 'abbreviation'>;
+    })[];
     absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
     holidays: Record<string, string> | null;
 }>();
