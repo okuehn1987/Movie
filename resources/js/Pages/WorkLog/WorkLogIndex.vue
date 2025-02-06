@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { TimeAccount, User, WorkLog } from '@/types/types';
-import { getMaxScrollHeight } from '@/utils';
+import { formatDuration, getMaxScrollHeight } from '@/utils';
 import { Link } from '@inertiajs/vue3';
-import { DateTime, Duration } from 'luxon';
+import { DateTime } from 'luxon';
 
 defineProps<{
     users: (Pick<User, 'id' | 'first_name' | 'last_name'> & { latest_work_log: WorkLog; default_time_account: TimeAccount })[];
@@ -37,7 +37,7 @@ defineProps<{
                 <v-icon icon="mdi-circle" :color="item.latest_work_log.end ? 'error' : 'success'" size="md"></v-icon>
             </template>
             <template v-slot:item.timeAccountBalance="{ item }">
-                {{ Duration.fromObject({ seconds: item.default_time_account.balance }).toFormat('h:mm') }}
+                {{ formatDuration(item.default_time_account.balance) }}
             </template>
             <template #item.actions="{ item }">
                 <Link
