@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Shift;
 use App\Models\User;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
@@ -9,7 +10,6 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class WorkLogController extends Controller
@@ -33,22 +33,26 @@ class WorkLogController extends Controller
     {
         Gate::authorize('create', WorkLog::class);
 
-        $last = (WorkLog::inOrganization()->where('user_id', Auth::id())->latest('start')->first());
+        $last = WorkLog::inOrganization()->where('user_id', Auth::id())->with('shift')->latest('start')->first();
 
         $validated = $request->validate([
             'is_home_office' => 'required|boolean',
-            'id' => [
-                'nullable',
-                Rule::in([$last?->id])
-            ]
         ]);
 
+        if (!$last->shift || $last->shift->has_ended)
+            $shift = Shift::create([
+                'is_accounted' => false,
+                'user_id' => Auth::id(),
+            ]);
+        else
+            $shift = $last->shift;
 
-        WorkLog::updateOrCreate(['id' => array_key_exists('id', $validated) ? $validated['id'] : 0], [
+        WorkLog::updateOrCreate(['id' => $last->end ? null : $last->id], [
             ...$validated,
-            'start' => array_key_exists('id', $validated) && $validated['id'] ? $last->start :  Carbon::now(),
-            'end' => array_key_exists('id', $validated) && $validated['id'] ? Carbon::now() : null,
-            'user_id' => Auth::id()
+            'start' => $last->end ? Carbon::now() : $last->start,
+            'end' => $last->end ? null : Carbon::now(),
+            'user_id' => Auth::id(),
+            'shift_id' => $shift->id
         ]);
 
         return back()->with('success', 'Arbeitsstatus erfolgreich eingetragen.');

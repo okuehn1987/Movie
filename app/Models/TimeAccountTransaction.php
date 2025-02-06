@@ -36,4 +36,14 @@ class TimeAccountTransaction extends Model
     {
         return $this->belongsTo(User::class, 'modified_by');
     }
+
+    public function revert()
+    {
+        TimeAccount::transferBalanceFromTo(
+            $this->amount,
+            'Revert: ' . $this->description . ' vom ' . $this->created_at->format('d.m.Y'),
+            $this->to,
+            $this->from
+        );
+    }
 }

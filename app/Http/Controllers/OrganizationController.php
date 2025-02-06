@@ -92,6 +92,7 @@ class OrganizationController extends Controller
 
         return Inertia::render('Organization/OrganizationShow', [
             'organization' => $organization,
+            'flags' => Organization::$FLAGS,
             'operating_sites' => OperatingSite::inOrganization()->get(),
             'operating_times' => OperatingTime::inOrganization()->get(),
             'absence_types' => AbsenceType::inOrganization()->get(),
@@ -156,5 +157,15 @@ class OrganizationController extends Controller
                 ->with('allSupervisees:id,first_name,last_name,supervisor_id,email')
                 ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'email']),
         ]);
+    }
+
+    public function saveSettings(Request $request)
+    {
+        Gate::authorize('update', Organization::getCurrent());
+        $validated = $request->validate(collect(Organization::$FLAGS)->mapWithKeys(fn($_, $k) => [$k => 'required|boolean'])->toArray());
+
+        Organization::getCurrent()->update([...$validated]);
+
+        return back()->with('success', 'Einstellungen erfolgreich gespeichert.');
     }
 }

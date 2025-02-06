@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use Laravel\Pennant\Feature;
 use Spatie\Holidays\Countries\Germany;
 use Spatie\Holidays\Holidays;
 
@@ -34,6 +35,14 @@ class HolidayService
         ]
     ];
 
+    private static function getCustomHolidays()
+    {
+        return [
+            ...Feature::active("new_year_vacation_day") ? ['12-31' => 'Silvester'] : [],
+            ...Feature::active("christmas_vacation_day") ? ['12-24' => 'Weihnachten'] : []
+        ];
+    }
+
     public static function getCountries()
     {
         return collect(array_keys(self::$COUNTRIES))->map(fn($c) => ['title' => self::$COUNTRIES[$c]['name'], 'value' => $c, 'regions' => self::$COUNTRIES[$c]['regions']]);
@@ -41,13 +50,28 @@ class HolidayService
 
     public static function isHoliday($countryCode, $region = null, CarbonInterface $date)
     {
-        return Holidays::for(self::$COUNTRIES[$countryCode]['class']::make($countryCode . ($region ? '-' . $region : '')))->isHoliday($date);
+        return Holidays::for(self::$COUNTRIES[$countryCode]['class']::make($countryCode . ($region ? '-' . $region : '')))->isHoliday($date) ||
+            array_key_exists($date->copy()->format('m-d'), self::getCustomHolidays());
     }
 
-    public static function getHolidays($countryCode, $region = null, CarbonInterface $date)
+    public static function getHolidaysForMonth($countryCode, $region = null, CarbonInterface $date)
     {
-        if ($date->gte(Carbon::createFromFormat('Y-m-d', '2038-01-01'))) return [];
-        return Holidays::for(self::$COUNTRIES[$countryCode]['class']::make($countryCode . ($region ? '-' . $region : '')))->getInRange($date->copy()->startOfMonth(), $date->copy()->endOfMonth());
+        if ($date->gte(Carbon::createFromFormat('Y-m-d', '2038-01-01'))) return collect([]);
+        return collect(
+            Holidays::for(self::$COUNTRIES[$countryCode]['class']::make($countryCode . ($region ? '-' . $region : '')))
+                ->getInRange($date->copy()->startOfMonth(), $date->copy()->endOfMonth())
+        )->merge(
+            collect(self::getCustomHolidays())
+                ->mapWithKeys(fn($v, $k) => [$date->year . '-' . $k => $v])
+                ->filter(
+                    fn($v, $k) =>
+                    Carbon::parse($k)
+                        ->between(
+                            $date->copy()->startOfMonth(),
+                            $date->copy()->endOfMonth()
+                        )
+                )
+        );
     }
 
     public static function getCountryCodes()

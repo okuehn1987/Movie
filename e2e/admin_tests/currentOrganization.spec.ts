@@ -76,7 +76,7 @@ test('adds, edits and deletes specialWorkingHoursFactors', async ({ page }) => {
 
 test('adds absence type', async ({ page }) => {
     await page.getByRole('tab', { name: 'Abwesenheitsgründe' }).click();
-    await page.getByRole('row', { name: 'Abwesenheitsgrund Abkürzung' }).getByRole('button').click();
+    await page.getByTestId('absenceCreation').click();
     await expect(page.getByText('Abwesenheitgrund erstellen')).toBeVisible();
     await page.getByLabel('Abwesenheitsgrund').fill('gelber Schein');
     await page.getByLabel('Abkürzung').fill('Freiheit');
@@ -89,7 +89,9 @@ test('adds absence type', async ({ page }) => {
     await expect(page.getByRole('cell', { name: 'gelber Schein' })).toBeVisible();
 });
 
-test('adds time_account settings', async ({ page }) => {
+test('adds time_account settings', async ({ page, browserName }) => {
+    test.slow(browserName === 'webkit');
+
     await page.getByRole('tab', { name: 'Zeitkontoeinstellungen' }).click();
     await page.getByRole('row', { name: 'Art Berechnungszeitraum' }).getByRole('button').click();
     await expect(page.getByText('Neue Variante Erstellen')).toBeVisible();

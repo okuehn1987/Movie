@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\FloorToMinutes;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class WorkLog extends Model
 {
     use HasFactory, SoftDeletes;
-    use ScopeInOrganization, FloorToMinutes;
+    use ScopeInOrganization;
 
     protected $guarded = [];
 
@@ -21,9 +20,16 @@ class WorkLog extends Model
     {
         return $this->belongsTo(User::class);
     }
+
     public function workLogPatches()
     {
         return $this->hasMany(WorkLogPatch::class);
+    }
+
+    /** @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Shift|null, \App\Models\WorkLog> */
+    public function shift()
+    {
+        return $this->belongsTo(Shift::class);
     }
 
     /**
@@ -45,6 +51,6 @@ class WorkLog extends Model
     public function getDurationAttribute(): int | float
     {
         if ($this->end == null) return 0;
-        return Carbon::parse($this->start)->floatDiffInHours($this->end);
+        return Carbon::parse($this->start)->diffInSeconds($this->end);
     }
 }

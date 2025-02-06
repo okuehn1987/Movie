@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { OperatingTime, WorkLog } from '@/types/types';
-import { roundTo, useNow } from '@/utils';
+import { useNow } from '@/utils';
 import { router, usePage } from '@inertiajs/vue3';
 import { DateTime, Duration } from 'luxon';
 import { computed } from 'vue';
@@ -18,7 +18,6 @@ const now = useNow();
 function changeWorkStatus(is_home_office = false) {
     router.post(route('workLog.store'), {
         is_home_office,
-        id: props.lastWorkLog?.end ? null : props.lastWorkLog?.id,
     });
 }
 
@@ -86,7 +85,7 @@ const lastActionText = computed(() => {
                         <div class="d-flex flex-column">
                             Überstunden
                             <div class="text-h6">
-                                {{ roundTo(overtime, 2) }}
+                                {{ Duration.fromObject({ seconds: overtime }).toFormat('h:mm') }}
                             </div>
                         </div>
                     </div>

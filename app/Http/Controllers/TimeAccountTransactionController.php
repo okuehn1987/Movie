@@ -37,7 +37,7 @@ class TimeAccountTransactionController extends Controller
         }
 
         TimeAccount::transferBalanceFromTo(
-            $validated["amount"],
+            $validated["amount"] * 3600,
             $validated["description"],
             $fromAccount,
             $toAccount

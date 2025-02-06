@@ -222,7 +222,7 @@ class UserController extends Controller
             ->with(['timeAccountSetting'])
             ->get(["id", "user_id", "balance", "balance_limit", "time_account_setting_id", "name", "deleted_at"]);
 
-        return Inertia::render('User/UserShow/TimeAccounts', [
+        return Inertia::render('User/UserShow/TimeAccounts/TimeAccounts', [
             'user' => $user,
             'time_accounts' => $timeAccounts,
             'time_account_settings' => TimeAccountSetting::inOrganization()->get(['id', 'type', 'truncation_cycle_length_in_months']),
@@ -241,7 +241,7 @@ class UserController extends Controller
             ->with(['timeAccountSetting'])
             ->get(["id", "user_id", "balance", "balance_limit", "time_account_setting_id", "name", "deleted_at"]);
 
-        $userTransactions = TimeAccountTransaction::forUser($user)->with('user:id,first_name,last_name')->latest()->paginate(15);
+        $userTransactions = TimeAccountTransaction::forUser($user)->with('user:id,first_name,last_name')->latest()->paginate(13);
 
         return Inertia::render('User/UserShow/TimeAccountTransactions', [
             'user' => $user,
@@ -346,7 +346,7 @@ class UserController extends Controller
         TimeAccount::create([
             'name' => 'Gleitzeitkonto',
             'balance' => 0,
-            'balance_limit' => ($currentWorkingHours?->weekly_working_hours ?? 40) * 2,
+            'balance_limit' => ($currentWorkingHours?->weekly_working_hours ?? 40) * 2 * 3600,
             'time_account_setting_id' => TimeAccountSetting::inOrganization()->whereNull('type')->first()->id,
             'user_id' => $user->id
         ]);

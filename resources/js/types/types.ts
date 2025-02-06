@@ -3,6 +3,7 @@ type Branded<T, Brand extends string> = T & { [x in `__${Brand}__`]: void };
 export type DateString = Branded<string, 'date'>;
 export type TimeString = Branded<string, 'time'>;
 export type DateTimeString = Branded<string, 'dateTime'>;
+export type Seconds = number;
 
 export type Writeable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -130,14 +131,11 @@ export type UserLeaveDays = DBObject<'userLeaveDays'> &
         type: 'annual' | 'remaining';
     };
 
-type Flags = {
-    night_surcharges: boolean; // nachtzuschläge
-    vacation_limitation_period: boolean; // verjährungsfrist bei urlaub
-};
+export type Flag = 'auto_accept_travel_logs' | 'christmas_vacation_day' | 'new_year_vacation_day' | 'vacation_limitation_period' | 'night_surcharges';
 
 export type Organization = DBObject<'organization'> &
     SoftDelete &
-    Flags & {
+    Record<Flag, boolean> & {
         name: string;
         owner_id: User['id'] | null;
         tax_registration_id: string | null;
@@ -227,12 +225,19 @@ export type CustomAddress = DBObject<'customAddress'> &
         organization_id: Organization['id'];
     };
 
+export type Shift = DBObject<'shift'> & {
+    user_id: User['id'];
+    is_accounted: boolean;
+};
+
 export type WorkLog = DBObject<'workLog'> &
     SoftDelete & {
         user_id: User['id'];
         start: DateTimeString;
         end: DateTimeString | null;
         is_home_office: boolean;
+        /** shift_id is only null for all workLogs before the introduction of shifts */
+        shift_id: Shift['id'] | null;
     };
 
 export type WorkLogPatch = DBObject<'workLogPatch'> &
@@ -261,8 +266,8 @@ export type TimeAccountSetting = DBObject<'timeAccountSetting'> &
 export type TimeAccount = DBObject<'timeAccount'> &
     SoftDelete & {
         user_id: User['id'];
-        balance: number;
-        balance_limit: number;
+        balance: Seconds;
+        balance_limit: Seconds;
         time_account_setting_id: TimeAccountSetting['id'];
         name: string;
     };
@@ -272,7 +277,7 @@ export type TimeAccountTransaction = DBObject<'timeAccountTransaction'> &
         from_id: TimeAccount['id'] | null;
         to_id: TimeAccount['id'] | null;
         modified_by: User['id'] | null;
-        amount: number;
+        amount: Seconds;
         description: string;
     };
 
