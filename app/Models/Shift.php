@@ -72,7 +72,7 @@ class Shift extends Model
     public function durationThreshold(float $duration)
     {
         return match (true) {
-            $duration > 9 && $this->user->age > 18 => 9,
+            $duration > 9 && $this->user->age >= 18 => 9,
             $duration > 6 => 6,
             $duration > 4.5 && $this->user->age < 18 => 4.5,
             default => 0,
