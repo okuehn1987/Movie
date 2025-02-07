@@ -21,7 +21,7 @@ class AbsencePolicy
         return
             $authUser->id === $user->id ||
             $authUser->id === $user->supervisor_id ||
-            $authUser->group_id === $user->group_id ||
+            ($authUser->group_id !== null && $authUser->group_id === $user->group_id) ||
             $authUser->hasPermissionOrDelegation($user, 'absence_permission', 'read');
     }
 

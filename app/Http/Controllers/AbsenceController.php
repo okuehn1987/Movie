@@ -32,7 +32,19 @@ class AbsenceController extends Controller
             ->where(fn($q) => $q->where('start', '<=', $date->copy()->endOfMonth())->where('end', '>=', $date->copy()->startOfMonth()))
             ->with(['absenceType' => fn($q) => $q->select(['id', 'abbreviation'])->withTrashed(), 'user:id,group_id,operating_site_id,supervisor_id'])
             ->get(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status'])
-            ->filter(fn($a) => $user->can('viewShow', [Absence::class, $a->user]))->toArray()];
+            ->filter(
+                fn($a) =>
+                $user->can('viewShow', [Absence::class, $a->user]) &&
+                    ($a->status === 'accepted' ||
+                        ($a->status === 'created' &&
+                            $a->user_id === $user->id ||
+                            $user->can(
+                                'update',
+                                [Absence::class, $a->user]
+                            )
+                        ))
+            )
+            ->toArray()];
 
         $holidays = HolidayService::getHolidaysForMonth($user->operatingSite->country, $user->operatingSite->federal_state, $date)
             ->mapWithKeys(
