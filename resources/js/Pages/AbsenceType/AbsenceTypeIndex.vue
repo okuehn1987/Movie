@@ -40,7 +40,7 @@ defineProps<{
             <template v-slot:item.action="{ item }">
                 <v-dialog max-width="1000" v-if="can('absenceType', 'update')">
                     <template v-slot:activator="{ props: activatorProps }">
-                        <v-btn data-testid="absenceCreation" icon variant="text" v-bind="activatorProps" color="primary">
+                        <v-btn icon variant="text" v-bind="activatorProps" color="primary">
                             <v-icon icon="mdi-pencil"></v-icon>
                         </v-btn>
                     </template>

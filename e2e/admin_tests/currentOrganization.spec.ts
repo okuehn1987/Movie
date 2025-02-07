@@ -85,7 +85,7 @@ test('adds absence type', async ({ page }) => {
     await page.getByLabel('Muss genehmigt werden?').check();
     await page.getByRole('button', { name: 'Erstellen' }).click();
     await expect(page.getByText('Abwesenheitgrund erstellen')).not.toBeVisible();
-    await expect(page.getByText('Abwesenheitstyp erfolgreich')).toBeVisible();
+    await expect(page.getByText('Abwesenheitsgrund erfolgreich gespeichert')).toBeVisible();
     await expect(page.getByRole('cell', { name: 'gelber Schein' })).toBeVisible();
 });
 
