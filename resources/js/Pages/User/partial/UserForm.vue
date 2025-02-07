@@ -16,7 +16,7 @@ import {
 } from '@/types/types';
 import { getStates } from '@/utils';
 import { DateTime, Info } from 'luxon';
-import PermissionSelector from './UserFormPartials/PermissionSelector.vue';
+import PermissionSelector from './PermissionSelector.vue';
 import { nextTick } from 'vue';
 
 const props = defineProps<{
@@ -196,13 +196,14 @@ function submit() {
 }
 
 function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since: string }) {
+    if (props.user && !can('user', 'update')) return true;
     const original = props.user?.userLeaveDays.find(e => e?.id === item.id);
     if (original) return original.active_since < DateTime.now().startOf('month').toFormat('yyyy-MM-dd');
     return false;
 }
 </script>
 <template>
-    <v-form id="userForm" @submit.prevent="submit">
+    <v-form id="userForm" @submit.prevent="submit" :disabled="user && !can('user', 'update')">
         <v-card class="mb-4">
             <v-card-item>
                 <v-card-title class="mb-2">Persönliche Daten</v-card-title>
@@ -267,7 +268,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             data-testid="federal_state"
                             label="Bundesland"
                             :items="getStates(userForm.country, countries)"
-                            :disabled="!userForm.country"
+                            :disabled="(user && !can('user', 'update')) || !userForm.country"
                             :error-messages="userForm.errors.federal_state"
                             v-model="userForm.federal_state"
                         ></v-select>
@@ -309,6 +310,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                         >
                             <template v-slot:header.actions>
                                 <v-btn
+                                    v-if="!user || can('user', 'update')"
                                     color="primary"
                                     @click.stop="userForm.userWorkingHours.push({ active_since: '', id: null, weekly_working_hours: 0 })"
                                 >
@@ -322,7 +324,10 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                                     variant="underlined"
                                     v-model="item.weekly_working_hours"
                                     :error-messages="userForm.errors[`userWorkingHours.${index}.weekly_working_hours`]"
-                                    :disabled="!!item.active_since && item.active_since < DateTime.now().toFormat('yyyy-MM-dd')"
+                                    :disabled="
+                                        (user && !can('user', 'update')) ||
+                                        (!!item.active_since && item.active_since < DateTime.now().toFormat('yyyy-MM-dd'))
+                                    "
                                 ></v-text-field>
                             </template>
                             <template v-slot:item.active_since="{ item, index }">
@@ -333,14 +338,17 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                                     :min="mode == 'edit' ? DateTime.now().toFormat('yyyy-MM-dd') : undefined"
                                     v-model="item.active_since"
                                     :error-messages="userForm.errors[`userWorkingHours.${index}.active_since`]"
-                                    :disabled="!!item.active_since && item.active_since < DateTime.now().toFormat('yyyy-MM-dd')"
+                                    :disabled="
+                                        (user && !can('user', 'update')) ||
+                                        (!!item.active_since && item.active_since < DateTime.now().toFormat('yyyy-MM-dd'))
+                                    "
                                 ></v-text-field>
                             </template>
                             <template v-slot:item.actions="{ item, index }">
                                 <v-btn
                                     color="error"
                                     @click.stop="userForm.userWorkingHours.splice(index, 1)"
-                                    v-if="!item.id || item.active_since > DateTime.now().toFormat('yyyy-MM-dd')"
+                                    v-if="(!user || can('user', 'update')) && (!item.id || item.active_since > DateTime.now().toFormat('yyyy-MM-dd'))"
                                     ><v-icon icon="mdi-delete"></v-icon></v-btn
                             ></template>
                         </v-data-table-virtual>
@@ -381,7 +389,11 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             ]"
                         >
                             <template v-slot:header.actions>
-                                <v-btn color="primary" @click.stop="userForm.userWorkingWeeks.push({ active_since: '', id: null, weekdays: [] })">
+                                <v-btn
+                                    v-if="!user || can('user', 'update')"
+                                    color="primary"
+                                    @click.stop="userForm.userWorkingWeeks.push({ active_since: '', id: null, weekdays: [] })"
+                                >
                                     <v-icon icon="mdi-plus"></v-icon>
                                 </v-btn>
                             </template>
@@ -389,6 +401,10 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                                 <v-select
                                     data-testid="userWorkingDays"
                                     chips
+                                    :disabled="
+                                        (user && !can('user', 'update')) ||
+                                        (!!item.active_since && item.active_since < DateTime.now().toFormat('yyyy-MM-dd'))
+                                    "
                                     v-model="item.weekdays"
                                     multiple
                                     :items="
@@ -407,7 +423,10 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                                     variant="underlined"
                                     :min="mode == 'edit' ? DateTime.now().toFormat('yyyy-MM-dd') : undefined"
                                     v-model="item.active_since"
-                                    :disabled="!!item.active_since && item.active_since < DateTime.now().toFormat('yyyy-MM-dd')"
+                                    :disabled="
+                                        (user && !can('user', 'update')) ||
+                                        (!!item.active_since && item.active_since < DateTime.now().toFormat('yyyy-MM-dd'))
+                                    "
                                     :error-messages="userForm.errors[`userWorkingWeeks.${index}.active_since`]"
                                 ></v-text-field>
                             </template>
@@ -415,7 +434,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                                 <v-btn
                                     color="error"
                                     @click.stop="userForm.userWorkingWeeks.splice(index, 1)"
-                                    v-if="!item.id || item.active_since > DateTime.now().toFormat('yyyy-MM-dd')"
+                                    v-if="(!user || can('user', 'update')) && (!item.id || item.active_since > DateTime.now().toFormat('yyyy-MM-dd'))"
                                     ><v-icon icon="mdi-delete"></v-icon></v-btn
                             ></template>
                         </v-data-table-virtual>
@@ -457,7 +476,11 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             ]"
                         >
                             <template v-slot:header.actions>
-                                <v-btn color="primary" @click.stop="userForm.userLeaveDays.push({ active_since: '', id: null, leave_days: 0 })">
+                                <v-btn
+                                    v-if="!user || can('user', 'update')"
+                                    color="primary"
+                                    @click.stop="userForm.userLeaveDays.push({ active_since: '', id: null, leave_days: 0 })"
+                                >
                                     <v-icon icon="mdi-plus"></v-icon>
                                 </v-btn>
                             </template>
@@ -486,7 +509,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                                 <v-btn
                                     color="error"
                                     @click.stop="userForm.userLeaveDays.splice(index, 1)"
-                                    v-if="!item.id || item.active_since > DateTime.now().toFormat('yyyy-MM-dd')"
+                                    v-if="(!user || can('user', 'update')) && (!item.id || item.active_since > DateTime.now().toFormat('yyyy-MM-dd'))"
                                     ><v-icon icon="mdi-delete"></v-icon></v-btn
                             ></template>
                         </v-data-table-virtual>

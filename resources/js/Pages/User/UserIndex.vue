@@ -5,7 +5,7 @@ import { Canable, CountryProp, Group, OperatingSite, Permission, User } from '@/
 import { fillNullishValues, getMaxScrollHeight, useMaxScrollHeight } from '@/utils';
 import { Link } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
-import UserForm from './UserForm.vue';
+import UserForm from './partial/UserForm.vue';
 
 defineProps<{
     users: (User & Canable & { group: Pick<Group, 'id' | 'name'> })[];
