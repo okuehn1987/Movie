@@ -30,8 +30,8 @@ function openAbsence(_: unknown, row: { item: { id: Absence['id'] } }) {
 function changeAbsenceStatus(accepted: boolean) {
     if (!absenceDialog.value) return;
     router.patch(
-        route('absence.update', { absence: absenceDialog.value.id }),
-        { accepted: accepted },
+        route('absence.updateStatus', { absence: absenceDialog.value.id }),
+        { accepted },
         {
             onSuccess: () => {
                 showAbsenceDialog.value = false;

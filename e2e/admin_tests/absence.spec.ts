@@ -39,5 +39,5 @@ test('creates an absence in the calendar', async ({ page }) => {
     await page.getByLabel('Von').fill(date.plus({ day: 5 }).toFormat('yyyy-MM-dd'));
     await page.getByLabel('Bis').fill(date.plus({ day: 10 }).toFormat('yyyy-MM-dd'));
     await page.getByRole('button', { name: 'beantragen' }).click();
-    await expect(page.getByText('Abwesenheit beantragt.')).toBeVisible();
+    await expect(page.getByText('Abwesenheit erfolgreich beantragt.')).toBeVisible();
 });

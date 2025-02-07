@@ -112,6 +112,8 @@ class OrganizationController extends Controller
                 'absenceType' => [
                     'viewIndex' => Gate::allows('viewIndex', AbsenceType::class),
                     'create' => Gate::allows('create', AbsenceType::class),
+                    'update' => Gate::allows('update', AbsenceType::class),
+                    'delete' => Gate::allows('delete', AbsenceType::class),
                 ],
                 'timeAccountSetting' => [
                     'create' => Gate::allows('create', TimeAccountSetting::class),

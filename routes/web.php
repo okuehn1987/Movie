@@ -27,7 +27,8 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::patch('organization/saveSettings', [OrganizationController::class, 'saveSettings'])->name('organization.saveSettings');
     Route::resource('organization', OrganizationController::class)->only(['show', 'update']);
 
-    Route::resource('absence', AbsenceController::class)->only(['index', 'update', 'store']);
+    Route::resource('absence', AbsenceController::class)->only(['index', 'store']);
+    Route::patch('/absence/{absence}/updateStatus', [AbsenceController::class, 'updateStatus'])->name('absence.updateStatus');
     Route::resource('absenceType', AbsenceTypeController::class)->only(['store', 'update', 'destroy']);
     Route::resource('specialWorkingHoursFactor', SpecialWorkingHoursFactorController::class)->only(['store', 'update', 'destroy']);
     Route::resource('group', GroupController::class)->only(['index', 'store', 'update', 'destroy']);
