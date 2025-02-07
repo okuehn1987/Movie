@@ -103,6 +103,7 @@ declare module 'ziggy-js' {
         }
     ],
     "user.profile": [],
+    "organization.saveSettings": [],
     "organization.show": [
         {
             "name": "organization",
@@ -117,10 +118,16 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
-    "organization.saveSettings": [],
     "absence.index": [],
     "absence.store": [],
     "absence.update": [
+        {
+            "name": "absence",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "absence.updateStatus": [
         {
             "name": "absence",
             "required": true,
