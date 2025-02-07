@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Paginator, TimeAccount, TimeAccountSetting, TimeAccountTransaction, User } from '@/types/types';
-import { usePagination } from '@/utils';
-import { DateTime, Duration } from 'luxon';
+import { formatDuration, usePagination } from '@/utils';
+import { DateTime } from 'luxon';
 import { toRefs } from 'vue';
 import UserShowNavBar from './partial/UserShowNavBar.vue';
 
@@ -46,7 +46,7 @@ function getAccountName(id: TimeAccountTransaction['from_id'] | TimeAccountTrans
                     from: getAccountName(t.from_id),
                     to: getAccountName(t.to_id),
                     amount: t.amount * (getTransactionType(t) == 'negative' ? -1 : 1),
-                    formatted_amount: Duration.fromObject({ seconds: t.amount }).toFormat('hh:mm'),
+                    formatted_amount: formatDuration(t.amount),
                 }))
             "
             :headers="[

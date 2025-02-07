@@ -1,5 +1,5 @@
 import { router, usePage } from '@inertiajs/vue3';
-import { DateTime } from 'luxon';
+import { DateTime, Duration } from 'luxon';
 import { computed, onMounted, onUnmounted, ref, Ref, watch } from 'vue';
 import { Country, Paginator, FederalState, TimeAccountSetting, Tree } from './types/types';
 
@@ -173,4 +173,8 @@ export function throttle<T extends (...args: unknown[]) => void>(func: T, delayL
             }, delayLimit - (now - lastRan));
         }
     };
+}
+
+export function formatDuration(seconds: number) {
+    return (seconds < 0 ? '-' : '') + Duration.fromObject({ seconds: Math.abs(seconds) }).toFormat('h:mm');
 }

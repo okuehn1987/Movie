@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { OperatingTime, WorkLog } from '@/types/types';
-import { useNow } from '@/utils';
+import { formatDuration, useNow } from '@/utils';
 import { router, usePage } from '@inertiajs/vue3';
 import { DateTime, Duration } from 'luxon';
 import { computed } from 'vue';
@@ -85,7 +85,7 @@ const lastActionText = computed(() => {
                         <div class="d-flex flex-column">
                             Überstunden
                             <div class="text-h6">
-                                {{ Duration.fromObject({ seconds: overtime }).toFormat('h:mm') }}
+                                {{ formatDuration(overtime) }}
                             </div>
                         </div>
                     </div>

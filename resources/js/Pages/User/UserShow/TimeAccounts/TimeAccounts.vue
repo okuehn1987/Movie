@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { TimeAccount, TimeAccountSetting, User, UserWorkingHours, UserWorkingWeek } from '@/types/types';
-import { accountType, getTruncationCycleDisplayName } from '@/utils';
-import { Duration } from 'luxon';
+import { accountType, formatDuration, getTruncationCycleDisplayName } from '@/utils';
 import { computed } from 'vue';
 import UserShowNavBar from '../partial/UserShowNavBar.vue';
 import TimeAccountTransferForm from './partial/TimeAccountTransferForm.vue';
@@ -82,11 +81,11 @@ function getBalanceType(t: Pick<TimeAccount, 'balance'>) {
             </template>
             <template v-slot:item.balance="{ item }">
                 <v-chip :color="{ positive: 'success', negative: 'error', balanced: 'black' }[getBalanceType(item)]">
-                    {{ Duration.fromObject({ seconds: item.balance }).toFormat('h:mm') }}
+                    {{ formatDuration(item.balance) }}
                 </v-chip>
             </template>
             <template v-slot:item.balance_limit="{ item }">
-                {{ Duration.fromObject({ seconds: item.balance_limit }).toFormat('h:mm') }}
+                {{ formatDuration(item.balance_limit) }}
             </template>
             <template v-slot:item.type="{ item }">
                 <v-chip color="purple-darken-1" v-if="item.id == defaultTimeAccountId">{{ item.type }}</v-chip>
