@@ -17,8 +17,8 @@ class TimeAccountTransaction extends Model
     {
         return $query->where(
             fn($q) => $q
-                ->whereIn('from_id', $user->timeAccounts()->withTrashed()->get()->pluck('id'))
-                ->orWhereIn('to_id', $user->timeAccounts()->withTrashed()->get()->pluck('id'))
+                ->whereIn('from_id', $user->timeAccounts()->withTrashed()->select('id'))
+                ->orWhereIn('to_id', $user->timeAccounts()->withTrashed()->select('id'))
         );
     }
 
