@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Absence;
 use App\Models\User;
 use App\Models\WorkLog;
-use App\Models\WorkLogPatch;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -46,16 +45,19 @@ class DashboardController extends Controller
             ->get(['id', 'start', 'end']);
 
         return Inertia::render('Dashboard/Dashboard', [
-            'lastWorkLog' => WorkLog::select('id', 'start', 'end', 'is_home_office')
-                ->inOrganization()
+            'lastWorkLog' => WorkLog::inOrganization()
                 ->where('user_id', Auth::id())
-                ->latest('start')->first(),
+                ->latest('start')
+                ->first(['id', 'start', 'end', 'is_home_office']),
             'supervisor' => User::select('id', 'first_name', 'last_name')->find($user->supervisor_id),
             'operating_times' => $user->operatingSite->operatingTimes,
             'currentAbsences' => $currentAbsences,
             'overtime' => $user->overtime,
             'workingHours' => [
-                'should' => $user->userWorkingHours()->where('active_since', '<=', Carbon::now()->format('Y-m-d'))->orderBy('active_since', 'Desc')->first()['weekly_working_hours'],
+                'should' => $user->userWorkingHours()
+                    ->where('active_since', '<=', Carbon::now()->format('Y-m-d'))
+                    ->orderBy('active_since', 'Desc')
+                    ->first()['weekly_working_hours'],
                 'current' => User::getCurrentWeekWorkingHours($user)['totalHours'],
                 'currentHomeOffice' => User::getCurrentWeekWorkingHours($user)['homeOfficeHours'],
             ],
