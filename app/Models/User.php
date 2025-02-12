@@ -341,6 +341,17 @@ class User extends Authenticatable
 
     public function getSollsekundenForDate(CarbonInterface $date)
     {
+        $hasAbsenceForDay = $this->absences()
+            ->where('status', 'accepted')
+            ->whereDate('start', '<=', $date)
+            ->whereDate('end', '>=', $date)->exists();
+
+        $shouldWorkYesterday =
+            $this->userWorkingWeekForDate($date)->hasWorkDay($date) &&
+            !$this->operatingSite->hasHoliday($date);
+
+        if (!$shouldWorkYesterday || $hasAbsenceForDay) return 0;
+
         $currentWorkingHours = $this->userWorkingHoursForDate($date);
         $currentWorkingWeek = $this->userWorkingWeekForDate($date);
         return $currentWorkingHours['weekly_working_hours'] / $currentWorkingWeek->numberOfWorkingDays * 3600;

@@ -95,6 +95,20 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "user.timeStatements": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.timeStatementDoc": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "user.userOrganigram": [
         {
             "name": "user",
@@ -120,13 +134,6 @@ declare module 'ziggy-js' {
     ],
     "absence.index": [],
     "absence.store": [],
-    "absence.update": [
-        {
-            "name": "absence",
-            "required": true,
-            "binding": "id"
-        }
-    ],
     "absence.updateStatus": [
         {
             "name": "absence",

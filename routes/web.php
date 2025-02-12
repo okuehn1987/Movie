@@ -21,6 +21,8 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::get('/user/{user}/absences', [UserController::class, 'absences'])->name('user.absences');
     Route::get('/user/{user}/timeAccounts', [UserController::class, 'timeAccounts'])->name('user.timeAccounts');
     Route::get('/user/{user}/timeAccountTransactions', [UserController::class, 'timeAccountTransactions'])->name('user.timeAccountTransactions');
+    Route::get('/user/{user}/timeStatements', [UserController::class, 'timeStatements'])->name('user.timeStatements');
+    Route::get('/user/{user}/timeStatementDoc', [UserController::class, 'timeStatementDoc'])->name('user.timeStatementDoc');
     Route::get('/user/{user}/userOrganigram', [UserController::class, 'userOrganigram'])->name('user.userOrganigram');
     Route::get('/user/profile', [UserController::class, 'profile'])->name('user.profile');
 
