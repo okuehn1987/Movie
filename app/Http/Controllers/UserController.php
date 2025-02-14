@@ -582,20 +582,20 @@ class UserController extends Controller
                         'data' => [],
                     ];
                     foreach ($shifts as $shift) {
-                        $lastEntry = $values->{$day->copy()->subDay()->format('d')}?->data;
+                        $entries = $values->{$day->copy()->subDay()->format('d')}?->data;
                         $values->{$day->format('d')}->data[] = (object)[
                             'shift_id' => $shift->id,
                             'entryIndex' => (
                                 (property_exists($values, $day->copy()->subDay()->format('d')) &&
                                     count($values->{$day->copy()->subDay()->format('d')}?->data) > 0 &&
-                                    end($lastEntry)?->shift_id == $shift->id
+                                    end($entries)?->shift_id == $shift->id
                                 )
                                 ? $entryIndex
                                 : ++$entryIndex
                             ),
-                            'logs' => $shift->workLogs->filter(fn($wl) => $day->between(
-                                Carbon::parse($wl->start)->startOfDay(),
-                                Carbon::parse($wl->end)->endOfDay()
+                            'logs' => $shift->workLogs->map(fn($wl) => $wl->currentAccountedPatch ?? $wl)->filter(fn($log) => $day->between(
+                                Carbon::parse($log->start)->startOfDay(),
+                                Carbon::parse($log->end)->endOfDay()
                             ))->map(
                                 fn($wl) => [
                                     'home_office' => $wl->is_home_office ? 'Ja' : 'Nein',
