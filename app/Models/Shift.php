@@ -86,13 +86,13 @@ class Shift extends Model
                 max(
                     0,
                     // get the missing break from the previous threshold
-                    $this->requiredBreakDuration($this->durationThreshold($this->work_duration))
+                    $this->requiredBreakDuration($this->durationThreshold($this->work_duration) / 3600)
                         - $this->break_duration
                 )
             ),
             max(
                 0,
-                $this->requiredBreakDuration($this->work_duration) - $this->break_duration
+                $this->requiredBreakDuration($this->work_duration / 3600) - $this->break_duration
             )
         );
     }
@@ -101,7 +101,7 @@ class Shift extends Model
     {
         if (!$this->has_ended || $this->is_accounted) return;
         DB::transaction(function () {
-            if ($this->break_duration < $this->requiredBreakDuration($this->work_duration)) {
+            if ($this->break_duration < $this->requiredBreakDuration($this->work_duration / 3600)) {
                 $this
                     ->user
                     ->defaultTimeAccount
