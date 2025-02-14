@@ -61,7 +61,7 @@ class Shift extends Model
 
     public function requiredBreakDuration(float $duration)
     {
-        return match ($this->durationThreshold($duration)) {
+        return match ($this->durationThreshold($duration) / 3600) {
             0 => 0,
             4.5 => 0.5,
             6 => $this->user->age >= 18 ? 0.5 : 1,
