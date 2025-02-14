@@ -516,7 +516,7 @@ class UserController extends Controller
         $date = Carbon::now()->startOfMonth();
 
         $shifts = Shift::where('user_id', $user->id)
-            ->with(['workLogs', 'user'])
+            ->with(['workLogs.currentAccountedPatch', 'user'])
             ->get()
             ->filter(fn($s) => Carbon::parse($s->start)->between($date->copy()->startOfMonth(), $date->copy()->endOfMonth()));
 
