@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Absence;
+use App\Models\AbsenceType;
 use App\Models\Group;
 use App\Models\GroupUser;
 use App\Models\OperatingSite;
@@ -507,6 +508,10 @@ class UserController extends Controller
     public function timeStatementDoc(Request $request, User $user)
     {
         Gate::authorize('viewIndex', [TimeAccountTransaction::class, $user]);
+        Gate::authorize('viewIndex', [TimeAccount::class, $user]);
+        Gate::authorize('viewIndex', [Absence::class, $user]);
+        Gate::authorize('viewShow', [AbsenceType::class, $user]);
+        Gate::authorize('viewShow', [User::class, $user]);
 
         $date = Carbon::now()->startOfMonth();
 
@@ -521,9 +526,9 @@ class UserController extends Controller
             ->with(['absenceType:id,name'])
             ->get();
 
-        function formatDuration(string $seconds)
+        function formatDuration(string $seconds, string $fallback = ''): string
         {
-            if ($seconds == 0) return '';
+            if ($seconds == 0) return $fallback;
             $hours = floor(abs($seconds) / 3600);
             $seconds %= 3600;
             $minutes =  floor(abs($seconds) / 60);
@@ -610,12 +615,12 @@ class UserController extends Controller
                                     ),
                                 ]
                             ),
-                            'should' => formatDuration($user->getSollsekundenForDate($day)),
+                            'should' => formatDuration($user->getSollsekundenForDate($day), '00:00:00'),
                             'is' => $day->isSameDay(Carbon::parse($shift->end))
                                 ? ($absence ? formatDuration(max(
                                     $shift->workDuration - $shift->missingBreakDuration,
                                     $user->getSollsekundenForDate($day)
-                                )) : formatDuration($shift->workDuration - $shift->missingBreakDuration))
+                                )) : formatDuration($shift->workDuration - $shift->missingBreakDuration, '00:00:00'))
                                 : '',
                             'pause' => formatDuration($shift->missingBreakDuration),
                             'transaction_value' => formatDuration($transactions['to']->sum('amount') - $transactions['from']->sum('amount')),
