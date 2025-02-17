@@ -176,5 +176,5 @@ export function throttle<T extends (...args: unknown[]) => void>(func: T, delayL
 }
 
 export function formatDuration(seconds: number) {
-    return (seconds < 0 ? '-' : '') + Duration.fromObject({ seconds: Math.abs(seconds) }).toFormat('h:mm');
+    return (seconds < 0 ? '-' : '') + Duration.fromObject({ seconds: Math.abs(seconds) }).toFormat('h:mm:ss');
 }
