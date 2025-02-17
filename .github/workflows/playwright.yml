@@ -1,3 +1,5 @@
+# concurrency group damit laufender workflow gecancelled wird, wenn eine neuer auf dem branch startet, also group= branch name
+# last commit undo, dann neuen commit mit neuem workflow, command letzen commit auf dem branch rückgängig machen
 name: Playwright-Tests
 on:
     pull_request:
@@ -9,6 +11,9 @@ jobs:
         # artifacts are shared among jobs and machines
         timeout-minutes: 300
         runs-on: self-hosted
+        concurrency:
+            group: automatic_testing
+            cancel-in-progress: true
         strategy:
             fail-fast: false
             matrix:
@@ -40,6 +45,9 @@ jobs:
         if: '!cancelled()'
         needs: [setup-and-run-tests]
         runs-on: ubuntu-latest
+        concurrency:
+            group: automatic_testing
+            cancel-in-progress: true
         permissions:
             pull-requests: write
             contents: write
