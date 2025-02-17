@@ -11,9 +11,9 @@ jobs:
         # artifacts are shared among jobs and machines
         timeout-minutes: 300
         runs-on: self-hosted
-        concurrency:
-            group: automatic_testing
-            cancel-in-progress: true
+        # concurrency:
+        #     group: automatic_testing
+        #     cancel-in-progress: true
         strategy:
             fail-fast: false
             matrix:
@@ -45,9 +45,9 @@ jobs:
         if: '!cancelled()'
         needs: [setup-and-run-tests]
         runs-on: ubuntu-latest
-        concurrency:
-            group: automatic_testing
-            cancel-in-progress: true
+        # concurrency:
+        #     group: automatic_testing
+        #     cancel-in-progress: true
         permissions:
             pull-requests: write
             contents: write
