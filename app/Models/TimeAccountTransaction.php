@@ -41,7 +41,7 @@ class TimeAccountTransaction extends Model
     {
         TimeAccount::transferBalanceFromTo(
             $this->amount,
-            'Revert: ' . $this->description . ' vom ' . $this->created_at->format('d.m.Y'),
+            'Storniert: ' . $this->description . ' vom ' . $this->created_at->format('d.m.Y'),
             $this->to,
             $this->from
         );
