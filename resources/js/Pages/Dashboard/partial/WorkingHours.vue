@@ -35,6 +35,9 @@ const lastActionText = computed(() => {
     if (!props.lastWorkLog) return;
     const endTime = DateTime.fromSQL(props.lastWorkLog.end ?? props.lastWorkLog.start);
     const diff = now.value.diff(endTime);
+    if (diff.as('minutes') < 1) {
+        return 'Jetzt';
+    }
     if (diff.as('hours') < 1) {
         return 'vor ' + Math.floor(diff.as('minutes')) + ' minuten';
     }
@@ -85,7 +88,7 @@ const lastActionText = computed(() => {
                         <div class="d-flex flex-column">
                             Überstunden
                             <div class="text-h6">
-                                {{ formatDuration(overtime) }}
+                                {{ formatDuration(overtime, 'minutes') }}
                             </div>
                         </div>
                     </div>
