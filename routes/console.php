@@ -129,7 +129,7 @@ Schedule::call(function () {
 })->name('dailyWorkLogCalculation')->dailyAt("00:00");
 
 Schedule::call(function () {
-    foreach (Shift::where('is_accounted', false)->with('user')->get()->filter(fn($shift) => $shift->has_ended) as $shift) {
+    foreach (Shift::where('is_accounted', false)->with(['user.defaultTimeAccount', 'workLogs'])->get()->filter(fn($shift) => $shift->has_ended) as $shift) {
         $shift->accountRequiredBreakAsTransaction();
     }
 })->name('shiftBreakCalculation')->dailyAt("09:00");
