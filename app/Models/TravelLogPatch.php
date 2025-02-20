@@ -4,32 +4,24 @@ namespace App\Models;
 
 use App\Models\Traits\HasLog;
 use App\Models\Traits\IsAccountable;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class WorkLogPatch extends Model
+class TravelLogPatch extends Model
 {
     use HasFactory, SoftDeletes;
     use ScopeInOrganization, HasLog, IsAccountable;
 
     protected $guarded = [];
 
-    protected $casts = ['is_home_office' => 'boolean'];
-
     private static function getLogModel()
     {
-        return WorkLog::class;
+        return TravelLog::class;
     }
 
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function getDurationAttribute(): int | float
-    {
-        return Carbon::parse($this->start)->diffInSeconds($this->end);
     }
 }

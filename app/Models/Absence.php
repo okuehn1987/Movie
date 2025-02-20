@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasPatches;
+use App\Models\Traits\IsAccountable;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,9 +13,15 @@ use Illuminate\Support\Facades\DB;
 
 class Absence extends Model
 {
-    use HasFactory, SoftDeletes, ScopeInOrganization;
+    use HasFactory, SoftDeletes;
+    use ScopeInOrganization, HasPatches, IsAccountable;
 
     protected $guarded = [];
+
+    private static function getPatchModel()
+    {
+        return AbsencePatch::class;
+    }
 
     public function getHidden()
     {
@@ -26,6 +34,7 @@ class Absence extends Model
     {
         return $this->belongsTo(User::class);
     }
+
     public function absenceType()
     {
         return $this->belongsTo(AbsenceType::class);

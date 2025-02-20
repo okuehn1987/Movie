@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasPatches;
+use App\Models\Traits\IsAccountable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -9,7 +11,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class TravelLog extends Model
 {
     use HasFactory, SoftDeletes;
-    use ScopeInOrganization;
+    use ScopeInOrganization, HasPatches, IsAccountable;
+
+    protected $guarded = [];
+
+    private static function getPatchModel()
+    {
+        return TravelLogPatch::class;
+    }
 
     public function user()
     {

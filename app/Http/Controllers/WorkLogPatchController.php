@@ -14,7 +14,7 @@ class WorkLogPatchController extends Controller
 {
     public function store(Request $request)
     {
-        Gate::authorize('create', [WorkLogPatch::class, WorkLog::find($request['workLog'])->user]);
+        Gate::authorize('create', [WorkLogPatch::class, WorkLog::with('user')->find($request['workLog'])->user]);
 
         $validated = $request->validate([
             'start' => 'required|date',
