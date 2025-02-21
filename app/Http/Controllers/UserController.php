@@ -543,12 +543,6 @@ class UserController extends Controller
                     $day = $date->copy()->startOfMonth()->addDays($i - 1);
                     $shifts = $shifts->where(fn($s) => $day->between(Carbon::parse($s->start)->startOfDay(), Carbon::parse($s->end)->endOfDay()));
                     $absence = $absences->first(fn($a) => $day->between(Carbon::parse($a->start)->startOfDay(), Carbon::parse($a->end)->endOfDay()));
-                    $transactions = [
-                        'from' => $user->defaultTimeAccount->fromTransactions()
-                            ->whereDate('created_at', $day->copy())->get(),
-                        'to' => $user->defaultTimeAccount->toTransactions()
-                            ->whereDate('created_at', $day->copy())->get(),
-                    ];
 
                     $values->{$day->format('d')} = [];
 
@@ -557,7 +551,7 @@ class UserController extends Controller
                             'day' => $day->format('d'),
                             'type' => 'empty',
                             'should' => formatDuration($user->getSollsekundenForDate($day)),
-                            'transaction_value' => formatDuration($transactions['to']->sum('amount') - $transactions['from']->sum('amount')),
+                            'transaction_value' => '',
                             'entryIndex' => ++$entryIndex,
                             'data' => [],
                         ];
@@ -622,8 +616,8 @@ class UserController extends Controller
                                     $user->getSollsekundenForDate($day)
                                 )) : formatDuration($shift->workDuration - $shift->missingBreakDuration, '00:00:00'))
                                 : '',
-                            'pause' => formatDuration($shift->missingBreakDuration),
-                            'transaction_value' => formatDuration($transactions['to']->sum('amount') - $transactions['from']->sum('amount')),
+                            'pause' => $day->isSameDay(Carbon::parse($shift->end)) ? formatDuration($shift->missingBreakDuration) . '/' . formatDuration($shift->breakDuration) : '',
+                            'transaction_value' => '',
                         ];
                     }
 

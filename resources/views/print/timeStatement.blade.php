@@ -123,11 +123,7 @@
                                         @if ($logIndex == count($shift->logs) - 1)
                                             <td>{{ $shift->should }}</td>
                                             <td>{{ $shift->is }}</td>
-                                            @if ($shiftIndex == count($entry->data) - 1)
-                                                <td>{{ $shift->pause }}</td>
-                                            @else
-                                                <td></td>
-                                            @endif
+                                            <td>{{ $shift->pause }}</td>
                                             <td></td>
                                             <td>{{ $shift->transaction_value }} </td>
                                         @else
