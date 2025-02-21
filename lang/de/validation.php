@@ -83,6 +83,12 @@ return [
     ],
     'mac_address' => ':attribute muss eine gültige MAC-Adresse sein.',
     'max_digits' => ':attribute darf nicht mehr als :max Ziffern haben.',
+    'min' => [
+        'array' => ':attribute muss mindestens :min Einträge haben.',
+        'file' => ':attribute muss mindestens :min Kilobytes groß sein.',
+        'numeric' => ':attribute muss mindestens :min sein.',
+        'string' => ':attribute muss mindestens :min Zeichen enthalten.',
+    ],
     'mimes' => ':attribute muss eine Datei im Format :values sein.',
     'mimetypes' => ':attribute muss eine Datei im Format :values sein.',
     'min_digits' => ':attribute muss mindestens :min Ziffern haben.',

@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasDuration;
 use App\Models\Traits\HasPatches;
 use App\Models\Traits\IsAccountable;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -12,15 +12,33 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class WorkLog extends Model
 {
     use HasFactory, SoftDeletes;
-    use ScopeInOrganization, HasPatches, IsAccountable;
+    use ScopeInOrganization, HasPatches, IsAccountable, HasDuration;
+
+    private static function getPatchModel()
+    {
+        return WorkLogPatch::class;
+    }
 
     protected $guarded = [];
 
     protected $casts = ['is_home_office' => 'boolean'];
 
-    private static function getPatchModel()
+    public static function boot()
     {
-        return WorkLogPatch::class;
+        parent::boot();
+        self::saving(function ($model) {
+
+            if (!$model->shift_id) {
+                $shift = Shift::create([
+                    'user_id' => $model->user_id,
+                    'is_accounted' => false,
+                    'start' => $model->start,
+                    'end' => $model->end,
+                ]);
+                $model->update(['shift_id' => $shift->id]);
+            }
+            Shift::computeAffected($model);
+        });
     }
 
     public function user()
@@ -31,11 +49,5 @@ class WorkLog extends Model
     public function shift()
     {
         return $this->belongsTo(Shift::class);
-    }
-
-    public function getDurationAttribute(): int | float
-    {
-        if ($this->end == null) return 0;
-        return Carbon::parse($this->start)->diffInSeconds($this->end);
     }
 }

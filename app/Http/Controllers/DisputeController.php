@@ -31,7 +31,7 @@ class DisputeController extends Controller
 
         $patches = [...WorkLogPatch::inOrganization()
             ->where('status', 'created')
-            ->with(['workLog:id,start,end,is_home_office', 'user:id,first_name,last_name'])
+            ->with(['log:id,start,end,is_home_office', 'user:id,first_name,last_name'])
             ->get(['id', 'start', 'end', 'is_home_office', 'user_id', 'work_log_id', 'comment'])
             ->filter(fn($patch) => $user->can('update', $patch->user))
             ->toArray()];

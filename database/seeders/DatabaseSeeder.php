@@ -10,6 +10,7 @@ use App\Models\OperatingSiteUser;
 use App\Models\OperatingTime;
 use App\Models\Organization;
 use App\Models\OrganizationUser;
+use App\Models\Shift;
 use App\Models\TimeAccount;
 use App\Models\TimeAccountSetting;
 use App\Models\User;
@@ -27,23 +28,21 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-
-        $users = User::factory(10)
-            ->has(WorkLog::factory(3))
-            ->has(WorkLog::factory(1, ['end' => null, 'start' => now()->subDay()]))
-            ->has(UserWorkingHour::factory(1))
-            ->has(UserWorkingWeek::factory(1));
+        $users = User::factory(10);
 
         $org = Organization::factory()
             ->has(TimeAccountSetting::factory(1))
             ->has(
                 OperatingSite::factory(3)
                     ->has(
-                        $users->has(TimeAccount::factory(1, [
-                            'time_account_setting_id' => 1,
-                            'balance_limit' => random_int(20, 100),
-                            'balance' => random_int(0, 20)
-                        ]))
+                        $users
+                            ->has(TimeAccount::factory(1, [
+                                'time_account_setting_id' => 1,
+                                'balance_limit' => random_int(20, 100),
+                                'balance' => random_int(0, 20)
+                            ]))
+                            ->has(UserWorkingHour::factory(1))
+                            ->has(UserWorkingWeek::factory(1))
                     )
                     ->has(OperatingTime::factory(7, ['start' => '09:00:00', 'end' => '17:00:00'])
                         ->sequence(fn(Sequence $sequence) => ['type' => [
@@ -66,6 +65,13 @@ class DatabaseSeeder extends Seeder
             ])->create();
         }
 
+        foreach (User::all() as $user) {
+            Shift::factory(1, ['start' => now()->subDay(), 'end' => now(), 'user_id' => $user->id])
+                ->has(WorkLog::factory(3, ['user_id' => $user->id]))
+                ->has(WorkLog::factory(1, ['end' => null, 'start' => now()->subDay(), 'user_id' => $user->id]))
+                ->create();
+        }
+
         $admin = User::factory([
             'operating_site_id' => 1,
             'password' => Hash::make('admin'),
@@ -74,8 +80,11 @@ class DatabaseSeeder extends Seeder
             'last_name' => 'admin',
             'role' => 'super-admin',
             'organization_id' => 1,
-        ])->has(WorkLog::factory(3))
-            ->has(WorkLog::factory(1, ['end' => null, 'start' => now()->subHour()]))
+        ])->has(
+            Shift::factory(1, ['start' => now()->subHour(), 'end' => now()])
+                ->has(WorkLog::factory(3))
+                ->has(WorkLog::factory(1, ['end' => null, 'start' => now()->subHour()]))
+        )
             ->has(UserWorkingHour::factory(1))
             ->has(TimeAccount::factory(1, ['time_account_setting_id' => 1]))
             ->has(UserWorkingWeek::factory(1))

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasDuration;
 use App\Models\Traits\HasPatches;
 use App\Models\Traits\IsAccountable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class TravelLog extends Model
 {
     use HasFactory, SoftDeletes;
-    use ScopeInOrganization, HasPatches, IsAccountable;
+    use ScopeInOrganization, HasPatches, IsAccountable, HasDuration;
 
     protected $guarded = [];
 

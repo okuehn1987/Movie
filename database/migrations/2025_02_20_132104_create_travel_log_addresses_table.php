@@ -24,6 +24,21 @@ return new class extends Migration
             $table->foreignId("organization_id");
             $table->timestamps();
         });
+
+        Schema::table('travel_logs', function (Blueprint $table) {
+            $table->dropColumn("start_location_id");
+            $table->dropColumn("end_location_id");
+            $table->dropColumn("start_location_type");
+            $table->dropColumn("end_location_type");
+
+            $table->foreignId("start_location_id")->references("id")->on("travel_log_addresses")->nullable();
+            $table->foreignId("end_location_id")->references("id")->on("travel_log_addresses")->nullable();
+
+            $table->foreignId('shift_id')->nullable();
+            $table->enum('status', ["created", "declined", "accepted"]);
+            $table->dateTime('accepted_at')->nullable();
+            $table->text("comment")->nullable();
+        });
     }
 
     /**

@@ -108,6 +108,11 @@ class User extends Authenticatable
         return $this->first_name . ' ' . $this->last_name;
     }
 
+    public function shifts()
+    {
+        return $this->hasMany(Shift::class);
+    }
+
     public function workLogs()
     {
         return $this->hasMany(WorkLog::class);

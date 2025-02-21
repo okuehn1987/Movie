@@ -5,7 +5,7 @@ import { DateTime } from 'luxon';
 import { ref } from 'vue';
 
 type PatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id' | 'work_log_id' | 'comment'> & {
-    work_log: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office'>;
+    log: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office'>;
     user: Pick<User, 'id' | 'first_name' | 'last_name'>;
 };
 
@@ -84,7 +84,7 @@ function changePatchStatus(accepted: boolean) {
                                 { title: 'Homeoffice', key: 'is_home_office', sortable: false },
                             ]"
                             :items="
-                                [patchDialog.work_log, patchDialog].map((p, i) => ({
+                                [patchDialog.log, patchDialog].map((p, i) => ({
                                     version: i == 0 ? 'Alter Stand:' : 'Neuer Stand:',
                                     start: DateTime.fromSQL(p.start).toFormat('dd.MM.yyyy HH:mm'),
                                     end: p.end ? DateTime.fromSQL(p.end).toFormat('dd.MM.yyyy HH:mm') : 'kein Ende',

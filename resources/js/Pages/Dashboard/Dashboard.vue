@@ -7,17 +7,11 @@ import Absences from './partial/Absences.vue';
 import WorkingHours from './partial/WorkingHours.vue';
 import { ref } from 'vue';
 
-type PatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id' | 'work_log_id'> & {
-    work_log: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office'>;
-    user: Pick<User, 'id' | 'first_name' | 'last_name'>;
-};
-
 type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'user_id' | 'absence_type_id'>;
 
 defineProps<{
     lastWorkLog: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office'>;
     supervisor: Pick<User, 'id' | 'first_name' | 'last_name'>;
-    patches: PatchProp[] | null;
     operating_times: OperatingTime[];
     overtime: number;
     workingHours: { should: number; current: number; currentHomeOffice: number };

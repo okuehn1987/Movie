@@ -19,10 +19,4 @@ trait HasPatches
     {
         return $this->patches()->one()->OfMany(['accepted_at' => 'max'], fn(Builder $q) => $q->where('status', 'accepted'));
     }
-
-
-    public function currentAccountedPatch()
-    {
-        return $this->patches()->one()->OfMany(['accepted_at' => 'max'], fn(Builder $q) => $q->where('status', 'accepted')->where('is_accounted', true));
-    }
 }

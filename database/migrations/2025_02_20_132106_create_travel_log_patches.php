@@ -16,14 +16,14 @@ return new class extends Migration
             $table->softDeletes();
             $table->foreignId('user_id');
             $table->foreignId('travel_log_id');
-            $table->enum('status', ["created", "declined", "accepted"]);
-            $table->dateTime('accepted_at')->nullable();
+            $table->foreignId('shift_id')->nullable();
             $table->foreignId("start_location_id")->references("id")->on("travel_log_addresses")->nullable();
             $table->foreignId("end_location_id")->references("id")->on("travel_log_addresses")->nullable();
             $table->dateTime("start");
             $table->dateTime("end");
-            $table->boolean("is_accounted")->default(false);
-            $table->dateTime('accounted_at')->nullable();
+            $table->enum('status', ["created", "declined", "accepted"]);
+            $table->dateTime('accepted_at')->nullable();
+            $table->text("comment")->nullable();
             $table->timestamps();
         });
     }
