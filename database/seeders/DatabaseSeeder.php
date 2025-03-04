@@ -80,15 +80,15 @@ class DatabaseSeeder extends Seeder
             'last_name' => 'admin',
             'role' => 'super-admin',
             'organization_id' => 1,
-        ])->has(
-            Shift::factory(1, ['start' => now()->subHour(), 'end' => now()])
-                ->has(WorkLog::factory(3))
-                ->has(WorkLog::factory(1, ['end' => null, 'start' => now()->subHour()]))
-        )
+        ])
             ->has(UserWorkingHour::factory(1))
             ->has(TimeAccount::factory(1, ['time_account_setting_id' => 1]))
             ->has(UserWorkingWeek::factory(1))
             ->create();
+
+        Shift::factory(1, ['start' => now()->subHour(), 'end' => now(), 'user_id' => $admin->id])
+            ->has(WorkLog::factory(3, ['user_id' => $admin->id]))
+            ->has(WorkLog::factory(1, ['end' => null, 'start' => now()->subHour(), 'user_id' => $admin->id]))->create();
 
         Organization::find(1)->update(['owner_id' => $admin->id]);
 

@@ -241,7 +241,7 @@ class UserController extends Controller
             ->with(['timeAccountSetting'])
             ->get(["id", "user_id", "balance", "balance_limit", "time_account_setting_id", "name", "deleted_at"]);
 
-        $userTransactions = TimeAccountTransaction::forUser($user)->with('user:id,first_name,last_name')->latest()->paginate(13);
+        $userTransactions = TimeAccountTransaction::forUser($user)->with('user:id,first_name,last_name')->orderByDesc('id')->paginate(13);
 
         return Inertia::render('User/UserShow/TimeAccountTransactions', [
             'user' => $user,

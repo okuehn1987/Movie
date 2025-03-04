@@ -117,6 +117,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(WorkLog::class);
     }
+    public function workLogPatches()
+    {
+        return $this->hasMany(WorkLogPatch::class);
+    }
     public function travelLogs()
     {
         return $this->hasMany(TravelLog::class);
@@ -344,10 +348,55 @@ class User extends Authenticatable
         return ceil($leaveDays);
     }
 
+    public function hasAbsenceForDate(CarbonInterface $date)
+    {
+        $absences = $this->absences()
+            ->with(['patches', 'currentAcceptedPatch'])
+            ->where('status', 'accepted')
+            ->get();
+
+        $absences = $absences->map(fn($a) => $a->currentAcceptedPatch ?? $a);
+
+        return $absences->contains(fn($a) => $date->between(Carbon::parse($a->start)->startOfDay(), Carbon::parse($a->end)->endOfDay()));
+    }
+
     public function getSollsekundenForDate(CarbonInterface $date)
     {
         $currentWorkingHours = $this->userWorkingHoursForDate($date);
         $currentWorkingWeek = $this->userWorkingWeekForDate($date);
+
+        if (!$currentWorkingHours || !$currentWorkingWeek) return 0;
+
+        $hasAbsenceForDay = $this->hasAbsenceForDate($date);
+
+        $shouldWork =
+            $currentWorkingWeek->hasWorkDay($date) &&
+            !$this->operatingSite->hasHoliday($date);
+
+        if ($hasAbsenceForDay || !$shouldWork) return 0;
+
         return $currentWorkingHours['weekly_working_hours'] / $currentWorkingWeek->numberOfWorkingDays * 3600;
+    }
+
+    public function getEntriesForDate(CarbonInterface $date)
+    {
+        $shifts = $this->shifts()
+            ->with(['workLogs', 'travelLogs'])
+            ->where('end', '>=', $date->copy()->startOfDay())
+            ->where('start', '<=', $date->copy()->endOfDay())
+            ->get();
+
+        return $shifts->flatMap(
+            fn($s) =>
+            $s->entries->filter(
+                fn($e) =>
+                Carbon::parse($e->start)->between($date->copy()->startOfDay(), $date->copy()->endOfDay())
+            )
+        );
+    }
+
+    public function getWorkDurationForDate(CarbonInterface $date)
+    {
+        return $this->getEntriesForDate($date)->sum('duration');
     }
 }

@@ -24,28 +24,4 @@ trait IsAccountable
             $this->accountAsTransaction();
         }
     }
-
-    // public function accountAsTransaction()
-    // {
-    //     //TODO: add SWHF's & Nachtschicht, etc.
-    //     DB::transaction(function () {
-    //         $workLog = WorkLog::whereId($this->work_log_id)->lockForUpdate()->first();
-    //         $patch = WorkLogPatch::whereId($this->id)->first();
-    //         if ($patch->is_accounted || !$patch->status == 'accepted') return;
-
-    //         $oldDuration = $workLog->fresh('currentAccountedPatch')->currentAccountedPatch?->duration ?? $workLog->duration;
-
-    //         $patch
-    //             ->workLog
-    //             ->user
-    //             ->defaultTimeAccount
-    //             ->addBalance(
-    //                 $patch->getDurationAttribute() - $oldDuration,
-    //                 'Korrektur akzeptiert am ' . Carbon::parse($patch->accepted_at)->format('d.m.Y H:i:s')
-    //             );
-
-    //         $patch['is_accounted'] = true;
-    //         $patch->save();
-    //     });
-    // }
 }

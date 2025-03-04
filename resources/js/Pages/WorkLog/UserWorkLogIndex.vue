@@ -70,9 +70,14 @@ function editWorkLog(id: WorkLog['id']) {
     if (!lastPatch) {
         patchLog.value = null;
         patchMode.value = 'edit';
-    } else if (lastPatch && lastPatch.status === 'created') {
-        patchLog.value = lastPatch;
-        patchMode.value = 'show';
+    } else {
+        if (lastPatch.status === 'created') {
+            patchLog.value = lastPatch;
+            patchMode.value = 'show';
+        } else if (lastPatch.status == 'accepted') {
+            patchLog.value = lastPatch;
+            patchMode.value = 'edit';
+        }
     }
     let start = workLog.start;
     let end = workLog.end;
@@ -222,7 +227,7 @@ const tableHeight = useMaxScrollHeight(0);
                                     </v-col>
                                     <v-col cols="12" md="3">
                                         <v-text-field
-                                            :disabled="!!patchLog"
+                                            :disabled="patchMode == 'show'"
                                             type="time"
                                             label="Ende"
                                             data-testid="userTimeCorrectionEndTime"

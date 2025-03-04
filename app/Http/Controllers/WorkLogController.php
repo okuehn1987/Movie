@@ -39,20 +39,13 @@ class WorkLogController extends Controller
             'is_home_office' => 'required|boolean',
         ]);
 
-        if (!$last->shift || $last->shift->has_ended)
-            $shift = Shift::create([
-                'is_accounted' => false,
-                'user_id' => Auth::id(),
-            ]);
-        else
-            $shift = $last->shift;
-
         WorkLog::updateOrCreate(['id' => $last->end ? null : $last->id], [
             ...$validated,
-            'start' => $last->end ? Carbon::now() : $last->start,
-            'end' => $last->end ? null : Carbon::now(),
+            'start' => $last->end ? now() : $last->start,
+            'end' => $last->end ? null : now(),
             'user_id' => Auth::id(),
-            'shift_id' => $shift->id
+            'status' => 'accepted',
+            'accepted_at' => now()
         ]);
 
         return back()->with('success', 'Arbeitsstatus erfolgreich eingetragen.');

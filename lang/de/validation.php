@@ -193,6 +193,7 @@ return [
         'userWorkingWeek' => 'Arbeitstage des Mitarbeiters',
         'year' => 'Jahr',
         'month' => 'Monat',
+        'description' => 'Beschreibung'
     ],
 
 ];

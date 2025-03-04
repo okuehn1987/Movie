@@ -41,7 +41,7 @@ function getAccountName(id: TimeAccountTransaction['from_id'] | TimeAccountTrans
             :items="
                 timeAccountTransactions.map(t => ({
                     ...t,
-                    created_at: DateTime.fromISO(t.created_at).toFormat('dd.MM.yyyy HH:ii'),
+                    created_at: DateTime.fromISO(t.created_at).toFormat('dd.MM.yyyy HH:mm'),
                     transactionType: getTransactionType(t),
                     from: getAccountName(t.from_id),
                     to: getAccountName(t.to_id),

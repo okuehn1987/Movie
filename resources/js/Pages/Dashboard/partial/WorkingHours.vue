@@ -21,15 +21,12 @@ function changeWorkStatus(is_home_office = false) {
     });
 }
 
-// const currentOperatingTime = props.operating_times.find(
-//     t => t.type == Info.weekdays('long', { locale: 'en' })[DateTime.now().weekday - 1]?.toLowerCase(),
-// );
-
-const currentWorkingHours = computed(() =>
-    props.lastWorkLog?.end
+const currentWorkingHours = computed(() => {
+    if (!props.lastWorkLog) return 0;
+    return props.lastWorkLog.end
         ? props.workingHours.current
-        : now.value.diff(DateTime.fromSQL(props.lastWorkLog?.start || '')).as('hours') + props.workingHours.current,
-);
+        : now.value.diff(DateTime.fromSQL(props.lastWorkLog?.start || '')).as('hours') + props.workingHours.current;
+});
 
 const lastActionText = computed(() => {
     if (!props.lastWorkLog) return;

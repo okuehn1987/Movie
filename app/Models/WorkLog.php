@@ -26,17 +26,7 @@ class WorkLog extends Model
     public static function boot()
     {
         parent::boot();
-        self::saving(function ($model) {
-
-            if (!$model->shift_id) {
-                $shift = Shift::create([
-                    'user_id' => $model->user_id,
-                    'is_accounted' => false,
-                    'start' => $model->start,
-                    'end' => $model->end,
-                ]);
-                $model->update(['shift_id' => $shift->id]);
-            }
+        self::saving(function (WorkLog $model) {
             Shift::computeAffected($model);
         });
     }

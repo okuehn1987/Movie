@@ -23,6 +23,14 @@ class WorkLogPatch extends Model
         return WorkLog::class;
     }
 
+    public static function boot()
+    {
+        parent::boot();
+        self::saving(function (WorkLogPatch $model) {
+            Shift::computeAffected($model);
+        });
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
