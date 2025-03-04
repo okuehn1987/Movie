@@ -138,7 +138,7 @@ class Shift extends Model
         $entries ??= $this->entries;
         $workDuration = self::workDuration($entries);
         $breakDuration = $this->breakDuration($entries);
-        $val = min((
+        $missingShiftBreakDuration = min((
                 ($workDuration - $this->durationThreshold($workDuration)) +
                 max(
                     0,
@@ -152,7 +152,10 @@ class Shift extends Model
                 $this->requiredBreakDuration($workDuration) - $breakDuration
             )
         );
-        return $val;
+
+        $missingBreakSumOfEntries = $entries->sum('missingBreakDuration');
+
+        return max($missingBreakSumOfEntries, $missingShiftBreakDuration);
     }
 
     /** 
@@ -233,7 +236,7 @@ class Shift extends Model
                     ->merge($workLogPatchesOfAffectedDay)
                     ->merge($travelLogsOfAffectedDay)
                     ->merge($travelLogPatchesOfAffectedDay)
-                    ->sum('accountableDuration');
+                    ->sum('duration');
 
                 $sollForAffectedDay = $model->user->getSollsekundenForDate($day);
 
@@ -250,9 +253,9 @@ class Shift extends Model
                             fn($e) =>
                             Carbon::parse($e->start)->between($day->copy()->startOfDay(), $day->copy()->endOfDay())
                         )
-                )->sum('accountableDuration');
+                )->sum('duration');
 
-                $newIstForAffectedDay = $entriesOfUnaffectedShifts->sum('accountableDuration') + $istForNewShifts;
+                $newIstForAffectedDay = $entriesOfUnaffectedShifts->sum('duration') + $istForNewShifts;
 
                 //if ist > soll overtime can be added immediatly else schedule will subtract the missing amount at 0:00 
                 if ($day->startOfDay() == Carbon::parse($model->accepted_at)->startOfDay())
@@ -275,6 +278,8 @@ class Shift extends Model
                 $model instanceof Absence => 'neuer Abwesenheit',
                 $model instanceof AbsencePatch => 'Abwesenheitskorrektur',
             };
+
+            //TODO: message doesnt make sense for multiple affected shifts
             $model->user->defaultTimeAccount->addBalance(
                 $diffToApply,
                 'Berechnung für ' .

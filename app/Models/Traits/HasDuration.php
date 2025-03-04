@@ -12,12 +12,6 @@ trait HasDuration
         return Carbon::parse($this->start)->diffInSeconds($this->end);
     }
 
-    public function getAccountableDurationAttribute(): int
-    {
-        if ($this->end == null) return 0;
-        return Carbon::parse($this->start)->diffInSeconds($this->end) - $this->missingBreakDuration();
-    }
-
     public function durationThreshold(?int $duration = null)
     {
         $duration ??= $this->duration;
@@ -31,8 +25,9 @@ trait HasDuration
         } * 3600;
     }
 
-    public function requiredBreakDuration(int $duration)
+    public function requiredBreakDuration(?int $duration = null)
     {
+        $duration ??= $this->duration;
         return match ($this->durationThreshold($duration) / 3600) {
             0 => 0,
             4.5 => 0.5,
@@ -41,10 +36,18 @@ trait HasDuration
         } * 3600;
     }
 
-    public function missingBreakDuration()
+    public function getMissingBreakDurationAttribute()
     {
-        $threshold = $this->durationThreshold($this->duration);
+        $missingForCurrentThreshold = min(
+            $this->duration,
+            $this->durationThreshold($this->duration) + $this->requiredBreakDuration()
+        ) - $this->durationThreshold($this->duration);
 
-        return $this->duration - $threshold + $this->requiredBreakDuration($threshold);
+        $missingForPreviousThreshold = min(
+            $this->durationThreshold($this->duration),
+            $this->durationThreshold($this->durationThreshold($this->duration)) + $this->requiredBreakDuration($this->durationThreshold($this->duration))
+        ) - $this->durationThreshold($this->durationThreshold($this->duration));
+
+        return $missingForCurrentThreshold + $missingForPreviousThreshold;
     }
 }
