@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\OperatingSite;
 use App\Services\HolidayService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -39,6 +40,7 @@ class UserFactory extends Factory
             'zip' => fake()->postcode(),
             'federal_state' => collect(HolidayService::getRegionCodes('DE'))->random(),
             'country' => 'DE',
+            'operating_site_id' => OperatingSite::first()
         ];
     }
 

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Exception;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -44,34 +45,20 @@ class Shift extends Model
 
     public function entries(): Attribute
     {
-        $query = fn($q) => $q->where('status', 'accepted');
-        $this->loadMissing([
-            'workLogs' => $query,
-            'workLogs.currentAcceptedPatch',
-            'travelLogs' => $query,
-            'travelLogs.currentAcceptedPatch',
-        ]);
+        $this->loadMissing(['workLogs.currentAcceptedPatch', 'travelLogs.currentAcceptedPatch']);
 
         return Attribute::make(
-            get: fn() => $this->workLogs->map(fn($w) => $w->currentAcceptedPatch ?? $w)
-                ->merge($this->travelLogs->map(fn($w) => $w->currentAcceptedPatch ?? $w))
+            get: fn() =>
+            collect($this->workLogs->map(fn($w) => $w->currentAcceptedPatch ?? $w))
+                ->merge($this->travelLogs->map(fn($t) => $t->currentAcceptedPatch ?? $t))
         )->shouldCache();
-    }
-
-    public function getStartAttribute()
-    {
-        return Carbon::parse($this->attributes['start'])->startOfSecond();
-    }
-
-    public function getEndAttribute()
-    {
-        return Carbon::parse($this->attributes['end'])->startOfSecond();
     }
 
     public function getDurationAttribute()
     {
-        $start = Carbon::parse($this->start);
-        return $start->diffInSeconds($this->end);
+        $duration = Carbon::parse($this->start)->diffInSeconds($this->end);
+        if ($this->end == Carbon::parse($this->end)->endOfDay()->startOfSecond()) $duration += 1;
+        return $duration;
     }
 
     public function getHasEndedAttribute()
@@ -107,21 +94,29 @@ class Shift extends Model
 
     public function requiredBreakDuration(int $duration)
     {
+        $this->loadMissing('user:id,date_of_birth');
         return match ($this->durationThreshold($duration) / 3600) {
-            0 => 0,
-            4.5 => 0.5,
-            6 => $this->user->age >= 18 ? 0.5 : 1,
-            9 => 0.75,
+            0
+            => 0,
+            4.5
+            => 0.5,
+            6
+            => $this->user->age >= 18 ? 0.5 : 1,
+            9
+            => 0.75,
         } * 3600;
     }
 
     public function durationThreshold(int $duration)
     {
-        $this->loadMissing('user');
+        $this->loadMissing('user:id,date_of_birth');
         return match (true) {
-            ($duration / 3600) > 9 && $this->user->age >= 18 => 9,
-            ($duration / 3600) > 6 => 6,
-            ($duration / 3600) > 4.5 && $this->user->age < 18 => 4.5,
+            ($duration / 3600) > 9 && $this->user->age >= 18
+            => 9,
+            ($duration / 3600) > 6
+            => 6,
+            ($duration / 3600) > 4.5 && $this->user->age < 18
+            => 4.5,
             default => 0,
         } * 3600;
     }
@@ -153,9 +148,12 @@ class Shift extends Model
             )
         );
 
-        $missingBreakSumOfEntries = $entries->sum('missingBreakDuration');
+        return $missingShiftBreakDuration;
+    }
 
-        return max($missingBreakSumOfEntries, $missingShiftBreakDuration);
+    public static function lockFor(User $user)
+    {
+        Shift::lockForUpdate()->where('user_id', $user->id)->get();
     }
 
     /** 
@@ -166,77 +164,124 @@ class Shift extends Model
      */
     public static function computeAffected(Model $model)
     {
+
         DB::transaction(function () use ($model) {
-            $modelClass = match (true) {
-                $model instanceof WorkLog => WorkLog::class,
-                $model instanceof WorkLogPatch => WorkLogPatch::class,
-                $model instanceof TravelLog => TravelLog::class,
-                $model instanceof TravelLogPatch => TravelLogPatch::class,
-                    // $model instanceof Absence => Absence::class, // TODO: handle differently
-                    // $model instanceof AbsencePatch => AbsencePatch::class, // TODO: handle differently
-                default => throw new Exception('Invalid model type')
+            [$modelClass, $type, $variant, $baseClass] = match (true) {
+                $model instanceof WorkLog
+                => [WorkLog::class, 'work', 'log', WorkLog::class],
+                $model instanceof WorkLogPatch
+                => [WorkLogPatch::class, 'work', 'patch', WorkLog::class],
+                $model instanceof TravelLog
+                => [TravelLog::class, 'work', 'log', TravelLog::class],
+                $model instanceof TravelLogPatch
+                => [TravelLogPatch::class, 'work', 'patch', TravelLog::class],
+                $model instanceof Absence
+                => [Absence::class, 'absence', 'log', Absence::class],
+                $model instanceof AbsencePatch
+                => [AbsencePatch::class, 'absence', 'patch', Absence::class],
+                default => throw new Exception('Invalid model type'),
             };
 
             if (!$model->accepted_at) return;
 
-            Shift::lockForUpdate()->where('user_id', $model->user_id)->get();
-
-            /** @var \Illuminate\Support\Collection<int, \App\Models\Shift>*/
-            $affectedShifts = Shift::where('user_id', $model->user_id)
-                ->where('start', '<=', Carbon::parse($model->end)->addHours(self::$MINIMUM_SHIFT_SEPARATION_TIME_IN_HOURS))
-                ->where('end', '>=', Carbon::parse($model->start)->subHours(self::$MINIMUM_SHIFT_SEPARATION_TIME_IN_HOURS))
-                ->get();
-
+            Shift::lockFor($model->user);
+            /** @var \Illuminate\Support\Collection<int,\App\Models\Shift>*/
+            $affectedShifts = match ($type) {
+                'work'
+                => Shift::where('user_id', $model->user_id)
+                    ->where('start', '<=', Carbon::parse($model->end)->addHours(self::$MINIMUM_SHIFT_SEPARATION_TIME_IN_HOURS))
+                    ->where('end', '>=', Carbon::parse($model->start)->subHours(self::$MINIMUM_SHIFT_SEPARATION_TIME_IN_HOURS))
+                    ->get(),
+                'absence'
+                => Shift::where('user_id', $model->user_id)
+                    ->whereDate('start', '<=', $model->end)
+                    ->whereDate('end', '>=', $model->start)
+                    ->whereDate('end', '<=', $model->end)
+                    ->get(),
+            };
             $currentEntry = $modelClass::find($model->id) ?? $model;
-            $baseLog = $currentEntry?->log ?? $currentEntry;
-            /** @var Model | null $previousModel */
-            $previousModel = match (true) {
-                $model instanceof WorkLog, $model instanceof TravelLog => $baseLog,
-                $model instanceof WorkLogPatch, $model instanceof TravelLogPatch => $baseLog?->currentAcceptedPatch ?? $baseLog,
+            $baseLog = match ($variant) {
+                'log'
+                => $currentEntry,
+                'patch'
+                //                   eg: Absence   ::find($model->absence_id                         )
+                => $currentEntry->log ?? $baseClass::find($model->{(new $baseClass)->getForeignKey()}),
+            };
+            /** @var Model $previousModel */
+            $previousModel = match ($variant) {
+                'log'
+                => $baseLog,
+                'patch'
+                => $baseLog->currentAcceptedPatch ?? $baseLog,
             };
 
-            /** @var Shift|null $originShift */
-            $originShift = Shift::whereId($previousModel->shift_id)->first(); //maybe crashed for absences because they dont have a shift_id
+            /** @var \Illuminate\Support\Collection<int,\App\Models\Shift>*/
+            $originShifts = match ($type) {
+                'work'
+                => Shift::whereId($previousModel->shift_id)->get(),
+                'absence'
+                => Shift::where('user_id', $model->user_id)
+                    ->whereDate('start', '<=', $previousModel->end)
+                    ->whereDate('end', '>=', $previousModel->start)
+                    ->whereDate('end', '<=', $previousModel->end)
+                    ->get()
+            };
 
-            $oldShifts = collect([$originShift, ...$affectedShifts])
-                ->unique('id')
-                ->filter(fn($s) => $s !== null);
+            $oldShifts = $originShifts->merge($affectedShifts)->unique('id');
 
-            $newShifts = self::handleModelMovement($model, $previousModel, $oldShifts);
+            $previousMissingBreakDuration = match ($type) {
+                'work'
+                => $oldShifts->map(fn($s) => max(
+                    $s->missingBreakDuration(),
+                    $s->entries->sum('missingBreakDuration'),
+                ))->sum(),
+                'absence'
+                => 0
+            };
+
+            /** @var \Illuminate\Support\Collection<int, 
+             *  array{shift: \App\Models\Shift,
+             *    entries: \Illuminate\Support\Collection<
+             *      int,
+             *      \App\Models\WorkLog|\App\Models\WorkLogPatch|\App\Models\TravelLog|\App\Models\TravelLogPatch>
+             *  }
+             * > $newShifts */
+            $newShifts = match ($type) {
+                'work'
+                => self::handleModelMovement($model, $previousModel, $oldShifts),
+                'absence'
+                =>  collect([])
+            };
+
+            $newMissingBreakDuration = $newShifts->map(fn($s) => max(
+                $s['shift']->missingBreakDuration($s['entries']),
+                $s['entries']->sum('missingBreakDuration')
+            ))->sum();
+            $breakDurationChange =  $previousMissingBreakDuration - $newMissingBreakDuration;
 
             $affectedDays = $oldShifts->flatMap(
                 fn($s) =>
                 collect([Carbon::parse($s->start)->startOfDay(), Carbon::parse($s->end)->startOfDay()])
-            )->merge([
-                Carbon::parse($model->start)->startOfDay(),
-                Carbon::parse($model->end)->startOfDay()
-            ])->unique();
+            )->merge(
+                collect(
+                    range(0, floor(Carbon::parse($model->start)->diffInDays($model->end)))
+                )->map(
+                    fn($i) => Carbon::parse($model->start)->addDays($i)->startOfDay()
+                )
+            )->merge(
+                collect(
+                    range(0, floor(Carbon::parse($previousModel->start)->diffInDays($previousModel->end)))
+                )->map(
+                    fn($i) => Carbon::parse($previousModel->start)->addDays($i)->startOfDay()
+                )
+            )->unique();
 
             $diffToApply = 0;
             foreach ($affectedDays as $day) {
-                $query =
-                    fn($q) =>
-                    $q->where('user_id', $model->user_id)
-                        ->where('accepted_at', '<', $model->accepted_at)
-                        ->whereBetween('start', [$day->copy()->startOfDay(), $day->copy()->endOfDay()]);
+                $oldEntriesForAffectedDay = $model->user->getEntriesForDate($day)->merge([$previousModel])
+                    ->filter(fn($e) => $e->accepted_at <= $model->accepted_at && !$e->is($model));
 
-                $workLogsOfAffectedDay = WorkLog::doesntHave('currentAcceptedPatch')->where($query)->get();
-                $travelLogsOfAffectedDay = TravelLog::doesntHave('currentAcceptedPatch')->where($query)->get();
-
-                $workLogPatchesOfAffectedDay = WorkLogPatch::with('log.currentAcceptedPatch')
-                    ->where($query)
-                    ->get()
-                    ->filter(fn($p) => $p->log->currentAcceptedPatch->id == $p->id);
-                $travelLogPatchesOfAffectedDay = TravelLogPatch::with('log.currentAcceptedPatch')
-                    ->where($query)
-                    ->get()
-                    ->filter(fn($p) => $p->log->currentAcceptedPatch->id == $p->id);
-
-                $oldIstForAffectedDay = $workLogsOfAffectedDay
-                    ->merge($workLogPatchesOfAffectedDay)
-                    ->merge($travelLogsOfAffectedDay)
-                    ->merge($travelLogPatchesOfAffectedDay)
-                    ->sum('duration');
+                $oldIstForAffectedDay = $oldEntriesForAffectedDay->sum('duration');
 
                 $sollForAffectedDay = $model->user->getSollsekundenForDate($day);
 
@@ -247,6 +292,7 @@ class Shift extends Model
                             ->contains(fn($se) => $se->is($e))
                     );
 
+                // 0 if tpye is absence
                 $istForNewShifts = $newShifts->flatMap(
                     fn($s) => $s['entries']
                         ->filter(
@@ -255,28 +301,39 @@ class Shift extends Model
                         )
                 )->sum('duration');
 
-                $newIstForAffectedDay = $entriesOfUnaffectedShifts->sum('duration') + $istForNewShifts;
+                $newIstForAffectedDay = match ($type) {
+                    'work'
+                    => max(
+                        $entriesOfUnaffectedShifts->sum('duration') + $istForNewShifts,
+                        $model->user->hasAbsenceForDate($day) ? $sollForAffectedDay : 0
+                    ),
+                    'absence'
+                    => max($oldIstForAffectedDay, $sollForAffectedDay)
+                };
 
                 //if ist > soll overtime can be added immediatly else schedule will subtract the missing amount at 0:00 
-                if ($day->startOfDay() == Carbon::parse($model->accepted_at)->startOfDay())
+                if ($day->startOfDay() == now()->startOfDay())
                     $diffToApply += max($sollForAffectedDay, $newIstForAffectedDay) - max($sollForAffectedDay, $oldIstForAffectedDay);
                 else
                     $diffToApply += $newIstForAffectedDay - $oldIstForAffectedDay;
             }
 
-            $previousMissingBreakDuration = $oldShifts->map->missingBreakDuration()->sum();
-            $newMissingBreakDuration = $newShifts->map(fn($s) => $s['shift']->missingBreakDuration($s['entries']))->sum();
-            $breakDurationChange =  $previousMissingBreakDuration - $newMissingBreakDuration;
 
             $diffToApply += $breakDurationChange;
 
             $transactionDescription = match (true) {
-                $model instanceof WorkLog => 'neuer Buchung',
-                $model instanceof WorkLogPatch => 'Zeitkorrektur',
-                $model instanceof TravelLog => 'neuer Dienstreise',
-                $model instanceof TravelLogPatch => 'Dienstreisekorrektur',
-                $model instanceof Absence => 'neuer Abwesenheit',
-                $model instanceof AbsencePatch => 'Abwesenheitskorrektur',
+                $model instanceof WorkLog
+                => 'neuer Buchung',
+                $model instanceof WorkLogPatch
+                => 'Zeitkorrektur',
+                $model instanceof TravelLog
+                => 'neuer Dienstreise',
+                $model instanceof TravelLogPatch
+                => 'Dienstreisekorrektur',
+                $model instanceof Absence
+                => 'neuer Abwesenheit',
+                $model instanceof AbsencePatch
+                => 'Abwesenheitskorrektur',
             };
 
             //TODO: message doesnt make sense for multiple affected shifts
@@ -290,14 +347,14 @@ class Shift extends Model
             );
 
             $baseLog?->updateQuietly(['shift_id' => $model->shift_id]);
-            $oldShifts->each->delete();
+            if ($type == 'work') $oldShifts->each->delete();
         });
     }
 
     /**
-     *  @param \Illuminate\Support\Collection<int, \App\Models\Shift> $oldShifts
-     *  @param \App\Models\WorkLog | \App\Models\WorkLogPatch | \App\Models\TravelLog | \App\Models\TravelLogPatch $model 
-     *  @param \App\Models\WorkLog | \App\Models\WorkLogPatch | \App\Models\TravelLog | \App\Models\TravelLogPatch $previousModel 
+     *  @param \Illuminate\Support\Collection<int,\App\Models\Shift> $oldShifts
+     *  @param \App\Models\WorkLog|\App\Models\WorkLogPatch|\App\Models\TravelLog|\App\Models\TravelLogPatch $model 
+     *  @param \App\Models\WorkLog|\App\Models\WorkLogPatch|\App\Models\TravelLog|\App\Models\TravelLogPatch $previousModel 
      */
     public static function handleModelMovement($model, $previousModel, $oldShifts)
     {
@@ -315,7 +372,7 @@ class Shift extends Model
         $newShifts = collect([]);
 
         $allEntries = $oldShifts->flatMap(fn($s) => $s->entries)
-            ->filter(fn($e) => !$previousModel || $e->id != $previousModel->id)
+            ->filter(fn($e) => !$e->is($previousModel))
             ->merge([$model])
             ->sortBy('start');
 
@@ -353,6 +410,7 @@ class Shift extends Model
             $entry->saveQuietly();
         }
         $newShifts->push($shiftWithEntries);
+
 
         return $newShifts;
     }

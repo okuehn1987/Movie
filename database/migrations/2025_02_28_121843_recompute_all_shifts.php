@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Shift;
 use App\Models\TimeAccountTransaction;
 use App\Models\User;
 use App\Models\WorkLogPatch;
@@ -22,13 +23,10 @@ return new class extends Migration
             $table->foreignId('shift_id')->nullable()->constrained()->onDelete('set null');
         });
 
+        Shift::query()->delete();
+
         $users = User::with([
-            'defaultTimeAccount' => [
-                'toTransactions',
-                'fromTransactions'
-            ],
-            'workLogs',
-            'workLogPatches',
+            'defaultTimeAccount',
             'operatingSite'
         ])->get();
 
@@ -39,13 +37,17 @@ return new class extends Migration
             ];
 
             $user->defaultTimeAccount->updateQuietly(['balance' => 0]);
-            $user->defaultTimeAccount->toTransactions->each->forceDelete();
-            $user->defaultTimeAccount->fromTransactions->each->forceDelete();
+            $user->defaultTimeAccount->toTransactions()->delete();
+            $user->defaultTimeAccount->fromTransactions()->delete();
 
-            $workLogs = $user->workLogs()->orderBy('start')->with(['user', 'currentAcceptedPatch.user'])->get();
-            $entries = $workLogs->map(fn($w) => $w->currentAcceptedPatch ?? $w);
+            if ($user->first_name . ' ' . $user->last_name == 'Martin Krawtzow')
+                $user->defaultTimeAccount->addBalance(30 * 3600, 'Ausgleich der Stunden vor dem 15.1.25 weil Martin vorher nicht Herta benutzt hat ...');
 
-            $start = Carbon::parse('2025-02-27');
+            $workLogs = $user->workLogs()->orderBy('start')->with(['user'])->get();
+            $workLogPatches = $user->workLogPatches()->orderBy('accepted_at')->with(['user'])->get();
+            $entries = $workLogs->merge($workLogPatches);
+
+            $start = now();
             $affectedDays = collect(
                 range(1, $start->copy()->startOfYear()->diffInDays($start))
             )->map(
@@ -65,13 +67,10 @@ return new class extends Migration
                     'accepted_at' => $e->start,
                 ]));
 
-                $user->defaultTimeAccount->addBalance(
-                    min(0, $entriesForDay->sum('duration') - $user->getSollSekundenForDate($day)),
-                    $day->format('d.m.Y')
-                );
+                $user->removeMissingWorkTimeForDate($day);
             }
 
-            $state['balance_after'] = $user->fresh('defaultTimeAccount')->defaultTimeAccount->balance;
+            $state['balance_after'] = $user->defaultTimeAccount->fresh()->balance;
             dump($state);
         }
     }

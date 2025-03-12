@@ -23,6 +23,15 @@ class Absence extends Model
         return AbsencePatch::class;
     }
 
+    public static function boot()
+    {
+        parent::boot();
+        self::saving(function (Absence $model) {
+            Shift::computeAffected($model);
+        });
+    }
+
+
     public function getHidden()
     {
         $user = User::find(Auth::id());
@@ -64,42 +73,34 @@ class Absence extends Model
         return $usedDays;
     }
 
-    public function accountAsTransaction()
-    {
-        DB::transaction(function () {
-            WorkLog::where('user_id', $this->user_id)->lockForUpdate()->get();
+    // public function accountAsTransaction()
+    // {
+    //     DB::transaction(function () {
+    //         Shift::lockFor($this->user);
+    //         // check all days of absence until today
+    //         $end = min(now(), $this->end);
 
-            $this->accepted_at = Carbon::now();
-            $this->status = 'accepted';
+    //         for ($day = Carbon::parse($this->start)->startOfDay(); $day->lte($end); $day->addDay()) {
+    //             if (!WorkingHoursCalculation::whereDate('day', $day)->exists()) continue;
+    //             if ($this->user->hasAbsenceForDate($day)) continue;
 
-            // check all days of absence until today
-            $end = Carbon::parse($this->end)->gte(Carbon::now()) ? Carbon::now() : Carbon::parse($this->end);
+    //             $sollSekunden = $this->user->getSollsekundenForDate($day);
 
-            for ($day = Carbon::parse($this->start)->startOfDay(); $day->lte($end); $day->addDay()) {
-                if (!WorkingHoursCalculation::whereDate('day', $day)->exists()) continue;
+    //             $istSekunden =  $this->user->getWorkDurationForDate($day);
+    //             $missingBreakDurationOfShifts = $this->user->shifts()->whereDate('end', $day)->get()->map->missingBreakDuration()->sum();
 
-                $hasAppliedAbsenceForDay = $this->user
-                    ->absences()
-                    ->where('id', '!=', $this->id)
-                    ->where('status', 'accepted')
-                    ->whereDate('start', '<=', $day)
-                    ->whereDate('end', '>=', $day)
-                    ->exists();
-                if ($hasAppliedAbsenceForDay) continue;
+    //             //6h 15m 1h => -15m -30m => +15m 30m(7:30 - 7)
+    //             //6:05 15m 1h => -15m -25m => +15m -5m +30m(7:30 - (7:05-5m))
+    //             //5:55 15m 1h => -15m -35m => +15m -0m +35m(7:30 - (6:55 - 0m))
+    //             //8h => -30m + 30m => +15m
+    //             //9:15 15m 1h => -30m +2:45 => +15m
 
-                $sollSekunden = $this->user->getSollsekundenForDate($day);
-
-                $istSekunden =  WorkLog::whereDate('start', $day)
-                    ->where('user_id', $this->user_id)
-                    ->get()
-                    ->sum('duration');
-
-                $this->user->defaultTimeAccount->addBalance(
-                    max($sollSekunden - $istSekunden, 0),
-                    'Abwesenheit akzeptiert am ' . Carbon::parse($this->accepted_at)->format('d.m.Y H:i:s')
-                );
-            }
-            $this->save();
-        });
-    }
+    //             $this->user->defaultTimeAccount->addBalance(
+    //                 max($sollSekunden - $istSekunden, 0),
+    //                 'Abwesenheit akzeptiert am ' . Carbon::parse($this->accepted_at)->format('d.m.Y H:i:s')
+    //             );
+    //         }
+    //         $this->save();
+    //     });
+    // }
 }

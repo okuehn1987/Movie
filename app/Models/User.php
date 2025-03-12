@@ -153,6 +153,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Absence::class);
     }
+    public function absencePatches()
+    {
+        return $this->hasMany(AbsencePatch::class);
+    }
     public function group()
     {
         return $this->belongsTo(Group::class);
@@ -367,13 +371,11 @@ class User extends Authenticatable
 
         if (!$currentWorkingHours || !$currentWorkingWeek) return 0;
 
-        $hasAbsenceForDay = $this->hasAbsenceForDate($date);
-
         $shouldWork =
             $currentWorkingWeek->hasWorkDay($date) &&
             !$this->operatingSite->hasHoliday($date);
 
-        if ($hasAbsenceForDay || !$shouldWork) return 0;
+        if (!$shouldWork) return 0;
 
         return $currentWorkingHours['weekly_working_hours'] / $currentWorkingWeek->numberOfWorkingDays * 3600;
     }
@@ -390,7 +392,8 @@ class User extends Authenticatable
             fn($s) =>
             $s->entries->filter(
                 fn($e) =>
-                Carbon::parse($e->start)->between($date->copy()->startOfDay(), $date->copy()->endOfDay())
+                Carbon::parse($e->start)->between($date->copy()->startOfDay(), $date->copy()->endOfDay()) &&
+                    Carbon::parse($e->end)->between($date->copy()->startOfDay(), $date->copy()->endOfDay())
             )
         );
     }
@@ -398,5 +401,13 @@ class User extends Authenticatable
     public function getWorkDurationForDate(CarbonInterface $date)
     {
         return $this->getEntriesForDate($date)->sum('duration');
+    }
+
+    public function removeMissingWorkTimeForDate(CarbonInterface $date)
+    {
+        $this->defaultTimeAccount->addBalance(
+            max(0, $this->getSollsekundenForDate($date) - $this->getWorkDurationForDate($date)) * -1,
+            'Fehlende Stunden am ' . $date->format('d.m.Y')
+        );
     }
 }
