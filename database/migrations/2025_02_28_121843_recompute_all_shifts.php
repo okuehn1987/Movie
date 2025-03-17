@@ -1,13 +1,10 @@
 <?php
 
 use App\Models\Shift;
-use App\Models\TimeAccountTransaction;
 use App\Models\User;
-use App\Models\WorkLogPatch;
 use Carbon\Carbon;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -56,7 +53,7 @@ return new class extends Migration
                 )->sort();
 
             foreach ($affectedDays as $day) {
-                if ($day < $user->overtime_calculations_start) continue;
+                if ($day->lt($user->overtime_calculations_start)) continue;
                 $user->removeMissingWorkTimeForDate($day);
 
                 $workLogs = $user->workLogs()
