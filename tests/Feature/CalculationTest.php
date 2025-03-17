@@ -4,8 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Shift;
 use App\Models\User;
-use App\Models\WorkLog;
-use Carbon\CarbonInterface;
 use Exception;
 use Tests\TestCase;
 
@@ -33,7 +31,7 @@ class CalculationTest extends TestCase
             'status' => 'accepted',
         ]);
         //should be null because Shift::computeAffected() returns without accepted at
-        $this->assertNull($workLog->shift);
+        $this->assertNull($workLog->shift_id);
 
         $workLog = $this->oldUser->workLogs()->create([
             'start' =>  now()->subDays(2),
@@ -43,7 +41,7 @@ class CalculationTest extends TestCase
         ]);
         $this->assertModelExists($workLog->shift);
         $this->assertTrue($workLog->shift->hasEnded);
-        $this->assertEquals((24 - 9) * 3600 + 3 * 3600 - 45 * 60, $this->oldUser->defaultTimeAccount->balance);
+        $this->assertEquals((24 - 9) * 3600 + 3 * 3600 - 45 * 60, $this->oldUser->defaultTimeAccount->fresh()->balance);
     }
 
     public function test_single_log_states(): void
@@ -369,8 +367,9 @@ class CalculationTest extends TestCase
 
     public function test_correcting_extreme_workLog()
     {
-
+        $holidays = 0;
         for ($offset = 1; $offset <= 10; $offset++) {
+            if ($this->oldUser->operatingSite->hasHoliday(now()->subDays($offset))) $holidays++;
             $this->oldUser->removeMissingWorkTimeForDate(now()->subDays($offset));
         }
 
@@ -381,14 +380,64 @@ class CalculationTest extends TestCase
             'accepted_at' =>  now()->subDays(10),
         ]);
 
+        $this->assertEquals(
+            9 * 24 * 3600 - 10 * 15 * 60 - 7.5 * (10 - $holidays) * 3600,
+            $this->oldUser->defaultTimeAccount->fresh()->balance
+        );
+    }
 
-        // dump($this->oldUser->getWorkDurationForDate(now()->subDay()));
-
-        dump($this->oldUser->defaultTimeAccount->toTransactions->map(fn($t) => collect($t)->only(['amount', 'description'])->toArray()));
-        dump($this->oldUser->workLogs->fresh()->map(fn($w) => collect($w)->only(['start', 'end'])->toArray()));
+    public function test_overlapping_entries()
+    {
+        $hasHoliday = $this->oldUser->operatingSite->hasHoliday(now()->subDays(10));
+        $this->oldUser->removeMissingWorkTimeForDate(now()->subDays(10));
 
         $this->assertEquals(
-            9 * 24 * 3600 - 10 * 15 * 60 - 7.5 * 10 * 3600,
+            $hasHoliday  ? 0 : -1 * (7 * 3600 + 30 * 60),
+            $this->oldUser->defaultTimeAccount->fresh()->balance
+        );
+
+        $workLog1 = $this->oldUser->workLogs()->createQuietly([
+            'start' =>  now()->subDays(10),
+            'end' =>  now()->subDays(10)->addHours(5),
+            'status' => 'accepted',
+            'accepted_at' =>  now()->subDays(10),
+        ]);
+        $this->oldUser->workLogPatches()->create([
+            'start' =>  now()->subDays(10),
+            'end' =>  now()->subDays(10)->addHours(5),
+            'status' => 'accepted',
+            'accepted_at' =>  now()->subDays(10),
+            'work_log_id' => $workLog1->id
+        ]);
+
+        $this->assertEquals(
+            -1 * (2 * 3600 + 30 * 60),
+            $this->oldUser->defaultTimeAccount->fresh()->balance
+        );
+
+        $workLog2 = $this->oldUser->workLogs()->createQuietly([
+            'start' =>  now()->subDays(10),
+            'end' =>  now()->subDays(10)->addHours(5),
+            'status' => 'accepted',
+            'accepted_at' =>  now()->subDays(10),
+        ]);
+        $this->oldUser->workLogPatches()->create([
+            'start' =>  now()->subDays(10),
+            'end' =>  now()->subDays(10)->addHours(5),
+            'status' => 'accepted',
+            'accepted_at' =>  now()->subDays(10),
+            'work_log_id' => $workLog2->id
+        ]);
+
+        $this->oldUser->workLogs()->create([
+            'start' =>  now()->subDays(10)->addHours(6),
+            'end' =>  now()->subDays(10)->addHours(7),
+            'status' => 'accepted',
+            'accepted_at' =>  now()->addHours(6),
+        ]);
+
+        $this->assertEquals(
+            -1 * (1 * 3600 + 30 * 60),
             $this->oldUser->defaultTimeAccount->fresh()->balance
         );
     }

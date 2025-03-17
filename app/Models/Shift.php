@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Carbon\Carbon;
-use Carbon\CarbonInterface;
 use Exception;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -45,19 +44,35 @@ class Shift extends Model
 
     public function entries(): Attribute
     {
-        $this->loadMissing(['workLogs.currentAcceptedPatch', 'travelLogs.currentAcceptedPatch']);
+        $workLogs = $this->workLogs()
+            ->doesntHave('currentAcceptedPatch')
+            ->where('status', 'accepted')->get();
+        $travelLogs = $this->travelLogs()
+            ->doesntHave('currentAcceptedPatch')
+            ->where('status', 'accepted')->get();
+        $workLogPatches = $this->workLogPatches()
+            ->with('log.currentAcceptedPatch')
+            ->where('status', 'accepted')->get()
+            ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p));
+        $travelLogPatches = $this->travelLogPatches()
+            ->with('log.currentAcceptedPatch')
+            ->where('status', 'accepted')->get()
+            ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p));
 
         return Attribute::make(
             get: fn() =>
-            collect($this->workLogs->map(fn($w) => $w->currentAcceptedPatch ?? $w))
-                ->merge($this->travelLogs->map(fn($t) => $t->currentAcceptedPatch ?? $t))
-        )->shouldCache();
+            collect($workLogs)->merge($travelLogs)->merge($workLogPatches)->merge($travelLogPatches)
+        )->withoutObjectCaching();
     }
 
     public function getDurationAttribute()
     {
-        $duration = Carbon::parse($this->start)->diffInSeconds($this->end);
-        if ($this->end == Carbon::parse($this->end)->endOfDay()->startOfSecond()) $duration += 1;
+        $start = Carbon::parse($this->start)->startOfSecond();
+        $end = Carbon::parse($this->end)->startOfSecond();
+
+        $duration = $start->diffInSeconds($end);
+        if ($end == Carbon::parse($this->end)->endOfDay()->startOfSecond()) $duration += 1;
+
         return $duration;
     }
 
@@ -65,7 +80,7 @@ class Shift extends Model
     {
         return
             !$this->workLogs()->whereNull('end')->exists() &&
-            Carbon::parse($this->end)->lte(Carbon::now()->subHours(self::$MINIMUM_SHIFT_SEPARATION_TIME_IN_HOURS));
+            Carbon::parse($this->end)->lte(now()->subHours(self::$MINIMUM_SHIFT_SEPARATION_TIME_IN_HOURS));
     }
 
     /** 
@@ -89,7 +104,21 @@ class Shift extends Model
      * $entries */
     public static function workDuration(\Illuminate\Support\Collection $entries)
     {
-        return $entries->sum('duration');
+        $duration = 0;
+        $currentEnd = $entries->min('start');
+        foreach ($entries->sortBy('start') as $entry) {
+            $end = Carbon::parse(max($currentEnd, $entry->end))->startOfSecond();
+            $start = Carbon::parse(max($currentEnd, $entry->start))->startOfSecond();
+
+            $duration += $start->diffInSeconds($end);
+
+            $currentEnd = $entry->end;
+        }
+
+        foreach ($entries->unique(fn($e) => Carbon::parse($e->start)->startOfDay()) as $entry) {
+            if (Carbon::parse($entry->end)->startOfSecond() == Carbon::parse($entry->end)->endOfDay()->startOfSecond()) $duration += 1;
+        }
+        return $duration;
     }
 
     public function requiredBreakDuration(int $duration)
@@ -212,7 +241,7 @@ class Shift extends Model
                 'log'
                 => $baseLog,
                 'patch'
-                => $baseLog->currentAcceptedPatch ?? $baseLog,
+                => $baseLog->currentAcceptedPatch ?? ($baseLog->status == 'accepted' ? $baseLog : $model),
             };
 
             /** @var \Illuminate\Support\Collection<int,\App\Models\Shift>*/
@@ -278,10 +307,15 @@ class Shift extends Model
 
             $diffToApply = 0;
             foreach ($affectedDays as $day) {
-                $oldEntriesForAffectedDay = $model->user->getEntriesForDate($day)->merge([$previousModel])
-                    ->filter(fn($e) => $e->accepted_at <= $model->accepted_at && !$e->is($model));
-
-                $oldIstForAffectedDay = $oldEntriesForAffectedDay->sum('duration');
+                $oldEntriesForAffectedDay = $model->user->getEntriesForDate($day)
+                    ->merge([$previousModel])
+                    ->filter(
+                        fn($e) => Carbon::parse($e->accepted_at)->startOfSecond() <=
+                            Carbon::parse($model->accepted_at)->startOfSecond() &&
+                            !$e->is($model) &&
+                            $e->shift_id != null
+                    );
+                $oldIstForAffectedDay = self::workDuration($oldEntriesForAffectedDay);
 
                 $sollForAffectedDay = $model->user->getSollsekundenForDate($day);
 
@@ -293,26 +327,23 @@ class Shift extends Model
                     );
 
                 // 0 if tpye is absence
-                $istForNewShifts = $newShifts->flatMap(
+                $entriesOfNewShiftsForDay = $newShifts->flatMap(
                     fn($s) => $s['entries']
                         ->filter(
                             fn($e) =>
                             Carbon::parse($e->start)->between($day->copy()->startOfDay(), $day->copy()->endOfDay())
                         )
-                )->sum('duration');
+                );
 
                 $newIstForAffectedDay = match ($type) {
                     'work'
-                    => max(
-                        $entriesOfUnaffectedShifts->sum('duration') + $istForNewShifts,
-                        $model->user->hasAbsenceForDate($day) ? $sollForAffectedDay : 0
-                    ),
+                    =>  self::workDuration($entriesOfUnaffectedShifts) + self::workDuration($entriesOfNewShiftsForDay),
                     'absence'
                     => max($oldIstForAffectedDay, $sollForAffectedDay)
                 };
 
                 //if ist > soll overtime can be added immediatly else schedule will subtract the missing amount at 0:00 
-                if ($day->startOfDay() == now()->startOfDay())
+                if ($day->isSameDay(now()) || $model->user->hasAbsenceForDate($day))
                     $diffToApply += max($sollForAffectedDay, $newIstForAffectedDay) - max($sollForAffectedDay, $oldIstForAffectedDay);
                 else
                     $diffToApply += $newIstForAffectedDay - $oldIstForAffectedDay;
@@ -380,15 +411,15 @@ class Shift extends Model
             'shift' => Shift::create([
                 'user_id' => $model->user_id,
                 'is_accounted' => false,
-                'start' => $model->start,
-                'end' => $model->end
+                'start' => $allEntries->max('end'),
+                'end' => $allEntries->min('start')
             ]),
             'entries' => collect([])
         ];
 
         foreach ($allEntries as $entry) {
-            $prev = $shiftWithEntries['entries']->last();
-            if (!$prev || Carbon::parse($entry->start)->subHours(self::$MINIMUM_SHIFT_SEPARATION_TIME_IN_HOURS) < $prev->end) {
+            $prev = $shiftWithEntries['entries']->last();;
+            if (!$prev || Carbon::parse($entry->start)->subHours(self::$MINIMUM_SHIFT_SEPARATION_TIME_IN_HOURS)->lte($prev->end)) {
                 $shiftWithEntries['shift']->update([
                     'start' => min($shiftWithEntries['shift']->start, $entry->start),
                     'end' => max($shiftWithEntries['shift']->end, $entry->end),

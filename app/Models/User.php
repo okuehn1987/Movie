@@ -383,12 +383,11 @@ class User extends Authenticatable
     public function getEntriesForDate(CarbonInterface $date)
     {
         $shifts = $this->shifts()
-            ->with(['workLogs', 'travelLogs'])
             ->where('end', '>=', $date->copy()->startOfDay())
             ->where('start', '<=', $date->copy()->endOfDay())
             ->get();
 
-        return $shifts->flatMap(
+        return collect($shifts)->flatMap(
             fn($s) =>
             $s->entries->filter(
                 fn($e) =>
@@ -400,11 +399,12 @@ class User extends Authenticatable
 
     public function getWorkDurationForDate(CarbonInterface $date)
     {
-        return $this->getEntriesForDate($date)->sum('duration');
+        return Shift::workDuration($this->getEntriesForDate($date));
     }
 
     public function removeMissingWorkTimeForDate(CarbonInterface $date)
     {
+        if ($this->hasAbsenceForDate($date)) return;
         $this->defaultTimeAccount->addBalance(
             max(0, $this->getSollsekundenForDate($date) - $this->getWorkDurationForDate($date)) * -1,
             'Fehlende Stunden am ' . $date->format('d.m.Y')

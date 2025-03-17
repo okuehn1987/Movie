@@ -9,8 +9,12 @@ trait HasDuration
     public function getDurationAttribute(): int
     {
         if ($this->end == null) return 0;
-        $duration = Carbon::parse($this->start)->diffInSeconds($this->end);
-        if ($this->end == Carbon::parse($this->end)->endOfDay()->startOfSecond()) $duration += 1;
+        $start = Carbon::parse($this->start)->startOfSecond();
+        $end = Carbon::parse($this->end)->startOfSecond();
+
+        $duration = $start->diffInSeconds($end);
+        if ($end == Carbon::parse($this->end)->endOfDay()->startOfSecond()) $duration += 1;
+
         return $duration;
     }
 

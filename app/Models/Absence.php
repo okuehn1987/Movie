@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Traits\HasPatches;
 use App\Models\Traits\IsAccountable;
 use Carbon\Carbon;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -27,6 +28,18 @@ class Absence extends Model
     {
         parent::boot();
         self::saving(function (Absence $model) {
+            //TODO: check if we need to split on save
+            // //if the entry spans multiple days we need to split it into different entries
+            // if ($model->end && !Carbon::parse($model->start)->isSameDay($model->end)) {
+            //     // run backwards for easier mutation
+            //     for ($day = Carbon::parse($model->end)->startOfDay(); !$day->isSameDay($model->start); $day->subDay()) {
+            //         $model->replicate()->fill([
+            //             'start' => $day->copy()->startOfDay(),
+            //             'end' => min(Carbon::parse($model->end)->copy(), $day->copy()->endOfDay()),
+            //         ])->save();
+            //     }
+            //     $model->end = Carbon::parse($model->start)->copy()->endOfDay();
+            // }
             Shift::computeAffected($model);
         });
     }
@@ -34,7 +47,7 @@ class Absence extends Model
 
     public function getHidden()
     {
-        $user = User::find(Auth::id());
+        $user = request()->user();
         if ($user && $user->cannot('viewShow', [AbsenceType::class, $this->user])) return ['absence_type_id', 'absenceType'];
         return [];
     }
@@ -72,35 +85,4 @@ class Absence extends Model
 
         return $usedDays;
     }
-
-    // public function accountAsTransaction()
-    // {
-    //     DB::transaction(function () {
-    //         Shift::lockFor($this->user);
-    //         // check all days of absence until today
-    //         $end = min(now(), $this->end);
-
-    //         for ($day = Carbon::parse($this->start)->startOfDay(); $day->lte($end); $day->addDay()) {
-    //             if (!WorkingHoursCalculation::whereDate('day', $day)->exists()) continue;
-    //             if ($this->user->hasAbsenceForDate($day)) continue;
-
-    //             $sollSekunden = $this->user->getSollsekundenForDate($day);
-
-    //             $istSekunden =  $this->user->getWorkDurationForDate($day);
-    //             $missingBreakDurationOfShifts = $this->user->shifts()->whereDate('end', $day)->get()->map->missingBreakDuration()->sum();
-
-    //             //6h 15m 1h => -15m -30m => +15m 30m(7:30 - 7)
-    //             //6:05 15m 1h => -15m -25m => +15m -5m +30m(7:30 - (7:05-5m))
-    //             //5:55 15m 1h => -15m -35m => +15m -0m +35m(7:30 - (6:55 - 0m))
-    //             //8h => -30m + 30m => +15m
-    //             //9:15 15m 1h => -30m +2:45 => +15m
-
-    //             $this->user->defaultTimeAccount->addBalance(
-    //                 max($sollSekunden - $istSekunden, 0),
-    //                 'Abwesenheit akzeptiert am ' . Carbon::parse($this->accepted_at)->format('d.m.Y H:i:s')
-    //             );
-    //         }
-    //         $this->save();
-    //     });
-    // }
 }

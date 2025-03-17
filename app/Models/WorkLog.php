@@ -29,7 +29,7 @@ class WorkLog extends Model
         parent::boot();
         self::saving(function (WorkLog $model) {
             //if the entry spans multiple days we need to split it into different entries
-            if (!Carbon::parse($model->start)->isSameDay($model->end)) {
+            if ($model->end && !Carbon::parse($model->start)->isSameDay($model->end)) {
                 // run backwards for easier mutation
                 for ($day = Carbon::parse($model->end)->startOfDay(); !$day->isSameDay($model->start); $day->subDay()) {
                     $model->replicate()->fill([

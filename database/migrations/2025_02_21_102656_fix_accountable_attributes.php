@@ -17,13 +17,6 @@ return new class extends Migration
             $table->foreignId('shift_id')->nullable();
         });
 
-        WorkLogPatch::with('log:id,shift_id')->get()->each(
-            fn(WorkLogPatch $patch) =>
-            $patch->updateQuietly([
-                'shift_id' => $patch->log->shift_id
-            ])
-        );
-
         Schema::table('work_logs', function (Blueprint $table) {
             $table->enum('status', ["created", "declined", "accepted"]);
             $table->dateTime('accepted_at')->nullable();
