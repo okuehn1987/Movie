@@ -45,4 +45,12 @@ class TravelLog extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function startLocation()
+    {
+        return $this->hasOne(TravelLogAddress::class);
+    }
+    public function endLocation()
+    {
+        return $this->hasOne(TravelLogAddress::class);
+    }
 }

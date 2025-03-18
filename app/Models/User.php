@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable
 {
@@ -125,6 +124,18 @@ class User extends Authenticatable
     {
         return $this->hasMany(TravelLog::class);
     }
+    public function travelLogPatches()
+    {
+        return $this->hasMany(TravelLogPatch::class);
+    }
+    public function absences()
+    {
+        return $this->hasMany(Absence::class);
+    }
+    public function absencePatches()
+    {
+        return $this->hasMany(AbsencePatch::class);
+    }
     public function supervisor()
     {
         return $this->belongsTo(User::class);
@@ -148,14 +159,6 @@ class User extends Authenticatable
     public function isSubstitutionFor()
     {
         return $this->belongsToMany(User::class, 'substitutes', 'substitute_id', 'user_id');
-    }
-    public function absences()
-    {
-        return $this->hasMany(Absence::class);
-    }
-    public function absencePatches()
-    {
-        return $this->hasMany(AbsencePatch::class);
     }
     public function group()
     {
@@ -190,6 +193,11 @@ class User extends Authenticatable
         return $this->hasMany(UserLeaveDay::class);
     }
 
+    public function userWorkingWeeks()
+    {
+        return $this->hasMany(UserWorkingWeek::class);
+    }
+
     public function timeAccounts()
     {
         return $this->hasMany(TimeAccount::class);
@@ -199,11 +207,6 @@ class User extends Authenticatable
     public function defaultTimeAccount()
     {
         return $this->hasOne(TimeAccount::class)->whereHas('timeAccountSetting', fn($q) => $q->whereNull('type'));
-    }
-
-    public function userWorkingWeeks()
-    {
-        return $this->hasMany(UserWorkingWeek::class);
     }
 
     public function organizationUser()

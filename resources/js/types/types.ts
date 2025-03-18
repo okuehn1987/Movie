@@ -44,7 +44,17 @@ export type Canable = {
     can: Record<Model, Record<CanMethod, boolean>>;
 };
 
-export type Count<T extends Branded<Record<string, unknown>, string>> = T extends DBObject<infer B> ? { [x in B as `${x}s_count`]: number } : never;
+type ExtractBrand<T extends Branded<Record<string, unknown>, string>> = T extends DBObject<infer B> ? B : never;
+
+/**
+ * Count<T> adds the count of a related model
+ *
+ * @example
+ * ```ts
+ * type props = Organization & Count<User> // Organization & { users_count: number }
+ * ```
+ * */
+export type Count<T extends Branded<unknown, string>> = { [x in ExtractBrand<T> as `${x}s_count`]: number };
 
 export type Prettify<T> = {
     [K in keyof T]: T[K];
@@ -163,33 +173,6 @@ export type OperatingTime = DBObject<'operatingTime'> &
         operating_site_id: OperatingSite['id'];
     };
 
-export type Absence = DBObject<'absence'> &
-    SoftDelete & {
-        absence_type_id?: AbsenceType['id'];
-        user_id: User['id'];
-        start: DateString;
-        end: DateString;
-        status: Status;
-    };
-
-export type AbsenceType = DBObject<'absenceType'> &
-    SoftDelete & {
-        name: string;
-        abbreviation: string;
-        type:
-            | 'Unbezahlter Urlaub'
-            | 'Ausbildung/ Berufsschule'
-            | 'Fort- und Weiterbildung'
-            | 'AZV-Tag'
-            | 'Bildungsurlaub'
-            | 'Sonderurlaub'
-            | 'Elternzeit'
-            | 'Urlaub'
-            | 'Andere';
-        requires_approval: boolean;
-        organization_id: Organization['id'];
-    };
-
 export type Group = DBObject<'group'> &
     SoftDelete & {
         name: string;
@@ -209,17 +192,6 @@ export type Substitute = DBObject<'substitute'> &
         substitute_id: User['id'];
     };
 
-export type TravelLog = DBObject<'travelLog'> &
-    SoftDelete & {
-        user_id: User['id'];
-        start_location_id: User['id'] | OperatingSite['id'] | CustomAddress['id'];
-        start_location_type: 'user' | 'operating_site' | 'custom_address';
-        start: DateTimeString;
-        end: DateTimeString;
-        end_location_type: 'user' | 'operating_site' | 'custom_address';
-        end_location_id: User['id'] | OperatingSite['id'] | CustomAddress['id'];
-    };
-
 export type CustomAddress = DBObject<'customAddress'> &
     SoftDelete &
     Address & {
@@ -228,31 +200,92 @@ export type CustomAddress = DBObject<'customAddress'> &
 
 export type Shift = DBObject<'shift'> & {
     user_id: User['id'];
-    is_accounted: boolean;
+    start: DateTimeString;
+    end: DateTimeString;
+};
+
+type BaseLog = {
+    user_id: User['id'];
+    status: Status;
+    accepted_at: DateTimeString;
+    comment: string | null;
 };
 
 export type WorkLog = DBObject<'workLog'> &
+    Omit<BaseLog, 'end'> &
     SoftDelete & {
-        user_id: User['id'];
         start: DateTimeString;
         end: DateTimeString | null;
         is_home_office: boolean;
-        /** shift_id is only null for all workLogs before the introduction of shifts */
+        //** shift_id is null for all non accepted workLogs */
         shift_id: Shift['id'] | null;
     };
 
 export type WorkLogPatch = DBObject<'workLogPatch'> &
+    BaseLog &
     SoftDelete & {
-        user_id: User['id'];
-        start: DateTimeString;
         is_home_office: boolean;
-    } & {
+        start: DateTimeString;
         end: DateTimeString;
-        status: Status;
         work_log_id: WorkLog['id'];
-        accepted_at: DateTimeString;
-        is_accounted: boolean;
-        comment: string | null;
+    };
+
+export type TravelLogAddress = DBObject<'travelLogAddress'> &
+    Address & {
+        name: string;
+        organization_id: Organization['id'];
+    };
+
+export type TravelLog = DBObject<'travelLog'> &
+    BaseLog &
+    SoftDelete & {
+        start: DateTimeString;
+        start_location_id: TravelLogAddress['id'];
+        end: DateTimeString;
+        end_location_id: TravelLogAddress['id'];
+    };
+export type TravelLogPatch = DBObject<'travelLogPatch'> &
+    BaseLog &
+    SoftDelete & {
+        start: DateTimeString;
+        start_location_id: TravelLogAddress['id'];
+        end: DateTimeString;
+        end_location_id: TravelLogAddress['id'];
+        travel_log_id: TravelLog['id'];
+    };
+
+export type Absence = DBObject<'absence'> &
+    BaseLog &
+    SoftDelete & {
+        absence_type_id?: AbsenceType['id'];
+        start: DateString;
+        end: DateString;
+    };
+export type AbsencePatch = DBObject<'absencePatch'> &
+    BaseLog &
+    SoftDelete & {
+        start: DateString;
+        end: DateString;
+        absence_id: Absence['id'];
+        absence_type_id?: AbsenceType['id'];
+    };
+
+export type AbsenceType = DBObject<'absenceType'> &
+    SoftDelete & {
+        name: string;
+        abbreviation: string;
+        type:
+            | 'Unbezahlter Urlaub'
+            | 'Ausbildung/ Berufsschule'
+            | 'Fort- und Weiterbildung'
+            | 'AZV-Tag'
+            | 'Bildungsurlaub'
+            | 'Sonderurlaub'
+            | 'Elternzeit'
+            | 'Urlaub'
+            | 'Andere';
+        requires_approval: boolean;
+        organization_id: Organization['id'];
     };
 
 export const TRUNCATION_CYCLES = [null, '1', '3', '6', '12'] as const;
@@ -293,7 +326,7 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
     id: Branded<string, 'notification'>;
     notifiable_type: 'App\\Models\\User';
     notifiable_id: User['id'];
-    read_at: DateTimeString;
+    read_at: DateTimeString | null;
 } & (
         | {
               type: 'App\\Notifications\\PatchNotification';
@@ -347,3 +380,176 @@ export type GroupUser = DBObject<'groupUser'> &
         group_id: Group['id'];
         user_id: User['id'];
     } & Record<Permission['all' | 'group'], PermissionValue>;
+
+export type RelationMap = {
+    absence: {
+        absenceType: AbsenceType;
+        user: User;
+        patches: AbsencePatch[];
+        currentAcceptedPatch: AbsencePatch | null;
+    };
+    absencePatch: {
+        absence: Absence;
+        user: User;
+        log: Absence;
+    };
+    absenceType: {
+        organization: Organization;
+        absences: Absence[];
+    };
+    customAddress: {
+        organization: Organization;
+    };
+    group: {
+        organization: Organization;
+        users: User[];
+        groupUsers: GroupUser[];
+    };
+    groupUser: {
+        group: Group;
+        user: User;
+    };
+    operatingSite: {
+        organization: Organization;
+        users: User[];
+        operatingSiteUsers: OperatingSiteUser[];
+        operatingTimes: OperatingTime[];
+    };
+    operatingSiteUser: {
+        operatingSite: OperatingSite;
+        user: User;
+    };
+    operatingTime: {
+        operatingSite: OperatingSite;
+    };
+    organization: {
+        operatingSites: OperatingSite[];
+        users: User[];
+        organizationUsers: OrganizationUser[];
+        absenceTypes: AbsenceType[];
+        groups: Group[];
+        specialWorkingHoursFactors: SpecialWorkingHoursFactor[];
+        timeAccountSettings: TimeAccountSetting[];
+        owner: User;
+        customAddresses: CustomAddress[];
+    };
+    organizationUser: {
+        organization: Organization;
+        user: User;
+    };
+    shift: {
+        user: User;
+        workLogs: WorkLog[];
+        workLogPatches: WorkLogPatch[];
+        travelLogs: TravelLog[];
+        travelLogPatches: TravelLogPatch[];
+    };
+    specialWorkingHoursFactor: {
+        organization: Organization;
+    };
+    timeAccount: {
+        user: User;
+        toTransactions: TimeAccountTransaction[];
+        fromTransactions: TimeAccountTransaction[];
+        timeAccountSetting: TimeAccountSetting;
+    };
+    timeAccountSetting: {
+        organization: Organization;
+        timeAccounts: TimeAccount[];
+    };
+    timeAccountTransaction: {
+        from: TimeAccount | null;
+        to: TimeAccount | null;
+        user: User | null;
+    };
+    travelLog: {
+        startLocation: TravelLogAddress;
+        endLocation: TravelLogAddress;
+        user: User;
+        patches: TravelLogPatch[];
+        currentAcceptedPatch: TravelLogPatch | null;
+    };
+    travelLogAddress: {
+        organization: Organization;
+        travelLogs: TravelLog[];
+        travelLogPatches: TravelLogPatch[];
+    };
+    travelLogPatch: {
+        startLocation: TravelLogAddress;
+        endLocation: TravelLogAddress;
+        user: User;
+        patches: TravelLogPatch[];
+        currentAcceptedPatch: TravelLogPatch | null;
+    };
+    user: {
+        shifts: Shift[];
+        workLogs: WorkLog[];
+        workLogPatches: WorkLogPatch[];
+        travelLogs: TravelLog[];
+        travelLogPatches: TravelLogPatch[];
+        absences: Absence[];
+        absencePatches: AbsencePatch[];
+        supervisor: User;
+        supervisees: User[];
+        isSubstitutedBy: User[];
+        isSubstitutionFor: User[];
+        group: Group | null;
+        groupUser: GroupUser | null;
+        operatingSite: OperatingSite;
+        operatingSiteUser: OperatingSiteUser;
+        organization: Organization;
+        organizationUser: OrganizationUser;
+        owns: Organization | null;
+        userWorkingHours: UserWorkingHours[];
+        userLeaveDays: UserLeaveDays[];
+        userWorkingWeeks: UserWorkingWeek[];
+        timeAccounts: TimeAccount[];
+        defaultTimeAccount: TimeAccount;
+        latestWorkLog: WorkLog | null;
+        notifications: Notification[];
+        readNotifications: Notification[];
+        unreadNotifications: Notification[];
+    };
+    userLeaveDays: {
+        user: User;
+    };
+    userWorkingHours: {
+        user: User;
+    };
+    userWorkingWeek: {
+        user: User;
+    };
+    workLog: {
+        user: User;
+        shift: Shift | null;
+        patches: WorkLogPatch[];
+        currentAcceptedPatch: WorkLogPatch | null;
+    };
+    workLogPatch: {
+        user: User;
+        log: WorkLog;
+    };
+};
+
+type NonArray<T> = T extends Array<infer U> ? U : T;
+
+/** returns all relations of the giving model */
+export type Relations<TModel extends keyof RelationMap> = TModel extends keyof RelationMap ? RelationMap[TModel] : never;
+
+/**
+ * returns the relation object with picked keys
+ *
+ * @example
+ * ```ts
+ * type prop = WorkLog & RelationPick<'workLog', 'shift', 'id' | 'start'> // WorkLog & { shift: Pick<Shift, 'id' | 'start'> }
+ * ```
+ *  */
+export type RelationPick<
+    TModel extends keyof RelationMap,
+    TRelation extends keyof RelationMap[TModel],
+    TKeys extends keyof NonArray<NonNullable<RelationMap[TModel][TRelation]>>,
+> = {
+    [x in TRelation]: RelationMap[TModel][TRelation] extends Array<unknown>
+        ? Pick<NonArray<RelationMap[TModel][TRelation]>, TKeys>[]
+        : Pick<NonArray<NonNullable<RelationMap[TModel][TRelation]>>, TKeys>;
+};

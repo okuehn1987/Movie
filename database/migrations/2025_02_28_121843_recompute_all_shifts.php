@@ -47,7 +47,7 @@ return new class extends Migration
             $start = now();
             $affectedDays =
                 collect(
-                    range(1, $start->copy()->startOfYear()->diffInDays($start))
+                    range(0, $start->copy()->startOfYear()->diffInDays($start))
                 )->map(
                     fn($i) => $start->copy()->subDays($i)->startOfDay()
                 )->sort();
@@ -55,6 +55,8 @@ return new class extends Migration
             foreach ($affectedDays as $day) {
                 if ($day->lt($user->overtime_calculations_start)) continue;
                 $user->removeMissingWorkTimeForDate($day);
+                if ($user->first_name . ' ' . $user->last_name == 'Steffen Mosch' && $user->getSollsekundenForDate($day) == 38 / 5 * 3600)
+                    $user->defaultTimeAccount->addBalance(6 * 60, 'Gutschrift aufgrund fehlerhafter wöchentlicher Arbeitszeit');
 
                 $workLogs = $user->workLogs()
                     ->whereBetween('start', [
@@ -77,7 +79,7 @@ return new class extends Migration
 
                 $entriesForDay->each(fn($e) => $e->update([
                     'status' => 'accepted',
-                    'end' => $e->end ?? $e->start,
+                    'end' => $e->end ? $e->end : (now()->isSameDay($e->start) ? null : $e->start),
                     'accepted_at' => $e->accepted_at ?? $e->start,
                 ]));
             }

@@ -47,4 +47,9 @@ class WorkLogPatch extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function shift()
+    {
+        return $this->belongsTo(Shift::class);
+    }
 }
