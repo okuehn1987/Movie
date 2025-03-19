@@ -1,21 +1,22 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Absence, AbsenceType, User, WorkLog, WorkLogPatch } from '@/types/types';
+import { Absence, RelationPick, WorkLogPatch } from '@/types/types';
 import AbsenceRequests from '../Dashboard/partial/AbsenceRequests.vue';
 import WorkLogPatches from '../Dashboard/partial/WorkLogPatches.vue';
 
-type PatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id' | 'work_log_id' | 'comment'> & {
-    log: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office'>;
-    user: Pick<User, 'id' | 'first_name' | 'last_name'>;
-};
+type PatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id' | 'work_log_id' | 'comment'> &
+    RelationPick<'workLogPatch', 'log', 'id' | 'start' | 'end' | 'is_home_office'> &
+    RelationPick<'workLogPatch', 'user', 'id' | 'first_name' | 'last_name'>;
+
 type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'user_id' | 'absence_type_id'>;
+
 defineProps<{
     absenceRequests:
-        | (AbsenceProp & {
-              user: Pick<User, 'id' | 'first_name' | 'last_name'> & { usedLeaveDaysForYear: number; leaveDaysForYear: number };
-              absence_type: Pick<AbsenceType, 'id' | 'name'>;
-              usedDays: number;
-          })[];
+        | (AbsenceProp &
+              RelationPick<'absence', 'user', 'id' | 'first_name' | 'last_name', false, { usedLeaveDaysForYear: number; leaveDaysForYear: number }> &
+              RelationPick<'absence', 'absence_type', 'id' | 'name'> & {
+                  usedDays: number;
+              })[];
     patches: PatchProp[];
 }>();
 </script>

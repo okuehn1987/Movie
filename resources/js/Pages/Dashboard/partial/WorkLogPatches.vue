@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { User, WorkLog, WorkLogPatch } from '@/types/types';
+import { RelationPick, WorkLogPatch } from '@/types/types';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { ref } from 'vue';
 
-type PatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id' | 'work_log_id' | 'comment'> & {
-    log: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office'>;
-    user: Pick<User, 'id' | 'first_name' | 'last_name'>;
-};
+type PatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id' | 'work_log_id' | 'comment'> &
+    RelationPick<'workLogPatch', 'log', 'id' | 'start' | 'end' | 'is_home_office'> &
+    RelationPick<'workLogPatch', 'user', 'id' | 'first_name' | 'last_name'>;
 
 const props = defineProps<{
     patches: PatchProp[];

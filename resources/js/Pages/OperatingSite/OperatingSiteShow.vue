@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { CountryProp, OperatingSite, OperatingTime } from '@/types/types';
+import { CountryProp, OperatingSite, Relations } from '@/types/types';
 import AktuelleArbeitszeiten from './partials/AktuelleArbeitszeiten.vue';
 import AllgemeineInformationen from './partials/AllgemeineInformationen.vue';
 import { ref } from 'vue';
 
 defineProps<{
-    operatingSite: OperatingSite & { operating_times: OperatingTime[] };
+    operatingSite: OperatingSite & Pick<Relations<'operatingSite'>, 'operating_times'>;
     countries: CountryProp[];
 }>();
 

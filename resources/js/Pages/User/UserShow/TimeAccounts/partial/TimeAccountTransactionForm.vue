@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { TimeAccount, TimeAccountSetting } from '@/types/types';
+import { Relations, TimeAccount } from '@/types/types';
 
 defineProps<{
-    item: Pick<TimeAccount, 'id' | 'user_id' | 'balance' | 'balance_limit' | 'time_account_setting_id' | 'name' | 'deleted_at'> & {
-        time_account_setting: TimeAccountSetting;
-    };
+    item: Pick<TimeAccount, 'id' | 'user_id' | 'balance' | 'balance_limit' | 'time_account_setting_id' | 'name' | 'deleted_at'> &
+        Pick<Relations<'timeAccount'>, 'time_account_setting'>;
 }>();
 
 const timeAccountTransactionForm = useForm({

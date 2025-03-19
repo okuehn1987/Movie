@@ -1,18 +1,17 @@
 <script setup lang="ts">
-import { Absence, AbsenceType, Canable, User, UserWorkingWeek, Weekday } from '@/types/types';
+import { Absence, AbsenceType, Canable, RelationPick, User, Weekday } from '@/types/types';
 import { DateTime } from 'luxon';
 import { computed } from 'vue';
 
 type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'> &
-    Canable & {
-        user_working_weeks: Pick<UserWorkingWeek, 'id' | Weekday>[];
-    };
+    Canable &
+    RelationPick<'user', 'user_working_weeks', 'id' | Weekday>;
+
 const props = defineProps<{
     user: UserProp;
     date: DateTime;
-    absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id' | 'user_id'> & {
-        absence_type?: Pick<AbsenceType, 'id' | 'abbreviation'>;
-    })[];
+    absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id' | 'user_id'> &
+        RelationPick<'absence', 'absence_type', 'id' | 'abbreviation', true>)[];
     absenceTypes: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
     holidays: Record<string, string> | null;
 }>();

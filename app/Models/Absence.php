@@ -72,11 +72,9 @@ class Absence extends Model
         $usedDays = 0;
         for ($day = Carbon::parse($this->start)->startOfDay(); $day->lte(Carbon::parse($this->end)); $day->addDay()) {
             $currentWorkingWeek = $this->user->userWorkingWeekForDate($day);
-            $workingDaysInWeek = $currentWorkingWeek?->numberOfWorkingDays;
 
             if (
-                $workingDaysInWeek > 0 &&
-                $currentWorkingWeek->hasWorkDay($day) &&
+                $currentWorkingWeek?->hasWorkDay($day) &&
                 !$this->user->operatingSite->hasHoliday($day)
             ) {
                 $usedDays++;

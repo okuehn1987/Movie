@@ -1,17 +1,14 @@
 <script setup lang="ts">
-import { TimeAccountSetting, User, UserWorkingHours, UserWorkingWeek } from '@/types/types';
+import { Relations, TimeAccountSetting, User } from '@/types/types';
 import { accountType, getTruncationCycleDisplayName, roundTo } from '@/utils';
 
 const props = defineProps<{
-    user: User & {
-        currentWorkingHours: UserWorkingHours;
-        currentWorkingWeek: UserWorkingWeek;
-    };
+    user: User & Pick<Relations<'user'>, 'current_working_hours'>;
     time_account_settings: TimeAccountSetting[];
 }>();
 
 const newTimeAccountForm = useForm({
-    balance_limit: props.user.currentWorkingHours.weekly_working_hours * 2,
+    balance_limit: props.user.current_working_hours.weekly_working_hours * 2,
     balance: 0,
     time_account_setting_id: props.time_account_settings.filter(t => t.type != null)[0]?.id ?? null,
     name: '',
@@ -72,7 +69,7 @@ const newTimeAccountForm = useForm({
                                     label="Limit in Stunden"
                                     :hint="
                                         'entspricht ' +
-                                        roundTo(newTimeAccountForm.balance_limit / user.currentWorkingHours.weekly_working_hours, 2) +
+                                        roundTo(newTimeAccountForm.balance_limit / user.current_working_hours.weekly_working_hours, 2) +
                                         'x wöchentliche Arbeitszeit'
                                     "
                                     v-model="newTimeAccountForm.balance_limit"

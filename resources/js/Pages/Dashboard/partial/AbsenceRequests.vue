@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { Absence, AbsenceType, User } from '@/types/types';
+import { Absence, RelationPick } from '@/types/types';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { ref } from 'vue';
 
-type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'user_id'> & {
-    user: Pick<User, 'id' | 'first_name' | 'last_name'> & { usedLeaveDaysForYear: number; leaveDaysForYear: number };
-    absence_type: Pick<AbsenceType, 'id' | 'name'>;
-    usedDays: number;
-};
+type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'user_id'> &
+    RelationPick<'absence', 'absence_type', 'id' | 'name'> &
+    RelationPick<'absence', 'user', 'id' | 'first_name' | 'last_name', false, { usedLeaveDaysForYear: number; leaveDaysForYear: number }> & {
+        usedDays: number;
+    };
 
 const props = defineProps<{
     absenceRequests: AbsenceProp[];

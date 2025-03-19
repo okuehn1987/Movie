@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { TimeAccount, TimeAccountSetting } from '@/types/types';
+import { Relations, TimeAccount } from '@/types/types';
 import { usePageIsLoading } from '@/utils';
 import { router } from '@inertiajs/vue3';
 
 defineProps<{
-    item: Pick<TimeAccount, 'id' | 'user_id' | 'balance' | 'balance_limit' | 'time_account_setting_id' | 'name' | 'deleted_at'> & {
-        time_account_setting: TimeAccountSetting;
-    };
+    item: Pick<TimeAccount, 'id' | 'user_id' | 'balance' | 'balance_limit' | 'time_account_setting_id' | 'name' | 'deleted_at'> &
+        Pick<Relations<'timeAccount'>, 'time_account_setting'>;
 }>();
 
 const loading = usePageIsLoading();

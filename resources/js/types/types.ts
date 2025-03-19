@@ -383,10 +383,10 @@ export type GroupUser = DBObject<'groupUser'> &
 
 export type RelationMap = {
     absence: {
-        absenceType: AbsenceType;
+        absence_type: AbsenceType;
         user: User;
         patches: AbsencePatch[];
-        currentAcceptedPatch: AbsencePatch | null;
+        current_accepted_patch: AbsencePatch | null;
     };
     absencePatch: {
         absence: Absence;
@@ -403,7 +403,7 @@ export type RelationMap = {
     group: {
         organization: Organization;
         users: User[];
-        groupUsers: GroupUser[];
+        group_users: GroupUser[];
     };
     groupUser: {
         group: Group;
@@ -412,26 +412,26 @@ export type RelationMap = {
     operatingSite: {
         organization: Organization;
         users: User[];
-        operatingSiteUsers: OperatingSiteUser[];
-        operatingTimes: OperatingTime[];
+        operating_site_users: OperatingSiteUser[];
+        operating_times: OperatingTime[];
     };
     operatingSiteUser: {
-        operatingSite: OperatingSite;
+        operatings_site: OperatingSite;
         user: User;
     };
     operatingTime: {
-        operatingSite: OperatingSite;
+        operating_site: OperatingSite;
     };
     organization: {
-        operatingSites: OperatingSite[];
+        operating_sites: OperatingSite[];
         users: User[];
-        organizationUsers: OrganizationUser[];
-        absenceTypes: AbsenceType[];
+        organization_users: OrganizationUser[];
+        absence_types: AbsenceType[];
         groups: Group[];
-        specialWorkingHoursFactors: SpecialWorkingHoursFactor[];
-        timeAccountSettings: TimeAccountSetting[];
+        special_working_hours_factors: SpecialWorkingHoursFactor[];
+        time_account_settings: TimeAccountSetting[];
         owner: User;
-        customAddresses: CustomAddress[];
+        custom_addresses: CustomAddress[];
     };
     organizationUser: {
         organization: Organization;
@@ -439,23 +439,23 @@ export type RelationMap = {
     };
     shift: {
         user: User;
-        workLogs: WorkLog[];
-        workLogPatches: WorkLogPatch[];
-        travelLogs: TravelLog[];
-        travelLogPatches: TravelLogPatch[];
+        work_logs: WorkLog[];
+        work_log_patches: WorkLogPatch[];
+        travel_logs: TravelLog[];
+        travel_log_patches: TravelLogPatch[];
     };
     specialWorkingHoursFactor: {
         organization: Organization;
     };
     timeAccount: {
         user: User;
-        toTransactions: TimeAccountTransaction[];
-        fromTransactions: TimeAccountTransaction[];
-        timeAccountSetting: TimeAccountSetting;
+        to_transactions: TimeAccountTransaction[];
+        from_transactions: TimeAccountTransaction[];
+        time_account_setting: TimeAccountSetting;
     };
     timeAccountSetting: {
         organization: Organization;
-        timeAccounts: TimeAccount[];
+        time_accounts: TimeAccount[];
     };
     timeAccountTransaction: {
         from: TimeAccount | null;
@@ -463,52 +463,54 @@ export type RelationMap = {
         user: User | null;
     };
     travelLog: {
-        startLocation: TravelLogAddress;
-        endLocation: TravelLogAddress;
+        start_location: TravelLogAddress;
+        end_location: TravelLogAddress;
         user: User;
         patches: TravelLogPatch[];
-        currentAcceptedPatch: TravelLogPatch | null;
+        current_accepted_patch: TravelLogPatch | null;
     };
     travelLogAddress: {
         organization: Organization;
-        travelLogs: TravelLog[];
-        travelLogPatches: TravelLogPatch[];
+        travel_logs: TravelLog[];
+        travel_log_patches: TravelLogPatch[];
     };
     travelLogPatch: {
-        startLocation: TravelLogAddress;
-        endLocation: TravelLogAddress;
+        start_location: TravelLogAddress;
+        end_location: TravelLogAddress;
         user: User;
-        patches: TravelLogPatch[];
-        currentAcceptedPatch: TravelLogPatch | null;
+        log: TravelLog;
     };
     user: {
         shifts: Shift[];
-        workLogs: WorkLog[];
-        workLogPatches: WorkLogPatch[];
-        travelLogs: TravelLog[];
-        travelLogPatches: TravelLogPatch[];
+        work_logs: WorkLog[];
+        work_log_patches: WorkLogPatch[];
+        travel_logs: TravelLog[];
+        travel_log_patches: TravelLogPatch[];
         absences: Absence[];
-        absencePatches: AbsencePatch[];
+        absence_patches: AbsencePatch[];
         supervisor: User;
         supervisees: User[];
-        isSubstitutedBy: User[];
-        isSubstitutionFor: User[];
+        is_substituted_by: User[];
+        is_substitution_for: User[];
         group: Group | null;
-        groupUser: GroupUser | null;
-        operatingSite: OperatingSite;
-        operatingSiteUser: OperatingSiteUser;
+        group_user: GroupUser | null;
+        operating_site: OperatingSite;
+        operating_site_user: OperatingSiteUser;
         organization: Organization;
-        organizationUser: OrganizationUser;
+        organization_user: OrganizationUser;
         owns: Organization | null;
-        userWorkingHours: UserWorkingHours[];
-        userLeaveDays: UserLeaveDays[];
-        userWorkingWeeks: UserWorkingWeek[];
-        timeAccounts: TimeAccount[];
-        defaultTimeAccount: TimeAccount;
-        latestWorkLog: WorkLog | null;
+        user_working_hours: UserWorkingHours[];
+        current_working_hours: UserWorkingHours | null;
+        user_leave_days: UserLeaveDays[];
+        current_leave_days: UserLeaveDays | null;
+        user_working_weeks: UserWorkingWeek[];
+        current_working_week: UserWorkingWeek | null;
+        time_accounts: TimeAccount[];
+        default_time_account: TimeAccount;
+        latest_workLog: WorkLog | null;
         notifications: Notification[];
-        readNotifications: Notification[];
-        unreadNotifications: Notification[];
+        read_notifications: Notification[];
+        unread_notifications: Notification[];
     };
     userLeaveDays: {
         user: User;
@@ -523,7 +525,7 @@ export type RelationMap = {
         user: User;
         shift: Shift | null;
         patches: WorkLogPatch[];
-        currentAcceptedPatch: WorkLogPatch | null;
+        current_accepted_patch: WorkLogPatch | null;
     };
     workLogPatch: {
         user: User;
@@ -539,17 +541,52 @@ export type Relations<TModel extends keyof RelationMap> = TModel extends keyof R
 /**
  * returns the relation object with picked keys
  *
+ * @param TModel - the base model
+ * @param TRelation - the relation of the base model
+ * @param TKeys - the keys to pick from the relation
+ * @param TOptional - if the relation is optional
+ * @param TExtends - the type to extend the related object with
+ *
  * @example
  * ```ts
- * type prop = WorkLog & RelationPick<'workLog', 'shift', 'id' | 'start'> // WorkLog & { shift: Pick<Shift, 'id' | 'start'> }
+ * type prop = WorkLog & RelationPick<'workLog', 'shift', 'id' | 'start'>
+ * // WorkLog & { shift: Pick<Shift, 'id' | 'start'> }
+ * ```
+ *
+ * @example
+ * ```ts
+ * type prop = WorkLog & RelationPick<'workLog', 'shift', 'id' | 'start', true>
+ * // WorkLog & { shift?: Pick<Shift, 'id' | 'start'> | undefined }
+ * ```
+ *
+ * @example
+ * ```ts
+ * type prop = WorkLog & RelationPick<'workLog', 'shift', 'id' | 'start', false , { user : User }>
+ * // WorkLog & { shift: Pick<Shift, 'id' | 'start'> & { user: User } }
  * ```
  *  */
 export type RelationPick<
     TModel extends keyof RelationMap,
     TRelation extends keyof RelationMap[TModel],
     TKeys extends keyof NonArray<NonNullable<RelationMap[TModel][TRelation]>>,
-> = {
-    [x in TRelation]: RelationMap[TModel][TRelation] extends Array<unknown>
-        ? Pick<NonArray<RelationMap[TModel][TRelation]>, TKeys>[]
-        : Pick<NonArray<NonNullable<RelationMap[TModel][TRelation]>>, TKeys>;
-};
+    TOptional = false,
+    TExtends = NonNullable<unknown>,
+> = Prettify<
+    TOptional extends true
+        ? {
+              [x in TRelation]?: (RelationMap[TModel][TRelation] extends Array<unknown>
+                  ? Pick<NonArray<RelationMap[TModel][TRelation]>, TKeys>[]
+                  :
+                        | Pick<NonArray<NonNullable<RelationMap[TModel][TRelation]>>, TKeys>
+                        | (RelationMap[TModel][TRelation] extends null ? null : never)) &
+                  TExtends;
+          }
+        : {
+              [x in TRelation]: (RelationMap[TModel][TRelation] extends Array<unknown>
+                  ? Pick<NonArray<RelationMap[TModel][TRelation]>, TKeys>[]
+                  :
+                        | Pick<NonArray<NonNullable<RelationMap[TModel][TRelation]>>, TKeys>
+                        | (RelationMap[TModel][TRelation] extends null ? null : never)) &
+                  TExtends;
+          }
+>;

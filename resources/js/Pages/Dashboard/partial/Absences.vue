@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { Absence, AbsenceType, User } from '@/types/types';
+import { Absence, RelationPick } from '@/types/types';
 import { DateTime } from 'luxon';
 import { ref } from 'vue';
 
-type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'user_id' | 'absence_type_id'> & {
-    user: Pick<User, 'id' | 'first_name' | 'last_name'>;
-    absence_type?: Pick<AbsenceType, 'id' | 'abbreviation'>;
-};
+type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'user_id' | 'absence_type_id'> &
+    RelationPick<'absence', 'absence_type', 'id' | 'abbreviation', true> &
+    RelationPick<'absence', 'user', 'id' | 'first_name' | 'last_name'>;
 
 defineProps<{
     absences: AbsenceProp[];

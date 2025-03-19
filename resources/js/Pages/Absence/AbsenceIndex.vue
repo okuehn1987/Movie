@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Absence, AbsenceType, Canable, User, UserWorkingWeek, Weekday } from '@/types/types';
+import { Absence, AbsenceType, Canable, RelationPick, User, Weekday } from '@/types/types';
 import { throttle, useMaxScrollHeight } from '@/utils';
 import { router, usePage } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
@@ -8,15 +8,13 @@ import { ref, watch } from 'vue';
 import AbsenceTableCell from './partials/AbsenceTableCell.vue';
 
 type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'> &
-    Canable & {
-        user_working_weeks: Pick<UserWorkingWeek, 'id' | Weekday>[];
-    };
+    Canable &
+    RelationPick<'user', 'user_working_weeks', 'id' | Weekday>;
 
 const props = defineProps<{
     users: UserProp[];
-    absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id' | 'user_id'> & {
-        absence_type: Pick<AbsenceType, 'id' | 'abbreviation'>;
-    })[];
+    absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id' | 'user_id'> &
+        RelationPick<'absence', 'absence_type', 'id' | 'abbreviation', true>)[];
     absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
     holidays: Record<string, string> | null;
 }>();

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { OperatingSite, OperatingTime } from '@/types/types';
+import { OperatingSite, Relations } from '@/types/types';
 import { Link } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 
 const props = defineProps<{
-    operatingSite: OperatingSite & { operating_times: OperatingTime[] };
+    operatingSite: OperatingSite & Pick<Relations<'operatingSite'>, 'operating_times'>;
 }>();
 
 const WEEKDAYS = [

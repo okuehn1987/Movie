@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Absence, AbsenceType, DateTimeString, OperatingTime, User, WorkLog, WorkLogPatch } from '@/types/types';
+import { Absence, DateTimeString, OperatingTime, RelationPick, Relations, User, WorkLog } from '@/types/types';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import Absences from './partial/Absences.vue';
@@ -15,11 +15,10 @@ defineProps<{
     operating_times: OperatingTime[];
     overtime: number;
     workingHours: { should: number; current: number; currentHomeOffice: number };
-    currentAbsences: (AbsenceProp & {
-        user: Pick<User, 'id' | 'first_name' | 'last_name'>;
-        absence_type: Pick<AbsenceType, 'id' | 'abbreviation'>;
-    })[];
-    lastWeekWorkLogs: (Omit<WorkLog, 'end'> & { end: DateTimeString; current_accepted_patch: WorkLogPatch | null })[];
+    currentAbsences: (AbsenceProp &
+        RelationPick<'absence', 'user', 'id' | 'first_name' | 'last_name'> &
+        RelationPick<'absence', 'absence_type', 'id' | 'abbreviation'>)[];
+    lastWeekWorkLogs: (Omit<WorkLog, 'end'> & { end: DateTimeString } & Pick<Relations<'workLog'>, 'current_accepted_patch'>)[];
 }>();
 
 const currentPage = ref(1);

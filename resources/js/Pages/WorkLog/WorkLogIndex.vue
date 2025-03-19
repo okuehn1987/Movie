@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { TimeAccount, User, WorkLog } from '@/types/types';
+import { Relations, User, WorkLog } from '@/types/types';
 import { formatDuration, getMaxScrollHeight } from '@/utils';
 import { Link } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 
 defineProps<{
-    users: (Pick<User, 'id' | 'first_name' | 'last_name'> & { latest_work_log: WorkLog; default_time_account: TimeAccount })[];
+    users: (Pick<User, 'id' | 'first_name' | 'last_name'> & Pick<Relations<'user'>, 'default_time_account'> & { latest_work_log: WorkLog })[];
 }>();
 </script>
 <template>

@@ -180,6 +180,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserWorkingHour::class);
     }
+    public function currentWorkingHours()
+    {
+        return $this->userWorkingHours()->one()->ofMany('active_since', 'Max', fn($q) => $q->whereDate('active_since', '<=', now()));
+    }
 
     public function userWorkingHoursForDate(CarbonInterface $date): UserWorkingHour | null
     {
@@ -192,10 +196,22 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserLeaveDay::class);
     }
+    public function currentLeaveDays()
+    {
+        return $this->userLeaveDays()->one()->ofMany(
+            'active_since',
+            'Max',
+            fn($q) => $q->whereDate('active_since', '<=', now())->where('type', 'annual')
+        );
+    }
 
     public function userWorkingWeeks()
     {
         return $this->hasMany(UserWorkingWeek::class);
+    }
+    public function currentWorkingWeek()
+    {
+        return $this->userWorkingWeeks()->one()->ofMany('active_since', 'Max', fn($q) => $q->whereDate('active_since', '<=', now()));
     }
 
     public function timeAccounts()
@@ -307,6 +323,7 @@ class User extends Authenticatable
 
     public function usedLeaveDaysForYear(CarbonInterface $year): int
     {
+        //FIXME: possibly counting to many days for overlapping absences
         $relevantAbsences = $this->absences()
             ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
             ->whereDate('start', '<=', $year->copy()->endOfYear())
@@ -318,11 +335,9 @@ class User extends Authenticatable
             for ($day = Carbon::parse($absence->start)->startOfDay(); $day->lte(Carbon::parse($absence->end)); $day->addDay()) {
                 if ($day->year != $year->year) continue;
                 $currentWorkingWeek = $this->userWorkingWeekForDate($day);
-                $workingDaysInWeek = $currentWorkingWeek?->numberOfWorkingDays;
 
                 if (
-                    $workingDaysInWeek > 0 &&
-                    $currentWorkingWeek->hasWorkDay($day) &&
+                    $currentWorkingWeek?->hasWorkDay($day) &&
                     !$this->operatingSite->hasHoliday($day)
                 ) {
                     $usedDays++;
