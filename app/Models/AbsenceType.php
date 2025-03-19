@@ -14,7 +14,7 @@ class AbsenceType extends Model
 
     public static $DEFAULTS = [
         ['name' => 'Unbezahlter Urlaub', 'abbreviation' => 'UB'],
-        ['name' => 'Überstunden Abbau', 'abbreviation' => 'ÜA'],
+        ['name' => 'Abbau Gleitzeitkonto', 'abbreviation' => 'ÜA'],
         ['name' => 'Ausbildung/ Berufsschule', 'abbreviation' => 'BS'],
         ['name' => 'Fort- und Weiterbildung', 'abbreviation' => 'FW'],
         ['name' => 'AZV-Tag', 'abbreviation' => 'AZ'],

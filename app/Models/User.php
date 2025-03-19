@@ -370,7 +370,7 @@ class User extends Authenticatable
         return ceil($leaveDays);
     }
 
-    public function hasAbsenceForDate(CarbonInterface $date)
+    public function getAbsencesForDate(CarbonInterface $date)
     {
         $absences = $this->absences()
             ->with(['patches', 'currentAcceptedPatch'])
@@ -379,7 +379,12 @@ class User extends Authenticatable
 
         $absences = $absences->map(fn($a) => $a->currentAcceptedPatch ?? $a);
 
-        return $absences->contains(fn($a) => $date->between(Carbon::parse($a->start)->startOfDay(), Carbon::parse($a->end)->endOfDay()));
+        return $absences->filter(fn($a) => $date->between(Carbon::parse($a->start)->startOfDay(), Carbon::parse($a->end)->endOfDay()));
+    }
+
+    public function hasAbsenceForDate(CarbonInterface $date)
+    {
+        return $this->getAbsencesForDate($date)->count() > 0;
     }
 
     public function getSollsekundenForDate(CarbonInterface $date)
@@ -422,7 +427,10 @@ class User extends Authenticatable
 
     public function removeMissingWorkTimeForDate(CarbonInterface $date)
     {
-        if ($this->hasAbsenceForDate($date)) return;
+        if ($this->getAbsencesForDate($date)
+            ->contains(fn($a) => $a->absence_type_id !== AbsenceType::inOrganization()->where('type', 'Abbau Gleitzeitkonto')->first()->id)
+        ) return;
+
         $this->defaultTimeAccount->addBalance(
             max(0, $this->getSollsekundenForDate($date) - $this->getWorkDurationForDate($date)) * -1,
             'Fehlende Stunden am ' . $date->format('d.m.Y')

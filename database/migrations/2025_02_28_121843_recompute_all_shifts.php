@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\AbsenceType;
 use App\Models\Shift;
 use App\Models\User;
 use Carbon\Carbon;
@@ -21,6 +22,10 @@ return new class extends Migration
         });
 
         Shift::query()->delete();
+
+        AbsenceType::whereId(10)->first()->update([
+            'type' => 'Abbau Gleitzeitkonto',
+        ]);
 
         $users = User::with([
             'defaultTimeAccount',
