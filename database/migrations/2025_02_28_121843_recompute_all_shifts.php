@@ -23,7 +23,8 @@ return new class extends Migration
 
         Shift::query()->delete();
 
-        AbsenceType::whereId(10)->first()->update([
+        //optional because of seeded data
+        AbsenceType::where('name', 'Abbau Gleitzeitkonto')->where('type', 'andere')->first()?->update([
             'type' => 'Abbau Gleitzeitkonto',
         ]);
 

@@ -36,8 +36,8 @@ test('changes seeded user', async ({ page }) => {
     //Arbeitswoche
     await page.getByRole('row', { name: 'Beschäftigungstage Aktiv seit' }).getByRole('button').click();
     await page.getByTestId('userWorkingDays').nth(1).click();
-    await page.getByText('Samstag').click();
-    await page.getByText('Sonntag').click();
+    await page.getByText('Samstag').last().click();
+    await page.getByText('Sonntag').last().click();
     await page.getByTestId('userWorkingDays').nth(1).click();
     await page
         .getByTestId('userWorkingDays-since')

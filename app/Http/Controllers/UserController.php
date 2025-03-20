@@ -159,12 +159,13 @@ class UserController extends Controller
             ->get()
             ->merge([$user->currentWorkingWeek]);
 
-        $user['user_leave_days'] = $user->userLeaveDays()
-            ->where('type', 'annual')
-            ->orderBy('active_since', 'asc')
-            ->whereDate('active_since', '>', Carbon::now())
-            ->get()
-            ->merge([$user->currentLeaveDays]);
+        $user['user_leave_days'] = collect(
+            $user->userLeaveDays()
+                ->where('type', 'annual')
+                ->orderBy('active_since', 'asc')
+                ->whereDate('active_since', '>', Carbon::now())
+                ->get()
+        )->merge([$user->currentLeaveDays]);
 
         return Inertia::render('User/UserShow/GeneralInformation', [
             'user' => $user,
@@ -316,7 +317,7 @@ class UserController extends Controller
             'type' => 'remaining'
         ]);
 
-        foreach ($validated['userLeaveDays'] as $leaveDay) {
+        foreach ($validated['user_leave_days'] as $leaveDay) {
             UserLeaveDay::create([
                 'user_id' => $user->id,
                 'leave_days' => $leaveDay['leave_days'],
@@ -324,14 +325,14 @@ class UserController extends Controller
                 'type' => 'annual'
             ]);
         }
-        foreach ($validated['userWorkingHours'] as $workingHour) {
+        foreach ($validated['user_working_hours'] as $workingHour) {
             UserWorkingHour::create([
                 'user_id' => $user->id,
                 'weekly_working_hours' => $workingHour['weekly_working_hours'],
                 'active_since' => Carbon::parse($workingHour['active_since'])
             ]);
         }
-        foreach ($validated['userWorkingWeeks'] as $workingWeek) {
+        foreach ($validated['user_working_weeks'] as $workingWeek) {
             UserWorkingWeek::create([
                 'user_id' => $user->id,
                 ...collect($workingWeek['weekdays'])->flatMap(fn($e) => [$e => true]),
@@ -428,10 +429,10 @@ class UserController extends Controller
         $user->userLeaveDays()
             ->where('type', 'annual')
             ->whereDate('active_since', '>', Carbon::now())
-            ->whereNotIn('id', collect($validated['userLeaveDays'])->map(fn($e) => $e['id'])->toArray())
+            ->whereNotIn('id', collect($validated['user_leave_days'])->map(fn($e) => $e['id'])->toArray())
             ->delete();
 
-        foreach ($validated['userLeaveDays'] as $leaveDay) {
+        foreach ($validated['user_leave_days'] as $leaveDay) {
             if (Carbon::now()->startOfYear()->gt(Carbon::parse($leaveDay['active_since'])))
                 continue;
 
@@ -447,10 +448,10 @@ class UserController extends Controller
 
         $user->userWorkingWeeks()
             ->whereDate('active_since', '>', Carbon::now())
-            ->whereNotIn('id', collect($validated['userWorkingWeeks'])->map(fn($e) => $e['id'])->toArray())
+            ->whereNotIn('id', collect($validated['user_working_weeks'])->map(fn($e) => $e['id'])->toArray())
             ->delete();
 
-        foreach ($validated['userWorkingWeeks'] as $workingWeek) {
+        foreach ($validated['user_working_weeks'] as $workingWeek) {
             if (Carbon::now()->startOfDay()->gt(Carbon::parse($workingWeek['active_since'])))
                 continue;
 
@@ -472,10 +473,10 @@ class UserController extends Controller
 
         $user->userWorkingHours()
             ->whereDate('active_since', '>', Carbon::now())
-            ->whereNotIn('id', collect($validated['userWorkingHours'])->map(fn($e) => $e['id'])->toArray())
+            ->whereNotIn('id', collect($validated['user_working_hours'])->map(fn($e) => $e['id'])->toArray())
             ->delete();
 
-        foreach ($validated['userWorkingHours'] as $workingHour) {
+        foreach ($validated['user_working_hours'] as $workingHour) {
             if (Carbon::now()->startOfDay()->gt(Carbon::parse($workingHour['active_since'])))
                 continue;
 

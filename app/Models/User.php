@@ -182,7 +182,7 @@ class User extends Authenticatable
     }
     public function currentWorkingHours()
     {
-        return $this->userWorkingHours()->one()->ofMany('active_since', 'Max', fn($q) => $q->whereDate('active_since', '<=', now()));
+        return $this->userWorkingHours()->one()->ofMany(['active_since' => 'Max'], fn($q) => $q->whereDate('active_since', '<=', now()));
     }
 
     public function userWorkingHoursForDate(CarbonInterface $date): UserWorkingHour | null
@@ -199,8 +199,7 @@ class User extends Authenticatable
     public function currentLeaveDays()
     {
         return $this->userLeaveDays()->one()->ofMany(
-            'active_since',
-            'Max',
+            ['active_since' => 'Max'],
             fn($q) => $q->whereDate('active_since', '<=', now())->where('type', 'annual')
         );
     }
@@ -211,7 +210,10 @@ class User extends Authenticatable
     }
     public function currentWorkingWeek()
     {
-        return $this->userWorkingWeeks()->one()->ofMany('active_since', 'Max', fn($q) => $q->whereDate('active_since', '<=', now()));
+        return $this->userWorkingWeeks()->one()->ofMany(
+            ['active_since' => 'Max'],
+            fn($q) => $q->whereDate('active_since', '<=', now())
+        );
     }
 
     public function timeAccounts()

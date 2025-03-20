@@ -5,12 +5,9 @@ namespace App\Models;
 use App\Models\Traits\HasPatches;
 use App\Models\Traits\IsAccountable;
 use Carbon\Carbon;
-use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class Absence extends Model
 {

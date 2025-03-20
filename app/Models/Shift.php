@@ -377,8 +377,10 @@ class Shift extends Model
                     ' aufgrund von ' . $transactionDescription
             );
 
-            $baseLog?->updateQuietly(['shift_id' => $model->shift_id]);
-            if ($type == 'work') $oldShifts->each->delete();
+            if ($type == 'work') {
+                $baseLog?->updateQuietly(['shift_id' => $model->shift_id]);
+                $oldShifts->each->delete();
+            };
         });
     }
 

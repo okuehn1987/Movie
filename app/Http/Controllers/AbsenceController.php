@@ -103,10 +103,10 @@ class AbsenceController extends Controller
             ...$validated,
             'start' => Carbon::parse($validated['start']),
             'end' => Carbon::parse($validated['end']),
-            'status' => $requires_approval ? 'created' : 'accepted',
+            'status' => 'created',
         ]);
 
-        if ($absence->status == 'accepted') $absence->accountAsTransaction();
+        if (!$requires_approval) $absence->accept();
 
         if ($requires_approval) $user->supervisor->notify(new AbsenceNotification($user, $absence));
 
