@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { OperatingTime, WorkLog } from '@/types/types';
+import { WorkLog } from '@/types/types';
 import { formatDuration, useNow } from '@/utils';
 import { router, usePage } from '@inertiajs/vue3';
-import { DateTime, Duration } from 'luxon';
+import { DateTime } from 'luxon';
 import { computed } from 'vue';
 
 const props = defineProps<{
     lastWorkLog: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office'> | null;
-    operating_times: OperatingTime[];
     overtime: number;
-    workingHours: { should: number; current: number; currentHomeOffice: number };
+    workingHours: { totalHours: number; homeOfficeHours: number };
 }>();
 
 const page = usePage();
@@ -24,8 +23,8 @@ function changeWorkStatus(is_home_office = false) {
 const currentWorkingHours = computed(() => {
     if (!props.lastWorkLog) return 0;
     return props.lastWorkLog.end
-        ? props.workingHours.current
-        : now.value.diff(DateTime.fromSQL(props.lastWorkLog?.start || '')).as('hours') + props.workingHours.current;
+        ? props.workingHours.totalHours
+        : now.value.diff(DateTime.fromSQL(props.lastWorkLog?.start || '')).as('seconds') + props.workingHours.totalHours;
 });
 
 const lastActionText = computed(() => {
@@ -57,12 +56,12 @@ const lastActionText = computed(() => {
                         <div class="d-flex flex-column">
                             Woche gesamt
                             <div class="text-h6">
-                                {{ Duration.fromObject({ hours: currentWorkingHours }).toFormat('h:mm') }}
+                                {{ formatDuration(currentWorkingHours, 'minutes') }}
                             </div>
                         </div>
                     </div>
                 </v-col>
-                <v-col cols="12" sm="6" v-if="$page.props.auth.user.home_office || workingHours.currentHomeOffice">
+                <v-col cols="12" sm="6" v-if="$page.props.auth.user.home_office || workingHours.homeOfficeHours">
                     <div class="d-flex align-center ga-3">
                         <v-avatar color="green" rounded size="40" class="elevation-2">
                             <v-icon size="24" icon="mdi-clock-check" />
@@ -71,7 +70,7 @@ const lastActionText = computed(() => {
                         <div class="d-flex flex-column">
                             Woche Homeoffice
                             <div class="text-h6">
-                                {{ Duration.fromObject({ hours: workingHours.currentHomeOffice }).toFormat('h:mm') }}
+                                {{ formatDuration(workingHours.homeOfficeHours, 'minutes') }}
                             </div>
                         </div>
                     </div>

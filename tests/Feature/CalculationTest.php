@@ -61,14 +61,14 @@ class CalculationTest extends TestCase
             'end' => now()->addHours(6)->addMinutes(5),
         ]);
         $this->assertEquals(6 * 3600 + 5 * 60, $workLog->duration);
-        $this->assertEquals(5 * 60, $workLog->missingBreakDuration);
+        $this->assertEquals(5 * 60, $workLog->fresh()->missingBreakDuration);
         $this->assertEquals(5 * 60, $workLog->fresh()->shift->missingBreakDuration());
 
         $workLog->update([
             'end' =>  now()->addHours(7),
         ]);
         $this->assertEquals(7 * 3600, $workLog->duration);
-        $this->assertEquals(0.25 * 3600, $workLog->missingBreakDuration);
+        $this->assertEquals(0.25 * 3600, $workLog->fresh()->missingBreakDuration);
         $this->assertEquals(0.5 * 3600, $workLog->fresh()->shift->missingBreakDuration());
 
 
@@ -76,14 +76,14 @@ class CalculationTest extends TestCase
             'end' => now()->addHours(9)->addMinutes(5)
         ]);
         $this->assertEquals(9 * 3600 + 5 * 60, $workLog->duration);
-        $this->assertEquals(15 * 60, $workLog->missingBreakDuration);
+        $this->assertEquals(15 * 60, $workLog->fresh()->missingBreakDuration);
         $this->assertEquals(35 * 60, $workLog->fresh()->shift->missingBreakDuration());
 
         $workLog->update([
             'end' => now()->addHours(9)->addMinutes(30)
         ]);
         $this->assertEquals(9 * 3600 + 30 * 60, $workLog->duration);
-        $this->assertEquals(15 * 60, $workLog->missingBreakDuration);
+        $this->assertEquals(15 * 60, $workLog->fresh()->missingBreakDuration);
         $this->assertEquals(45 * 60, $workLog->fresh()->shift->missingBreakDuration());
 
         //below 18 years old 
@@ -101,14 +101,14 @@ class CalculationTest extends TestCase
             'end' => now()->addHours(4)->addMinutes(35),
         ]);
         $this->assertEquals(4 * 3600 + 35 * 60, $workLog->duration);
-        $this->assertEquals(5 * 60, $workLog->missingBreakDuration);
+        $this->assertEquals(5 * 60, $workLog->fresh()->missingBreakDuration);
         $this->assertEquals(5 * 60, $workLog->fresh()->shift->missingBreakDuration());
 
         $workLog->update([
             'end' =>  now()->addHours(5),
         ]);
         $this->assertEquals(5 * 3600, $workLog->duration);
-        $this->assertEquals(0.25 * 3600, $workLog->missingBreakDuration);
+        $this->assertEquals(0.25 * 3600, $workLog->fresh()->missingBreakDuration);
         $this->assertEquals(0.5 * 3600, $workLog->fresh()->shift->missingBreakDuration());
 
 
@@ -116,14 +116,14 @@ class CalculationTest extends TestCase
             'end' => now()->addHours(6)->addMinutes(5)
         ]);
         $this->assertEquals(6 * 3600 + 5 * 60, $workLog->duration);
-        $this->assertEquals(15 * 60, $workLog->missingBreakDuration);
+        $this->assertEquals(15 * 60, $workLog->fresh()->missingBreakDuration);
         $this->assertEquals(35 * 60, $workLog->fresh()->shift->missingBreakDuration());
 
         $workLog->update([
             'end' => now()->addHours(6)->addMinutes(30)
         ]);
         $this->assertEquals(6 * 3600 + 30 * 60, $workLog->duration);
-        $this->assertEquals(15 * 60, $workLog->missingBreakDuration);
+        $this->assertEquals(15 * 60, $workLog->fresh()->missingBreakDuration);
         $this->assertEquals(1 * 3600, $workLog->fresh()->shift->missingBreakDuration());
     }
     public function test_extend_shift(): void

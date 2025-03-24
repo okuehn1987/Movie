@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Shift;
 use App\Models\User;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
-use Carbon\Carbon;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -29,11 +28,11 @@ class WorkLogController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, #[CurrentUser] User $user)
     {
         Gate::authorize('create', WorkLog::class);
 
-        $last = WorkLog::inOrganization()->where('user_id', Auth::id())->with('shift')->latest('start')->first();
+        $last = $user->latestWorkLog;
 
         $validated = $request->validate([
             'is_home_office' => 'required|boolean',

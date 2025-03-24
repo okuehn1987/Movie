@@ -44,25 +44,25 @@ class Shift extends Model
 
     public function entries(): Attribute
     {
-        $workLogs = $this->workLogs()
-            ->doesntHave('currentAcceptedPatch')
-            ->where('status', 'accepted')->get();
-        $travelLogs = $this->travelLogs()
-            ->doesntHave('currentAcceptedPatch')
-            ->where('status', 'accepted')->get();
-        $workLogPatches = $this->workLogPatches()
-            ->with('log.currentAcceptedPatch')
-            ->where('status', 'accepted')->get()
-            ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p));
-        $travelLogPatches = $this->travelLogPatches()
-            ->with('log.currentAcceptedPatch')
-            ->where('status', 'accepted')->get()
-            ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p));
-
         return Attribute::make(
-            get: fn() =>
-            collect($workLogs)->merge($travelLogs)->merge($workLogPatches)->merge($travelLogPatches)
-        )->withoutObjectCaching();
+            get: function () {
+                $workLogs = $this->workLogs()
+                    ->doesntHave('currentAcceptedPatch')
+                    ->where('status', 'accepted')->get();
+                $travelLogs = $this->travelLogs()
+                    ->doesntHave('currentAcceptedPatch')
+                    ->where('status', 'accepted')->get();
+                $workLogPatches = $this->workLogPatches()
+                    ->with('log.currentAcceptedPatch')
+                    ->where('status', 'accepted')->get()
+                    ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p));
+                $travelLogPatches = $this->travelLogPatches()
+                    ->with('log.currentAcceptedPatch')
+                    ->where('status', 'accepted')->get()
+                    ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p));
+                return  collect($workLogs)->merge($travelLogs)->merge($workLogPatches)->merge($travelLogPatches);
+            }
+        )->shouldCache();
     }
 
     public function getDurationAttribute()
@@ -180,6 +180,21 @@ class Shift extends Model
         return $missingShiftBreakDuration;
     }
 
+    public function accountableDuration(?\Illuminate\Support\Collection $entries = null)
+    {
+        $entries ??= $this->entries;
+        $missingBreak = max(
+            $this->missingBreakDuration(),
+            $entries->sum('missingBreakDuration'),
+        );
+        $workDuration = self::workDuration($entries);
+
+        return [
+            'missingBreakDuration' => $missingBreak,
+            'workDuration' => $workDuration
+        ];
+    }
+
     public static function lockFor(User $user)
     {
         Shift::lockForUpdate()->where('user_id', $user->id)->get();
@@ -260,10 +275,7 @@ class Shift extends Model
 
             $previousMissingBreakDuration = match ($type) {
                 'work'
-                => $oldShifts->map(fn($s) => max(
-                    $s->missingBreakDuration(),
-                    $s->entries->sum('missingBreakDuration'),
-                ))->sum(),
+                => $oldShifts->map(fn($s) => $s->accountableDuration()['missingBreakDuration'])->sum(),
                 'absence'
                 => 0
             };
@@ -282,10 +294,9 @@ class Shift extends Model
                 =>  collect([])
             };
 
-            $newMissingBreakDuration = $newShifts->map(fn($s) => max(
-                $s['shift']->missingBreakDuration($s['entries']),
-                $s['entries']->sum('missingBreakDuration')
-            ))->sum();
+            $newMissingBreakDuration = $newShifts->map(
+                fn($s) => $s['shift']->accountableDuration($s['entries'])['missingBreakDuration']
+            )->sum();
             $breakDurationChange =  $previousMissingBreakDuration - $newMissingBreakDuration;
 
             $affectedDays = $oldShifts->flatMap(

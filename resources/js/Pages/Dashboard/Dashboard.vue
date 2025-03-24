@@ -1,24 +1,24 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Absence, DateTimeString, OperatingTime, RelationPick, Relations, User, WorkLog } from '@/types/types';
+import { Absence, RelationPick, Seconds, ShiftEntries, User, WorkLog } from '@/types/types';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import Absences from './partial/Absences.vue';
 import WorkingHours from './partial/WorkingHours.vue';
 import { ref } from 'vue';
+import { formatDuration } from '@/utils';
 
 type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'user_id' | 'absence_type_id'>;
 
 defineProps<{
     lastWorkLog: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office'>;
     supervisor: Pick<User, 'id' | 'first_name' | 'last_name'>;
-    operating_times: OperatingTime[];
     overtime: number;
-    workingHours: { should: number; current: number; currentHomeOffice: number };
+    workingHours: { totalHours: number; homeOfficeHours: number };
     currentAbsences: (AbsenceProp &
         RelationPick<'absence', 'user', 'id' | 'first_name' | 'last_name'> &
         RelationPick<'absence', 'absence_type', 'id' | 'abbreviation'>)[];
-    lastWeekWorkLogs: (Omit<WorkLog, 'end'> & { end: DateTimeString } & Pick<Relations<'workLog'>, 'current_accepted_patch'>)[];
+    lastWeekEntries: (Pick<ShiftEntries, 'id' | 'start' | 'end'> & { duration: Seconds })[];
 }>();
 
 const currentPage = ref(1);
@@ -30,7 +30,7 @@ const currentPage = ref(1);
             <v-col cols="12" lg="6">
                 <v-row>
                     <v-col cols="12">
-                        <WorkingHours :lastWorkLog :operating_times :overtime :workingHours />
+                        <WorkingHours :lastWorkLog :overtime :workingHours />
                     </v-col>
                     <v-col cols="12">
                         <v-card title="Zeiten der Letzten 7 tage">
@@ -54,26 +54,24 @@ const currentPage = ref(1);
                                     v-model:page="currentPage"
                                     items-per-page="5"
                                     :items="
-                                        lastWeekWorkLogs.map(w => ({
-                                            ...w,
-                                            start: DateTime.fromSQL(w.current_accepted_patch?.start ?? w.start).toFormat('dd.MM.yyyy HH:mm'),
-                                            end: DateTime.fromSQL(w.current_accepted_patch?.end ?? w.end).toFormat('dd.MM.yyyy HH:mm'),
-                                            duration: DateTime.fromSQL(w.current_accepted_patch?.end ?? w.end)
-                                                .diff(DateTime.fromSQL(w.current_accepted_patch?.start ?? w.start))
-                                                .toFormat('h:mm'),
+                                        lastWeekEntries.map(l => ({
+                                            ...l,
+                                            start: DateTime.fromSQL(l.start).toFormat('dd.MM.yyyy HH:mm'),
+                                            end: l.end ? DateTime.fromSQL(l.end).toFormat('dd.MM.yyyy HH:mm') : 'Jetzt',
+                                            duration: formatDuration(l.duration, 'minutes'),
                                         }))
                                     "
                                     :headers="[
-                                        { title: 'Start', key: 'start' },
-                                        { title: 'Ende', key: 'end' },
-                                        { title: 'Dauer', key: 'duration' },
+                                        { title: 'Start', key: 'start', sortable: false },
+                                        { title: 'Ende', key: 'end', sortable: false },
+                                        { title: 'Dauer', key: 'duration', sortable: false },
                                     ]"
                                 >
                                     <template #bottom>
                                         <v-pagination
-                                            v-if="lastWeekWorkLogs.length > 5"
+                                            v-if="lastWeekEntries.length > 5"
                                             v-model="currentPage"
-                                            :length="Math.ceil(lastWeekWorkLogs.length / 5)"
+                                            :length="Math.ceil(lastWeekEntries.length / 5)"
                                         ></v-pagination>
                                     </template>
                                 </v-data-table>

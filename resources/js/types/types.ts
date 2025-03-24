@@ -254,6 +254,8 @@ export type TravelLogPatch = DBObject<'travelLogPatch'> &
         travel_log_id: TravelLog['id'];
     };
 
+export type ShiftEntries = WorkLog | WorkLogPatch | TravelLog | TravelLogPatch;
+
 export type Absence = DBObject<'absence'> &
     BaseLog &
     SoftDelete & {
@@ -309,7 +311,9 @@ export type TimeAccount = DBObject<'timeAccount'> &
 export type TimeAccountTransaction = DBObject<'timeAccountTransaction'> &
     SoftDelete & {
         from_id: TimeAccount['id'] | null;
+        from_previous_balance: TimeAccount['balance'] | null;
         to_id: TimeAccount['id'] | null;
+        to_previous_balance: TimeAccount['balance'] | null;
         modified_by: User['id'] | null;
         amount: Seconds;
         description: string;

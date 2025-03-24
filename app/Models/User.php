@@ -6,6 +6,8 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -57,7 +59,7 @@ class User extends Authenticatable
      *   */
     public function hasPermissionOrDelegation(User | null $user, string $permissionName, string $permissionLevel)
     {
-        $this->load(['isSubstitutionFor']);
+        $this->loadMissing(['isSubstitutionFor']);
         return $this->hasPermission($user, $permissionName,  $permissionLevel) ||
             $this->isSubstitutionFor->some(fn($substitution) => $substitution->hasPermission($user, $permissionName,  $permissionLevel));
     }
@@ -71,8 +73,8 @@ class User extends Authenticatable
     {
         if ($permissionLevel != 'read' && $permissionLevel != 'write') abort(404);
 
-        $this->load(['organizationUser']);
-        if ($user) $user->load(['organizationUser']);
+        $this->loadMissing(['organizationUser']);
+        if ($user) $user->loadMissing(['organizationUser']);
 
         if (
             array_key_exists($permissionName, $this->organizationUser->toArray()) &&
@@ -80,8 +82,8 @@ class User extends Authenticatable
             (!$user || $user->organizationUser->organization_id == $this->organizationUser->organization_id)
         ) return true;
 
-        $this->load(['groupUser']);
-        if ($user) $user->load(['groupUser']);
+        $this->loadMissing(['groupUser']);
+        if ($user) $user->loadMissing(['groupUser']);
 
         if (
             $this->groupUser &&
@@ -90,8 +92,8 @@ class User extends Authenticatable
             (!$user || $user->group_id == $this->groupUser->group_id)
         ) return true;
 
-        $this->load(['operatingSiteUser']);
-        if ($user) $user->load(['operatingSiteUser']);
+        $this->loadMissing(['operatingSiteUser']);
+        if ($user) $user->loadMissing(['operatingSiteUser']);
 
         if (
             array_key_exists($permissionName, $this->operatingSiteUser->toArray()) &&
@@ -115,6 +117,10 @@ class User extends Authenticatable
     public function workLogs()
     {
         return $this->hasMany(WorkLog::class);
+    }
+    public function latestWorkLog()
+    {
+        return $this->workLogs()->one()->ofMany(['start' => 'Max']);
     }
     public function workLogPatches()
     {
@@ -249,78 +255,80 @@ class User extends Authenticatable
             ->first();
     }
 
-    public function latestWorkLog()
+    public function overtime(): Attribute
     {
-        return $this->hasOne(WorkLog::class)->latestOfMany('start');
+        return Attribute::make(
+            get: fn() => $this->defaultTimeAccount->balance,
+        );
     }
 
-    public function getOvertimeAttribute()
+    public function age(): Attribute
     {
-        return $this->defaultTimeAccount->balance;
+        return Attribute::make(
+            get: fn() => Carbon::parse($this->date_of_birth)->age,
+        )->shouldCache();
     }
 
-    public function getAgeAttribute()
+    public function currentWeekShifts(): Attribute
     {
-        return Carbon::parse($this->date_of_birth)->age;
-    }
-
-    public static function getCurrentWeekWorkingHours(User $user)
-    {
-        //all logs that could be applicable
-        $currentWeekWorkLogs = $user->workLogs()
-            ->whereNotNull('end')
-            ->whereBetween('start', [Carbon::now()->startOfWeek(), Carbon::now()])
-            ->get();
-
-        //all patches that are applicable
-        $currentWeekPatches = WorkLogPatch::where('status', 'accepted')
-            ->where('user_id', $user->id)
-            ->whereBetween('start', [Carbon::now()->startOfWeek(), Carbon::now()])
-            ->orderBy('created_at', 'Desc')
-            ->get()
-            ->unique('work_log_id');
-
-        //alle patches der logs der woche
-        foreach ($currentWeekWorkLogs as $worklog) {
-            $worklog['patch'] = WorkLogPatch::where('status', 'accepted')
-                ->where('user_id', $user->id)
-                ->where('work_log_id', $worklog->id)
-                ->orderBy('created_at', 'Desc')
-                ->first();
-        }
-
-        $handledWorklogs = [];
-        $currentWeekHours = 0;
-        $currentWeekHomeOfficeHours = 0;
-
-        foreach ($currentWeekWorkLogs as $worklog) {
-            $handledWorklogs[] = $worklog->id;
-
-            if (!$worklog['patch']) {
-                $t = Carbon::parse($worklog->start)->diffInMinutes(Carbon::parse($worklog->end)) / 60;
-                $currentWeekHours += $t;
-                if ($worklog->is_home_office) $currentWeekHomeOfficeHours += $t;
-            } else {
-                foreach ($currentWeekPatches as $p) {
-                    if ($p->work_log_id == $worklog['patch']->work_log_id) {
-                        $t = Carbon::parse($p->start)->diffInMinutes(Carbon::parse($p->end)) / 60;
-                        $currentWeekHours += $t;
-                        if ($worklog['patch']->is_home_office) $currentWeekHomeOfficeHours += $t;
-                    }
-                }
+        return Attribute::make(
+            get: function () {
+                return $this->shifts()
+                    ->where('start', '>=', now()->startOfWeek())
+                    ->get();
             }
-        }
+        )->shouldCache();
+    }
 
-        foreach ($currentWeekPatches as $patch) {
-            if (!in_array($patch->work_log_id, $handledWorklogs)) {
-                $currentWeekHours += Carbon::parse($patch->start)->diffInMinutes(Carbon::parse($patch->end)) / 60;
+    public function currentWeekWorkingHours(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $shifts = $this->currentWeekShifts;
+
+                $totalHours = $shifts->map(function (Shift $s) {
+                    $stats = $s->accountableDuration();
+                    return $stats['workDuration'] - $stats['missingBreakDuration'];
+                })->sum();
+
+                $partialShifts = $this->shifts()
+                    ->where('end', '>=', now()->startOfWeek())
+                    ->where('start', '<', now()->startOfWeek())
+                    ->get();
+
+                $partialShiftEntries = collect($partialShifts)->flatMap(
+                    fn($s) => $s->entries->filter(
+                        fn($e) => Carbon::parse($e->start)->gte(now()->startOfWeek())
+                    )
+                );
+
+                $totalHours += Shift::workDuration($partialShiftEntries) - $partialShiftEntries->sum('missingBreakDuration');
+
+                $homeOfficeShifts = $shifts->filter(
+                    fn($s) => $s->entries->filter(
+                        fn($e) => !property_exists($e, 'is_home_office') || !$e->is_home_office
+                    )->count() == 0
+                );
+
+                $homeOfficeHours = $homeOfficeShifts->map(function (Shift $s) {
+                    $stats = $s->accountableDuration($s->entries->filter(
+                        fn($e) => property_exists($e, 'is_home_office') && $e->is_home_office
+                    ));
+                    return $stats['workDuration'] - $stats['missingBreakDuration'];
+                })->sum();
+
+                $otherHomeOfficeEntries = $shifts->filter(fn($s) => !$homeOfficeShifts->contains($s))->flatMap->entries->filter(
+                    fn($e) => property_exists($e, 'is_home_office') && $e->is_home_office
+                );
+
+                $homeOfficeHours += Shift::workDuration($otherHomeOfficeEntries);
+
+                return [
+                    'totalHours' => $totalHours,
+                    'homeOfficeHours' => $homeOfficeHours,
+                ];
             }
-        }
-
-        return [
-            'totalHours' => $currentWeekHours,
-            'homeOfficeHours' => $currentWeekHomeOfficeHours,
-        ];
+        )->shouldCache();
     }
 
     public function usedLeaveDaysForYear(CarbonInterface $year): int

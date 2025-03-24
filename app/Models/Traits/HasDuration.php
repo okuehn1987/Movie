@@ -3,28 +3,33 @@
 namespace App\Models\Traits;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 trait HasDuration
 {
-    public function getDurationAttribute(): int
+    public function duration(): Attribute
     {
-        if ($this->end == null) return 0;
-        $start = Carbon::parse($this->start)->startOfSecond();
-        $end = Carbon::parse($this->end)->startOfSecond();
+        return Attribute::make(
+            get: function () {
+                if ($this->end == null) return 0;
+                $start = Carbon::parse($this->start)->startOfSecond();
+                $end = Carbon::parse($this->end)->startOfSecond();
 
-        $duration = $start->diffInSeconds($end);
-        if ($end == Carbon::parse($this->end)->endOfDay()->startOfSecond()) $duration += 1;
+                $duration = $start->diffInSeconds($end);
+                if ($end == Carbon::parse($this->end)->endOfDay()->startOfSecond()) $duration += 1;
 
-        return $duration;
+                return $duration;
+            }
+        );
     }
 
     public function durationThreshold()
     {
-        $this->loadMissing('user:id,date_of_birth');
+        $user = ($this->shift ?? $this)->loadMissing('user:id,date_of_birth')->user;
 
         return match (true) {
-            ($this->duration / 3600) > 6 && $this->user->age >= 18 => 6,
-            ($this->duration / 3600) > 4.5 && $this->user->age < 18 => 4.5,
+            ($this->duration / 3600) > 6 && $user->age >= 18 => 6,
+            ($this->duration / 3600) > 4.5 && $user->age < 18 => 4.5,
             default => 0,
         } * 3600;
     }
@@ -38,8 +43,10 @@ trait HasDuration
         } * 3600;
     }
 
-    public function getMissingBreakDurationAttribute()
+    public function missingBreakDuration(): Attribute
     {
-        return max(0, min($this->requiredBreakDuration(), $this->duration - $this->durationThreshold()));
+        return Attribute::make(
+            get: fn() => max(0, min($this->requiredBreakDuration(), $this->duration - $this->durationThreshold()))
+        )->shouldCache();
     }
 }
