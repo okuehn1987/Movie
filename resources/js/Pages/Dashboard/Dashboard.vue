@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Absence, RelationPick, Seconds, ShiftEntries, User, WorkLog } from '@/types/types';
+import { Absence, RelationPick, Relations, Seconds, Shift, ShiftEntries, User } from '@/types/types';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import Absences from './partial/Absences.vue';
@@ -11,7 +11,10 @@ import { formatDuration } from '@/utils';
 type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'user_id' | 'absence_type_id'>;
 
 defineProps<{
-    lastWorkLog: Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office'>;
+    user: User &
+        Pick<Relations<'user'>, 'latest_work_log'> & {
+            current_shift: (Pick<Shift, 'id' | 'start' | 'end'> & { current_work_duration: Seconds }) | null;
+        };
     supervisor: Pick<User, 'id' | 'first_name' | 'last_name'>;
     overtime: number;
     workingHours: { totalHours: number; homeOfficeHours: number };
@@ -30,7 +33,7 @@ const currentPage = ref(1);
             <v-col cols="12" lg="6">
                 <v-row>
                     <v-col cols="12">
-                        <WorkingHours :lastWorkLog :overtime :workingHours />
+                        <WorkingHours :user :overtime :workingHours />
                     </v-col>
                     <v-col cols="12">
                         <v-card title="Zeiten der Letzten 7 tage">

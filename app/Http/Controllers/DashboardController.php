@@ -40,7 +40,7 @@ class DashboardController extends Controller
         ]);
 
         return Inertia::render('Dashboard/Dashboard', [
-            'lastWorkLog' => $user->latestWorkLog,
+            'user' => [...$user->load(['latestWorkLog'])->toArray(), 'current_shift' => $user->currentShift()->first(['id', 'user_id', 'start', 'end'])?->append('current_work_duration')],
             'supervisor' => User::select('id', 'first_name', 'last_name')->find($user->supervisor_id),
             'currentAbsences' => $currentAbsences,
             'overtime' => $user->overtime,

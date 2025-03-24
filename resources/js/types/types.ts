@@ -278,6 +278,7 @@ export type AbsenceType = DBObject<'absenceType'> &
         abbreviation: string;
         type:
             | 'Unbezahlter Urlaub'
+            | 'Abbau Gleitzeitkonto'
             | 'Ausbildung/ Berufsschule'
             | 'Fort- und Weiterbildung'
             | 'AZV-Tag'
@@ -387,7 +388,7 @@ export type GroupUser = DBObject<'groupUser'> &
 
 export type RelationMap = {
     absence: {
-        absence_type: AbsenceType;
+        absence_type?: AbsenceType;
         user: User;
         patches: AbsencePatch[];
         current_accepted_patch: AbsencePatch | null;
@@ -486,6 +487,7 @@ export type RelationMap = {
     };
     user: {
         shifts: Shift[];
+        current_shift: Shift | null;
         work_logs: WorkLog[];
         work_log_patches: WorkLogPatch[];
         travel_logs: TravelLog[];
@@ -511,7 +513,7 @@ export type RelationMap = {
         current_working_week: UserWorkingWeek | null;
         time_accounts: TimeAccount[];
         default_time_account: TimeAccount;
-        latest_workLog: WorkLog | null;
+        latest_work_log: WorkLog | null;
         notifications: Notification[];
         read_notifications: Notification[];
         unread_notifications: Notification[];
@@ -536,8 +538,6 @@ export type RelationMap = {
         log: WorkLog;
     };
 };
-
-type NonArray<T> = T extends Array<infer U> ? U : T;
 
 /** returns all relations of the giving model */
 export type Relations<TModel extends keyof RelationMap> = TModel extends keyof RelationMap ? RelationMap[TModel] : never;
@@ -572,25 +572,10 @@ export type Relations<TModel extends keyof RelationMap> = TModel extends keyof R
 export type RelationPick<
     TModel extends keyof RelationMap,
     TRelation extends keyof RelationMap[TModel],
-    TKeys extends keyof NonArray<NonNullable<RelationMap[TModel][TRelation]>>,
-    TOptional = false,
-    TExtends = NonNullable<unknown>,
-> = Prettify<
-    TOptional extends true
-        ? {
-              [x in TRelation]?: (RelationMap[TModel][TRelation] extends Array<unknown>
-                  ? Pick<NonArray<RelationMap[TModel][TRelation]>, TKeys>[]
-                  :
-                        | Pick<NonArray<NonNullable<RelationMap[TModel][TRelation]>>, TKeys>
-                        | (RelationMap[TModel][TRelation] extends null ? null : never)) &
-                  TExtends;
-          }
-        : {
-              [x in TRelation]: (RelationMap[TModel][TRelation] extends Array<unknown>
-                  ? Pick<NonArray<RelationMap[TModel][TRelation]>, TKeys>[]
-                  :
-                        | Pick<NonArray<NonNullable<RelationMap[TModel][TRelation]>>, TKeys>
-                        | (RelationMap[TModel][TRelation] extends null ? null : never)) &
-                  TExtends;
-          }
->;
+    TKeys extends keyof UnArray<NonNullable<RelationMap[TModel][TRelation]>>,
+> = Prettify<{
+    [x in TRelation]: RelationMap[TModel][TRelation] extends Array<unknown>
+        ? Pick<UnArray<NonNullable<RelationMap[TModel][TRelation]>>, TKeys>[]
+        : Pick<UnArray<NonNullable<RelationMap[TModel][TRelation]>>, TKeys>;
+}>;
+type UnArray<T> = T extends Array<infer U> ? U : T;

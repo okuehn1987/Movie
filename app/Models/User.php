@@ -108,12 +108,17 @@ class User extends Authenticatable
     {
         return $this->first_name . ' ' . $this->last_name;
     }
-
     public function shifts()
     {
         return $this->hasMany(Shift::class);
     }
-
+    public function currentShift()
+    {
+        return $this->shifts()->one()->ofMany(
+            ['start' => 'Max'],
+            fn(Builder $q) => $q->where('end', '>=', now()->subHours(Shift::$MINIMUM_SHIFT_SEPARATION_TIME_IN_HOURS))
+        );
+    }
     public function workLogs()
     {
         return $this->hasMany(WorkLog::class);
@@ -324,8 +329,8 @@ class User extends Authenticatable
                 $homeOfficeHours += Shift::workDuration($otherHomeOfficeEntries);
 
                 return [
-                    'totalHours' => $totalHours,
-                    'homeOfficeHours' => $homeOfficeHours,
+                    'totalHours' => 50301 ?? $totalHours,
+                    'homeOfficeHours' => 25000 ?? $homeOfficeHours,
                 ];
             }
         )->shouldCache();
@@ -442,7 +447,7 @@ class User extends Authenticatable
         ) return;
 
         $this->defaultTimeAccount->addBalance(
-            max(0, $this->getSollsekundenForDate($date) - $this->getWorkDurationForDate($date)) * -1,
+            min(0, $this->getWorkDurationForDate($date) - $this->getSollsekundenForDate($date)),
             'Fehlende Stunden am ' . $date->format('d.m.Y')
         );
     }

@@ -11,7 +11,7 @@ const props = defineProps<{
     user: UserProp;
     date: DateTime;
     absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id' | 'user_id'> &
-        RelationPick<'absence', 'absence_type', 'id' | 'abbreviation', true>)[];
+        RelationPick<'absence', 'absence_type', 'id' | 'abbreviation'>)[];
     absenceTypes: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
     holidays: Record<string, string> | null;
 }>();

@@ -6,6 +6,7 @@ use App\Models\Traits\HasDuration;
 use App\Models\Traits\HasPatches;
 use App\Models\Traits\IsAccountable;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -30,6 +31,7 @@ class WorkLog extends Model
         self::saving(function (WorkLog $model) {
             //if the entry spans multiple days we need to split it into different entries
             if ($model->end && !Carbon::parse($model->start)->isSameDay($model->end)) {
+                if (Carbon::parse($model->start)->gt($model->end)) throw new Exception("start can't be after end");
                 // run backwards for easier mutation
                 for ($day = Carbon::parse($model->end)->startOfDay(); !$day->isSameDay($model->start); $day->subDay()) {
                     $model->replicate()->fill([

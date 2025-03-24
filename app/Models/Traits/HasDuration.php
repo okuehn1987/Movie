@@ -25,7 +25,7 @@ trait HasDuration
 
     public function durationThreshold()
     {
-        $user = ($this->shift ?? $this)->loadMissing('user:id,date_of_birth')->user;
+        $user = $this->loadMissing('user:id,date_of_birth')->user;
 
         return match (true) {
             ($this->duration / 3600) > 6 && $user->age >= 18 => 6,

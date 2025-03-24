@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Absence, RelationPick, WorkLogPatch } from '@/types/types';
+import { Absence, AbsenceType, RelationPick, User, WorkLogPatch } from '@/types/types';
 import AbsenceRequests from '../Dashboard/partial/AbsenceRequests.vue';
 import WorkLogPatches from '../Dashboard/partial/WorkLogPatches.vue';
 
@@ -12,11 +12,11 @@ type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'user_id' | 'absence_t
 
 defineProps<{
     absenceRequests:
-        | (AbsenceProp &
-              RelationPick<'absence', 'user', 'id' | 'first_name' | 'last_name', false, { usedLeaveDaysForYear: number; leaveDaysForYear: number }> &
-              RelationPick<'absence', 'absence_type', 'id' | 'name'> & {
-                  usedDays: number;
-              })[];
+        | (AbsenceProp & {
+              absence_type: Pick<AbsenceType, 'id' | 'name'>;
+              usedDays: number;
+              user: Pick<User, 'id' | 'first_name' | 'last_name'> & { usedLeaveDaysForYear: number; leaveDaysForYear: number };
+          })[];
     patches: PatchProp[];
 }>();
 </script>

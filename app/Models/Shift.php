@@ -13,7 +13,7 @@ class Shift extends Model
 {
     use HasFactory;
 
-    private static $MINIMUM_SHIFT_SEPARATION_TIME_IN_HOURS = 9;
+    public static $MINIMUM_SHIFT_SEPARATION_TIME_IN_HOURS = 9;
 
     protected $guarded = [];
 
@@ -104,6 +104,7 @@ class Shift extends Model
      * $entries */
     public static function workDuration(\Illuminate\Support\Collection $entries)
     {
+        $entries = $entries->filter(fn($e) => $e->end !== null);
         $duration = 0;
         $currentEnd = $entries->min('start');
         foreach ($entries->sortBy('start') as $entry) {
@@ -119,6 +120,15 @@ class Shift extends Model
             if (Carbon::parse($entry->end)->startOfSecond() == Carbon::parse($entry->end)->endOfDay()->startOfSecond()) $duration += 1;
         }
         return $duration;
+    }
+
+    public function currentWorkDuration(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                return self::workDuration($this->entries);
+            }
+        );
     }
 
     public function requiredBreakDuration(int $duration)
@@ -391,6 +401,7 @@ class Shift extends Model
             if ($type == 'work') {
                 $baseLog?->updateQuietly(['shift_id' => $model->shift_id]);
                 $oldShifts->each->delete();
+                $newShifts->each(fn($s) => $s['shift']->updateQuietly(['is_accounted' => true]));
             };
         });
     }
@@ -431,11 +442,11 @@ class Shift extends Model
         ];
 
         foreach ($allEntries as $entry) {
-            $prev = $shiftWithEntries['entries']->last();;
+            $prev = $shiftWithEntries['entries']->last();
             if (!$prev || Carbon::parse($entry->start)->subHours(self::$MINIMUM_SHIFT_SEPARATION_TIME_IN_HOURS)->lte($prev->end)) {
                 $shiftWithEntries['shift']->update([
                     'start' => min($shiftWithEntries['shift']->start, $entry->start),
-                    'end' => max($shiftWithEntries['shift']->end, $entry->end),
+                    'end' => max($shiftWithEntries['shift']->end, $entry->end, $entry->start),
                 ]);
                 $shiftWithEntries['entries']->push($entry);
             } else {
@@ -445,7 +456,7 @@ class Shift extends Model
                         'user_id' => $entry->user_id,
                         'is_accounted' => false,
                         'start' => $entry->start,
-                        'end' => $entry->end,
+                        'end' => max($entry->start, $entry->end),
                     ]),
                     'entries' => collect([$entry])
                 ];
