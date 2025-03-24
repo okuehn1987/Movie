@@ -11,4 +11,10 @@ trait IsAccountable
             'accepted_at' => now()
         ]);
     }
+    public function decline()
+    {
+        $this->update([
+            'status' => 'declined',
+        ]);
+    }
 }

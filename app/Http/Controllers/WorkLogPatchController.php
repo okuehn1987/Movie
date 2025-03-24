@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
 use App\Notifications\PatchNotification;
 use Carbon\Carbon;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
 class WorkLogPatchController extends Controller
 {
-    public function store(Request $request)
+    public function store(Request $request, #[CurrentUser] User $authUser)
     {
         Gate::authorize('create', [WorkLogPatch::class, WorkLog::with('user')->find($request['workLog'])->user]);
 
@@ -25,6 +27,7 @@ class WorkLogPatchController extends Controller
         ]);
 
         $workLog = WorkLog::find($validated['workLog']);
+        $user = $workLog->user;
 
         $patch = WorkLogPatch::create([
             'is_home_office' => $validated['is_home_office'],
@@ -33,38 +36,33 @@ class WorkLogPatchController extends Controller
             'status' => 'created',
             'comment' => $validated['comment'],
             'work_log_id' => $workLog->id,
-            'user_id' => $workLog->user_id
+            'user_id' => $user->id
         ]);
 
         $supervisor = $workLog->user->supervisor;
-        if ($supervisor) $supervisor->notify(new PatchNotification($workLog->user, $patch));
-        else $patch->accept();
+        if ($supervisor->is($authUser)) $patch->accept();
+        else $supervisor->notify(new PatchNotification($workLog->user, $patch));
 
         return back()->with('success',  'Korrektur der Arbeitszeit erfolgreich beantragt.');
     }
 
-    public function update(Request $request, WorkLogPatch $workLogPatch)
+    public function update(Request $request, WorkLogPatch $workLogPatch, #[CurrentUser] User $authUser)
     {
         Gate::authorize('update', [WorkLogPatch::class, $workLogPatch->user]);
 
-        $validated = $request->validate([
+        $is_accepted = $request->validate([
             'accepted' => 'required|boolean'
-        ]);
+        ])['accepted'];
 
-        $patchNotification = $request->user()
-            ->unreadNotifications()
-            ->where('notifiable_id', Auth::id())
+        $patchNotification = $authUser->unreadNotifications()
             ->where('data->patch_id', $workLogPatch->id)->first();
 
-        if ($patchNotification) $patchNotification->update(['read_at' => Carbon::now()]);
+        if ($patchNotification) $patchNotification->markAsRead();
 
-        if ($validated['accepted']) $workLogPatch->accept();
-        else
-            $workLogPatch->update([
-                'status' => 'declined',
-            ]);
+        if ($is_accepted) $workLogPatch->accept();
+        else $workLogPatch->decline();
 
-        return back()->with('success',  "Zeitkorrektur erfolgreich " . ($validated['accepted'] ? 'akzeptiert' : 'abgelehnt') . ".");
+        return back()->with('success',  "Zeitkorrektur erfolgreich " . ($is_accepted ? 'akzeptiert' : 'abgelehnt') . ".");
     }
 
     public function destroy(WorkLogPatch $workLogPatch)

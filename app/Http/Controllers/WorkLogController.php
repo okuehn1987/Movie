@@ -7,13 +7,12 @@ use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class WorkLogController extends Controller
 {
-    public function index(Request $request)
+    public function index(#[CurrentUser] User $authUser)
     {
         Gate::authorize('viewIndex', WorkLog::class);
 
@@ -23,29 +22,34 @@ class WorkLogController extends Controller
                     ->whereHas('workLogs')->with(['defaultTimeAccount:id,balance,user_id', 'latestWorkLog'])
                     ->select(['id', 'first_name', 'last_name', 'supervisor_id'])
                     ->get()
-                    ->filter(fn($u) => $request->user()->can('viewShow', [WorkLog::class, $u]))
+                    ->filter(fn($u) => $authUser->can('viewShow', [WorkLog::class, $u]))
             ],
         ]);
     }
 
-    public function store(Request $request, #[CurrentUser] User $user)
+    public function store(Request $request, #[CurrentUser] User $authUser)
     {
         Gate::authorize('create', WorkLog::class);
 
-        $last = $user->latestWorkLog;
+        $last = $authUser->latestWorkLog;
 
-        $validated = $request->validate([
-            'is_home_office' => 'required|boolean',
-        ]);
-
-        WorkLog::updateOrCreate(['id' => $last->end ? null : $last->id], [
-            ...$validated,
-            'start' => $last->end ? now() : $last->start,
-            'end' => $last->end ? null : now(),
-            'user_id' => Auth::id(),
-            'status' => 'accepted',
-            'accepted_at' => now()
-        ]);
+        if ($last->end == null) {
+            WorkLog::find($last->id)->update([
+                'end' => now(),
+            ]);
+        } else {
+            $validated = $request->validate([
+                'is_home_office' => 'required|boolean',
+            ]);
+            WorkLog::create([
+                ...$validated,
+                'start' => now(),
+                'end' => null,
+                'user_id' => $authUser->id,
+                'status' => 'accepted',
+                'accepted_at' => now()
+            ]);
+        }
 
         return back()->with('success', 'Arbeitsstatus erfolgreich eingetragen.');
     }
