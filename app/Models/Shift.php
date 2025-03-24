@@ -435,7 +435,7 @@ class Shift extends Model
             'shift' => Shift::create([
                 'user_id' => $model->user_id,
                 'is_accounted' => false,
-                'start' => $allEntries->max('end'),
+                'start' => max($allEntries->min('start'), $allEntries->max('end')),
                 'end' => $allEntries->min('start')
             ]),
             'entries' => collect([])
