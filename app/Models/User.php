@@ -329,8 +329,8 @@ class User extends Authenticatable
                 $homeOfficeHours += Shift::workDuration($otherHomeOfficeEntries);
 
                 return [
-                    'totalHours' => 50301 ?? $totalHours,
-                    'homeOfficeHours' => 25000 ?? $homeOfficeHours,
+                    'totalHours' => $totalHours,
+                    'homeOfficeHours' => $homeOfficeHours,
                 ];
             }
         )->shouldCache();
