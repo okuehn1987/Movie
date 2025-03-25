@@ -41,7 +41,7 @@ const currentPage = ref(1);
                 <Absences :absences="currentAbsences" />
             </v-col>
             <v-col cols="12" lg="6">
-                <v-card title="Zeiten der Letzten 7 tage">
+                <v-card title="Zeiten der letzten 7 Tage">
                     <template #append>
                         <v-btn
                             icon="mdi-eye"
