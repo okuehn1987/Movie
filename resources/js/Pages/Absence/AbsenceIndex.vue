@@ -6,6 +6,7 @@ import { router, usePage } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { ref, watch } from 'vue';
 import AbsenceTableCell from './partials/AbsenceTableCell.vue';
+import CreateAbsence from './partials/CreateAbsence.vue';
 
 type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'> &
     Canable &
@@ -14,7 +15,7 @@ type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'> 
 const props = defineProps<{
     users: UserProp[];
     absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id' | 'user_id'> &
-        RelationPick<'absence', 'absence_type', 'id' | 'abbreviation', true>)[];
+        RelationPick<'absence', 'absence_type', 'id' | 'abbreviation'>)[];
     absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
     holidays: Record<string, string> | null;
 }>();
@@ -23,22 +24,14 @@ const page = usePage();
 const dateParam = route().params['date'];
 const date = ref(dateParam ? (DateTime.fromFormat(dateParam, 'yyyy-MM') as DateTime<true>) : DateTime.now());
 
-function getDaysInMonth() {
-    const daysInMonth = [];
-    for (let i = 1; i <= date.value.daysInMonth; i++) {
-        daysInMonth.push(date.value.startOf('month').plus({ day: i - 1 }));
-    }
-    return daysInMonth;
-}
-
 const openModal = ref(false);
+
 const absenceForm = useForm({
     user_id: page.props.auth.user.id,
     start: null as string | null,
     end: null as string | null,
     absence_type_id: null as null | AbsenceType['id'],
 });
-
 function createAbsenceModal(user_id: User['id'], start?: DateTime) {
     absenceForm.reset();
     const absenceToEdit = props.absences
@@ -51,6 +44,14 @@ function createAbsenceModal(user_id: User['id'], start?: DateTime) {
     absenceForm.absence_type_id = absenceToEdit?.absence_type_id ?? null;
 
     openModal.value = true;
+}
+
+function getDaysInMonth() {
+    const daysInMonth = [];
+    for (let i = 1; i <= date.value.daysInMonth; i++) {
+        daysInMonth.push(date.value.startOf('month').plus({ day: i - 1 }));
+    }
+    return daysInMonth;
 }
 
 const loadedMonths = ref([date.value.toFormat('yyyy-MM')]);
@@ -76,70 +77,7 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
 </script>
 <template>
     <AdminLayout title="Abwesenheiten">
-        <v-dialog max-width="1000" v-model="openModal">
-            <template #default="{ isActive }">
-                <v-card
-                    :title="
-                        'Abwesenheit' +
-                        (absenceForm.user_id != page.props.auth.user.id
-                            ? ' von ' +
-                              users.map(u => ({ ...u, name: u.first_name + ' ' + u.last_name })).find(u => u.id === absenceForm.user_id)?.name
-                            : '') +
-                        ' beantragen'
-                    "
-                    ><template #append>
-                        <v-btn icon variant="text" @click="isActive.value = false">
-                            <v-icon>mdi-close</v-icon>
-                        </v-btn>
-                    </template>
-                    <v-card-text v-if="absenceForm.errors.user_id">
-                        <v-alert color="error" closable>{{ absenceForm.errors.user_id }}</v-alert>
-                    </v-card-text>
-                    <v-card-text>
-                        <v-form
-                            @submit.prevent="
-                                absenceForm.post(route('absence.store'), {
-                                    onSuccess: () => {
-                                        absenceForm.reset();
-                                        isActive.value = false;
-                                    },
-                                })
-                            "
-                        >
-                            <v-row>
-                                <v-col cols="12">
-                                    <v-select
-                                        label="Abwesenheitsgrund angeben"
-                                        :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
-                                        v-model="absenceForm.absence_type_id"
-                                        :error-messages="absenceForm.errors.absence_type_id"
-                                    ></v-select>
-                                </v-col>
-                                <v-col cols="12" md="6">
-                                    <v-text-field
-                                        type="date"
-                                        label="Von"
-                                        v-model="absenceForm.start"
-                                        :error-messages="absenceForm.errors.start"
-                                    ></v-text-field>
-                                </v-col>
-                                <v-col cols="12" md="6">
-                                    <v-text-field
-                                        type="date"
-                                        label="Bis"
-                                        v-model="absenceForm.end"
-                                        :error-messages="absenceForm.errors.end"
-                                    ></v-text-field>
-                                </v-col>
-                                <v-col cols="12" class="text-end">
-                                    <v-btn :loading="absenceForm.processing" type="submit" color="primary">beantragen</v-btn>
-                                </v-col>
-                            </v-row>
-                        </v-form>
-                    </v-card-text>
-                </v-card>
-            </template>
-        </v-dialog>
+        <CreateAbsence :absence_types :users v-model:absenceForm="absenceForm" v-model="openModal"></CreateAbsence>
         <v-card>
             <v-card-text>
                 <div class="d-flex flex-wrap justify-center align-center">
@@ -183,6 +121,7 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
                         title: '',
                         key: 'action',
                         width: '48px',
+                        sortable:false
                     },
                 ...getDaysInMonth().map(e => ({
                     title: e.weekdayShort + '\n' + e.day.toString(),
@@ -231,5 +170,8 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
 #absence-table tr *:not(:first-child) {
     padding-inline: 4px;
     text-align: center;
+}
+#absence-table thead tr {
+    background-color: rgba(var(--v-theme-surface));
 }
 </style>

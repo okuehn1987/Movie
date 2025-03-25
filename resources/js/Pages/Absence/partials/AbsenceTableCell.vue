@@ -31,7 +31,7 @@ function shouldUserWork(user: UserProp, day: DateTime) {
         :style="{ backgroundColor: shouldUserWork(user, date) ? '' : 'lightgray' }"
         :class="{ 'editable-cell': can('absence', 'create', props.user) }"
         :role="can('absence', 'create', props.user) ? 'button' : 'cell'"
-        :title="props.holidays?.[props.date.toFormat('yyyy-MM-dd')]"
+        :title="props.holidays?.[props.date.toFormat('yyyy-MM-dd')] ?? absenceTypes.find(t => t.id == absence?.absence_type?.id)?.name"
     >
         <template v-if="absence && shouldUserWork(user, date)">
             <div
