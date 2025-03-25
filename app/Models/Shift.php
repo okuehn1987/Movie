@@ -389,13 +389,23 @@ class Shift extends Model
             };
 
             //TODO: message doesnt make sense for multiple affected shifts
+            $transactionMessage = match ($type) {
+                'work' =>  'Berechnung für ' .
+                    Carbon::parse($newShifts->map(fn($s) => $s['shift'])->min('start') ?? $model->start)->format('d.m.Y H:i') .
+                    ' - ' .
+                    Carbon::parse($newShifts->map(fn($s) => $s['shift'])->max('end') ?? $model->end)->format('d.m.Y H:i') .
+                    ' aufgrund von ' . $transactionDescription,
+                'absence' => 'Berechnung für ' .
+                    ($model->start == $model->end ?
+                        Carbon::parse($model->start)->format('d.m.Y') :
+                        Carbon::parse($model->start)->format('d.m.Y') . ' - ' . Carbon::parse($model->end)->format('d.m.Y')
+                    ) .
+                    ' aufgrund von ' . $transactionDescription,
+            };
+
             $model->user->defaultTimeAccount->addBalance(
                 $diffToApply,
-                'Berechnung für ' .
-                    Carbon::parse($newShifts->map(fn($s) => $s['shift'])->min('start'))->format('d.m.Y H:i') .
-                    ' - ' .
-                    Carbon::parse($newShifts->map(fn($s) => $s['shift'])->max('end'))->format('d.m.Y H:i') .
-                    ' aufgrund von ' . $transactionDescription
+                $transactionMessage
             );
 
             if ($type == 'work') {
