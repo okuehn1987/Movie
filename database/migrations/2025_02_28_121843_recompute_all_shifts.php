@@ -3,6 +3,8 @@
 use App\Models\AbsenceType;
 use App\Models\Shift;
 use App\Models\User;
+use App\Models\WorkLog;
+use App\Models\WorkLogPatch;
 use Carbon\Carbon;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -50,7 +52,8 @@ return new class extends Migration
             if ($user->first_name . ' ' . $user->last_name == 'Martin Krawtzow')
                 $user->defaultTimeAccount->addBalance(30 * 3600, 'Ausgleich der Stunden vor dem 15.1.25 weil Martin vorher nicht Herta benutzt hat ...');
 
-            $start = now();
+
+            $start = Carbon::parse(max(WorkLog::max('start'), WorkLogPatch::where('status', 'accepted')->max('start')))->subDay();
             $affectedDays =
                 collect(
                     range(0, $start->copy()->startOfYear()->diffInDays($start))
@@ -77,6 +80,7 @@ return new class extends Migration
                         $day->copy()->startOfDay(),
                         $day->copy()->endOfDay()
                     ])
+                    ->where('status', 'accepted')
                     ->with(['user', 'log.currentAcceptedPatch'])
                     ->get()
                     ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p));
