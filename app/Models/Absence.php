@@ -72,7 +72,7 @@ class Absence extends Model
 
             if (
                 $currentWorkingWeek?->hasWorkDay($day) &&
-                !$this->user->operatingSite->hasHoliday($day)
+                !$this->user->loadMissing('operatingSite')->operatingSite->hasHoliday($day)
             ) {
                 $usedDays++;
             };
