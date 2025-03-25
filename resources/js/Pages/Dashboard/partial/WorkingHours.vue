@@ -60,7 +60,7 @@ const lastActionText = computed(() => {
                         <div class="d-flex flex-column">
                             Aktuelle Schicht
                             <div class="text-h6">
-                                {{ formatDuration(Math.abs(currentWorkingHours), 'minutes') }}
+                                {{ formatDuration(Math.max(0,currentWorkingHours), 'minutes') }}
                             </div>
                         </div>
                     </div>
