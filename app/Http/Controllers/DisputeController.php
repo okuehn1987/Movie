@@ -3,23 +3,24 @@
 namespace App\Http\Controllers;
 
 use App\Models\Absence;
+use App\Models\User;
 use App\Models\WorkLogPatch;
 use Carbon\Carbon;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class DisputeController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, #[CurrentUser] User $authUser)
     {
-        $user = $request->user();
-
         $absenceRequests = [...Absence::inOrganization()
             ->where('status', 'created')
             ->with(['user:id,first_name,last_name,operating_site_id', 'absenceType:id,name'])
             ->get(['id', 'start', 'end', 'user_id', 'absence_type_id'])
-            ->filter(fn($a) => $user->can('update', $a))
-            ->map(fn($a) => [
+            ->filter(fn(Absence $a) => $authUser->can('update', [Absence::class, $a->user]))
+            ->map(fn(Absence $a) => [
+                //FIXME: this triggers way too much queries
                 ...$a->toArray(),
                 'usedDays' => $a->usedDays,
                 'user' => [
@@ -33,7 +34,7 @@ class DisputeController extends Controller
             ->where('status', 'created')
             ->with(['log:id,start,end,is_home_office', 'user:id,first_name,last_name'])
             ->get(['id', 'start', 'end', 'is_home_office', 'user_id', 'work_log_id', 'comment'])
-            ->filter(fn($patch) => $user->can('update', $patch->user))
+            ->filter(fn($patch) => $authUser->can('update', [WorkLogPatch::class, $patch->user]))
             ->toArray()];
 
         return Inertia::render('Dispute/DisputeIndex', [
