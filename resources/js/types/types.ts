@@ -395,6 +395,7 @@ export type RelationMap = {
     };
     absencePatch: {
         absence: Absence;
+        absence_type?: AbsenceType;
         user: User;
         log: Absence;
     };
@@ -429,10 +430,12 @@ export type RelationMap = {
     };
     organization: {
         operating_sites: OperatingSite[];
+        operating_site_users: OperatingSiteUser[];
         users: User[];
         organization_users: OrganizationUser[];
         absence_types: AbsenceType[];
         groups: Group[];
+        group_users: GroupUser[];
         special_working_hours_factors: SpecialWorkingHoursFactor[];
         time_account_settings: TimeAccountSetting[];
         owner: User;

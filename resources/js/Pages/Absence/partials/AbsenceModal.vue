@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AbsenceType, User } from '@/types/types';
+import { Absence, AbsenceType, User } from '@/types/types';
 import { InertiaForm } from '@inertiajs/vue3';
 
 defineProps<{
@@ -9,8 +9,32 @@ defineProps<{
 
 const openModal = defineModel<boolean>({ required: true });
 const absenceForm = defineModel<
-    InertiaForm<{ user_id: User['id']; start: string | null; end: string | null; absence_type_id: AbsenceType['id'] | null }>
+    InertiaForm<{
+        user_id: User['id'];
+        absence_id: Absence['id'] | null;
+        absence_type_id: AbsenceType['id'] | null;
+        start: string | null;
+        end: string | null;
+    }>
 >('absenceForm', { required: true });
+
+function saveAbsence() {
+    if (absenceForm.value.absence_id) {
+        absenceForm.value.put(route('absence.update', absenceForm.value.absence_id), {
+            onSuccess: () => {
+                absenceForm.value.reset();
+                openModal.value = false;
+            },
+        });
+    } else {
+        absenceForm.value.post(route('absence.store'), {
+            onSuccess: () => {
+                absenceForm.value.reset();
+                openModal.value = false;
+            },
+        });
+    }
+}
 </script>
 <template>
     <v-dialog max-width="1000" v-model="openModal">
@@ -32,16 +56,7 @@ const absenceForm = defineModel<
                     <v-alert color="error" closable>{{ absenceForm.errors.user_id }}</v-alert>
                 </v-card-text>
                 <v-card-text>
-                    <v-form
-                        @submit.prevent="
-                            absenceForm.post(route('absence.store'), {
-                                onSuccess: () => {
-                                    absenceForm.reset();
-                                    isActive.value = false;
-                                },
-                            })
-                        "
-                    >
+                    <v-form @submit.prevent="saveAbsence">
                         <v-row>
                             <v-col cols="12">
                                 <v-select

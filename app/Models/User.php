@@ -73,32 +73,37 @@ class User extends Authenticatable
     {
         if ($permissionLevel != 'read' && $permissionLevel != 'write') abort(404);
 
+        //TODO: this removed a lot of queries but the nest relations are still queried 1 by 1 for each checked policy e.g. absence.index
+        $user = $this->usersInOrganization->find($user?->id);
+
         $this->loadMissing(['organizationUser']);
-        if ($user) $user->loadMissing(['organizationUser']);
+        if ($user) {
+            $organizationUser = $this->organizationUsers->find('user_id', $user->id);
+            $operatingSiteUser = $this->operatingSiteUsersInOrganization->find('user_id', $user->id);
+            $groupUser = $this->groupUsersInOrganization->find('user_id', $user->id);
+        }
 
         if (
             array_key_exists($permissionName, $this->organizationUser->toArray()) &&
             ($this->organizationUser->{$permissionName} == 'write' || $this->organizationUser->{$permissionName} == $permissionLevel) &&
-            (!$user || $user->organizationUser->organization_id == $this->organizationUser->organization_id)
+            (!$user || $organizationUser?->organization_id == $this->organizationUser->organization_id)
+        ) return true;
+
+        $this->loadMissing(['operatingSiteUser']);
+
+        if (
+            array_key_exists($permissionName, $this->operatingSiteUser->toArray()) &&
+            ($this->operatingSiteUser?->{$permissionName} == 'write' || $this->operatingSiteUser->{$permissionName} == $permissionLevel) &&
+            (!$user || $operatingSiteUser?->operating_site_id == $this->operatingSiteUser->operating_site_id)
         ) return true;
 
         $this->loadMissing(['groupUser']);
-        if ($user) $user->loadMissing(['groupUser']);
 
         if (
             $this->groupUser &&
             array_key_exists($permissionName, $this->groupUser->toArray()) &&
             ($this->groupUser->{$permissionName} == 'write' || $this->groupUser->{$permissionName} == $permissionLevel) &&
-            (!$user || $user->group_id == $this->groupUser->group_id)
-        ) return true;
-
-        $this->loadMissing(['operatingSiteUser']);
-        if ($user) $user->loadMissing(['operatingSiteUser']);
-
-        if (
-            array_key_exists($permissionName, $this->operatingSiteUser->toArray()) &&
-            ($this->operatingSiteUser?->{$permissionName} == 'write' || $this->operatingSiteUser->{$permissionName} == $permissionLevel) &&
-            (!$user || $user->operating_site_id == $this->operatingSiteUser->operating_site_id)
+            (!$user || $groupUser?->group_id == $this->groupUser->group_id)
         ) return true;
 
         return false;
@@ -253,10 +258,17 @@ class User extends Authenticatable
         return $this->hasOne(OperatingSiteUser::class);
     }
 
+    public function workingWeeks(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->userWorkingWeeks()->get()
+        )->shouldCache();
+    }
+
     public function userWorkingWeekForDate(CarbonInterface $date): UserWorkingWeek | null
     {
-        return $this->userWorkingWeeks()->where('active_since', '<=', $date->format('Y-m-d'))
-            ->latest('active_since')
+        return $this->workingWeeks->where('active_since', '<=', $date->format('Y-m-d'))
+            ->sortByDesc('active_since')
             ->first();
     }
 
@@ -363,24 +375,32 @@ class User extends Authenticatable
         return $usedDays;
     }
 
+    public function leaveDays(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->userLeaveDays()->get()
+        )->shouldCache();
+    }
+
     public function leaveDaysForYear(CarbonInterface $year): int
     {
         $leaveDays = 0;
         for ($m = 1; $m <= 12; $m++) {
             $month = $year->setMonth($m)->startOfMonth();
-            $activeEntry = $this->userLeaveDays()
+            $activeEntry = $this->leaveDays
                 ->where('type', 'annual')
-                ->whereDate('active_since', '<=', $month)
-                ->latest('active_since')
+                ->where('active_since', '<=', $month)
+                ->sortByDesc('active_since')
                 ->first();
             if ($activeEntry) { //FIXME: should not be possible to be false
                 $leaveDays += $activeEntry->leave_days / 12;
             }
         }
 
-        $leaveDays += $this->userLeaveDays()
+        $leaveDays += $this->leaveDays
             ->where('type', 'remaining')
-            ->whereYear('active_since', $year)->first()?->leave_days ?? 0;
+            ->filter(fn($ld) => Carbon::parse($ld->active_since)->year == $year)
+            ->first()?->leave_days ?? 0;
 
         return ceil($leaveDays);
     }
@@ -450,5 +470,38 @@ class User extends Authenticatable
             min(0, $this->getWorkDurationForDate($date) - $this->getSollsekundenForDate($date)),
             'Fehlende Stunden am ' . $date->format('d.m.Y')
         );
+    }
+
+    public function usersInOrganization(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                return Organization::getCurrent()->users;
+            }
+        )->shouldCache();
+    }
+    public function groupUsersInOrganization(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                return Organization::getCurrent()->groupUsers;
+            }
+        )->shouldCache();
+    }
+    public function operatingSiteUsersInOrganization(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                return Organization::getCurrent()->operatingSiteUsers;
+            }
+        )->shouldCache();
+    }
+    public function organizationUsers(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                return Organization::getCurrent()->organizationUsers;
+            }
+        )->shouldCache();
     }
 }

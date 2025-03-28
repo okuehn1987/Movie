@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\AbsenceType;
 use App\Models\Shift;
 use App\Models\User;
 use Exception;
@@ -440,5 +441,76 @@ class CalculationTest extends TestCase
             -1 * (1 * 3600 + 30 * 60),
             $this->oldUser->defaultTimeAccount->fresh()->balance
         );
+    }
+
+    public function test_restore_time_with_absences_with_breaks()
+    {
+        $date = now()->subDays(1);
+        $this->oldUser->removeMissingWorkTimeForDate($date);
+
+        $workLog1 = $this->oldUser->workLogs()->create([
+            'start' =>  $date,
+            'end' =>  $date->copy()->addHours(4)->addMinutes(11)->addSeconds(49),
+            'status' => 'accepted',
+            'accepted_at' =>  $date,
+        ]);
+
+        $nextStart = $date->copy()->addHours(4)->addMinutes(11)->addSeconds(49)->addMinutes(15)->addSeconds(11);
+
+        $workLog2 = $this->oldUser->workLogs()->create([
+            'start' =>   $nextStart,
+            'end' =>   $nextStart->copy()->addHours(2)->addMinutes(8)->addSeconds(54),
+            'status' => 'accepted',
+            'accepted_at' =>   $nextStart,
+        ]);
+
+        $this->oldUser->absences()->create([
+            'start' =>  $date,
+            'end' =>  $date,
+            'status' => 'accepted',
+            'accepted_at' =>  now(),
+            'absence_type_id' => 9,
+        ]);
+
+        $this->assertEquals(0, $this->oldUser->defaultTimeAccount->fresh()->balance);
+    }
+    public function test_restore_time_with_absences_with_breaks_2()
+    {
+        $date = now()->subDays(1);
+        $this->oldUser->removeMissingWorkTimeForDate($date);
+
+        $workLog1 = $this->oldUser->workLogs()->create([
+            'start' =>  $date,
+            'end' =>  $date->copy()->addHours(6)->addMinutes(30),
+            'status' => 'accepted',
+            'accepted_at' =>  $date,
+        ]);
+
+        $nextStart = $date->copy()->addHours(6)->addMinutes(30)->addMinutes(5);
+
+        $workLog2 = $this->oldUser->workLogs()->create([
+            'start' =>   $nextStart,
+            'end' =>   $nextStart->copy()->addHours(1),
+            'status' => 'accepted',
+            'accepted_at' =>   $nextStart,
+        ]);
+
+        $this->oldUser->absences()->create([
+            'start' =>  $date,
+            'end' =>  $date,
+            'status' => 'accepted',
+            'accepted_at' =>  now(),
+            'absence_type_id' => 9, //AU
+        ]);
+
+        dump($this->oldUser->defaultTimeAccount->fromTransactions->map->toArray());
+        dump($this->oldUser->defaultTimeAccount->toTransactions->map->toArray());
+
+        $this->assertEquals(-15 * 60, $this->oldUser->defaultTimeAccount->fresh()->balance);
+    }
+
+    public function test_AbbauGleitzeitkonto()
+    {
+        $absenceType = AbsenceType::where('type', 'Abbau Gleitzeitkonto');
     }
 }

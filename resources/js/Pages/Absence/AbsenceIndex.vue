@@ -1,21 +1,18 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Absence, AbsenceType, Canable, RelationPick, User, Weekday } from '@/types/types';
+import { Absence, AbsenceType, User } from '@/types/types';
 import { throttle, useMaxScrollHeight } from '@/utils';
 import { router, usePage } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
+import AbsenceModal from './partials/AbsenceModal.vue';
 import AbsenceTableCell from './partials/AbsenceTableCell.vue';
-import CreateAbsence from './partials/CreateAbsence.vue';
-
-type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'> &
-    Canable &
-    RelationPick<'user', 'user_working_weeks', 'id' | Weekday>;
+import { AbsencePatchProp, AbsenceProp, UserProp } from './types';
 
 const props = defineProps<{
     users: UserProp[];
-    absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'absence_type_id' | 'user_id'> &
-        RelationPick<'absence', 'absence_type', 'id' | 'abbreviation'>)[];
+    absences: AbsenceProp[];
+    absencePatches: AbsencePatchProp[];
     absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
     holidays: Record<string, string> | null;
 }>();
@@ -24,13 +21,28 @@ const page = usePage();
 const dateParam = route().params['date'];
 const date = ref(dateParam ? (DateTime.fromFormat(dateParam, 'yyyy-MM') as DateTime<true>) : DateTime.now());
 
-const openModal = ref(false);
+const currentEntries = computed(() => {
+    const entries = [] as typeof props.absences | typeof props.absencePatches;
+    return entries
+        .concat(
+            props.absences.filter(
+                a => a.start <= date.value.endOf('month').toFormat('yyyy-MM-dd') && a.end >= date.value.startOf('month').toFormat('yyyy-MM-dd'),
+            ),
+        )
+        .concat(
+            props.absencePatches.filter(
+                a => a.start <= date.value.endOf('month').toFormat('yyyy-MM-dd') && a.end >= date.value.startOf('month').toFormat('yyyy-MM-dd'),
+            ),
+        );
+});
+const openAbsenceModal = ref(false);
 
 const absenceForm = useForm({
     user_id: page.props.auth.user.id,
     start: null as string | null,
     end: null as string | null,
     absence_type_id: null as null | AbsenceType['id'],
+    absence_id: null as null | Absence['id'],
 });
 function createAbsenceModal(user_id: User['id'], start?: DateTime) {
     absenceForm.reset();
@@ -42,8 +54,9 @@ function createAbsenceModal(user_id: User['id'], start?: DateTime) {
     absenceForm.start = (start ?? date.value.startOf('month')).toFormat('yyyy-MM-dd');
     absenceForm.end = (start ?? date.value.startOf('month')).toFormat('yyyy-MM-dd');
     absenceForm.absence_type_id = absenceToEdit?.absence_type_id ?? null;
+    absenceForm.absence_id = absenceToEdit?.id ?? null;
 
-    openModal.value = true;
+    openAbsenceModal.value = true;
 }
 
 function getDaysInMonth() {
@@ -55,7 +68,7 @@ function getDaysInMonth() {
 }
 
 const loadedMonths = ref([date.value.toFormat('yyyy-MM')]);
-
+const loading = ref(false);
 const reload = throttle(() => {
     if (loadedMonths.value.includes(date.value.toFormat('yyyy-MM'))) return;
     router.reload({
@@ -71,13 +84,28 @@ const reload = throttle(() => {
 }, 500);
 watch(date, reload);
 
-const loading = ref(false);
+function openDispute(entry: AbsenceProp | AbsencePatchProp) {
+    if ('patches_exists' in entry) {
+        router.get(
+            route('dispute.index', {
+                openAbsence: entry.id,
+            }),
+        );
+    } else {
+        router.get(
+            route('dispute.index', {
+                openAbsencePatch: entry.id,
+            }),
+        );
+    }
+}
 
 const absenceTableHeight = useMaxScrollHeight(80 + 1);
 </script>
 <template>
     <AdminLayout title="Abwesenheiten">
-        <CreateAbsence :absence_types :users v-model:absenceForm="absenceForm" v-model="openModal"></CreateAbsence>
+        <AbsenceModal :absence_types :users v-model:absenceForm="absenceForm" v-model="openAbsenceModal"></AbsenceModal>
+        <
         <v-card>
             <v-card-text>
                 <div class="d-flex flex-wrap justify-center align-center">
@@ -122,7 +150,7 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
                         key: 'action',
                         width: '48px',
                         sortable:false
-                    },
+                    }, 
                 ...getDaysInMonth().map(e => ({
                     title: e.weekdayShort + '\n' + e.day.toString(),
                     key: e.day.toString(),
@@ -156,7 +184,7 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
                                 :absenceTypes="absence_types"
                                 :user="item"
                                 :date="date.startOf('month').plus({ day: +(header.key ?? 0) - 1 })"
-                                :absences="absences.filter(a => a.user_id === item.id)"
+                                :entries="currentEntries.filter(a => a.user_id === item.id)"
                             ></AbsenceTableCell>
                         </template>
                     </tr>

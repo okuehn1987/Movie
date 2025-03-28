@@ -12,23 +12,29 @@ use Inertia\Inertia;
 
 class DisputeController extends Controller
 {
-    public function index(Request $request, #[CurrentUser] User $authUser)
+    public function index(#[CurrentUser] User $authUser)
     {
-        $absenceRequests = [...Absence::inOrganization()
+        $absenceRequests = Absence::inOrganization()
             ->where('status', 'created')
             ->with(['user:id,first_name,last_name,operating_site_id', 'absenceType:id,name'])
-            ->get(['id', 'start', 'end', 'user_id', 'absence_type_id'])
-            ->filter(fn(Absence $a) => $authUser->can('update', [Absence::class, $a->user]))
-            ->map(fn(Absence $a) => [
-                //FIXME: this triggers way too much queries
-                ...$a->toArray(),
-                'usedDays' => $a->usedDays,
-                'user' => [
-                    ...$a->user->toArray(),
-                    'leaveDaysForYear' => $a->user->leaveDaysForYear(Carbon::parse($a->start)),
-                    'usedLeaveDaysForYear' => $a->user->usedLeaveDaysForYear(Carbon::parse($a->start)),
-                ]
-            ])->toArray()];
+            ->get(['id', 'start', 'end', 'user_id', 'absence_type_id']);
+
+        $absenceRequestsUsers = User::whereIn('id', $absenceRequests->pluck('user_id'))->with('operatingSite')->get();
+
+        $absenceRequests =  [
+            ...$absenceRequests
+                ->filter(fn(Absence $a) => $authUser->can('update', [Absence::class, $absenceRequestsUsers->find($a->user_id)]))
+                ->map(fn(Absence $a) => [
+                    //FIXME: this triggers way too much queries
+                    ...$a->toArray(),
+                    'usedDays' => $a->usedDays,
+                    'user' => [
+                        ...$a->user->toArray(),
+                        'leaveDaysForYear' => $absenceRequestsUsers->find($a->user_id)->leaveDaysForYear(Carbon::parse($a->start)),
+                        'usedLeaveDaysForYear' => $absenceRequestsUsers->find($a->user_id)->usedLeaveDaysForYear(Carbon::parse($a->start)),
+                    ]
+                ])->toArray()
+        ];
 
         $patches = [...WorkLogPatch::inOrganization()
             ->where('status', 'created')

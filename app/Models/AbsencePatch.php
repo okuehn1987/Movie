@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Traits\HasLog;
 use App\Models\Traits\IsAccountable;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -40,8 +41,42 @@ class AbsencePatch extends Model
         });
     }
 
+    public function getHidden()
+    {
+        $user = request()->user();
+        if ($user && $user->cannot('viewShow', [AbsenceType::class, $user->usersInOrganization->find($this->user_id)])) return ['absence_type_id', 'absenceType'];
+        return [];
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function absenceType()
+    {
+        return $this->belongsTo(AbsenceType::class);
+    }
+
+    public function getDurationAttribute()
+    {
+        return (int)Carbon::parse($this->start)->diffInDays(Carbon::parse($this->end)) + 1;
+    }
+
+    public function getUsedDaysAttribute()
+    {
+        $usedDays = 0;
+        for ($day = Carbon::parse($this->start)->startOfDay(); $day->lte(Carbon::parse($this->end)); $day->addDay()) {
+            $currentWorkingWeek = $this->user->userWorkingWeekForDate($day);
+
+            if (
+                $currentWorkingWeek?->hasWorkDay($day) &&
+                !$this->user->loadMissing('operatingSite')->operatingSite->hasHoliday($day)
+            ) {
+                $usedDays++;
+            };
+        }
+
+        return $usedDays;
     }
 }

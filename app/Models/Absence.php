@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Traits\HasPatches;
 use App\Models\Traits\IsAccountable;
 use Carbon\Carbon;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -45,7 +46,7 @@ class Absence extends Model
     public function getHidden()
     {
         $user = request()->user();
-        if ($user && $user->cannot('viewShow', [AbsenceType::class, $this->user])) return ['absence_type_id', 'absenceType'];
+        if ($user && $user->cannot('viewShow', [AbsenceType::class, $user->usersInOrganization->find($this->user_id)])) return ['absence_type_id', 'absenceType'];
         return [];
     }
 

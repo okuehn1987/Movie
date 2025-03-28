@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Absence;
+use App\Models\AbsencePatch;
 use App\Models\AbsenceType;
 use App\Models\User;
 use App\Notifications\AbsenceNotification;
+use App\Notifications\AbsencePatchNotification;
 use App\Services\HolidayService;
 use Carbon\Carbon;
 use Illuminate\Container\Attributes\CurrentUser;
@@ -26,28 +28,44 @@ class AbsenceController extends Controller
             'date' => 'nullable|date',
         ]);
 
-        $date = array_key_exists('date', $validated) ? Carbon::parse($validated['date'])  : Carbon::now();
+        $date = array_key_exists('date', $validated) ? Carbon::parse($validated['date']) : Carbon::now();
 
-        $absences = [...Absence::inOrganization()->whereIn('status', ['accepted', 'created'])
-            ->where(fn($q) => $q->where('start', '<=', $date->copy()->endOfMonth())->where('end', '>=', $date->copy()->startOfMonth()))
+        $absences = Absence::inOrganization()
+            ->doesntHave('currentAcceptedPatch')
+            ->whereIn('status', ['accepted', 'created'])
+            ->where(fn($q) => $q->whereDate('start', '<=', $date->copy()->endOfMonth())->whereDate('end', '>=', $date->copy()->startOfMonth()))
             ->with([
                 'absenceType' => fn($q) => $q->select(['id', 'abbreviation'])->withTrashed(),
-                'user:id,group_id,operating_site_id,supervisor_id'
             ])
-            ->get(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status'])
-            ->filter(
-                fn($a) =>
-                $authUser->can('viewShow', [Absence::class, $a->user]) &&
-                    ($a->status === 'accepted' ||
-                        ($a->status === 'created' &&
-                            $a->user_id === $authUser->id ||
-                            $authUser->can(
-                                'update',
-                                [Absence::class, $a->user]
-                            )
-                        ))
-            )
-            ->toArray()];
+            ->withExists(['patches' => fn($q) => $q->where('status', 'created')])
+            ->get(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status']);
+
+        $absencePatches = AbsencePatch::inOrganization()
+            ->whereIn('status', ['accepted', 'created'])
+            ->where(fn($q) => $q->whereDate('start', '<=', $date->copy()->endOfMonth())->whereDate('end', '>=', $date->copy()->startOfMonth()))
+            ->with([
+                'absenceType' => fn($q) => $q->select(['id', 'abbreviation'])->withTrashed(),
+                'log:id,user_id' => ['patches' => fn($q) => $q->where('status', 'created')]
+            ])
+            ->select(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status', 'absence_id'])
+            ->get();
+
+
+        $absenceFilter =
+            fn($a) => (
+                $authUser->can('viewShow', [Absence::class, $authUser->usersInOrganization->find($a->user_id)]) &&
+                ($a->status === 'accepted' ||
+                    ($a->status === 'created' &&
+                        $a->user_id === $authUser->id ||
+                        $authUser->can(
+                            'update',
+                            [Absence::class, $authUser->usersInOrganization->find($a->user_id)]
+                        )
+                    ))
+            );
+
+        $absences = [...$absences->filter($absenceFilter)->toArray()];
+        $absencePatches = [...$absencePatches->filter($absenceFilter)->toArray()];
 
         $holidays = HolidayService::getHolidaysForMonth($authUser->operatingSite->country, $authUser->operatingSite->federal_state, $date)
             ->mapWithKeys(
@@ -71,6 +89,7 @@ class AbsenceController extends Controller
                 ])->toArray()],
             'absence_types' => fn() => AbsenceType::inOrganization()->get(['id', 'name', 'abbreviation']),
             'absences' =>  Inertia::merge(fn() => $absences),
+            'absencePatches' =>  Inertia::merge(fn() => $absencePatches),
             'holidays' =>  Inertia::merge(fn() => $holidays->isEmpty() ? (object)[] : $holidays)
         ]);
     }
@@ -113,19 +132,41 @@ class AbsenceController extends Controller
             'status' => 'created',
         ]);
 
-        if (!$requires_approval) $absence->accept();
-
         if ($requires_approval) $authUser->supervisor->notify(new AbsenceNotification($authUser, $absence));
+        else $absence->accept();
 
         return back()->with('success', 'Abwesenheit erfolgreich beantragt.');
     }
 
-    // public function update(Request $request, Absence $absence)
-    // {
-    //     // TODO: implement with e2e test
-    //     $absenceUser = User::find($request['user_id']);
-    //     Gate::authorize('update', [Absence::class, $absenceUser]);
-    // }
+    public function update(Request $request, Absence $absence, #[CurrentUser] User $authUser)
+    {
+        // TODO: implement with e2e test
+        Gate::authorize('update', [Absence::class, $absence->user]);
+
+        $validated = $request->validate([
+            'start' => 'required|date',
+            'end' => 'required|date|after_or_equal:start',
+            'absence_type_id' => ['required', Rule::in(AbsenceType::inOrganization()->get()->pluck('id'))],
+            'comment' => 'nullable|string'
+        ]);
+
+        $requires_approval =
+            $authUser->supervisor_id &&
+            $authUser->supervisor_id != $authUser->id &&
+            AbsenceType::find($validated['absence_type_id'])->requires_approval;
+
+        $absencePatch = AbsencePatch::create([
+            ...$validated,
+            'user_id' => $absence->user_id,
+            'absence_id' => $absence->id,
+            'status' => 'created',
+        ]);
+
+        if ($requires_approval) $authUser->supervisor->notify(new AbsencePatchNotification($authUser, $absencePatch));
+        else $absencePatch->accept();
+
+        return back()->with('success', 'Korrektur erfolgreich ' . $requires_approval ? 'beantragt' : 'eingetragen');
+    }
 
     public function updateStatus(Request $request, Absence $absence, #[CurrentUser] User $authUser)
     {
