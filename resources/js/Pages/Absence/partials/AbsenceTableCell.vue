@@ -14,9 +14,13 @@ const props = defineProps<{
 
 const currentEntry = computed(() => props.entries.find(a => DateTime.fromSQL(a.start) <= props.date && props.date <= DateTime.fromSQL(a.end)));
 
-function shouldUserWork(user: UserProp, day: DateTime) {
+function shouldUserWork(day: DateTime) {
+    const currentWorkingWeek = props.user.user_working_weeks
+        .toSorted((a, b) => b.active_since.localeCompare(a.active_since))
+        .find(w => w.active_since <= day.toFormat('yyyy-MM-dd'));
     return (
-        user.user_working_weeks.find(e => e[day.setLocale('en-US').weekdayLong?.toLowerCase() as Weekday]) &&
+        currentWorkingWeek &&
+        currentWorkingWeek[day.setLocale('en-US').weekdayLong?.toLowerCase() as Weekday] &&
         !props.holidays?.[props.date.toFormat('yyyy-MM-dd')]
     );
 }
@@ -28,7 +32,7 @@ function shouldUserWork(user: UserProp, day: DateTime) {
         :role="can('absence', 'create', props.user) ? 'button' : 'cell'"
         :title="props.holidays?.[props.date.toFormat('yyyy-MM-dd')] ?? absenceTypes.find(t => t.id == currentEntry?.absence_type?.id)?.name"
     >
-        <template v-if="currentEntry && shouldUserWork(user, date)">
+        <template v-if="currentEntry && shouldUserWork(date)">
             <div
                 class="h-100 w-100 d-flex justify-center align-center"
                 :style="{
@@ -38,7 +42,7 @@ function shouldUserWork(user: UserProp, day: DateTime) {
                 <span v-if="currentEntry.absence_type_id">{{ currentEntry.absence_type?.abbreviation }}</span>
             </div>
         </template>
-        <div v-else :style="{ backgroundColor: shouldUserWork(user, date) ? '' : 'lightgray' }" class="h-100 w-100 empty"></div>
+        <div v-else :style="{ backgroundColor: shouldUserWork(date) ? '' : 'lightgray' }" class="h-100 w-100 empty"></div>
     </td>
 </template>
 
