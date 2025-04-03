@@ -9,7 +9,7 @@ import AbsenceTableCell from './partials/AbsenceTableCell.vue';
 
 type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'> &
     Canable & {
-        user_working_weeks: Pick<UserWorkingWeek, 'id' | Weekday>[];
+        user_working_weeks: Pick<UserWorkingWeek, 'id' | 'active_since' | Weekday>[];
     };
 
 const props = defineProps<{
