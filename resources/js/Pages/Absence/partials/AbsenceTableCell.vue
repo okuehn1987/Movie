@@ -5,7 +5,7 @@ import { computed } from 'vue';
 
 type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'> &
     Canable & {
-        user_working_weeks: Pick<UserWorkingWeek, 'id' | Weekday>[];
+        user_working_weeks: Pick<UserWorkingWeek, 'id' | 'active_since' | Weekday>[];
     };
 const props = defineProps<{
     user: UserProp;
@@ -19,9 +19,13 @@ const props = defineProps<{
 
 const absence = computed(() => props.absences.find(a => DateTime.fromSQL(a.start) <= props.date && props.date <= DateTime.fromSQL(a.end)));
 
-function shouldUserWork(user: UserProp, day: DateTime) {
+function shouldUserWork(day: DateTime) {
+    const currentWorkingWeek = props.user.user_working_weeks
+        .toSorted((a, b) => b.active_since.localeCompare(a.active_since))
+        .find(w => w.active_since <= day.toFormat('yyyy-MM-dd'));
     return (
-        user.user_working_weeks.find(e => e[day.setLocale('en-US').weekdayLong?.toLowerCase() as Weekday]) &&
+        currentWorkingWeek &&
+        currentWorkingWeek[day.setLocale('en-US').weekdayLong?.toLowerCase() as Weekday] &&
         !props.holidays?.[props.date.toFormat('yyyy-MM-dd')]
     );
 }
@@ -29,12 +33,12 @@ function shouldUserWork(user: UserProp, day: DateTime) {
 <template>
     <td
         class="pa-0"
-        :style="{ backgroundColor: shouldUserWork(user, date) ? '' : 'lightgray' }"
+        :style="{ backgroundColor: shouldUserWork(date) ? '' : 'lightgray' }"
         :class="{ 'editable-cell': can('absence', 'create', props.user) }"
         :role="can('absence', 'create', props.user) ? 'button' : 'cell'"
         :title="props.holidays?.[props.date.toFormat('yyyy-MM-dd')]"
     >
-        <template v-if="absence && shouldUserWork(user, date)">
+        <template v-if="absence && shouldUserWork(date)">
             <div
                 class="h-100 w-100 d-flex justify-center align-center"
                 :style="{ backgroundColor: absence.status == 'accepted' ? '#f99' : 'lightblue' }"

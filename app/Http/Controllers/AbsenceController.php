@@ -54,7 +54,7 @@ class AbsenceController extends Controller
         return Inertia::render('Absence/AbsenceIndex', [
             'users' => fn() => [...User::inOrganization()
                 ->with([
-                    'userWorkingWeeks:id,user_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday'
+                    'userWorkingWeeks:id,user_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,active_since'
                 ])
                 ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'group_id'])
                 ->filter(fn($u) => $user->can('viewShow', [Absence::class, $u]))
