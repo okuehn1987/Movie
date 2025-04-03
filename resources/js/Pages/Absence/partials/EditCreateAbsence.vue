@@ -1,35 +1,38 @@
 <script setup lang="ts">
-import { Absence, AbsenceType, User } from '@/types/types';
-import { InertiaForm } from '@inertiajs/vue3';
+import { AbsenceType, User } from '@/types/types';
+import { usePage } from '@inertiajs/vue3';
+import { AbsencePatchProp, AbsenceProp } from '../utils';
+import { DateTime } from 'luxon';
 
-defineProps<{
+const props = defineProps<{
     users: Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'>[];
     absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
+    selectedAbsence: AbsenceProp | AbsencePatchProp | null;
+    selectedDate: DateTime | null;
 }>();
 
 const openModal = defineModel<boolean>({ required: true });
-const absenceForm = defineModel<
-    InertiaForm<{
-        user_id: User['id'];
-        absence_id: Absence['id'] | null;
-        absence_type_id: AbsenceType['id'] | null;
-        start: string | null;
-        end: string | null;
-    }>
->('absenceForm', { required: true });
+const page = usePage();
+const absenceForm = useForm({
+    user_id: props.selectedAbsence?.user_id ?? page.props.auth.user.id,
+    start: props.selectedAbsence?.start ?? props.selectedDate?.toFormat('yyyy-MM-dd') ?? null,
+    end: props.selectedAbsence?.end ?? props.selectedDate?.toFormat('yyyy-MM-dd') ?? null,
+    absence_type_id: props.selectedAbsence?.absence_type_id ?? null,
+    absence_id: props.selectedAbsence && 'absence_id' in props.selectedAbsence ? props.selectedAbsence.absence_id : props.selectedAbsence?.id ?? null,
+});
 
 function saveAbsence() {
-    if (absenceForm.value.absence_id) {
-        absenceForm.value.put(route('absence.update', absenceForm.value.absence_id), {
+    if (absenceForm.absence_id) {
+        absenceForm.put(route('absence.update', absenceForm.absence_id), {
             onSuccess: () => {
-                absenceForm.value.reset();
+                absenceForm.reset();
                 openModal.value = false;
             },
         });
     } else {
-        absenceForm.value.post(route('absence.store'), {
+        absenceForm.post(route('absence.store'), {
             onSuccess: () => {
-                absenceForm.value.reset();
+                absenceForm.reset();
                 openModal.value = false;
             },
         });

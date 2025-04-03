@@ -45,7 +45,7 @@ class AbsenceController extends Controller
             ->where(fn($q) => $q->whereDate('start', '<=', $date->copy()->endOfMonth())->whereDate('end', '>=', $date->copy()->startOfMonth()))
             ->with([
                 'absenceType' => fn($q) => $q->select(['id', 'abbreviation'])->withTrashed(),
-                'log:id,user_id' => ['patches' => fn($q) => $q->where('status', 'created')]
+                'log' => fn($q) => $q->select(['id', 'user_id'])->withExists(['patches' => fn($q) => $q->where('status', 'created')])
             ])
             ->select(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status', 'absence_id'])
             ->get();
@@ -84,6 +84,7 @@ class AbsenceController extends Controller
                     'can' => [
                         'absence' => [
                             'create' => $authUser->can('create', [Absence::class, $u]),
+                            'update' => $authUser->can('update', [Absence::class, $u]),
                         ]
                     ]
                 ])->toArray()],
@@ -140,7 +141,7 @@ class AbsenceController extends Controller
 
     public function update(Request $request, Absence $absence, #[CurrentUser] User $authUser)
     {
-        // TODO: implement with e2e test
+        // TODO: move to AbsencePatchController.store with patchPolicy.create
         Gate::authorize('update', [Absence::class, $absence->user]);
 
         $validated = $request->validate([
@@ -190,6 +191,11 @@ class AbsenceController extends Controller
 
     public function destroy(Absence $absence)
     {
-        // TODO: 
+        Gate::authorize('delete', $absence);
+        if ($absence->status !== 'created') return back()->with('error', 'Nur offene Anträge können einfach gelöscht werden');
+
+        $absence->delete();
+
+        return back()->with('success', 'Abwesenheitsantrag erfolgreich zurückgezogen');
     }
 }

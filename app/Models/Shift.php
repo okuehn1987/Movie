@@ -334,8 +334,8 @@ class Shift extends Model
                 )->count() == $absencesForDay->count();
 
                 $oldEntriesForAffectedDay = match ($type) {
-                    'work' =>
-                    $model->user->getEntriesForDate($day)
+                    'work'
+                    => $model->user->getEntriesForDate($day)
                         ->merge([$previousModel])
                         ->filter(
                             fn($e) =>
@@ -345,14 +345,16 @@ class Shift extends Model
                                 Carbon::parse($e->accepted_at)->startOfSecond() <=
                                 Carbon::parse($model->accepted_at)->startOfSecond()
                         ),
-                    'absence' => match (true) {
+                    'absence'
+                    => match (true) {
                         $absencesForDay->isEmpty() || $hasAbbauGleitzeitkonto
                         => $model->user->getEntriesForDate($day)
                             ->filter(
                                 fn($e) =>
                                 Carbon::parse($e->accepted_at)->startOfSecond() <= Carbon::parse($model->accepted_at)->startOfSecond()
                             ),
-                        !$absencesForDay->isEmpty() && !$hasAbbauGleitzeitkonto => collect([])
+                        !$absencesForDay->isEmpty() && !$hasAbbauGleitzeitkonto
+                        => collect([])
                     }
                 };
 

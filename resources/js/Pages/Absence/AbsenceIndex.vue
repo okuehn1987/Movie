@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Absence, AbsenceType, User } from '@/types/types';
+import { AbsenceType, User } from '@/types/types';
 import { throttle, useMaxScrollHeight } from '@/utils';
-import { router, usePage } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { computed, ref, watch } from 'vue';
-import AbsenceModal from './partials/AbsenceModal.vue';
 import AbsenceTableCell from './partials/AbsenceTableCell.vue';
-import { AbsencePatchProp, AbsenceProp, UserProp } from './types';
+import EditCreateAbsence from './partials/EditCreateAbsence.vue';
+import { AbsencePatchProp, AbsenceProp, getEntryState, UserProp } from './utils';
+import ShowAbsenceModal from './partials/ShowAbsenceModal.vue';
 
 const props = defineProps<{
     users: UserProp[];
@@ -17,7 +18,6 @@ const props = defineProps<{
     holidays: Record<string, string> | null;
 }>();
 
-const page = usePage();
 const dateParam = route().params['date'];
 const date = ref(dateParam ? (DateTime.fromFormat(dateParam, 'yyyy-MM') as DateTime<true>) : DateTime.now());
 
@@ -35,28 +35,25 @@ const currentEntries = computed(() => {
             ),
         );
 });
-const openAbsenceModal = ref(false);
+const openEditCreateAbsenceModal = ref(false);
+const openShowAbsenceModal = ref(false);
+const selectedAbsence = ref<null | AbsenceProp | AbsencePatchProp>(null);
+const selectedDate = ref<DateTime | null>(null);
+const selectedAbsenceUser = computed(() => props.users.find(u => u.id === selectedAbsence.value?.user_id));
 
-const absenceForm = useForm({
-    user_id: page.props.auth.user.id,
-    start: null as string | null,
-    end: null as string | null,
-    absence_type_id: null as null | AbsenceType['id'],
-    absence_id: null as null | Absence['id'],
-});
 function createAbsenceModal(user_id: User['id'], start?: DateTime) {
-    absenceForm.reset();
-    const absenceToEdit = props.absences
+    const absenceToEdit = currentEntries.value
         .filter(a => a.user_id === user_id)
         .find(a => start && DateTime.fromSQL(a.start) <= start && start <= DateTime.fromSQL(a.end));
 
-    absenceForm.user_id = user_id;
-    absenceForm.start = (start ?? date.value.startOf('month')).toFormat('yyyy-MM-dd');
-    absenceForm.end = (start ?? date.value.startOf('month')).toFormat('yyyy-MM-dd');
-    absenceForm.absence_type_id = absenceToEdit?.absence_type_id ?? null;
-    absenceForm.absence_id = absenceToEdit?.id ?? null;
-
-    openAbsenceModal.value = true;
+    selectedDate.value = start ?? null;
+    selectedAbsence.value = absenceToEdit ?? null;
+    console.log(absenceToEdit && getEntryState(absenceToEdit));
+    if (absenceToEdit && ['hasOpenPatch', 'created'].includes(getEntryState(absenceToEdit))) {
+        openShowAbsenceModal.value = true;
+    } else {
+        openEditCreateAbsenceModal.value = true;
+    }
 }
 
 function getDaysInMonth() {
@@ -84,28 +81,27 @@ const reload = throttle(() => {
 }, 500);
 watch(date, reload);
 
-function openDispute(entry: AbsenceProp | AbsencePatchProp) {
-    if ('patches_exists' in entry) {
-        router.get(
-            route('dispute.index', {
-                openAbsence: entry.id,
-            }),
-        );
-    } else {
-        router.get(
-            route('dispute.index', {
-                openAbsencePatch: entry.id,
-            }),
-        );
-    }
-}
-
 const absenceTableHeight = useMaxScrollHeight(80 + 1);
 </script>
 <template>
     <AdminLayout title="Abwesenheiten">
-        <AbsenceModal :absence_types :users v-model:absenceForm="absenceForm" v-model="openAbsenceModal"></AbsenceModal>
-        <
+        {{ openEditCreateAbsenceModal }}{{ openShowAbsenceModal }}
+        <EditCreateAbsence
+            v-if="openEditCreateAbsenceModal"
+            :absence_types
+            :users
+            :selectedAbsence
+            :selectedDate
+            v-model="openEditCreateAbsenceModal"
+        ></EditCreateAbsence>
+        <ShowAbsenceModal
+            v-if="openShowAbsenceModal && selectedAbsence && selectedAbsenceUser"
+            :absence_types
+            :users
+            :selectedAbsence
+            :absenceUser="selectedAbsenceUser"
+            v-model="openShowAbsenceModal"
+        ></ShowAbsenceModal>
         <v-card>
             <v-card-text>
                 <div class="d-flex flex-wrap justify-center align-center">

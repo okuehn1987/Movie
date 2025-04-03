@@ -9,10 +9,17 @@ export type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'absence_type_i
 export type AbsencePatchProp = Pick<AbsencePatch, 'id' | 'start' | 'end' | 'absence_type_id' | 'user_id' | 'absence_id'> &
     RelationPick<'absencePatch', 'absence_type', 'id' | 'abbreviation'> & {
         log: Pick<Absence, 'id' | 'user_id'> & {
-            patches: AbsencePatch[];
+            patches_exists: boolean;
         };
         status: 'accepted' | 'created';
     };
 export type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'> &
     Canable &
     RelationPick<'user', 'user_working_weeks', 'id' | Weekday>;
+
+export function getEntryState(entry: AbsenceProp | AbsencePatchProp) {
+    if ('patches_exists' in entry && entry.patches_exists) return 'hasOpenPatch';
+    if ('log' in entry && entry.log.patches_exists) return 'hasOpenPatch';
+    if (entry.status === 'created') return 'created';
+    return 'accepted';
+}

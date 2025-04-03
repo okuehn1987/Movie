@@ -2,7 +2,7 @@
 import { AbsenceType, Weekday } from '@/types/types';
 import { DateTime } from 'luxon';
 import { computed } from 'vue';
-import { AbsencePatchProp, AbsenceProp, UserProp } from '../types';
+import { AbsencePatchProp, AbsenceProp, getEntryState, UserProp } from '../utils';
 
 const props = defineProps<{
     user: UserProp;
@@ -10,10 +10,6 @@ const props = defineProps<{
     entries: (AbsenceProp | AbsencePatchProp)[];
     absenceTypes: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
     holidays: Record<string, string> | null;
-}>();
-
-const emit = defineEmits<{
-    openDispute: [AbsenceProp | AbsencePatchProp];
 }>();
 
 const currentEntry = computed(() => props.entries.find(a => DateTime.fromSQL(a.start) <= props.date && props.date <= DateTime.fromSQL(a.end)));
@@ -34,12 +30,9 @@ function shouldUserWork(user: UserProp, day: DateTime) {
     >
         <template v-if="currentEntry && shouldUserWork(user, date)">
             <div
-                @click.stop="emit('openDispute', currentEntry)"
                 class="h-100 w-100 d-flex justify-center align-center"
                 :style="{
-                    backgroundColor: { accepted: '#f99', created: '#99f', hasOpenPatch: '#ff9' }[
-                        'patches_exists' in currentEntry && currentEntry.patches_exists ? 'hasOpenPatch' : currentEntry.status
-                    ],
+                    backgroundColor: { accepted: '#f99', created: '#99f', hasOpenPatch: '#ff9' }[getEntryState(currentEntry)],
                 }"
             >
                 <span v-if="currentEntry.absence_type_id">{{ currentEntry.absence_type?.abbreviation }}</span>
