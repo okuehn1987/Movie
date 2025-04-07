@@ -511,6 +511,15 @@ class CalculationTest extends TestCase
 
     public function test_AbbauGleitzeitkonto()
     {
+        // TODO:
         $absenceType = AbsenceType::where('type', 'Abbau Gleitzeitkonto');
+    }
+
+    public function test_absenceTimeRefund()
+    {
+        /**  TODO: man sollte stunden nur bekommen falls man zu wenig hatte am tag der
+         *  abwesenheit und generell sollte man nur stunden bekommen wenn der eintrag 
+         * in der zukunft liegt das gilt aber auch für worklogs
+         */
     }
 }
