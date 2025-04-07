@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Traits\HasLog;
 use App\Models\Traits\IsAccountable;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -63,20 +64,10 @@ class AbsencePatch extends Model
         return (int)Carbon::parse($this->start)->diffInDays(Carbon::parse($this->end)) + 1;
     }
 
-    public function getUsedDaysAttribute()
+    public function usedDays(): Attribute
     {
-        $usedDays = 0;
-        for ($day = Carbon::parse($this->start)->startOfDay(); $day->lte(Carbon::parse($this->end)); $day->addDay()) {
-            $currentWorkingWeek = $this->user->userWorkingWeekForDate($day);
-
-            if (
-                $currentWorkingWeek?->hasWorkDay($day) &&
-                !$this->user->loadMissing('operatingSite')->operatingSite->hasHoliday($day)
-            ) {
-                $usedDays++;
-            };
-        }
-
-        return $usedDays;
+        return Attribute::make(
+            get: fn() => Absence::calculateUsedDays($this)
+        );
     }
 }

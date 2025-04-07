@@ -24,8 +24,8 @@ class WorkLogPolicy
             $user->hasPermissionOrDelegation($user, 'workLog_permission', 'read');
     }
 
-    public function create(User $user): bool
+    public function create(User $authUser, User $user): bool
     {
-        return true;
+        return $authUser->is($user);
     }
 }

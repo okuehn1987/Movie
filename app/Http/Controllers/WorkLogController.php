@@ -29,7 +29,7 @@ class WorkLogController extends Controller
 
     public function store(Request $request, #[CurrentUser] User $authUser)
     {
-        Gate::authorize('create', WorkLog::class);
+        Gate::authorize('create', [WorkLog::class, $authUser]);
 
         $last = $authUser->latestWorkLog;
 

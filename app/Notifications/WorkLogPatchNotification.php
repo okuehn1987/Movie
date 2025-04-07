@@ -9,7 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class PatchNotification extends Notification
+class WorkLogPatchNotification extends Notification
 {
     use Queueable;
 
@@ -51,7 +51,7 @@ class PatchNotification extends Notification
     {
         return [
             'title' => $this->user->name . ' hat eine Zeitkorrektur beantragt.',
-            'patch_id' => $this->patch->id
+            'work_log_patch_id' => $this->patch->id
         ];
     }
 }

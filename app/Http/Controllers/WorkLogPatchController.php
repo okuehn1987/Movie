@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
 use App\Notifications\PatchNotification;
+use App\Notifications\WorkLogPatchNotification;
 use Carbon\Carbon;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
@@ -41,7 +42,7 @@ class WorkLogPatchController extends Controller
 
         $supervisor = $workLog->user->supervisor;
         if ($supervisor->is($authUser)) $patch->accept();
-        else $supervisor->notify(new PatchNotification($workLog->user, $patch));
+        else $supervisor->notify(new WorkLogPatchNotification($workLog->user, $patch));
 
         return back()->with('success',  'Korrektur der Arbeitszeit erfolgreich beantragt.');
     }
@@ -55,7 +56,7 @@ class WorkLogPatchController extends Controller
         ])['accepted'];
 
         $patchNotification = $authUser->unreadNotifications()
-            ->where('data->patch_id', $workLogPatch->id)->first();
+            ->where('data->work_log_patch_id', $workLogPatch->id)->first();
 
         if ($patchNotification) $patchNotification->markAsRead();
 

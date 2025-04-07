@@ -25,12 +25,12 @@ const currentEntries = computed(() => {
     const entries = [] as typeof props.absences | typeof props.absencePatches;
     return entries
         .concat(
-            props.absences.filter(
+            props.absencePatches.filter(
                 a => a.start <= date.value.endOf('month').toFormat('yyyy-MM-dd') && a.end >= date.value.startOf('month').toFormat('yyyy-MM-dd'),
             ),
         )
         .concat(
-            props.absencePatches.filter(
+            props.absences.filter(
                 a => a.start <= date.value.endOf('month').toFormat('yyyy-MM-dd') && a.end >= date.value.startOf('month').toFormat('yyyy-MM-dd'),
             ),
         );
@@ -85,7 +85,6 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
 </script>
 <template>
     <AdminLayout title="Abwesenheiten">
-        {{ openEditCreateAbsenceModal }}{{ openShowAbsenceModal }}
         <EditCreateAbsence
             v-if="openEditCreateAbsenceModal"
             :absence_types

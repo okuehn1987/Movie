@@ -78,9 +78,9 @@ class User extends Authenticatable
 
         $this->loadMissing(['organizationUser']);
         if ($user) {
-            $organizationUser = $this->organizationUsers->find('user_id', $user->id);
-            $operatingSiteUser = $this->operatingSiteUsersInOrganization->find('user_id', $user->id);
-            $groupUser = $this->groupUsersInOrganization->find('user_id', $user->id);
+            $organizationUser = $this->organizationUsers->where('user_id', $user->id)->first();
+            $operatingSiteUser = $this->operatingSiteUsersInOrganization->where('user_id', $user->id)->first();
+            $groupUser = $this->groupUsersInOrganization->where('user_id', $user->id)->first();
         }
 
         if (

@@ -334,10 +334,10 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
     read_at: DateTimeString | null;
 } & (
         | {
-              type: 'App\\Notifications\\PatchNotification';
+              type: 'App\\Notifications\\WorkLogPatchNotification';
               data: {
                   title: `${User['first_name']} ${User['last_name']} hat eine Zeitkorrektur beantragt.`;
-                  patch_id: WorkLogPatch['id'];
+                  work_log_patch_id: WorkLogPatch['id'];
               };
           }
         | {
@@ -345,6 +345,13 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
               data: {
                   title: `${User['first_name']} ${User['last_name']} hat eine Abwesenheit beantragt.`;
                   absence_id: Absence['id'];
+              };
+          }
+        | {
+              type: 'App\\Notifications\\AbsencePatchNotification';
+              data: {
+                  title: `${User['first_name']} ${User['last_name']} hat eine Abwesenheitkorrektur beantragt.`;
+                  absence_patch_id: AbsencePatch['id'];
               };
           }
     );

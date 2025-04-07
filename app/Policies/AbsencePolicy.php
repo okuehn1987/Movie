@@ -7,7 +7,7 @@ use App\Models\User;
 
 class AbsencePolicy
 {
-    use _AllowSuperAdminAndOrganizationOwner;
+    use _AllowSuperAdmin;
 
     public function viewIndex(User $authUser, User $user)
     {
@@ -43,14 +43,6 @@ class AbsencePolicy
 
     public function delete(User $authUser, Absence $absence): bool
     {
-        //TODO: what about accepted absences
-        $user = $absence->user;
-        return
-            $absence->status == 'created' &&
-            (
-                $authUser->is($user) ||
-                $authUser->id === $user->supervisor_id ||
-                $authUser->hasPermissionOrDelegation($user, 'absence_permission', 'write')
-            );
+        return $absence->status === 'created' && $authUser->is($absence->user);
     }
 }

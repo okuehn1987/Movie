@@ -139,35 +139,7 @@ class AbsenceController extends Controller
         return back()->with('success', 'Abwesenheit erfolgreich beantragt.');
     }
 
-    public function update(Request $request, Absence $absence, #[CurrentUser] User $authUser)
-    {
-        // TODO: move to AbsencePatchController.store with patchPolicy.create
-        Gate::authorize('update', [Absence::class, $absence->user]);
 
-        $validated = $request->validate([
-            'start' => 'required|date',
-            'end' => 'required|date|after_or_equal:start',
-            'absence_type_id' => ['required', Rule::in(AbsenceType::inOrganization()->get()->pluck('id'))],
-            'comment' => 'nullable|string'
-        ]);
-
-        $requires_approval =
-            $authUser->supervisor_id &&
-            $authUser->supervisor_id != $authUser->id &&
-            AbsenceType::find($validated['absence_type_id'])->requires_approval;
-
-        $absencePatch = AbsencePatch::create([
-            ...$validated,
-            'user_id' => $absence->user_id,
-            'absence_id' => $absence->id,
-            'status' => 'created',
-        ]);
-
-        if ($requires_approval) $authUser->supervisor->notify(new AbsencePatchNotification($authUser, $absencePatch));
-        else $absencePatch->accept();
-
-        return back()->with('success', 'Korrektur erfolgreich ' . $requires_approval ? 'beantragt' : 'eingetragen');
-    }
 
     public function updateStatus(Request $request, Absence $absence, #[CurrentUser] User $authUser)
     {
@@ -192,7 +164,6 @@ class AbsenceController extends Controller
     public function destroy(Absence $absence)
     {
         Gate::authorize('delete', $absence);
-        if ($absence->status !== 'created') return back()->with('error', 'Nur offene Anträge können einfach gelöscht werden');
 
         $absence->delete();
 

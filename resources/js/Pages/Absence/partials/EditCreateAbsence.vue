@@ -23,7 +23,7 @@ const absenceForm = useForm({
 
 function saveAbsence() {
     if (absenceForm.absence_id) {
-        absenceForm.put(route('absence.update', absenceForm.absence_id), {
+        absenceForm.post(route('absence.absencePatch.store', { absence: absenceForm.absence_id }), {
             onSuccess: () => {
                 absenceForm.reset();
                 openModal.value = false;
@@ -50,7 +50,8 @@ function saveAbsence() {
                         : '') +
                     ' beantragen'
                 "
-                ><template #append>
+            >
+                <template #append>
                     <v-btn icon variant="text" @click="isActive.value = false">
                         <v-icon>mdi-close</v-icon>
                     </v-btn>

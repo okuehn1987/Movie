@@ -233,7 +233,7 @@ class Shift extends Model
                 => [Absence::class, 'absence', 'log', Absence::class],
                 $model instanceof AbsencePatch
                 => [AbsencePatch::class, 'absence', 'patch', Absence::class],
-                default => throw new Exception('Invalid model type'),
+                default => throw new Exception('Invalid model type for shift calculation'),
             };
 
             if (!$model->accepted_at) return;

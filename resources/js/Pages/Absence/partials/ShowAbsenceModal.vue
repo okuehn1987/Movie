@@ -12,12 +12,31 @@ const props = defineProps<{
 
 const openModal = defineModel<boolean>({ required: true });
 
-function openDispute() {}
-function withdrawRequest() {
+function openDispute() {
     if ('absence_id' in props.selectedAbsence) {
-        router.delete(route('absencePatch.destroy', props.selectedAbsence.absence_id));
+        router.get(
+            route('dispute.index', {
+                openAbsencePatch: props.selectedAbsence.absence_id,
+            }),
+        );
     } else {
-        router.delete(route('absence.destroy', props.selectedAbsence.id));
+        router.get(
+            route('dispute.index', {
+                openAbsence: props.selectedAbsence.id,
+            }),
+        );
+    }
+}
+function withdrawRequest() {
+    const options = {
+        onSuccess: () => {
+            openModal.value = false;
+        },
+    };
+    if ('absence_id' in props.selectedAbsence) {
+        router.delete(route('absencePatch.destroy', { absencePatch: props.selectedAbsence.id }), options);
+    } else {
+        router.delete(route('absence.destroy', { absence: props.selectedAbsence.id }), options);
     }
 }
 </script>
