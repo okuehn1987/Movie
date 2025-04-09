@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { AbsenceType, User } from '@/types/types';
-import { usePage } from '@inertiajs/vue3';
-import { AbsencePatchProp, AbsenceProp } from '../utils';
 import { DateTime } from 'luxon';
+import { AbsencePatchProp, AbsenceProp } from '../utils';
 
 const props = defineProps<{
     users: Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'>[];
@@ -12,9 +11,10 @@ const props = defineProps<{
 }>();
 
 const openModal = defineModel<boolean>({ required: true });
-const page = usePage();
+const selectedUser = defineModel<User['id']>('selectedUser', { required: true });
+
 const absenceForm = useForm({
-    user_id: props.selectedAbsence?.user_id ?? page.props.auth.user.id,
+    user_id: props.selectedAbsence?.user_id ?? selectedUser.value,
     start: props.selectedAbsence?.start ?? props.selectedDate?.toFormat('yyyy-MM-dd') ?? null,
     end: props.selectedAbsence?.end ?? props.selectedDate?.toFormat('yyyy-MM-dd') ?? null,
     absence_type_id: props.selectedAbsence?.absence_type_id ?? null,

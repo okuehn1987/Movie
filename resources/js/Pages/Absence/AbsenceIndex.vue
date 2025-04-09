@@ -38,10 +38,12 @@ const currentEntries = computed(() => {
 const openEditCreateAbsenceModal = ref(false);
 const openShowAbsenceModal = ref(false);
 const selectedAbsence = ref<null | AbsenceProp | AbsencePatchProp>(null);
+const selectedUser = ref<null | User['id']>(null);
 const selectedDate = ref<DateTime | null>(null);
 const selectedAbsenceUser = computed(() => props.users.find(u => u.id === selectedAbsence.value?.user_id));
 
 function createAbsenceModal(user_id: User['id'], start?: DateTime) {
+    selectedUser.value = user_id;
     const absenceToEdit = currentEntries.value
         .filter(a => a.user_id === user_id)
         .find(a => start && DateTime.fromSQL(a.start) <= start && start <= DateTime.fromSQL(a.end));
@@ -86,11 +88,12 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
 <template>
     <AdminLayout title="Abwesenheiten">
         <EditCreateAbsence
-            v-if="openEditCreateAbsenceModal"
+            v-if="openEditCreateAbsenceModal && selectedUser"
             :absence_types
             :users
             :selectedAbsence
             :selectedDate
+            v-model:selectedUser="selectedUser"
             v-model="openEditCreateAbsenceModal"
         ></EditCreateAbsence>
         <ShowAbsenceModal
