@@ -301,7 +301,7 @@ class Shift extends Model
                 'work'
                 => self::handleModelMovement($model, $previousModel, $oldShifts),
                 'absence'
-                =>  collect([])
+                => collect([])
             };
 
             $newMissingBreakDuration = $newShifts->map(
@@ -328,10 +328,14 @@ class Shift extends Model
 
             $diffToApply = 0;
             foreach ($affectedDays as $day) {
-                $absencesForDay = $model->user->getAbsencesForDate($day)->filter(fn($a) => !$a->is($model));
-                $hasAbbauGleitzeitkonto = $absencesForDay->filter(
-                    fn($a) => $a->absence_type_id == AbsenceType::inOrganization()->where('type', 'Abbau Gleitzeitkonto')->first()->id
-                )->count() == $absencesForDay->count();
+                if ($type == 'absence' && $day->gt(now()->endOfDay())) continue;
+
+                $AbbauGleitzeitkonto = AbsenceType::inOrganization()->where('type', 'Abbau Gleitzeitkonto')->first();
+
+                $previousAbsencesForDay = $model->user->getAbsencesForDate($day)
+                    ->filter(fn($a) => !$a->is($model) && $a->absence_type_id !== $AbbauGleitzeitkonto->id);
+
+                $hasNewAbsence = $type == 'absence' && $previousAbsencesForDay->isEmpty() && $model->absence_type_id !== $AbbauGleitzeitkonto->id;
 
                 $oldEntriesForAffectedDay = match ($type) {
                     'work'
@@ -346,16 +350,12 @@ class Shift extends Model
                                 Carbon::parse($model->accepted_at)->startOfSecond()
                         ),
                     'absence'
-                    => match (true) {
-                        $absencesForDay->isEmpty() || $hasAbbauGleitzeitkonto
-                        => $model->user->getEntriesForDate($day)
-                            ->filter(
-                                fn($e) =>
-                                Carbon::parse($e->accepted_at)->startOfSecond() <= Carbon::parse($model->accepted_at)->startOfSecond()
-                            ),
-                        !$absencesForDay->isEmpty() && !$hasAbbauGleitzeitkonto
-                        => collect([])
-                    }
+                    => $hasNewAbsence ?
+                        $model->user->getEntriesForDate($day)->filter(
+                            fn($e) =>
+                            Carbon::parse($e->accepted_at)->startOfSecond() <= Carbon::parse($model->accepted_at)->startOfSecond()
+                        ) :
+                        collect([])
                 };
 
                 $oldIstForAffectedDay = self::workDuration($oldEntriesForAffectedDay);
@@ -380,7 +380,7 @@ class Shift extends Model
 
                 $newIstForAffectedDay = match ($type) {
                     'work'
-                    =>  self::workDuration($entriesOfUnaffectedShifts) + self::workDuration($entriesOfNewShiftsForDay),
+                    => self::workDuration($entriesOfUnaffectedShifts) + self::workDuration($entriesOfNewShiftsForDay),
                     'absence'
                     => max($oldIstForAffectedDay, $sollForAffectedDay)
                 };
@@ -388,7 +388,7 @@ class Shift extends Model
 
 
                 //if ist > soll overtime can be added immediatly else schedule will subtract the missing amount at 0:00 
-                if ($day->isSameDay(now()) || ($absencesForDay->count() > 0 && !$hasAbbauGleitzeitkonto))
+                if ($day->isSameDay(now()) || $type == 'absence' && !$hasNewAbsence)
                     $diffToApply += max($sollForAffectedDay, $newIstForAffectedDay) - max($sollForAffectedDay, $oldIstForAffectedDay);
                 else
                     $diffToApply += $newIstForAffectedDay - $oldIstForAffectedDay;

@@ -511,15 +511,34 @@ class CalculationTest extends TestCase
 
     public function test_AbbauGleitzeitkonto()
     {
-        // TODO:
-        $absenceType = AbsenceType::where('type', 'Abbau Gleitzeitkonto');
+        $absenceType = AbsenceType::where('type', 'Abbau Gleitzeitkonto')->inOrganization()->first();
+
+        $date = now()->subDays(1);
+        $this->oldUser->removeMissingWorkTimeForDate($date);
+
+        $this->assertEquals(-7 * 3600 - 30 * 60, $this->oldUser->defaultTimeAccount->fresh()->balance);
+
+        $this->oldUser->absences()->create([
+            'start' =>  $date,
+            'end' =>  $date,
+            'status' => 'accepted',
+            'accepted_at' =>  now(),
+            'absence_type_id' => $absenceType->id,
+        ]);
+
+        $this->assertEquals(-7 * 3600 - 30 * 60, $this->oldUser->defaultTimeAccount->fresh()->balance);
     }
 
-    public function test_absenceTimeRefund()
+    public function test_futureAbsence()
     {
-        /**  TODO: man sollte stunden nur bekommen falls man zu wenig hatte am tag der
-         *  abwesenheit und generell sollte man nur stunden bekommen wenn der eintrag 
-         * in der zukunft liegt das gilt aber auch für worklogs
-         */
+        $this->oldUser->absences()->create([
+            'start' =>  now()->addDay(),
+            'end' =>  now()->addDay()->addHours(5),
+            'status' => 'accepted',
+            'accepted_at' =>  now(),
+            'absence_type_id' => 1,
+        ]);
+
+        $this->assertEquals(0, $this->oldUser->defaultTimeAccount->fresh()->balance);
     }
 }
