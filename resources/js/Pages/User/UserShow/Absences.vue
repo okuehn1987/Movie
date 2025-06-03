@@ -29,7 +29,7 @@ defineProps<{
                                     ...e,
                                     start: DateTime.fromSQL(e.start).toFormat('dd.MM.yyyy'),
                                     end: DateTime.fromSQL(e.end).toFormat('dd.MM.yyyy'),
-                                    absence_type: e.absence_type.name,
+                                    absence_type: e.absence_type?.name,
                                     usedDays: e.usedDays.toString(),
                                 }))
                             "

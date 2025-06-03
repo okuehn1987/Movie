@@ -8,7 +8,7 @@ const props = defineProps<{
 }>();
 
 const newTimeAccountForm = useForm({
-    balance_limit: props.user.current_working_hours.weekly_working_hours * 2,
+    balance_limit: (props.user.current_working_hours?.weekly_working_hours ?? 40) * 2,
     balance: 0,
     time_account_setting_id: props.time_account_settings.filter(t => t.type != null)[0]?.id ?? null,
     name: '',
@@ -69,7 +69,7 @@ const newTimeAccountForm = useForm({
                                     label="Limit in Stunden"
                                     :hint="
                                         'entspricht ' +
-                                        roundTo(newTimeAccountForm.balance_limit / user.current_working_hours.weekly_working_hours, 2) +
+                                        roundTo(newTimeAccountForm.balance_limit / (user.current_working_hours?.weekly_working_hours ?? 40), 2) +
                                         'x wöchentliche Arbeitszeit'
                                     "
                                     v-model="newTimeAccountForm.balance_limit"
@@ -84,7 +84,7 @@ const newTimeAccountForm = useForm({
                                 ></v-text-field>
                             </v-col>
                             <v-col cols="12" class="text-end">
-                                <v-btn type="submit" color="primary" :loading="newTimeAccountForm.processing"> Speichern </v-btn>
+                                <v-btn type="submit" color="primary" :loading="newTimeAccountForm.processing">Speichern</v-btn>
                             </v-col>
                         </v-row>
                     </v-form>

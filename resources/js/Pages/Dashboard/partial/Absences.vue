@@ -4,7 +4,7 @@ import { DateTime } from 'luxon';
 import { ref } from 'vue';
 
 type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'user_id' | 'absence_type_id'> &
-    RelationPick<'absence', 'absence_type', 'id' | 'abbreviation', true> &
+    RelationPick<'absence', 'absence_type', 'id' | 'abbreviation'> &
     RelationPick<'absence', 'user', 'id' | 'first_name' | 'last_name'>;
 
 defineProps<{
@@ -35,7 +35,8 @@ const currentPage = ref(1);
                 { title: 'Bis', key: 'end' },
                 ...(absences.some(a => a.absence_type_id) ? [{ title: 'Grund', key: 'absenceType' }] : []),
             ]"
-            ><template v-slot:bottom>
+        >
+            <template v-slot:bottom>
                 <v-pagination v-if="absences.length > 5" v-model="currentPage" :length="Math.ceil(absences.length / 5)"></v-pagination>
             </template>
         </v-data-table>
