@@ -58,7 +58,7 @@ return new class extends Migration
                 ]);
             }
 
-            $start = Carbon::parse(max(WorkLog::max('start'), WorkLogPatch::where('status', 'accepted')->max('start')))->subDay();
+            $start = Carbon::parse(max(WorkLog::max('start'), WorkLogPatch::where('status', 'accepted')->max('start')));
             $affectedDays =
                 collect(
                     range(0, $start->copy()->startOfYear()->diffInDays($start))
@@ -68,7 +68,7 @@ return new class extends Migration
 
             foreach ($affectedDays as $day) {
                 if ($day->lt($user->overtime_calculations_start)) continue;
-                $user->removeMissingWorkTimeForDate($day);
+                if (!$day->isSameDay(now())) $user->removeMissingWorkTimeForDate($day);
                 if ($user->first_name . ' ' . $user->last_name == 'Steffen Mosch' && $user->getSollsekundenForDate($day) == 38 / 5 * 3600)
                     $user->defaultTimeAccount->addBalance(6 * 60, 'Gutschrift aufgrund fehlerhafter wöchentlicher Arbeitszeit');
 
