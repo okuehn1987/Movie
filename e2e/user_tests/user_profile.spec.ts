@@ -32,7 +32,7 @@ test('trys to fill false password length then changes password', async ({ page }
     await page.getByLabel('Neues Passwort').fill('test');
     await page.getByLabel('Passwort bestätigen').fill('test');
     await page.locator('form').filter({ hasText: 'Stellen Sie sicher, dass Ihr' }).getByRole('button').click();
-    await expect(page.getByText('The password field must be at')).toBeVisible();
+    await expect(page.getByText('Passwort muss mindestens 8 Zeichen enthalten.')).toBeVisible();
 
     //continues with normal test
     await page.getByLabel('Aktuelles Passwort').fill('user');

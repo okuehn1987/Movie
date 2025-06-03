@@ -41,34 +41,7 @@ Schedule::call(function () {
 
 
 Schedule::call(function () {
-    Log::info('Daily worklog calculation started');
-
-    $users = User::with(['operatingSite', 'defaultTimeAccount'])->get();
-    $workLogsToCut = WorkLog::whereBetween('start', [Carbon::yesterday()->startOfDay(), Carbon::yesterday()->endOfDay()])
-        ->whereNull('end')
-        ->orderBy('start', 'asc')
-        ->get();
-
-    //cut the current active worklog at 23:59:59 to make calculations easier
-    foreach ($users as $user) {
-        $lastWorkLog = $workLogsToCut->first(fn($w) => $w->user_id == $user->id);
-
-        if ($lastWorkLog) {
-            $lastWorkLog->update([
-                'end' => Carbon::yesterday()->endOfDay()
-            ]);
-
-            WorkLog::create([
-                'start' => Carbon::now()->startOfDay(),
-                'end' => null,
-                'user_id' => $user->id,
-                'is_home_office' => $lastWorkLog->is_home_office,
-                'shift_id' => $lastWorkLog->shift_id
-            ]);
-        }
-    }
-
-    dump('end of cuts');
+    $users = User::with(['operatingSite', 'defaultTimeAccount', 'latestWorkLog'])->get();
 
     //for each past day where the calculation has not been done yet
     $daysWithoutCalculation = collect(range(1, 30))->map(fn($i) => Carbon::now()->subDays($i)->startOfDay())->filter(
@@ -85,54 +58,14 @@ Schedule::call(function () {
         foreach ($users as $user) {
             if ($day->lt(Carbon::parse($user->overtime_calculations_start))) continue;
 
-            $currentWorkingHours = $user->userWorkingHoursForDate($day);
-            $currentWorkingWeek = $user->userWorkingWeekForDate($day);
-            if (!$currentWorkingHours || !$currentWorkingWeek) continue;
-
-            $hasAbsenceForDay = $user->absences()
-                ->where('status', 'accepted')
-                ->whereDate('start', '<=', $day)
-                ->whereDate('end', '>=', $day)->exists();
-
-            $shouldWorkYesterday =
-                $currentWorkingWeek->hasWorkDay($day) &&
-                !$user->operatingSite->hasHoliday($day);
-
-            $workLogsForDay = $user->workLogs()
-                ->whereNotNull('end')
-                ->whereBetween('start', [$day->copy()->startOfDay(), $day->copy()->endOfDay()])
-                ->get();
-
-            $istSekunden = $workLogsForDay->sum('duration');
-            $sollSekunden = $user->getSollsekundenForDate($day);
-
-            if (!$shouldWorkYesterday) {
-                $sollSekunden = 0;
-            } else if ($hasAbsenceForDay) {
-                $istSekunden = max($istSekunden - $sollSekunden, 0);
-                $sollSekunden = 0;
-            }
-            $user->defaultTimeAccount->addBalance($istSekunden - $sollSekunden, 'Tägliche Überstundenberechnung ' . $day->format('d.m.Y'));
-
-            //TODO: add SWHF's & Nachtschicht, etc.
-        }
-
-        foreach (WorkLogPatch::where('is_accounted', false)->whereDate('accepted_at', $day)->get() as $patch) {
-            $patch->accountAsTransaction();
+            $user->removeMissingWorkTimeForDate($day);
         }
 
         $workingHourCalculation->update([
             'status' => 'completed'
         ]);
     }
-    Log::info('Daily worklog calculation end');
 })->name('dailyWorkLogCalculation')->dailyAt("00:00");
-
-Schedule::call(function () {
-    foreach (Shift::where('is_accounted', false)->with(['user.defaultTimeAccount', 'workLogs'])->get()->filter(fn($shift) => $shift->has_ended) as $shift) {
-        $shift->accountRequiredBreakAsTransaction();
-    }
-})->name('shiftBreakCalculation')->dailyAt("09:00");
 
 Schedule::call(function () {
     foreach (User::with('operatingSite')->get() as $user) {

@@ -31,7 +31,7 @@ class OperatingSite extends Model
         return $this->hasMany(User::class);
     }
 
-    public function operatingSiteUser()
+    public function operatingSiteUsers()
     {
         return $this->hasMany(OperatingSiteUser::class);
     }

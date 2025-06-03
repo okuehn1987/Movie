@@ -42,4 +42,9 @@ class UserPolicy
     {
         return true;
     }
+
+    public function viewDisputes(User $authUser): bool
+    {
+        return $authUser->supervisees->count() > 0;
+    }
 }

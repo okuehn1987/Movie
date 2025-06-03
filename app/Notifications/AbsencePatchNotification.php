@@ -2,26 +2,24 @@
 
 namespace App\Notifications;
 
+use App\Models\AbsencePatch;
 use App\Models\User;
-use App\Models\WorkLogPatch;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class PatchNotification extends Notification
+class AbsencePatchNotification extends Notification
 {
     use Queueable;
 
-    protected $user, $patch;
+    protected $user, $absencePatch;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(User $user, WorkLogPatch $patch)
+    public function __construct(User $user, AbsencePatch $absencePatch)
     {
         $this->user = $user;
-        $this->patch = $patch;
+        $this->absencePatch = $absencePatch;
     }
 
     /**
@@ -29,7 +27,7 @@ class PatchNotification extends Notification
      *
      * @return array<int, string>
      */
-    public function via(): array
+    public function via(object $notifiable): array
     {
         return ['database'];
     }
@@ -39,7 +37,9 @@ class PatchNotification extends Notification
      */
     public function toMail(object $notifiable)
     {
-        //
+        return [
+            //
+        ];
     }
 
     /**
@@ -47,11 +47,11 @@ class PatchNotification extends Notification
      *
      * @return array<string, mixed>
      */
-    public function toArray($notifiable)
+    public function toArray(object $notifiable): array
     {
         return [
-            'title' => $this->user->name . ' hat eine Zeitkorrektur beantragt.',
-            'patch_id' => $this->patch->id
+            'title' => $this->user->name . ' hat eine Abwesenheitskorrektur beantragt.',
+            'absence_patch_id' => $this->absencePatch->id
         ];
     }
 }

@@ -5,9 +5,9 @@ import { DateTime } from 'luxon';
 import { ref } from 'vue';
 
 type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'user_id'> & {
-    user: Pick<User, 'id' | 'first_name' | 'last_name'> & { usedLeaveDaysForYear: number; leaveDaysForYear: number };
     absence_type: Pick<AbsenceType, 'id' | 'name'>;
     usedDays: number;
+    user: Pick<User, 'id' | 'first_name' | 'last_name'> & { usedLeaveDaysForYear: number; leaveDaysForYear: number };
 };
 
 const props = defineProps<{

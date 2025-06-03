@@ -4,21 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\Absence;
 use App\Models\User;
-use App\Models\WorkLog;
-use App\Models\WorkLogPatch;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request)
+    public function index(#[CurrentUser] User $user)
     {
         Gate::authorize('publicAuth', User::class);
-
-        $user = $request->user();
 
         $visibleUsers = User::inOrganization()
             ->get(['id', 'supervisor_id', 'group_id', 'operating_site_id'])
@@ -34,32 +29,23 @@ class DashboardController extends Controller
             ->get(['id', 'start', 'end', 'user_id', 'absence_type_id'])
             ->toArray();
 
-        $lastWeekWorkLogs = $user->workLogs()
-            ->where(
-                fn($q) => $q
-                    ->where('start', '>=', Carbon::now()->subDays(6)->startOfDay()->format('Y-m-d'))
-                    ->orWhere('end', '>=', Carbon::now()->subDays(6)->startOfDay()->format('Y-m-d'))
-            )
-            ->orderBy('start', 'desc')
-            ->whereNotNull('end')
-            ->with(['currentAcceptedPatch'])
-            ->get(['id', 'start', 'end']);
+        $lastWeekEntries =  collect([
+            ...$user->currentWeekShifts
+                ->flatMap
+                ->entries
+                ->filter(fn($e) => $e->end)
+                ->sortByDesc('start')
+                ->map(fn($e) => collect($e->append('duration'))->only(['id', 'start', 'end', 'duration']))
+                ->toArray()
+        ]);
 
         return Inertia::render('Dashboard/Dashboard', [
-            'lastWorkLog' => WorkLog::select('id', 'start', 'end', 'is_home_office')
-                ->inOrganization()
-                ->where('user_id', Auth::id())
-                ->latest('start')->first(),
+            'user' => [...$user->load(['latestWorkLog'])->toArray(), 'current_shift' => $user->currentShift()->first(['id', 'user_id', 'start', 'end'])?->append('current_work_duration')],
             'supervisor' => User::select('id', 'first_name', 'last_name')->find($user->supervisor_id),
-            'operating_times' => $user->operatingSite->operatingTimes,
             'currentAbsences' => $currentAbsences,
             'overtime' => $user->overtime,
-            'workingHours' => [
-                'should' => $user->userWorkingHours()->where('active_since', '<=', Carbon::now()->format('Y-m-d'))->orderBy('active_since', 'Desc')->first()['weekly_working_hours'],
-                'current' => User::getCurrentWeekWorkingHours($user)['totalHours'],
-                'currentHomeOffice' => User::getCurrentWeekWorkingHours($user)['homeOfficeHours'],
-            ],
-            'lastWeekWorkLogs' => $lastWeekWorkLogs,
+            'workingHours' => $user->currentWeekWorkingHours,
+            'lastWeekEntries' => $lastWeekEntries,
         ]);
     }
 }

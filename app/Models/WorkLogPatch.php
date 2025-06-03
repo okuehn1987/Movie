@@ -2,24 +2,45 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasDuration;
+use App\Models\Traits\HasLog;
+use App\Models\Traits\IsAccountable;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\DB;
 
 class WorkLogPatch extends Model
 {
     use HasFactory, SoftDeletes;
-    use ScopeInOrganization;
+    use ScopeInOrganization, HasLog, IsAccountable, HasDuration;
 
     protected $guarded = [];
 
     protected $casts = ['is_home_office' => 'boolean'];
 
-    public function workLog()
+    private static function getLogModel()
     {
-        return $this->belongsTo(WorkLog::class);
+        return WorkLog::class;
+    }
+
+    public static function boot()
+    {
+        parent::boot();
+        self::saving(function (WorkLogPatch $model) {
+            //if the entry spans multiple days we need to split it into different entries
+            if ($model->end && !Carbon::parse($model->start)->isSameDay($model->end)) {
+                // run backwards for easier mutation
+                for ($day = Carbon::parse($model->end)->startOfDay(); !$day->isSameDay($model->start); $day->subDay()) {
+                    $model->replicate()->fill([
+                        'start' => $day->copy()->startOfDay(),
+                        'end' => min(Carbon::parse($model->end)->copy(), $day->copy()->endOfDay()),
+                    ])->save();
+                }
+                $model->end = Carbon::parse($model->start)->copy()->endOfDay();
+            }
+            Shift::computeAffected($model);
+        });
     }
 
     public function user()
@@ -27,44 +48,8 @@ class WorkLogPatch extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function getDurationAttribute(): int | float
+    public function shift()
     {
-        return Carbon::parse($this->start)->diffInSeconds($this->end);
-    }
-
-    public function accept()
-    {
-        $this->update([
-            'status' => 'accepted',
-            'accepted_at' => Carbon::now()
-        ]);
-
-        if (WorkingHoursCalculation::whereDate('day', $this->workLog->start)->exists()) {
-            $this->accountAsTransaction();
-        }
-    }
-
-    public function accountAsTransaction()
-    {
-        //TODO: add SWHF's & Nachtschicht, etc.
-        DB::transaction(function () {
-            $workLog = WorkLog::whereId($this->work_log_id)->lockForUpdate()->first();
-            $patch = WorkLogPatch::whereId($this->id)->first();
-            if ($patch->is_accounted || !$patch->status == 'accepted') return;
-
-            $oldDuration = $workLog->fresh('currentAccountedPatch')->currentAccountedPatch?->duration ?? $workLog->duration;
-
-            $patch
-                ->workLog
-                ->user
-                ->defaultTimeAccount
-                ->addBalance(
-                    $patch->getDurationAttribute() - $oldDuration,
-                    'Korrektur akzeptiert am ' . Carbon::parse($patch->accepted_at)->format('d.m.Y H:i:s')
-                );
-
-            $patch['is_accounted'] = true;
-            $patch->save();
-        });
+        return $this->belongsTo(Shift::class);
     }
 }

@@ -6,12 +6,13 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable
 {
@@ -58,7 +59,7 @@ class User extends Authenticatable
      *   */
     public function hasPermissionOrDelegation(User | null $user, string $permissionName, string $permissionLevel)
     {
-        $this->load(['isSubstitutionFor']);
+        $this->loadMissing(['isSubstitutionFor']);
         return $this->hasPermission($user, $permissionName,  $permissionLevel) ||
             $this->isSubstitutionFor->some(fn($substitution) => $substitution->hasPermission($user, $permissionName,  $permissionLevel));
     }
@@ -72,32 +73,37 @@ class User extends Authenticatable
     {
         if ($permissionLevel != 'read' && $permissionLevel != 'write') abort(404);
 
-        $this->load(['organizationUser']);
-        if ($user) $user->load(['organizationUser']);
+        //TODO: this removed a lot of queries but the nest relations are still queried 1 by 1 for each checked policy e.g. absence.index
+        $user = $this->usersInOrganization->find($user?->id);
+
+        $this->loadMissing(['organizationUser']);
+        if ($user) {
+            $organizationUser = $this->organizationUsers->where('user_id', $user->id)->first();
+            $operatingSiteUser = $this->operatingSiteUsersInOrganization->where('user_id', $user->id)->first();
+            $groupUser = $this->groupUsersInOrganization->where('user_id', $user->id)->first();
+        }
 
         if (
             array_key_exists($permissionName, $this->organizationUser->toArray()) &&
             ($this->organizationUser->{$permissionName} == 'write' || $this->organizationUser->{$permissionName} == $permissionLevel) &&
-            (!$user || $user->organizationUser->organization_id == $this->organizationUser->organization_id)
+            (!$user || $organizationUser?->organization_id == $this->organizationUser->organization_id)
         ) return true;
 
-        $this->load(['groupUser']);
-        if ($user) $user->load(['groupUser']);
+        $this->loadMissing(['operatingSiteUser']);
+
+        if (
+            array_key_exists($permissionName, $this->operatingSiteUser->toArray()) &&
+            ($this->operatingSiteUser?->{$permissionName} == 'write' || $this->operatingSiteUser->{$permissionName} == $permissionLevel) &&
+            (!$user || $operatingSiteUser?->operating_site_id == $this->operatingSiteUser->operating_site_id)
+        ) return true;
+
+        $this->loadMissing(['groupUser']);
 
         if (
             $this->groupUser &&
             array_key_exists($permissionName, $this->groupUser->toArray()) &&
             ($this->groupUser->{$permissionName} == 'write' || $this->groupUser->{$permissionName} == $permissionLevel) &&
-            (!$user || $user->group_id == $this->groupUser->group_id)
-        ) return true;
-
-        $this->load(['operatingSiteUser']);
-        if ($user) $user->load(['operatingSiteUser']);
-
-        if (
-            array_key_exists($permissionName, $this->operatingSiteUser->toArray()) &&
-            ($this->operatingSiteUser?->{$permissionName} == 'write' || $this->operatingSiteUser->{$permissionName} == $permissionLevel) &&
-            (!$user || $user->operating_site_id == $this->operatingSiteUser->operating_site_id)
+            (!$user || $groupUser?->group_id == $this->groupUser->group_id)
         ) return true;
 
         return false;
@@ -107,14 +113,44 @@ class User extends Authenticatable
     {
         return $this->first_name . ' ' . $this->last_name;
     }
-
+    public function shifts()
+    {
+        return $this->hasMany(Shift::class);
+    }
+    public function currentShift()
+    {
+        return $this->shifts()->one()->ofMany(
+            ['start' => 'Max'],
+            fn(Builder $q) => $q->where('end', '>=', now()->subHours(Shift::$MINIMUM_SHIFT_SEPARATION_TIME_IN_HOURS))
+        );
+    }
     public function workLogs()
     {
         return $this->hasMany(WorkLog::class);
     }
+    public function latestWorkLog()
+    {
+        return $this->workLogs()->one()->ofMany(['start' => 'Max']);
+    }
+    public function workLogPatches()
+    {
+        return $this->hasMany(WorkLogPatch::class);
+    }
     public function travelLogs()
     {
         return $this->hasMany(TravelLog::class);
+    }
+    public function travelLogPatches()
+    {
+        return $this->hasMany(TravelLogPatch::class);
+    }
+    public function absences()
+    {
+        return $this->hasMany(Absence::class);
+    }
+    public function absencePatches()
+    {
+        return $this->hasMany(AbsencePatch::class);
     }
     public function supervisor()
     {
@@ -140,10 +176,6 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(User::class, 'substitutes', 'substitute_id', 'user_id');
     }
-    public function absences()
-    {
-        return $this->hasMany(Absence::class);
-    }
     public function group()
     {
         return $this->belongsTo(Group::class);
@@ -164,6 +196,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserWorkingHour::class);
     }
+    public function currentWorkingHours()
+    {
+        return $this->userWorkingHours()->one()->ofMany(['active_since' => 'Max'], fn($q) => $q->whereDate('active_since', '<=', now()));
+    }
 
     public function userWorkingHoursForDate(CarbonInterface $date): UserWorkingHour | null
     {
@@ -176,6 +212,25 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserLeaveDay::class);
     }
+    public function currentLeaveDays()
+    {
+        return $this->userLeaveDays()->one()->ofMany(
+            ['active_since' => 'Max'],
+            fn($q) => $q->whereDate('active_since', '<=', now())->where('type', 'annual')
+        );
+    }
+
+    public function userWorkingWeeks()
+    {
+        return $this->hasMany(UserWorkingWeek::class);
+    }
+    public function currentWorkingWeek()
+    {
+        return $this->userWorkingWeeks()->one()->ofMany(
+            ['active_since' => 'Max'],
+            fn($q) => $q->whereDate('active_since', '<=', now())
+        );
+    }
 
     public function timeAccounts()
     {
@@ -186,11 +241,6 @@ class User extends Authenticatable
     public function defaultTimeAccount()
     {
         return $this->hasOne(TimeAccount::class)->whereHas('timeAccountSetting', fn($q) => $q->whereNull('type'));
-    }
-
-    public function userWorkingWeeks()
-    {
-        return $this->hasMany(UserWorkingWeek::class);
     }
 
     public function organizationUser()
@@ -208,89 +258,99 @@ class User extends Authenticatable
         return $this->hasOne(OperatingSiteUser::class);
     }
 
+    public function workingWeeks(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->userWorkingWeeks()->get()
+        )->shouldCache();
+    }
+
     public function userWorkingWeekForDate(CarbonInterface $date): UserWorkingWeek | null
     {
-        return $this->userWorkingWeeks()->where('active_since', '<=', $date->format('Y-m-d'))
-            ->latest('active_since')
+        return $this->workingWeeks->where('active_since', '<=', $date->format('Y-m-d'))
+            ->sortByDesc('active_since')
             ->first();
     }
 
-    public function latestWorkLog()
+    public function overtime(): Attribute
     {
-        return $this->hasOne(WorkLog::class)->latestOfMany('start');
+        return Attribute::make(
+            get: fn() => $this->defaultTimeAccount->balance,
+        );
     }
 
-    public function getOvertimeAttribute()
+    public function age(): Attribute
     {
-        return $this->defaultTimeAccount->balance;
+        return Attribute::make(
+            get: fn() => Carbon::parse($this->date_of_birth)->age,
+        )->shouldCache();
     }
 
-    public function getAgeAttribute()
+    public function currentWeekShifts(): Attribute
     {
-        return Carbon::parse($this->date_of_birth)->age;
-    }
-
-    public static function getCurrentWeekWorkingHours(User $user)
-    {
-        //all logs that could be applicable
-        $currentWeekWorkLogs = $user->workLogs()
-            ->whereNotNull('end')
-            ->whereBetween('start', [Carbon::now()->startOfWeek(), Carbon::now()])
-            ->get();
-
-        //all patches that are applicable
-        $currentWeekPatches = WorkLogPatch::where('status', 'accepted')
-            ->where('user_id', $user->id)
-            ->whereBetween('start', [Carbon::now()->startOfWeek(), Carbon::now()])
-            ->orderBy('created_at', 'Desc')
-            ->get()
-            ->unique('work_log_id');
-
-        //alle patches der logs der woche
-        foreach ($currentWeekWorkLogs as $worklog) {
-            $worklog['patch'] = WorkLogPatch::where('status', 'accepted')
-                ->where('user_id', $user->id)
-                ->where('work_log_id', $worklog->id)
-                ->orderBy('created_at', 'Desc')
-                ->first();
-        }
-
-        $handledWorklogs = [];
-        $currentWeekHours = 0;
-        $currentWeekHomeOfficeHours = 0;
-
-        foreach ($currentWeekWorkLogs as $worklog) {
-            $handledWorklogs[] = $worklog->id;
-
-            if (!$worklog['patch']) {
-                $t = Carbon::parse($worklog->start)->diffInMinutes(Carbon::parse($worklog->end)) / 60;
-                $currentWeekHours += $t;
-                if ($worklog->is_home_office) $currentWeekHomeOfficeHours += $t;
-            } else {
-                foreach ($currentWeekPatches as $p) {
-                    if ($p->work_log_id == $worklog['patch']->work_log_id) {
-                        $t = Carbon::parse($p->start)->diffInMinutes(Carbon::parse($p->end)) / 60;
-                        $currentWeekHours += $t;
-                        if ($worklog['patch']->is_home_office) $currentWeekHomeOfficeHours += $t;
-                    }
-                }
+        return Attribute::make(
+            get: function () {
+                return $this->shifts()
+                    ->where('start', '>=', now()->startOfWeek())
+                    ->get();
             }
-        }
+        )->shouldCache();
+    }
 
-        foreach ($currentWeekPatches as $patch) {
-            if (!in_array($patch->work_log_id, $handledWorklogs)) {
-                $currentWeekHours += Carbon::parse($patch->start)->diffInMinutes(Carbon::parse($patch->end)) / 60;
+    public function currentWeekWorkingHours(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $shifts = $this->currentWeekShifts;
+
+                $totalHours = $shifts->map(function (Shift $s) {
+                    $stats = $s->accountableDuration();
+                    return $stats['workDuration'] - $stats['missingBreakDuration'];
+                })->sum();
+
+                $partialShifts = $this->shifts()
+                    ->where('end', '>=', now()->startOfWeek())
+                    ->where('start', '<', now()->startOfWeek())
+                    ->get();
+
+                $partialShiftEntries = collect($partialShifts)->flatMap(
+                    fn($s) => $s->entries->filter(
+                        fn($e) => Carbon::parse($e->start)->gte(now()->startOfWeek())
+                    )
+                );
+
+                $totalHours += Shift::workDuration($partialShiftEntries) - $partialShiftEntries->sum('missingBreakDuration');
+
+                $homeOfficeShifts = $shifts->filter(
+                    fn($s) => $s->entries->filter(
+                        fn($e) => !property_exists($e, 'is_home_office') || !$e->is_home_office
+                    )->count() == 0
+                );
+
+                $homeOfficeHours = $homeOfficeShifts->map(function (Shift $s) {
+                    $stats = $s->accountableDuration($s->entries->filter(
+                        fn($e) => property_exists($e, 'is_home_office') && $e->is_home_office
+                    ));
+                    return $stats['workDuration'] - $stats['missingBreakDuration'];
+                })->sum();
+
+                $otherHomeOfficeEntries = $shifts->filter(fn($s) => !$homeOfficeShifts->contains($s))->flatMap->entries->filter(
+                    fn($e) => property_exists($e, 'is_home_office') && $e->is_home_office
+                );
+
+                $homeOfficeHours += Shift::workDuration($otherHomeOfficeEntries);
+
+                return [
+                    'totalHours' => $totalHours,
+                    'homeOfficeHours' => $homeOfficeHours,
+                ];
             }
-        }
-
-        return [
-            'totalHours' => $currentWeekHours,
-            'homeOfficeHours' => $currentWeekHomeOfficeHours,
-        ];
+        )->shouldCache();
     }
 
     public function usedLeaveDaysForYear(CarbonInterface $year): int
     {
+        //FIXME: possibly counting to many days for overlapping absences
         $relevantAbsences = $this->absences()
             ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
             ->whereDate('start', '<=', $year->copy()->endOfYear())
@@ -302,11 +362,9 @@ class User extends Authenticatable
             for ($day = Carbon::parse($absence->start)->startOfDay(); $day->lte(Carbon::parse($absence->end)); $day->addDay()) {
                 if ($day->year != $year->year) continue;
                 $currentWorkingWeek = $this->userWorkingWeekForDate($day);
-                $workingDaysInWeek = $currentWorkingWeek?->numberOfWorkingDays;
 
                 if (
-                    $workingDaysInWeek > 0 &&
-                    $currentWorkingWeek->hasWorkDay($day) &&
+                    $currentWorkingWeek?->hasWorkDay($day) &&
                     !$this->operatingSite->hasHoliday($day)
                 ) {
                     $usedDays++;
@@ -317,32 +375,133 @@ class User extends Authenticatable
         return $usedDays;
     }
 
+    public function leaveDays(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->userLeaveDays()->get()
+        )->shouldCache();
+    }
+
     public function leaveDaysForYear(CarbonInterface $year): int
     {
         $leaveDays = 0;
         for ($m = 1; $m <= 12; $m++) {
             $month = $year->setMonth($m)->startOfMonth();
-            $activeEntry = $this->userLeaveDays()
+            $activeEntry = $this->leaveDays
                 ->where('type', 'annual')
-                ->whereDate('active_since', '<=', $month)
-                ->latest('active_since')
+                ->where('active_since', '<=', $month)
+                ->sortByDesc('active_since')
                 ->first();
             if ($activeEntry) { //FIXME: should not be possible to be false
                 $leaveDays += $activeEntry->leave_days / 12;
             }
         }
 
-        $leaveDays += $this->userLeaveDays()
+        $leaveDays += $this->leaveDays
             ->where('type', 'remaining')
-            ->whereYear('active_since', $year)->first()?->leave_days ?? 0;
+            ->filter(fn($ld) => Carbon::parse($ld->active_since)->year == $year)
+            ->first()?->leave_days ?? 0;
 
         return ceil($leaveDays);
+    }
+
+    public function getAbsencesForDate(CarbonInterface $date)
+    {
+        $absences = $this->absences()
+            ->with(['patches', 'currentAcceptedPatch'])
+            ->where('status', 'accepted')
+            ->get();
+
+        $absences = $absences->map(fn($a) => $a->currentAcceptedPatch ?? $a);
+
+        return $absences->filter(fn($a) => $date->between(Carbon::parse($a->start)->startOfDay(), Carbon::parse($a->end)->endOfDay()));
+    }
+
+    public function hasAbsenceForDate(CarbonInterface $date)
+    {
+        return $this->getAbsencesForDate($date)->count() > 0;
     }
 
     public function getSollsekundenForDate(CarbonInterface $date)
     {
         $currentWorkingHours = $this->userWorkingHoursForDate($date);
         $currentWorkingWeek = $this->userWorkingWeekForDate($date);
+
+        if (!$currentWorkingHours || !$currentWorkingWeek) return 0;
+
+        $shouldWork =
+            $currentWorkingWeek->hasWorkDay($date) &&
+            !$this->operatingSite->hasHoliday($date);
+
+        if (!$shouldWork) return 0;
+
         return $currentWorkingHours['weekly_working_hours'] / $currentWorkingWeek->numberOfWorkingDays * 3600;
+    }
+
+    public function getEntriesForDate(CarbonInterface $date)
+    {
+        $shifts = $this->shifts()
+            ->where('end', '>=', $date->copy()->startOfDay())
+            ->where('start', '<=', $date->copy()->endOfDay())
+            ->get();
+
+        return collect($shifts)->flatMap(
+            fn($s) =>
+            $s->entries->filter(
+                fn($e) =>
+                Carbon::parse($e->start)->between($date->copy()->startOfDay(), $date->copy()->endOfDay()) &&
+                    Carbon::parse($e->end)->between($date->copy()->startOfDay(), $date->copy()->endOfDay())
+            )
+        );
+    }
+
+    public function getWorkDurationForDate(CarbonInterface $date)
+    {
+        return Shift::workDuration($this->getEntriesForDate($date));
+    }
+
+    public function removeMissingWorkTimeForDate(CarbonInterface $date)
+    {
+        if ($this->getAbsencesForDate($date)
+            ->contains(fn($a) => $a->absence_type_id !== AbsenceType::inOrganization()->where('type', 'Abbau Gleitzeitkonto')->first()->id)
+        ) return;
+
+        $this->defaultTimeAccount->addBalance(
+            min(0, $this->getWorkDurationForDate($date) - $this->getSollsekundenForDate($date)),
+            'Fehlende Stunden am ' . $date->format('d.m.Y')
+        );
+    }
+
+    public function usersInOrganization(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                return Organization::getCurrent()->users;
+            }
+        )->shouldCache();
+    }
+    public function groupUsersInOrganization(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                return Organization::getCurrent()->groupUsers;
+            }
+        )->shouldCache();
+    }
+    public function operatingSiteUsersInOrganization(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                return Organization::getCurrent()->operatingSiteUsers;
+            }
+        )->shouldCache();
+    }
+    public function organizationUsers(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                return Organization::getCurrent()->organizationUsers;
+            }
+        )->shouldCache();
     }
 }
