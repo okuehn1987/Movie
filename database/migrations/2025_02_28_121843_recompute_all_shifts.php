@@ -24,6 +24,7 @@ return new class extends Migration
         });
 
         Shift::query()->delete();
+        WorkLog::whereId(1642)->delete();
 
         //optional because of seeded data
         AbsenceType::where('name', 'Abbau Gleitzeitkonto')->where('type', 'andere')->first()?->update([
@@ -49,9 +50,13 @@ return new class extends Migration
             $user->workLogPatches()->get()->each->updateQuietly(['shift_id' => null]);
             $user->shifts()->delete();
 
-            if ($user->first_name . ' ' . $user->last_name == 'Martin Krawtzow')
-                $user->defaultTimeAccount->addBalance(30 * 3600, 'Ausgleich der Stunden vor dem 15.1.25 weil Martin vorher nicht Herta benutzt hat ...');
-
+            if ($user->first_name . ' ' . $user->last_name == 'Martin Krawtzow') {
+                $user->userWorkingHours()->whereNot('id', 28)->delete();
+                $user->userWorkingHours()->whereId(28)->update([
+                    'active_since' => Carbon::parse('2025-01-15'),
+                    'weekly_working_hours' => 18.75
+                ]);
+            }
 
             $start = Carbon::parse(max(WorkLog::max('start'), WorkLogPatch::where('status', 'accepted')->max('start')))->subDay();
             $affectedDays =
