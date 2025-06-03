@@ -66,11 +66,9 @@ class Absence extends Model
         return (int)Carbon::parse($this->start)->diffInDays(Carbon::parse($this->end)) + 1;
     }
 
-    public function usedDays(): Attribute
+    public function getUsedDaysAttribute()
     {
-        return Attribute::make(
-            get: fn() => self::calculateUsedDays($this)
-        );
+        return self::calculateUsedDays($this);
     }
 
     public static function calculateUsedDays(Absence|AbsencePatch $entry)
