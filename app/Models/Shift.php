@@ -307,7 +307,7 @@ class Shift extends Model
             $newMissingBreakDuration = $newShifts->map(
                 fn($s) => $s['shift']->accountableDuration($s['entries'])['missingBreakDuration']
             )->sum();
-            $breakDurationChange =  $previousMissingBreakDuration - $newMissingBreakDuration;
+            $breakDurationChange = $previousMissingBreakDuration - $newMissingBreakDuration;
 
             $affectedDays = $oldShifts->flatMap(
                 fn($s) =>
@@ -335,6 +335,11 @@ class Shift extends Model
                 $previousAbsencesForDay = $model->user->getAbsencesForDate($day)
                     ->filter(fn($a) => !$a->is($model) && $a->absence_type_id !== $AbbauGleitzeitkonto->id);
 
+                $hasAbsenceForDay = $previousAbsencesForDay->isNotEmpty();
+                $hasAbbauGleitzeitkontoForDay = $previousAbsencesForDay->contains(
+                    fn($a) => $a->absence_type_id === $AbbauGleitzeitkonto->id
+                ) || $type == 'absence' && $model->absence_type_id === $AbbauGleitzeitkonto->id;
+                //erste abwesenheit des Tages, die nicht Abbau Gleitzeitkonto ist
                 $hasNewAbsence = $type == 'absence' && $previousAbsencesForDay->isEmpty() && $model->absence_type_id !== $AbbauGleitzeitkonto->id;
 
                 $oldEntriesForAffectedDay = match ($type) {
@@ -385,15 +390,12 @@ class Shift extends Model
                     => max($oldIstForAffectedDay, $sollForAffectedDay)
                 };
 
-
-
                 //if ist > soll overtime can be added immediatly else schedule will subtract the missing amount at 0:00 
-                if ($day->isSameDay(now()) || $type == 'absence' && !$hasNewAbsence)
+                if ($day->isSameDay(now()) || $hasAbsenceForDay || $hasAbbauGleitzeitkontoForDay)
                     $diffToApply += max($sollForAffectedDay, $newIstForAffectedDay) - max($sollForAffectedDay, $oldIstForAffectedDay);
                 else
                     $diffToApply += $newIstForAffectedDay - $oldIstForAffectedDay;
             }
-
 
             $diffToApply += $breakDurationChange;
 

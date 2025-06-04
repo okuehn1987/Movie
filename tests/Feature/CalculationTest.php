@@ -503,9 +503,6 @@ class CalculationTest extends TestCase
             'absence_type_id' => 9, //AU
         ]);
 
-        dump($this->oldUser->defaultTimeAccount->fromTransactions->map->toArray());
-        dump($this->oldUser->defaultTimeAccount->toTransactions->map->toArray());
-
         $this->assertEquals(-15 * 60, $this->oldUser->defaultTimeAccount->fresh()->balance);
     }
 

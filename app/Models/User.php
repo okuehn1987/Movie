@@ -414,7 +414,7 @@ class User extends Authenticatable
 
         $absences = $absences->map(fn($a) => $a->currentAcceptedPatch ?? $a);
 
-        return $absences->filter(fn($a) => $date->between(Carbon::parse($a->start)->startOfDay(), Carbon::parse($a->end)->endOfDay()));
+        return $absences->filter(fn($a) => $date->betweenIncluded(Carbon::parse($a->start)->startOfDay(), Carbon::parse($a->end)->endOfDay()));
     }
 
     public function hasAbsenceForDate(CarbonInterface $date)
