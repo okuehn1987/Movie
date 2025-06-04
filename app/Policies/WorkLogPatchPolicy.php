@@ -8,11 +8,11 @@ use Illuminate\Auth\Access\Response;
 
 class WorkLogPatchPolicy
 {
-    use _AllowSuperAdminAndOrganizationOwner;
+    use _AllowSuperAdmin;
 
     public function create(User $authUser, User $user): bool
     {
-        return $authUser->id == $user->id;
+        return $authUser->is($user);
     }
 
     public function update(User $authUser, User $user): bool

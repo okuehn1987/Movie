@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Paginator, TimeAccount, TimeAccountSetting, TimeAccountTransaction, User } from '@/types/types';
+import { Paginator, RelationPick, Relations, TimeAccount, TimeAccountTransaction, User } from '@/types/types';
 import { formatDuration, usePagination } from '@/utils';
 import { DateTime } from 'luxon';
 import { toRefs } from 'vue';
@@ -8,10 +8,9 @@ import UserShowNavBar from './partial/UserShowNavBar.vue';
 
 const props = defineProps<{
     user: User;
-    time_accounts: (Pick<TimeAccount, 'id' | 'user_id' | 'balance' | 'balance_limit' | 'time_account_setting_id' | 'name' | 'deleted_at'> & {
-        time_account_setting: TimeAccountSetting;
-    })[];
-    time_account_transactions: Paginator<TimeAccountTransaction & { user: Pick<User, 'id' | 'first_name' | 'last_name'> }>;
+    time_accounts: (Pick<TimeAccount, 'id' | 'user_id' | 'balance' | 'balance_limit' | 'time_account_setting_id' | 'name' | 'deleted_at'> &
+        Pick<Relations<'timeAccount'>, 'time_account_setting'>)[];
+    time_account_transactions: Paginator<TimeAccountTransaction & RelationPick<'timeAccountTransaction', 'user', 'id' | 'first_name' | 'last_name'>>;
 }>();
 
 const {
@@ -28,7 +27,7 @@ function getTransactionType(t: TimeAccountTransaction) {
 }
 
 function getAccountName(id: TimeAccountTransaction['from_id'] | TimeAccountTransaction['to_id']) {
-    const account = props.time_accounts.find(ta => ta.id == id);
+    const account = props.time_accounts.find(ta => ta.id == id);  
     if (!account) return '';
     return account?.name + (account?.deleted_at ? ' (gelöscht)' : '');
 }
@@ -41,7 +40,7 @@ function getAccountName(id: TimeAccountTransaction['from_id'] | TimeAccountTrans
             :items="
                 timeAccountTransactions.map(t => ({
                     ...t,
-                    created_at: DateTime.fromISO(t.created_at).toFormat('dd.MM.yyyy HH:ii'),
+                    created_at: DateTime.fromISO(t.created_at).toFormat('dd.MM.yyyy HH:mm'),
                     transactionType: getTransactionType(t),
                     from: getAccountName(t.from_id),
                     to: getAccountName(t.to_id),

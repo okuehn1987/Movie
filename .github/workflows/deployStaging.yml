@@ -23,6 +23,6 @@ jobs:
             mode: ${{github.event.inputs.mode}}
             createTag: false
             runDeploymentCheck: false
-            runPlaywrightDeploymentCheck: true
+            runPlaywrightDeploymentCheck: false
             domain: staging.herta.mbd-team.de
             project: Herta

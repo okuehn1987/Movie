@@ -1,0 +1,1 @@
+.editable-cell:not(:first-child):hover>div{filter:brightness(.8)}.editable-cell:not(:first-child):hover>div.empty{background-color:#ccc}

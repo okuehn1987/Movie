@@ -10,7 +10,7 @@ trait ScopeInOrganization
     {
         $org = Organization::getCurrent();
         if (!$org) return $builder;
-        if (new self instanceof \App\Models\Absence) {
+        if (new self instanceof \App\Models\Absence || new self instanceof \App\Models\AbsencePatch) {
             return $builder->whereIn('absence_type_id', AbsenceType::select('id')->withTrashed()->inOrganization());
         }
         if (new self instanceof \App\Models\OperatingTime || new self instanceof \App\Models\User) {
@@ -20,8 +20,9 @@ trait ScopeInOrganization
             );
         }
         if (
-            new self instanceof \App\Models\TravelLog || new self instanceof \App\Models\WorkLog ||
-            new self instanceof \App\Models\WorkLogPatch || new self instanceof \App\Models\TimeAccount
+            new self instanceof \App\Models\TravelLog || new self instanceof \App\Models\TravelLogPatch ||
+            new self instanceof \App\Models\WorkLog || new self instanceof \App\Models\WorkLogPatch ||
+            new self instanceof \App\Models\TimeAccount
         ) {
             return $builder->whereIn('user_id', User::select('id')->inOrganization());
         }

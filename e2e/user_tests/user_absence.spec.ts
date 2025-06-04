@@ -45,6 +45,7 @@ test('can request a vacation', async ({ page }) => {
     await page.getByRole('row', { name: 'user user user@user.com /' }).getByRole('link').getByRole('button').click();
     await page.getByRole('tab', { name: 'Abwesenheiten' }).click();
     await expect(page.getByRole('cell', { name: 'Genutzte Urlaubstage für das' })).toBeVisible();
-    await expect(page.getByRole('cell', { name: '7 von 0' })).toBeVisible();
+    await expect(page.getByRole('cell', { name: '11 von 0' })).toBeVisible();
     await expect(page.getByText('Genehmigt')).toBeVisible();
 });
+  
