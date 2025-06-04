@@ -33,6 +33,7 @@ class DisputeController extends Controller
         return [
             ...WorkLogPatch::inOrganization()
                 ->where('status', 'created')
+                ->whereHas('user')
                 ->with(['log:id,start,end,is_home_office', 'user:id,first_name,last_name'])
                 ->get(['id', 'start', 'end', 'is_home_office', 'user_id', 'work_log_id', 'comment'])
                 ->filter(fn($patch) => $authUser->can('update', [WorkLogPatch::class, $patch->user]))
@@ -46,6 +47,7 @@ class DisputeController extends Controller
 
         $absenceRequests = Absence::inOrganization()
             ->where('status', 'created')
+            ->whereHas('user')
             ->with(['user:id,first_name,last_name,operating_site_id', 'absenceType:id,name'])
             ->get(['id', 'start', 'end', 'user_id', 'absence_type_id']);
 
@@ -74,6 +76,7 @@ class DisputeController extends Controller
 
         $absencePatchRequests = AbsencePatch::inOrganization()
             ->where('status', 'created')
+            ->whereHas('user')
             ->with(['user:id,first_name,last_name,operating_site_id,supervisor_id', 'absenceType:id,name'])
             ->get(['id', 'start', 'end', 'user_id', 'absence_type_id', 'absence_id']);
 
