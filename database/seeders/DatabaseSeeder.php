@@ -65,12 +65,12 @@ class DatabaseSeeder extends Seeder
             ])->create();
         }
 
-        foreach (User::all() as $user) {
-            Shift::factory(1, ['start' => now()->subDay(), 'end' => now(), 'user_id' => $user->id])
-                ->has(WorkLog::factory(3, ['user_id' => $user->id]))
-                ->has(WorkLog::factory(1, ['end' => null, 'start' => now()->subDay(), 'user_id' => $user->id]))
-                ->create();
-        }
+        // foreach (User::all() as $user) {
+        //     Shift::factory(1, ['start' => now()->subDay(), 'end' => now(), 'user_id' => $user->id])
+        //         ->has(WorkLog::factory(3, ['user_id' => $user->id]))
+        //         ->has(WorkLog::factory(1, ['end' => null, 'start' => now()->subDay(), 'user_id' => $user->id]))
+        //         ->create();
+        // }
 
         $admin = User::factory([
             'operating_site_id' => 1,
@@ -86,9 +86,9 @@ class DatabaseSeeder extends Seeder
             ->has(UserWorkingWeek::factory(1))
             ->create();
 
-        Shift::factory(1, ['start' => now()->subHour(), 'end' => now(), 'user_id' => $admin->id])
-            ->has(WorkLog::factory(3, ['user_id' => $admin->id]))
-            ->has(WorkLog::factory(1, ['end' => null, 'start' => now()->subHour(), 'user_id' => $admin->id]))->create();
+        // Shift::factory(1, ['start' => now()->subHour(), 'end' => now(), 'user_id' => $admin->id])
+        //     ->has(WorkLog::factory(3, ['user_id' => $admin->id]))
+        //     ->has(WorkLog::factory(1, ['end' => null, 'start' => now()->subHour(), 'user_id' => $admin->id]))->create();
 
         Organization::find(1)->update(['owner_id' => $admin->id]);
 

@@ -32,16 +32,34 @@ class WorkLog extends Model
             //if the entry spans multiple days we need to split it into different entries
             if ($model->end && !Carbon::parse($model->start)->isSameDay($model->end)) {
                 if (Carbon::parse($model->start)->gt($model->end)) throw new Exception("start can't be after end");
+                $oldEnd = Carbon::parse($model->end)->copy();
+                $model->end = Carbon::parse($model->start)->copy()->endOfDay();
                 // run backwards for easier mutation
-                for ($day = Carbon::parse($model->end)->startOfDay(); !$day->isSameDay($model->start); $day->subDay()) {
+                for ($day = Carbon::parse($oldEnd)->startOfDay(); !$day->isSameDay($model->start); $day->subDay()) {
                     $model->replicate()->fill([
                         'start' => $day->copy()->startOfDay(),
-                        'end' => min(Carbon::parse($model->end)->copy(), $day->copy()->endOfDay()),
+                        'end' => min(Carbon::parse($oldEnd)->copy(), $day->copy()->endOfDay()),
                     ])->save();
                 }
-                $model->end = Carbon::parse($model->start)->copy()->endOfDay();
             }
             Shift::computeAffected($model);
+        });
+        self::deleting(function (WorkLog $model) {
+            // dd(5);
+            $patch = new WorkLogPatch([
+                'start' => '1970-01-01 00:00:00',
+                'end' => '1970-01-01 00:00:00',
+                'user_id' => $model->user_id,
+                'status' => 'accepted',
+                'accepted_at' => now(),
+                'is_home_office' => $model->is_home_office,
+                'comment' => $model->comment,
+                'type' => 'delete',
+                'work_log_id' => $model->id,
+            ]);
+
+            Shift::computeAffected($patch);
+            $patch->saveQuietly();
         });
     }
 

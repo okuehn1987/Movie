@@ -465,6 +465,7 @@ class Shift extends Model
         $allEntries = $oldShifts->flatMap(fn($s) => $s->entries)
             ->filter(fn($e) => !$e->is($previousModel))
             ->merge([$model])
+            ->filter(fn($e) => !property_exists($e, 'type') || $e->type !== 'delete')
             ->sortBy('start');
 
         $shiftWithEntries = [

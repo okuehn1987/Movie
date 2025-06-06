@@ -41,7 +41,7 @@ class WorkLogPatchController extends Controller
         ]);
 
         $supervisor = $workLog->user->supervisor;
-        if ($supervisor->is($authUser)) $patch->accept();
+        if (!$supervisor || $supervisor->is($authUser)) $patch->accept();
         else $supervisor->notify(new WorkLogPatchNotification($workLog->user, $patch));
 
         return back()->with('success',  'Korrektur der Arbeitszeit erfolgreich beantragt.');
