@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { User, WorkLog, WorkLogPatch } from '@/types/types';
 import { useMaxScrollHeight } from '@/utils';
@@ -136,9 +137,9 @@ const tableHeight = useMaxScrollHeight(0);
                     { title: 'Korrektur', key: 'status' },
                     {
                         title: '',
-                        key: 'action',
+                        key: 'actions',
                         sortable: false,
-                        align: 'end',
+                        width: '1px',
                     },
                 ]"
                 :items="
@@ -168,16 +169,23 @@ const tableHeight = useMaxScrollHeight(0);
                         }))
                 "
             >
-                <template v-slot:item.action="{ item }">
-                    <v-btn
-                        v-if="editableWorkLogs.find(e => e.id === item.id) && can('workLogPatch', 'create')"
-                        color="primary"
-                        @click.stop="editWorkLog(item.id)"
-                        :icon="workLogs.find(log => log.id === item.id)?.patches.at(-1)?.status === 'created' ? 'mdi-eye' : 'mdi-pencil'"
-                        variant="text"
-                        data-testid="entryToWorkLog"
-                    >
-                    </v-btn>
+                <template v-slot:item.actions="{ item }">
+                    <div class="d-flex ga-2">
+                        <v-btn
+                            v-if="editableWorkLogs.find(e => e.id === item.id) && can('workLogPatch', 'create')"
+                            color="primary"
+                            @click.stop="editWorkLog(item.id)"
+                            :icon="workLogs.find(log => log.id === item.id)?.patches.at(-1)?.status === 'created' ? 'mdi-eye' : 'mdi-pencil'"
+                            variant="text"
+                            data-testid="entryToWorkLog"
+                        ></v-btn>
+                        <ConfirmDelete
+                            v-if="can('workLog', 'delete')"
+                            title="Eintrag löschen"
+                            content="Möchten Sie diesen Eintrag wirklich löschen? Dies kann nicht rückgängig gemacht werden."
+                            :route="route('workLog.destroy', { workLog: item.id })"
+                        ></ConfirmDelete>
+                    </div>
                 </template>
             </v-data-table-virtual>
 
@@ -244,8 +252,7 @@ const tableHeight = useMaxScrollHeight(0);
                                             :error-messages="workLogForm.errors.comment"
                                             variant="filled"
                                             rows="3"
-                                        >
-                                        </v-textarea>
+                                        ></v-textarea>
                                     </v-col>
                                     <v-col cols="12" md="3">
                                         <v-checkbox
@@ -265,15 +272,17 @@ const tableHeight = useMaxScrollHeight(0);
                                             :loading="workLogForm.processing"
                                             @click.stop="retreatPatch"
                                             color="primary"
-                                            >Antrag zurückziehen</v-btn
                                         >
+                                            Antrag zurückziehen
+                                        </v-btn>
                                         <v-btn
                                             v-else-if="can('workLogPatch', 'create') && patchMode === 'edit'"
                                             :loading="workLogForm.processing"
                                             type="submit"
                                             color="primary"
-                                            >Korrektur beantragen</v-btn
                                         >
+                                            Korrektur beantragen
+                                        </v-btn>
                                     </v-col>
                                 </v-row>
                             </v-form>

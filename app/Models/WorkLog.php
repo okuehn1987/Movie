@@ -45,7 +45,6 @@ class WorkLog extends Model
             Shift::computeAffected($model);
         });
         self::deleting(function (WorkLog $model) {
-            // dd(5);
             $patch = new WorkLogPatch([
                 'start' => '1970-01-01 00:00:00',
                 'end' => '1970-01-01 00:00:00',
