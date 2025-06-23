@@ -399,7 +399,7 @@ class User extends Authenticatable
 
         $leaveDays += $this->leaveDays
             ->where('type', 'remaining')
-            ->filter(fn($ld) => Carbon::parse($ld->active_since)->year == $year)
+            ->filter(fn($ld) => Carbon::parse($ld->active_since)->year == $year->year)
             ->first()?->leave_days ?? 0;
 
         return ceil($leaveDays);
