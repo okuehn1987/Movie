@@ -538,4 +538,73 @@ class CalculationTest extends TestCase
 
         $this->assertEquals(0, $this->oldUser->defaultTimeAccount->fresh()->balance);
     }
+
+    public function test_delete_workLog()
+    {
+        $workLog = $this->oldUser->workLogs()->create([
+            'start' =>  now(),
+            'end' =>  now()->addHours(9),
+            'status' => 'accepted',
+            'accepted_at' =>  now()
+        ]);
+        $this->assertEquals(1 * 3600, $this->oldUser->defaultTimeAccount->fresh()->balance);
+
+        $workLog->fresh()->delete();
+        $this->assertEquals(0, $this->oldUser->defaultTimeAccount->fresh()->balance);
+    }
+
+    public function test_delete_workLog_with_overtime()
+    {
+        $workLog = $this->oldUser->workLogs()->create([
+            'start' =>  now(),
+            'end' =>  now()->addHours(6),
+            'status' => 'accepted',
+            'accepted_at' =>  now()
+        ]);
+        $this->assertEquals(0, $this->oldUser->defaultTimeAccount->fresh()->balance);
+
+        $nextStart = now()->addHours(6.5);
+        $nextWorkLog = $this->oldUser->workLogs()->create([
+            'start' =>  $nextStart,
+            'end' =>  $nextStart->copy()->addHours(3),
+            'status' => 'accepted',
+            'accepted_at' =>  now()
+        ]);
+
+        $this->assertEquals(1.5 * 3600, $this->oldUser->defaultTimeAccount->fresh()->balance);
+
+        // $workLog->fresh()->delete();
+        $nextWorkLog->fresh()->delete();
+
+        $this->assertEquals(0, $this->oldUser->defaultTimeAccount->fresh()->balance);
+    }
+
+    public function test_delete_absence()
+    {
+        $date = now()->subDays(6);
+        $this->oldUser->removeMissingWorkTimeForDate($date);
+
+        $workLog = $this->oldUser->workLogs()->create([
+            'start' =>  $date,
+            'end' =>  $date->copy()->addHours(6),
+            'status' => 'accepted',
+            'accepted_at' => $date
+        ]);
+
+        $this->assertEquals(- (1 * 3600 + 30 * 60), $this->oldUser->defaultTimeAccount->fresh()->balance);
+
+        $absence = $this->oldUser->absences()->create([
+            'start' =>  $date,
+            'end' =>  $date,
+            'status' => 'accepted',
+            'accepted_at' =>  now(),
+            'absence_type_id' => 10,
+        ]);
+
+        $this->assertEquals(0, $this->oldUser->defaultTimeAccount->fresh()->balance);
+
+        $absence->fresh()->delete();
+
+        $this->assertEquals(- (1 * 3600 + 30 * 60), $this->oldUser->defaultTimeAccount->fresh()->balance);
+    }
 }

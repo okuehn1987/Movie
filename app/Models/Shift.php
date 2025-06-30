@@ -48,17 +48,23 @@ class Shift extends Model
             get: function () {
                 $workLogs = $this->workLogs()
                     ->doesntHave('currentAcceptedPatch')
-                    ->where('status', 'accepted')->get();
+                    ->where('status', 'accepted')
+                    ->get();
                 $travelLogs = $this->travelLogs()
                     ->doesntHave('currentAcceptedPatch')
-                    ->where('status', 'accepted')->get();
+                    ->where('status', 'accepted')
+                    ->get();
                 $workLogPatches = $this->workLogPatches()
                     ->with('log.currentAcceptedPatch')
-                    ->where('status', 'accepted')->get()
+                    ->where('status', 'accepted')
+                    ->whereNot('type', 'delete')
+                    ->get()
                     ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p));
                 $travelLogPatches = $this->travelLogPatches()
                     ->with('log.currentAcceptedPatch')
-                    ->where('status', 'accepted')->get()
+                    ->where('status', 'accepted')
+                    ->whereNot('type', 'delete')
+                    ->get()
                     ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p));
                 return  collect($workLogs)->merge($travelLogs)->merge($workLogPatches)->merge($travelLogPatches);
             }
@@ -345,7 +351,11 @@ class Shift extends Model
                 $oldEntriesForAffectedDay = match ($type) {
                     'work'
                     => $model->user->getEntriesForDate($day)
-                        ->merge([$previousModel])
+                        ->merge([
+                            array_key_exists('type', $previousModel->attributes) && $previousModel->type == 'delete'
+                                ? null
+                                : ($day->isSameDay($previousModel->start) ? $previousModel : null)
+                        ])
                         ->filter(
                             fn($e) =>
                             $e !== null &&
@@ -353,7 +363,7 @@ class Shift extends Model
                                 $e->shift_id != null &&
                                 Carbon::parse($e->accepted_at)->startOfSecond() <=
                                 Carbon::parse($model->accepted_at)->startOfSecond()
-                        ),
+                        )->unique(fn($e) => get_class($e) . $e->id),
                     'absence'
                     => $hasNewAbsence ?
                         $model->user->getEntriesForDate($day)->filter(
@@ -465,8 +475,10 @@ class Shift extends Model
         $allEntries = $oldShifts->flatMap(fn($s) => $s->entries)
             ->filter(fn($e) => !$e->is($previousModel))
             ->merge([$model])
-            ->filter(fn($e) => !property_exists($e, 'type') || $e->type !== 'delete')
+            ->filter(fn($e) => !array_key_exists('type', $e->attributes) || $e->type !== 'delete')
             ->sortBy('start');
+
+        if ($allEntries->isEmpty()) return $newShifts;
 
         $shiftWithEntries = [
             'shift' => Shift::create([

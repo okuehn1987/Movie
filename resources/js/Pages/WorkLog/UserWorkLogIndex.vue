@@ -42,17 +42,19 @@ const workLogForm = useForm({
 function submit() {
     workLogForm
         .transform(d => {
-            const start_time = DateTime.fromFormat(d.start_time, 'HH:mm');
-            const end_time = DateTime.fromFormat(d.end_time, 'HH:mm');
+            const start_time = DateTime.fromFormat(d.start_time, 'HH:mm:ss');
+            const end_time = DateTime.fromFormat(d.end_time, 'HH:mm:ss');
             return {
                 ...d,
                 start: DateTime.fromISO(d.start.toISOString()).set({
                     hour: start_time.hour,
                     minute: start_time.minute,
+                    second: start_time.second,
                 }),
                 end: DateTime.fromISO(d.end.toISOString()).set({
                     hour: end_time.hour,
                     minute: end_time.minute,
+                    second: end_time.second,
                 }),
                 workLog: workLogForm.id,
             };
@@ -93,8 +95,8 @@ function editWorkLog(id: WorkLog['id']) {
     workLogForm.id = id;
     workLogForm.start = new Date(start);
     workLogForm.end = end ? new Date(end) : new Date();
-    workLogForm.start_time = DateTime.fromSQL(start).toFormat('HH:mm');
-    workLogForm.end_time = DateTime.fromSQL(end || DateTime.now().toSQL()).toFormat('HH:mm');
+    workLogForm.start_time = DateTime.fromSQL(start).toFormat('HH:mm:ss');
+    workLogForm.end_time = DateTime.fromSQL(end || DateTime.now().toSQL()).toFormat('HH:mm:ss');
     workLogForm.is_home_office = isHomeOffice;
     showDialog.value = true;
 }
@@ -215,6 +217,7 @@ const tableHeight = useMaxScrollHeight(0);
                                         <v-text-field
                                             type="time"
                                             label="Start"
+                                            step="1"
                                             data-testid="userTimeCorrectionStartTime"
                                             required
                                             :error-messages="workLogForm.errors.start_time"
@@ -238,6 +241,7 @@ const tableHeight = useMaxScrollHeight(0);
                                             :disabled="patchMode == 'show'"
                                             type="time"
                                             label="Ende"
+                                            step="1"
                                             data-testid="userTimeCorrectionEndTime"
                                             required
                                             :error-messages="workLogForm.errors.end_time"

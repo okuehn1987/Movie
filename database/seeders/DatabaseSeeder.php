@@ -81,7 +81,7 @@ class DatabaseSeeder extends Seeder
             'role' => 'super-admin',
             'organization_id' => 1,
         ])
-            ->has(UserWorkingHour::factory(1))
+            ->has(UserWorkingHour::factory(1, ['weekly_working_hours' => 40, 'active_since' => now()->startOfYear()]))
             ->has(TimeAccount::factory(1, ['time_account_setting_id' => 1]))
             ->has(UserWorkingWeek::factory(1))
             ->create();
