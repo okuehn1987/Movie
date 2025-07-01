@@ -476,7 +476,7 @@ class User extends Authenticatable
     {
         return Attribute::make(
             get: function () {
-                return Organization::getCurrent()->users;
+                return Organization::getCurrent()->users()->withTrashed()->get();
             }
         )->shouldCache();
     }
