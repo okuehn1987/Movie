@@ -34,14 +34,16 @@ class WorkLog extends Model
                 if (Carbon::parse($model->start)->gt($model->end)) throw new Exception("start can't be after end");
                 $end = Carbon::parse($model->end)->copy();
                 $model->end = Carbon::parse($model->start)->copy()->endOfDay();
+                Shift::computeAffected($model);
                 for ($day = Carbon::parse($model->start)->startOfDay()->addDay(); $day->lte($end); $day->addDay()) {
                     $model->replicate()->fill([
                         'start' => max(Carbon::parse($model->start)->copy(), $day->copy()->startOfDay()),
                         'end' => min(Carbon::parse($end)->copy(), $day->copy()->endOfDay()),
                     ])->save();
                 }
+            } else {
+                Shift::computeAffected($model);
             }
-            Shift::computeAffected($model);
         });
     }
 
