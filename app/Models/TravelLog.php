@@ -28,14 +28,14 @@ class TravelLog extends Model
         self::saving(function (TravelLog $model) {
             //if the entry spans multiple days we need to split it into different entries
             if ($model->end && !Carbon::parse($model->start)->isSameDay($model->end)) {
-                // run backwards for easier mutation
-                for ($day = Carbon::parse($model->end)->startOfDay(); !$day->isSameDay($model->start); $day->subDay()) {
+                $end = Carbon::parse($model->end)->copy();
+                $model->end = Carbon::parse($model->start)->copy()->endOfDay();
+                for ($day = Carbon::parse($model->start)->startOfDay()->addDay(); $day->lte($end); $day->addDay()) {
                     $model->replicate()->fill([
-                        'start' => $day->copy()->startOfDay(),
-                        'end' => min(Carbon::parse($model->end)->copy(), $day->copy()->endOfDay()),
+                        'start' => max(Carbon::parse($model->start)->copy(), $day->copy()->startOfDay()),
+                        'end' => min(Carbon::parse($end)->copy(), $day->copy()->endOfDay()),
                     ])->save();
                 }
-                $model->end = Carbon::parse($model->start)->copy()->endOfDay();
             }
             Shift::computeAffected($model);
         });
