@@ -33,7 +33,7 @@ class WorkLogController extends Controller
 
         $last = $authUser->latestWorkLog;
 
-        if ($last->end == null) {
+        if ($last && $last->end == null) {
             WorkLog::find($last->id)->update([
                 'end' => now(),
             ]);
