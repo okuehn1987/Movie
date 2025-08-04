@@ -21,4 +21,12 @@ class TimeAccountSetting extends Model
     {
         return $this->hasMany(TimeAccount::class);
     }
+
+    public static function getDefaultSettings()
+    {
+        return [
+            'type' => null,
+            'truncation_cycle_length_in_months' => 1,
+        ];
+    }
 }
