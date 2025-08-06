@@ -64,8 +64,8 @@ class AbsenceController extends Controller
                     ))
             );
 
-        $absences = [...$absences->filter($absenceFilter)->toArray()];
-        $absencePatches = [...$absencePatches->filter($absenceFilter)->toArray()];
+        $absences = $absences->filter($absenceFilter)->values();
+        $absencePatches = $absencePatches->filter($absenceFilter)->values();
 
         $holidays = HolidayService::getHolidaysForMonth($authUser->operatingSite->country, $authUser->operatingSite->federal_state, $date)
             ->mapWithKeys(
