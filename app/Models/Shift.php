@@ -254,9 +254,9 @@ class Shift extends Model
                     ->get(),
                 'absence'
                 => Shift::where('user_id', $model->user_id)
-                    ->whereDate('start', '<=', $model->end)
-                    ->whereDate('end', '>=', $model->start)
-                    ->whereDate('end', '<=', $model->end)
+                    ->where('start', '<=', Carbon::parse($model->end)->copy()->endOfDay())
+                    ->where('end', '>=', Carbon::parse($model->start)->copy()->startOfDay())
+                    ->where('end', '<=', Carbon::parse($model->end)->copy()->endOfDay())
                     ->get(),
             };
             $currentEntry = $modelClass::find($model->id) ?? $model;
@@ -281,9 +281,9 @@ class Shift extends Model
                 => Shift::whereId($previousModel->shift_id)->get(),
                 'absence'
                 => Shift::where('user_id', $model->user_id)
-                    ->whereDate('start', '<=', $previousModel->end)
-                    ->whereDate('end', '>=', $previousModel->start)
-                    ->whereDate('end', '<=', $previousModel->end)
+                    ->where('start', '<=', Carbon::parse($previousModel->end)->copy()->endOfDay())
+                    ->where('end', '>=', Carbon::parse($previousModel->start)->copy()->startOfDay())
+                    ->where('end', '<=', Carbon::parse($previousModel->end)->copy()->endOfDay())
                     ->get()
             };
 
@@ -307,7 +307,10 @@ class Shift extends Model
                 'work'
                 => self::handleModelMovement($model, $previousModel, $oldShifts),
                 'absence'
-                => collect([])
+                =>  match (true) {
+                    $variant == 'log' || $model->type == 'patch' => collect([]),
+                    $model->type == 'delete' => self::handleModelMovement($model, $previousModel, $oldShifts),
+                }
             };
 
             $newMissingBreakDuration = $newShifts->map(
@@ -330,7 +333,7 @@ class Shift extends Model
                 )->map(
                     fn($i) => Carbon::parse($previousModel->start)->addDays($i)->startOfDay()
                 )
-            )->unique();
+            )->unique()->filter(fn($d) => $d->gte('1970-01-02'));
 
             $diffToApply = 0;
             foreach ($affectedDays as $day) {
@@ -339,14 +342,26 @@ class Shift extends Model
                 $AbbauGleitzeitkonto = AbsenceType::inOrganization()->where('type', 'Abbau Gleitzeitkonto')->first();
 
                 $previousAbsencesForDay = $model->user->getAbsencesForDate($day)
-                    ->filter(fn($a) => !$a->is($model) && $a->absence_type_id !== $AbbauGleitzeitkonto->id);
+                    ->filter(
+                        fn($a) => !$a->is($model) && $a->absence_type_id !== $AbbauGleitzeitkonto->id &&
+                            (!array_key_exists('type', $a->toArray()) || $a->type != 'delete') &&
+                            (
+                                $variant != 'patch' ||
+                                ($variant == 'patch' && $model->type != 'delete') ||
+                                ($model->type == 'delete' &&
+                                    (!array_key_exists('absence_id', $a->toArray()) && $a->id != $model->absence_id) ||
+                                    (array_key_exists('absence_id', $a->toArray()) && $a->absence_id != $model->absence_id)
+                                )
+                            )
+
+                    );
 
                 $hasAbsenceForDay = $previousAbsencesForDay->isNotEmpty();
                 $hasAbbauGleitzeitkontoForDay = $previousAbsencesForDay->contains(
                     fn($a) => $a->absence_type_id === $AbbauGleitzeitkonto->id
                 ) || $type == 'absence' && $model->absence_type_id === $AbbauGleitzeitkonto->id;
                 //erste abwesenheit des Tages, die nicht Abbau Gleitzeitkonto ist
-                $hasNewAbsence = $type == 'absence' && $previousAbsencesForDay->isEmpty() && $model->absence_type_id !== $AbbauGleitzeitkonto->id;
+                $hasNewAbsence = $type == 'absence' && ($variant == 'log' || $model->type != 'delete') && $previousAbsencesForDay->isEmpty() && $model->absence_type_id !== $AbbauGleitzeitkonto->id;
 
                 $oldEntriesForAffectedDay = match ($type) {
                     'work'
@@ -369,13 +384,19 @@ class Shift extends Model
                         $model->user->getEntriesForDate($day)->filter(
                             fn($e) =>
                             Carbon::parse($e->accepted_at)->startOfSecond() <= Carbon::parse($model->accepted_at)->startOfSecond()
-                        ) :
-                        collect([])
+                        ) :  collect([])
                 };
 
-                $oldIstForAffectedDay = self::workDuration($oldEntriesForAffectedDay);
 
                 $sollForAffectedDay = $model->user->getSollsekundenForDate($day);
+                $oldIstForAffectedDay = match ($type) {
+                    'work' => self::workDuration($oldEntriesForAffectedDay),
+                    'absence' =>  match (true) {
+                        $variant == 'log' || $model->type == 'patch' =>  self::workDuration($oldEntriesForAffectedDay),
+                        $model->type == 'delete' => $sollForAffectedDay,
+                    }
+                };
+
 
                 $entriesOfUnaffectedShifts = $model->user->getEntriesForDate($day)
                     ->filter(
@@ -397,7 +418,10 @@ class Shift extends Model
                     'work'
                     => self::workDuration($entriesOfUnaffectedShifts) + self::workDuration($entriesOfNewShiftsForDay),
                     'absence'
-                    => max($oldIstForAffectedDay, $sollForAffectedDay)
+                    =>  match (true) {
+                        $variant == 'log' || $model->type == 'patch' =>  max($oldIstForAffectedDay, $sollForAffectedDay),
+                        $model->type == 'delete' => self::workDuration($entriesOfUnaffectedShifts) + self::workDuration($entriesOfNewShiftsForDay),
+                    }
                 };
 
                 //if ist > soll overtime can be added immediatly else schedule will subtract the missing amount at 0:00 
