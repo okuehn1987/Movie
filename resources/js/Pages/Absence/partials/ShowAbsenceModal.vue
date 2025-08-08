@@ -36,7 +36,7 @@ function withdrawRequest() {
     if ('absence_id' in props.selectedAbsence) {
         router.delete(route('absencePatch.destroy', { absencePatch: props.selectedAbsence.id }), options);
     } else {
-        router.delete(route('absence.destroy', { absence: props.selectedAbsence.id }), options);
+        router.delete(route('absence.destroyDispute', { absence: props.selectedAbsence.id }), options);
     }
 }
 </script>

@@ -354,6 +354,14 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
                   absence_patch_id: AbsencePatch['id'];
               };
           }
+        | {
+              type: 'App\\Notifications\\AbsenceDeleteNotification';
+              data: {
+                  title: `${User['first_name']} ${User['last_name']} hat die Löschung einer Abwesenheit beantragt.`;
+                  absence_id: Absence['id'];
+                  status: Status;
+              };
+          }
     );
 
 export type PermissionValue = 'read' | 'write' | null;

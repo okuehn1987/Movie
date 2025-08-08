@@ -141,6 +141,13 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "absence.destroyDispute": [
+        {
+            "name": "absence",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "absence.updateStatus": [
         {
             "name": "absence",
@@ -235,6 +242,13 @@ declare module 'ziggy-js' {
     ],
     "workLog.index": [],
     "workLog.store": [],
+    "workLog.destroy": [
+        {
+            "name": "workLog",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "user.workLog.index": [
         {
             "name": "user",
