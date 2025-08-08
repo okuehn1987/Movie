@@ -47,8 +47,8 @@ class WorkLog extends Model
         });
         self::deleting(function (WorkLog $model) {
             $patch = new WorkLogPatch([
-                'start' => '1970-01-01 00:00:00',
-                'end' => '1970-01-01 00:00:00',
+                'start' => '1970-01-01',
+                'end' => '1970-01-01',
                 'user_id' => $model->user_id,
                 'status' => 'accepted',
                 'accepted_at' => now(),
