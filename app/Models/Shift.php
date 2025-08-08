@@ -437,15 +437,15 @@ class Shift extends Model
                 $model instanceof WorkLog
                 => 'neuer Buchung',
                 $model instanceof WorkLogPatch
-                => 'Zeitkorrektur',
+                => $model->type != 'delete' ? 'Zeitkorrektur' : 'Zeitlöschung',
                 $model instanceof TravelLog
                 => 'neuer Dienstreise',
                 $model instanceof TravelLogPatch
-                => 'Dienstreisekorrektur',
+                => $model->type != 'delete' ? 'Dienstreisekorrektur' : 'Dienstreiselöschung',
                 $model instanceof Absence
                 => 'neuer Abwesenheit',
                 $model instanceof AbsencePatch
-                => 'Abwesenheitskorrektur',
+                => $model->type != 'delete' ? 'Abwesenheitskorrektur' : 'Abwesenheitslöschung',
             };
 
             //TODO: message doesnt make sense for multiple affected shifts

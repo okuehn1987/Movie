@@ -6,6 +6,7 @@ use App\Models\Absence;
 use App\Models\AbsencePatch;
 use App\Models\AbsenceType;
 use App\Models\User;
+use App\Notifications\AbsenceDeleteNotification;
 use App\Notifications\AbsenceNotification;
 use App\Notifications\AbsencePatchNotification;
 use App\Services\HolidayService;
@@ -43,6 +44,7 @@ class AbsenceController extends Controller
         $absencePatches = AbsencePatch::inOrganization()
             ->whereIn('status', ['accepted', 'created'])
             ->where(fn($q) => $q->whereDate('start', '<=', $date->copy()->endOfMonth())->whereDate('end', '>=', $date->copy()->startOfMonth()))
+            ->whereHas('log')
             ->with([
                 'absenceType' => fn($q) => $q->select(['id', 'abbreviation'])->withTrashed(),
                 'log' => fn($q) => $q->select(['id', 'user_id'])->withExists(['patches' => fn($q) => $q->where('status', 'created')])
@@ -161,12 +163,53 @@ class AbsenceController extends Controller
         return back()->with('success',  "Abwesenheit erfolgreich " . ($is_accepted ? 'akzeptiert' : 'abgelehnt') . ".");
     }
 
-    public function destroy(Absence $absence)
+    public function destroyDispute(Absence $absence)
     {
-        Gate::authorize('delete', $absence);
+        Gate::authorize('deleteDispute', $absence);
 
-        $absence->delete();
+        $absence->deleteQuietly();
 
         return back()->with('success', 'Abwesenheitsantrag erfolgreich zurückgezogen');
+    }
+
+    public function destroy(Absence $absence, #[CurrentUser] User $authUser)
+    {
+        Gate::authorize('deleteRequestable',  $absence);
+
+        if (Gate::allows('delete', $absence)) {
+            $absence->delete();
+
+            $openDeleteNotification = $authUser->notifications()
+                ->where('type', 'App\\Notifications\\AbsenceDeleteNotification')
+                ->where('data->status', 'created')
+                ->where('data->absence_id', $absence->id)
+                ->first();
+
+            if ($openDeleteNotification) {
+                $openDeleteNotification->markAsRead();
+                $openDeleteNotification->update(['data->status' => 'accepted']);
+            }
+        } else {
+            $authUser->supervisor->notify(new AbsenceDeleteNotification($authUser, $absence));
+        }
+
+        return back();
+    }
+    public function denyDestroy(Absence $absence, #[CurrentUser] User $authUser)
+    {
+        Gate::allows('delete', $absence);
+
+        $openDeleteNotification = $authUser->notifications()
+            ->where('type', 'App\\Notifications\\AbsenceDeleteNotification')
+            ->where('data->status', 'created')
+            ->where('data->absence_id', $absence->id)
+            ->first();
+
+        if ($openDeleteNotification) {
+            $openDeleteNotification->markAsRead();
+            $openDeleteNotification->update(['data->status' => 'declined']);
+        }
+
+        return back();
     }
 }

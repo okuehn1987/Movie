@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { AbsenceType, User } from '@/types/types';
 import { DateTime } from 'luxon';
-import { AbsencePatchProp, AbsenceProp } from '../utils';
+import { AbsencePatchProp, AbsenceProp, UserProp } from '../utils';
 
 const props = defineProps<{
-    users: Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'>[];
+    users: UserProp[];
     absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
     selectedAbsence: AbsenceProp | AbsencePatchProp | null;
     selectedDate: DateTime | null;
@@ -38,6 +38,20 @@ function saveAbsence() {
         });
     }
 }
+const deleteAbsenceForm = useForm({});
+function deleteAbsence() {
+    if (!props.selectedAbsence) return;
+    deleteAbsenceForm.delete(
+        route('absence.destroy', {
+            absence: 'absence_id' in props.selectedAbsence ? props.selectedAbsence.absence_id : props.selectedAbsence.id,
+        }),
+        {
+            onSuccess: () => {
+                openModal.value = false;
+            },
+        },
+    );
+}
 </script>
 <template>
     <v-dialog max-width="1000" v-model="openModal">
@@ -48,7 +62,13 @@ function saveAbsence() {
                     (absenceForm.user_id != $page.props.auth.user.id
                         ? ' von ' + users.map(u => ({ ...u, name: u.first_name + ' ' + u.last_name })).find(u => u.id === absenceForm.user_id)?.name
                         : '') +
-                    ' beantragen'
+                    (can(
+                        'absence',
+                        'update',
+                        users.find(u => u.id == absenceForm.user_id),
+                    )
+                        ? ' bearbeiten'
+                        : ' beantragen')
                 "
             >
                 <template #append>
@@ -86,8 +106,36 @@ function saveAbsence() {
                                     :error-messages="absenceForm.errors.end"
                                 ></v-text-field>
                             </v-col>
-                            <v-col cols="12" class="text-end">
-                                <v-btn :loading="absenceForm.processing" type="submit" color="primary">beantragen</v-btn>
+                            <v-col cols="12">
+                                <div class="d-flex ga-2 justify-end">
+                                    <template v-if="selectedAbsence">
+                                        <v-btn
+                                            v-if="
+                                                can(
+                                                    'absence',
+                                                    'update',
+                                                    users.find(u => u.id == absenceForm.user_id),
+                                                )
+                                            "
+                                            @click.stop="deleteAbsence()"
+                                            color="error"
+                                        >
+                                            löschen
+                                        </v-btn>
+                                        <v-btn v-else @click.stop="deleteAbsence()" color="error">Löschung beantragen</v-btn>
+                                    </template>
+                                    <v-btn :loading="absenceForm.processing" type="submit" color="primary" :disabled="!absenceForm.isDirty">
+                                        {{
+                                            can(
+                                                'absence',
+                                                'update',
+                                                users.find(u => u.id == absenceForm.user_id),
+                                            )
+                                                ? 'Speichern'
+                                                : 'beantragen'
+                                        }}
+                                    </v-btn>
+                                </div>
                             </v-col>
                         </v-row>
                     </v-form>

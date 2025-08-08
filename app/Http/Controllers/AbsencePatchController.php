@@ -25,7 +25,9 @@ class AbsencePatchController extends Controller
             'comment' => 'nullable|string'
         ]);
 
-        $requires_approval = $authUser->supervisor_id && AbsenceType::find($validated['absence_type_id'])->requires_approval;
+        $requires_approval = ($authUser->supervisor_id &&
+            AbsenceType::find($validated['absence_type_id'])->requires_approval) ||
+            $authUser->cannot('update', [Absence::class, $absence->user]);
 
         $absencePatch = AbsencePatch::create([
             ...$validated,
@@ -63,8 +65,6 @@ class AbsencePatchController extends Controller
     public function destroy(AbsencePatch $absencePatch, #[CurrentUser] User $authUser)
     {
         Gate::authorize('delete', $absencePatch);
-
-
 
         if ($absencePatch->delete()) {
             $patchNotification = $authUser->unreadNotifications()

@@ -28,6 +28,8 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::resource('organization', OrganizationController::class)->only(['show', 'update']);
 
     Route::resource('absence', AbsenceController::class)->only(['index', 'store', 'destroy']);
+    Route::delete('/absence/{absence}/denyDestroy', [AbsenceController::class, 'denyDestroy'])->name('absence.denyDestroy');
+    Route::delete('/absence/{absence}/destroyDispute', [AbsenceController::class, 'destroyDispute'])->name('absence.destroyDispute');
     Route::patch('/absence/{absence}/updateStatus', [AbsenceController::class, 'updateStatus'])->name('absence.updateStatus');
 
     Route::resource('absence.absencePatch', AbsencePatchController::class)->only(['store', 'update', 'destroy'])->shallow();

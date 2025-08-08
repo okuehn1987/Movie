@@ -607,4 +607,24 @@ class CalculationTest extends TestCase
 
         $this->assertEquals(- (1 * 3600 + 30 * 60), $this->oldUser->defaultTimeAccount->fresh()->balance);
     }
+
+    public function test_delete_past_absence()
+    {
+        $date = now()->subDays(7);
+        $this->oldUser->removeMissingWorkTimeForDate($date);
+
+        $absence = $this->oldUser->absences()->create([
+            'start' =>  $date,
+            'end' =>  $date,
+            'status' => 'accepted',
+            'accepted_at' =>  now(),
+            'absence_type_id' => 1,
+        ]);
+
+        $this->assertEquals(0, $this->oldUser->defaultTimeAccount->fresh()->balance);
+
+        $absence->fresh()->delete();
+
+        $this->assertEquals(-7 * 3600 - 30 * 60, $this->oldUser->defaultTimeAccount->fresh()->balance);
+    }
 }

@@ -50,7 +50,6 @@ function createAbsenceModal(user_id: User['id'], start?: DateTime) {
 
     selectedDate.value = start ?? null;
     selectedAbsence.value = absenceToEdit ?? null;
-    console.log(absenceToEdit && getEntryState(absenceToEdit));
     if (absenceToEdit && ['hasOpenPatch', 'created'].includes(getEntryState(absenceToEdit))) {
         openShowAbsenceModal.value = true;
     } else {
