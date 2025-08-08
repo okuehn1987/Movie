@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\AbsenceType;
+use App\Models\GroupUser;
 use App\Models\OperatingSite;
+use App\Models\OperatingSiteUser;
 use App\Models\OperatingTime;
 use App\Models\Organization;
+use App\Models\OrganizationUser;
 use App\Models\SpecialWorkingHoursFactor;
 use App\Models\TimeAccountSetting;
 use App\Models\User;
@@ -46,7 +49,7 @@ class OrganizationController extends Controller
             'date_of_birth' => "required|date",
         ]);
 
-        $org =  Organization::create([
+        $org = Organization::create([
             'name' => $validated['organization_name'],
         ]);
 
@@ -82,6 +85,32 @@ class OrganizationController extends Controller
         $user->save();
         $org->owner_id = $user->id;
         $org->save();
+
+
+        OrganizationUser::create([
+            "user_id" => $user->id,
+            "organization_id" => $org->id,
+            ...collect(User::$PERMISSIONS)->flatten(1)->map(fn($p) => $p['name'])->mapWithKeys(fn($p) => [$p => 1])->toArray()
+        ]);
+
+        OperatingSiteUser::create([
+            "user_id" => $user->id,
+            "operating_site_id" => $user->operating_site_id,
+            ...collect([User::$PERMISSIONS['all'], User::$PERMISSIONS['operatingSite']])
+                ->flatten(1)
+                ->map(fn($p) => $p['name'])
+                ->mapWithKeys(fn($p) => [$p => 1])
+                ->toArray()
+        ]);
+
+        $defaultTimeAccountSetting = $org->timeAccountSettings()->create(TimeAccountSetting::getDefaultSettings());
+
+        $user->timeAccounts()->create([
+            'name' => 'Gleitzeitkonto',
+            'balance' => 0,
+            'balance_limit' => 40 * 2 * 3600,
+            'time_account_setting_id' => $defaultTimeAccountSetting->id,
+        ]);
 
         return back()->with('success', 'Organisation erfolgreich erstellt.');
     }

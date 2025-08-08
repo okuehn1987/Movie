@@ -32,17 +32,18 @@ class WorkLog extends Model
             //if the entry spans multiple days we need to split it into different entries
             if ($model->end && !Carbon::parse($model->start)->isSameDay($model->end)) {
                 if (Carbon::parse($model->start)->gt($model->end)) throw new Exception("start can't be after end");
-                $oldEnd = Carbon::parse($model->end)->copy();
+                $end = Carbon::parse($model->end)->copy();
                 $model->end = Carbon::parse($model->start)->copy()->endOfDay();
-                // run backwards for easier mutation
-                for ($day = Carbon::parse($oldEnd)->startOfDay(); !$day->isSameDay($model->start); $day->subDay()) {
+                Shift::computeAffected($model);
+                for ($day = Carbon::parse($model->start)->startOfDay()->addDay(); $day->lte($end); $day->addDay()) {
                     $model->replicate()->fill([
-                        'start' => $day->copy()->startOfDay(),
-                        'end' => min(Carbon::parse($oldEnd)->copy(), $day->copy()->endOfDay()),
+                        'start' => max(Carbon::parse($model->start)->copy(), $day->copy()->startOfDay()),
+                        'end' => min(Carbon::parse($end)->copy(), $day->copy()->endOfDay()),
                     ])->save();
                 }
+            } else {
+                Shift::computeAffected($model);
             }
-            Shift::computeAffected($model);
         });
         self::deleting(function (WorkLog $model) {
             $patch = new WorkLogPatch([
