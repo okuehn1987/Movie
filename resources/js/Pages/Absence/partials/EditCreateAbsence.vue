@@ -126,6 +126,7 @@ const requiresApproval = computed(() => {
                                             "
                                             @click.stop="deleteAbsence()"
                                             color="error"
+                                            :loading="deleteAbsenceForm.processing"
                                         >
                                             löschen
                                         </v-btn>
