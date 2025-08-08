@@ -26,14 +26,14 @@ class AbsencePatchController extends Controller
         ]);
 
         $requires_approval = ($authUser->supervisor_id &&
-            AbsenceType::find($validated['absence_type_id'])->requires_approval) ||
-            $authUser->cannot('update', [Absence::class, $absence->user]);
+            AbsenceType::find($validated['absence_type_id'])->requires_approval);
 
         $absencePatch = AbsencePatch::create([
             ...$validated,
             'user_id' => $absence->user_id,
             'absence_id' => $absence->id,
             'status' => 'created',
+            'type' => 'patch'
         ]);
 
         if ($requires_approval) $authUser->supervisor->notify(new AbsencePatchNotification($authUser, $absencePatch));

@@ -14,7 +14,7 @@ const props = defineProps<{
     users: UserProp[];
     absences: AbsenceProp[];
     absencePatches: AbsencePatchProp[];
-    absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
+    absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval'>[];
     holidays: Record<string, string> | null;
 }>();
 

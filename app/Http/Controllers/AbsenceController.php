@@ -90,7 +90,7 @@ class AbsenceController extends Controller
                         ]
                     ]
                 ])->toArray()],
-            'absence_types' => fn() => AbsenceType::inOrganization()->get(['id', 'name', 'abbreviation']),
+            'absence_types' => fn() => AbsenceType::inOrganization()->get(['id', 'name', 'abbreviation', 'requires_approval']),
             'absences' =>  Inertia::merge(fn() => $absences),
             'absencePatches' =>  Inertia::merge(fn() => $absencePatches),
             'holidays' =>  Inertia::merge(fn() => $holidays->isEmpty() ? (object)[] : $holidays)

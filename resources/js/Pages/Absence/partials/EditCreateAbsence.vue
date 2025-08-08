@@ -2,10 +2,12 @@
 import { AbsenceType, User } from '@/types/types';
 import { DateTime } from 'luxon';
 import { AbsencePatchProp, AbsenceProp, UserProp } from '../utils';
+import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 const props = defineProps<{
     users: UserProp[];
-    absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
+    absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval'>[];
     selectedAbsence: AbsenceProp | AbsencePatchProp | null;
     selectedDate: DateTime | null;
 }>();
@@ -52,6 +54,11 @@ function deleteAbsence() {
         },
     );
 }
+
+const requiresApproval = computed(() => {
+    const type = props.absence_types.find(a => a.id === absenceForm.absence_type_id);
+    return !props.selectedAbsence || (type?.requires_approval && usePage().props.auth.user.supervisor_id);
+});
 </script>
 <template>
     <v-dialog max-width="1000" v-model="openModal">
@@ -66,7 +73,7 @@ function deleteAbsence() {
                         'absence',
                         'update',
                         users.find(u => u.id == absenceForm.user_id),
-                    )
+                    ) || !requiresApproval
                         ? ' bearbeiten'
                         : ' beantragen')
                 "
@@ -130,7 +137,7 @@ function deleteAbsence() {
                                                 'absence',
                                                 'update',
                                                 users.find(u => u.id == absenceForm.user_id),
-                                            )
+                                            ) || !requiresApproval
                                                 ? 'Speichern'
                                                 : 'beantragen'
                                         }}
