@@ -30,15 +30,27 @@ class WorkLogPatch extends Model
         parent::boot();
         self::saving(function (WorkLogPatch $model) {
             //if the entry spans multiple days we need to split it into different entries
+            // dd($model);
+            if ($model->status != 'accepted' || !$model->accepted_at) return;
             if ($model->end && !Carbon::parse($model->start)->isSameDay($model->end)) {
                 if (Carbon::parse($model->start)->gt($model->end)) throw new Exception("start can't be after end");
                 $end = Carbon::parse($model->end)->copy();
                 $model->end = Carbon::parse($model->start)->copy()->endOfDay();
                 Shift::computeAffected($model);
+
+
                 for ($day = Carbon::parse($model->start)->startOfDay()->addDay(); $day->lte($end); $day->addDay()) {
+                    $log = WorkLog::createQuietly([
+                        ...$model->log->toArray(),
+                        'start' => max(Carbon::parse($model->start)->copy(), $day->copy()->startOfDay()),
+                        'end' => min(Carbon::parse($end)->copy(), $day->copy()->endOfDay()),
+                        'id' => null
+                    ]);
+
                     $model->replicate()->fill([
                         'start' => max(Carbon::parse($model->start)->copy(), $day->copy()->startOfDay()),
                         'end' => min(Carbon::parse($end)->copy(), $day->copy()->endOfDay()),
+                        'work_log_id' => $log->id,
                     ])->save();
                 }
             } else {

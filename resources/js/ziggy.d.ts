@@ -141,6 +141,13 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "absence.denyDestroy": [
+        {
+            "name": "absence",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "absence.destroyDispute": [
         {
             "name": "absence",

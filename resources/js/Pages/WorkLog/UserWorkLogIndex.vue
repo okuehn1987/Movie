@@ -20,7 +20,6 @@ const showDialog = ref(false);
 
 const patchMode = ref<'edit' | 'show' | null>(null);
 const patchLog = ref<WorkLog | PatchProp | null>(null);
-const inputVariant = computed(() => (patchLog.value ? 'plain' : 'underlined'));
 
 const editableWorkLogs = computed(() => props.workLogs.filter((_, i) => i < 10 ** 10)); // 10 ** 10 to display for now but keep the feature
 
@@ -209,7 +208,7 @@ const tableHeight = useMaxScrollHeight(0);
                                             required
                                             :error-messages="workLogForm.errors.start"
                                             v-model="workLogForm.start"
-                                            :variant="inputVariant"
+                                            variant="underlined"
                                             style="height: 73px"
                                         ></v-date-input>
                                     </v-col>
@@ -222,7 +221,7 @@ const tableHeight = useMaxScrollHeight(0);
                                             required
                                             :error-messages="workLogForm.errors.start_time"
                                             v-model="workLogForm.start_time"
-                                            :variant="inputVariant"
+                                            variant="underlined"
                                         ></v-text-field>
                                     </v-col>
                                     <v-col cols="12" md="3">
@@ -232,7 +231,7 @@ const tableHeight = useMaxScrollHeight(0);
                                             required
                                             :error-messages="workLogForm.errors.end"
                                             v-model="workLogForm.end"
-                                            :variant="inputVariant"
+                                            variant="underlined"
                                             style="height: 73px"
                                         ></v-date-input>
                                     </v-col>
@@ -246,7 +245,7 @@ const tableHeight = useMaxScrollHeight(0);
                                             required
                                             :error-messages="workLogForm.errors.end_time"
                                             v-model="workLogForm.end_time"
-                                            :variant="inputVariant"
+                                            variant="underlined"
                                         ></v-text-field>
                                     </v-col>
                                     <v-col cols="12">
@@ -265,14 +264,14 @@ const tableHeight = useMaxScrollHeight(0);
                                             required
                                             :error-messages="workLogForm.errors.is_home_office"
                                             v-model="workLogForm.is_home_office"
-                                            :variant="inputVariant"
+                                            variant="underlined"
                                             hide-details
                                         ></v-checkbox>
                                     </v-col>
 
                                     <v-col cols="12" class="text-end">
                                         <v-btn
-                                            v-if="patchLog && can('workLogPatch', 'delete') && patchMode === 'show'"
+                                            v-if="patchLog && can('workLogPatch', 'delete') && !can('workLogPatch', 'update') && patchMode === 'show'"
                                             :loading="workLogForm.processing"
                                             @click.stop="retreatPatch"
                                             color="primary"
@@ -285,7 +284,7 @@ const tableHeight = useMaxScrollHeight(0);
                                             type="submit"
                                             color="primary"
                                         >
-                                            Korrektur beantragen
+                                            Korrektur {{ can('workLogPatch', 'update') ? 'speichern' : 'beantragen' }}
                                         </v-btn>
                                     </v-col>
                                 </v-row>

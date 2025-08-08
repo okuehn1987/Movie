@@ -14,6 +14,8 @@ use App\Models\Shift;
 use App\Models\TimeAccount;
 use App\Models\TimeAccountSetting;
 use App\Models\TimeAccountTransaction;
+use App\Models\TravelLog;
+use App\Models\TravelLogPatch;
 use App\Models\User;
 use App\Models\UserLeaveDay;
 use App\Models\UserWorkingHour;
@@ -518,15 +520,19 @@ class UserController extends Controller
         $date = Carbon::now()->startOfMonth();
 
         $shifts = Shift::where('user_id', $user->id)
-            ->with(['workLogs.currentAccountedPatch', 'user'])
+            ->with(['user'])
             ->get()
-            ->filter(fn($s) => Carbon::parse($s->start)->between($date->copy()->startOfMonth(), $date->copy()->endOfMonth()));
+            ->filter(fn($s) => Carbon::parse($s->start)->between($date->copy()->startOfMonth(), $date->copy()->endOfMonth()))
+            ->each
+            ->append('entries');
 
         $absences = $user->absences()
-            ->whereBetween('start', [$date->copy()->startOfMonth(), $date->copy()->endOfMonth()])
-            ->orWhereBetween('end', [$date->copy()->startOfMonth(), $date->copy()->endOfMonth()])
-            ->with(['absenceType:id,name'])
+            ->with(['patches', 'currentAcceptedPatch.absenceType:id,name', 'absenceType:id,name'])
+            ->where('status', 'accepted')
             ->get();
+
+        $absences = $absences->map(fn($a) => $a->currentAcceptedPatch ?? $a)
+            ->filter(fn($a) => $date->lte(Carbon::parse($a->end)) && $date->copy()->endOfMonth()->gte(Carbon::parse($a->start)));
 
         function formatDuration(string $seconds, string $fallback = ''): string
         {
@@ -543,10 +549,16 @@ class UserController extends Controller
             collect(range(1, $date->copy()->daysInMonth()))->reduce(
                 function ($values, $i) use ($shifts, $absences, $user, $date, &$entryIndex) {
                     $day = $date->copy()->startOfMonth()->addDays($i - 1);
-                    $shifts = $shifts->where(fn($s) => $day->between(Carbon::parse($s->start)->startOfDay(), Carbon::parse($s->end)->endOfDay()));
+                    $shifts = $shifts->where(fn($s) => $day->between(
+                        Carbon::parse($s->start)->startOfDay(),
+                        Carbon::parse($s->end)->endOfDay()
+                    ))->filter(fn($s) => $s->entries->isNotEmpty());
+
                     $absence = $absences->first(fn($a) => $day->between(Carbon::parse($a->start)->startOfDay(), Carbon::parse($a->end)->endOfDay()));
 
                     $values->{$day->format('d')} = [];
+
+                    if ($day->format('d') == "06") dd($shifts, $shifts->map->entries, $absence);
 
                     if ($shifts->isEmpty() && !$absence) {
                         $values->{$day->format('d')} = (object)[
@@ -578,35 +590,39 @@ class UserController extends Controller
                         'data' => [],
                     ];
                     foreach ($shifts as $shift) {
-                        $entries = $values->{$day->copy()->subDay()->format('d')}?->data;
+                        $entries = $values->{$day->copy()->format('d')}?->data;
                         $values->{$day->format('d')}->data[] = (object)[
                             'shift_id' => $shift->id,
                             'entryIndex' => (
-                                (property_exists($values, $day->copy()->subDay()->format('d')) &&
-                                    count($values->{$day->copy()->subDay()->format('d')}?->data) > 0 &&
+                                (property_exists($values, $day->copy()->format('d')) &&
+                                    count($values->{$day->copy()->format('d')}?->data) > 0 &&
                                     end($entries)?->shift_id == $shift->id
                                 )
                                 ? $entryIndex
                                 : ++$entryIndex
                             ),
-                            'logs' => $shift->workLogs->map(fn($wl) => $wl->currentAccountedPatch ?? $wl)->filter(fn($log) => $day->between(
-                                Carbon::parse($log->start)->startOfDay(),
-                                Carbon::parse($log->end)->endOfDay()
+                            'entries' => $shift->entries->filter(fn($entry) => $day->between(
+                                Carbon::parse($entry->start)->startOfDay(),
+                                Carbon::parse($entry->end)->endOfDay()
                             ))->map(
-                                fn($wl) => [
-                                    'home_office' => $wl->is_home_office ? 'Ja' : 'Nein',
-                                    'start' => Carbon::parse(Carbon::parse($wl->start)->isSameDay($day) ? $wl->start : $day->copy()->startOfDay())->format('H:i:s'),
-                                    'end' => Carbon::parse(Carbon::parse($wl->end)->isSameDay($day) ? $wl->end : $day->copy()->endOfDay())->format('H:i:s'),
+                                fn($entry) => [
+                                    'type' => match (true) {
+                                        $entry instanceof TravelLog => 'travel',
+                                        $entry->is_home_office => 'homeoffice',
+                                        default => 'office',
+                                    },
+                                    'start' => Carbon::parse(Carbon::parse($entry->start)->isSameDay($day) ? $entry->start : $day->copy()->startOfDay())->format('H:i:s'),
+                                    'end' => Carbon::parse(Carbon::parse($entry->end)->isSameDay($day) ? $entry->end : $day->copy()->endOfDay())->format('H:i:s'),
                                     'duration' => formatDuration(
-                                        Carbon::parse($wl->start)->isSameDay($day) && Carbon::parse($wl->end)->isSameDay($day)
-                                            ? $wl->duration
-                                            : ((Carbon::parse($wl->start)->lt($day->copy()->startOfDay())
+                                        Carbon::parse($entry->start)->isSameDay($day) && Carbon::parse($entry->end)->isSameDay($day)
+                                            ? $entry->duration
+                                            : ((Carbon::parse($entry->start)->lt($day->copy()->startOfDay())
                                                 ? $day->copy()->startOfDay()
-                                                : Carbon::parse($wl->start)
+                                                : Carbon::parse($entry->start)
                                             )->diffInSeconds(
-                                                Carbon::parse($wl->end)->gt($day->copy()->endOfDay())
+                                                Carbon::parse($entry->end)->gt($day->copy()->endOfDay())
                                                     ? $day->copy()->endOfDay()
-                                                    : Carbon::parse($wl->end)
+                                                    : Carbon::parse($entry->end)
                                             ))
                                     ),
                                 ]
@@ -614,11 +630,11 @@ class UserController extends Controller
                             'should' => formatDuration($user->getSollsekundenForDate($day), '00:00:00'),
                             'is' => $day->isSameDay(Carbon::parse($shift->end))
                                 ? ($absence ? formatDuration(max(
-                                    $shift->workDuration - $shift->missingBreakDuration,
+                                    Shift::workDuration($shift->entries)  - $shift->missingBreakDuration(),
                                     $user->getSollsekundenForDate($day)
-                                )) : formatDuration($shift->workDuration - $shift->missingBreakDuration, '00:00:00'))
+                                )) : formatDuration($shift->workDuration($shift->entries) - $shift->missingBreakDuration(), '00:00:00'))
                                 : '',
-                            'pause' => $day->isSameDay(Carbon::parse($shift->end)) ? formatDuration($shift->missingBreakDuration) . '/' . formatDuration($shift->breakDuration) : '',
+                            'pause' => $day->isSameDay(Carbon::parse($shift->end)) ? formatDuration($shift->missingBreakDuration()) . '/' . formatDuration($shift->breakDuration($shift->entries)) : '',
                             'transaction_value' => '',
                         ];
                     }
@@ -628,6 +644,7 @@ class UserController extends Controller
                 (object)[]
             );
 
+        // dd($data);
         $props = [
             'data' => $data,
             'organization' => Organization::getCurrent(),

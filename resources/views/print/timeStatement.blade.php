@@ -87,7 +87,7 @@
                         <td>Soll</td>
                         <td>Ist</td>
                         <td>Pause</td>
-                        <td>Verfallz.</td>
+                        <!-- <td>Verfallz.</td> -->
                         <td>Glz.</td>
                     </tr>
                 </thead>
@@ -104,33 +104,33 @@
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td></td>
+                                <!-- <td></td> -->
                                 <td></td>
                             </tr>
                         @endif
 
                         @if ($entry->type == 'shift')
                             @foreach ($entry->data as $shiftIndex => $shift)
-                                @foreach ($shift->logs as $logIndex => $workLog)
+                                @foreach ($shift->entries as $entryIndex => $shiftEntry)
                                     <tr
                                         @if ($shift->entryIndex % 2 == 0) style="background-color: rgb(220, 220, 220);" @endif>
                                         <td>{{ $entry->day }}</td>
                                         <td style="white-space: nowrap">{{ $entry->absence_type }}</td>
-                                        <td>{{ $workLog['home_office'] }}</td>
-                                        <td>{{ $workLog['start'] }}</td>
-                                        <td>{{ $workLog['end'] }}</td>
-                                        <td>{{ $workLog['duration'] }}</td>
-                                        @if ($logIndex == count($shift->logs) - 1)
+                                        <td>{{ $shiftEntry['type'] }}</td>
+                                        <td>{{ $shiftEntry['start'] }}</td>
+                                        <td>{{ $shiftEntry['end'] }}</td>
+                                        <td>{{ $shiftEntry['duration'] }}</td>
+                                        @if ($entryIndex == count($shift->entries) - 1)
                                             <td>{{ $shift->should }}</td>
                                             <td>{{ $shift->is }}</td>
                                             <td>{{ $shift->pause }}</td>
-                                            <td></td>
+                                            <!-- <td></td> -->
                                             <td>{{ $shift->transaction_value }} </td>
                                         @else
                                             <td></td>
                                             <td></td>
                                             <td></td>
-                                            <td></td>
+                                            <!-- <td></td> -->
                                             <td></td>
                                         @endif
                                     </tr>
@@ -149,7 +149,7 @@
                                 <td>{{ $entry->should }}</td>
                                 <td></td>
                                 <td></td>
-                                <td></td>
+                                <!-- <td></td> -->
                                 <td>{{ $entry->transaction_value }}</td>
                             </tr>
                         @endif
