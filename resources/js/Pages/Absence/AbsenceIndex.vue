@@ -14,7 +14,7 @@ const props = defineProps<{
     users: UserProp[];
     absences: AbsenceProp[];
     absencePatches: AbsencePatchProp[];
-    absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
+    absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval'>[];
     holidays: Record<string, string> | null;
 }>();
 
@@ -50,7 +50,6 @@ function createAbsenceModal(user_id: User['id'], start?: DateTime) {
 
     selectedDate.value = start ?? null;
     selectedAbsence.value = absenceToEdit ?? null;
-    console.log(absenceToEdit && getEntryState(absenceToEdit));
     if (absenceToEdit && ['hasOpenPatch', 'created'].includes(getEntryState(absenceToEdit))) {
         openShowAbsenceModal.value = true;
     } else {

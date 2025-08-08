@@ -643,7 +643,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
             </v-card-text>
         </v-card>
         <div class="d-flex justify-end">
-            <v-btn type="submit" color="primary">Speichern</v-btn>
+            <v-btn type="submit" color="primary" :loading="userForm.processing">Speichern</v-btn>
         </div>
     </v-form>
 </template>

@@ -1,14 +1,9 @@
 <script setup lang="ts">
-import { AbsencePatch, AbsenceType, User } from '@/types/types';
+import { AbsencePatch } from '@/types/types';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { ref } from 'vue';
-
-type AbsencePatchProp = Pick<AbsencePatch, 'id' | 'start' | 'end' | 'user_id' | 'absence_id'> & {
-    absence_type: Pick<AbsenceType, 'id' | 'name'>;
-    usedDays: number;
-    user: Pick<User, 'id' | 'first_name' | 'last_name'> & { usedLeaveDaysForYear: number; leaveDaysForYear: number };
-};
+import { AbsencePatchProp } from './disputeTypes';
 
 const props = defineProps<{
     absencePatchRequests: AbsencePatchProp[];

@@ -28,6 +28,8 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::resource('organization', OrganizationController::class)->only(['show', 'update']);
 
     Route::resource('absence', AbsenceController::class)->only(['index', 'store', 'destroy']);
+    Route::delete('/absence/{absence}/denyDestroy', [AbsenceController::class, 'denyDestroy'])->name('absence.denyDestroy');
+    Route::delete('/absence/{absence}/destroyDispute', [AbsenceController::class, 'destroyDispute'])->name('absence.destroyDispute');
     Route::patch('/absence/{absence}/updateStatus', [AbsenceController::class, 'updateStatus'])->name('absence.updateStatus');
 
     Route::resource('absence.absencePatch', AbsencePatchController::class)->only(['store', 'update', 'destroy'])->shallow();
@@ -38,7 +40,7 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::resource('group', GroupController::class)->only(['index', 'store', 'update', 'destroy']);
 
     Route::resource('workLogPatch', WorkLogPatchController::class)->only(['destroy', 'store', 'update']);
-    Route::resource('workLog', WorkLogController::class)->only(['index', 'store']);
+    Route::resource('workLog', WorkLogController::class)->only(['index', 'store', 'destroy']);
     Route::get('/user/{user}/workLogs', [WorkLogController::class, 'userWorkLogs'])->name('user.workLog.index');
     Route::resource('travelLog', TravelLogController::class)->only(['store', 'update']);
 
