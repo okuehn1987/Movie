@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Canable, CountryProp, Group, OperatingSite, Permission, User } from '@/types/types';
+import { Canable, CountryProp, Group, OperatingSite, Permission, RelationPick, User } from '@/types/types';
 import { fillNullishValues, getMaxScrollHeight, useMaxScrollHeight } from '@/utils';
 import { Link } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import UserForm from './partial/UserForm.vue';
 
 defineProps<{
-    users: (User & Canable & { group: Pick<Group, 'id' | 'name'> })[];
+    users: (User & Canable & RelationPick<'user', 'group', 'id' | 'name'>)[];
     supervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
     groups: Pick<Group, 'id' | 'name'>[];
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];

@@ -2,19 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Shift;
 use App\Models\User;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
-use Carbon\Carbon;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class WorkLogController extends Controller
 {
-    public function index(Request $request)
+    public function index(#[CurrentUser] User $authUser)
     {
         Gate::authorize('viewIndex', WorkLog::class);
 
@@ -24,36 +22,34 @@ class WorkLogController extends Controller
                     ->whereHas('workLogs')->with(['defaultTimeAccount:id,balance,user_id', 'latestWorkLog'])
                     ->select(['id', 'first_name', 'last_name', 'supervisor_id'])
                     ->get()
-                    ->filter(fn($u) => $request->user()->can('viewShow', [WorkLog::class, $u]))
+                    ->filter(fn($u) => $authUser->can('viewShow', [WorkLog::class, $u]))
             ],
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, #[CurrentUser] User $authUser)
     {
-        Gate::authorize('create', WorkLog::class);
+        Gate::authorize('create', [WorkLog::class, $authUser]);
 
-        $last = WorkLog::inOrganization()->where('user_id', Auth::id())->with('shift')->latest('start')->first();
+        $last = $authUser->latestWorkLog;
 
-        $validated = $request->validate([
-            'is_home_office' => 'required|boolean',
-        ]);
-
-        if (!$last->shift || $last->shift->has_ended)
-            $shift = Shift::create([
-                'is_accounted' => false,
-                'user_id' => Auth::id(),
+        if ($last && $last->end == null) {
+            WorkLog::find($last->id)->update([
+                'end' => now(),
             ]);
-        else
-            $shift = $last->shift;
-
-        WorkLog::updateOrCreate(['id' => $last->end ? null : $last->id], [
-            ...$validated,
-            'start' => $last->end ? Carbon::now() : $last->start,
-            'end' => $last->end ? null : Carbon::now(),
-            'user_id' => Auth::id(),
-            'shift_id' => $shift->id
-        ]);
+        } else {
+            $validated = $request->validate([
+                'is_home_office' => 'required|boolean',
+            ]);
+            WorkLog::create([
+                ...$validated,
+                'start' => now(),
+                'end' => null,
+                'user_id' => $authUser->id,
+                'status' => 'accepted',
+                'accepted_at' => now()
+            ]);
+        }
 
         return back()->with('success', 'Arbeitsstatus erfolgreich eingetragen.');
     }
@@ -65,7 +61,7 @@ class WorkLogController extends Controller
             'user' => $user->only('id', 'first_name', 'last_name'),
             'workLogs' => WorkLog::where('user_id', $user->id)
                 ->whereNotNull('end')
-                ->with('workLogPatches:id,work_log_id,updated_at,status,start,end,is_home_office,comment')
+                ->with('patches:id,work_log_id,updated_at,status,start,end,is_home_office,comment')
                 ->orderBy('start', 'DESC')
                 ->get(),
             'can' => [

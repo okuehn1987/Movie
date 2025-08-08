@@ -1,33 +1,15 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import {
-    CountryProp,
-    Group,
-    GroupUser,
-    OperatingSite,
-    OperatingSiteUser,
-    OrganizationUser,
-    Permission,
-    User,
-    UserLeaveDays,
-    UserWorkingHours,
-    UserWorkingWeek,
-} from '@/types/types';
-import UserShowNavBar from './partial/UserShowNavBar.vue';
-import UserForm from '../partial/UserForm.vue';
+import { CountryProp, Group, OperatingSite, Permission, Relations, User, UserLeaveDays } from '@/types/types';
 import { useMaxScrollHeight } from '@/utils';
+import UserForm from '../partial/UserForm.vue';
+import UserShowNavBar from './partial/UserShowNavBar.vue';
 
 defineProps<{
     user: User & {
         supervisor: Pick<User, 'id'>;
-        organization_user: OrganizationUser;
-        operating_site_user: OperatingSiteUser;
-        group_user: GroupUser;
-
-        userWorkingHours: UserWorkingHours[];
-        userWorkingWeeks: UserWorkingWeek[];
-        userLeaveDays: (UserLeaveDays | null)[];
-    };
+        user_leave_days: (UserLeaveDays | null)[];
+    } & Pick<Relations<'user'>, 'organization_user' | 'operating_site_user' | 'group_user' | 'user_working_hours' | 'user_working_weeks'>;
     possibleSupervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];
     groups: Pick<Group, 'id' | 'name'>[];

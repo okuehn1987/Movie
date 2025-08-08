@@ -10,18 +10,21 @@ function readNotification(notification: Notification) {
         {},
         {
             onSuccess: () => {
-                if (notification.type == 'App\\Notifications\\PatchNotification')
-                    return router.get(
-                        route('dispute.index', {
-                            openPatch: notification.data.patch_id,
-                        }),
-                    );
+                let data;
+                if (notification.type == 'App\\Notifications\\WorkLogPatchNotification')
+                    data = {
+                        openPatch: notification.data.work_log_patch_id,
+                    };
                 if (notification.type == 'App\\Notifications\\AbsenceNotification')
-                    return router.get(
-                        route('dispute.index', {
-                            openAbsence: notification.data.absence_id,
-                        }),
-                    );
+                    data = {
+                        openAbsence: notification.data.absence_id,
+                    };
+                if (notification.type == 'App\\Notifications\\AbsencePatchNotification')
+                    data = {
+                        openAbsencePatch: notification.data.absence_patch_id,
+                    };
+
+                return data && router.get(route('dispute.index', data));
             },
         },
     );
@@ -48,7 +51,7 @@ function readNotification(notification: Notification) {
                 v-for="notification in $page.props.auth.user.unread_notifications"
                 :key="notification.id"
             >
-                <v-list-item-title> {{ notification.data.title }} </v-list-item-title>
+                <v-list-item-title>{{ notification.data.title }}</v-list-item-title>
             </v-list-item>
         </v-list>
     </v-menu>

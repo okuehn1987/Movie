@@ -25,6 +25,10 @@ class Organization extends Model
     {
         return $this->hasMany(OperatingSite::class);
     }
+    public function operatingSiteUsers()
+    {
+        return $this->hasManyThrough(OperatingSiteUser::class, OperatingSite::class);
+    }
     public function users()
     {
         return $this->hasManyThrough(User::class, OperatingSite::class);
@@ -42,6 +46,10 @@ class Organization extends Model
     public function groups()
     {
         return $this->hasMany(Group::class);
+    }
+    public function groupUsers()
+    {
+        return $this->hasManyThrough(GroupUser::class, Group::class);
     }
     public function specialWorkingHoursFactors()
     {

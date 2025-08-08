@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { TimeAccount, TimeAccountSetting, User, UserWorkingHours, UserWorkingWeek } from '@/types/types';
+import { Relations, TimeAccount, TimeAccountSetting, User } from '@/types/types';
 import { accountType, formatDuration, getTruncationCycleDisplayName } from '@/utils';
 import { computed } from 'vue';
 import UserShowNavBar from '../partial/UserShowNavBar.vue';
@@ -11,14 +11,9 @@ import TimeAccountSettingsForm from './partial/TimeAccountSettingsForm.vue';
 import TimeAccountDeleteForm from './partial/TimeAccountDeleteForm.vue';
 
 const props = defineProps<{
-    user: User & {
-        currentWorkingHours: UserWorkingHours;
-        currentWorkingWeek: UserWorkingWeek;
-    };
-
-    time_accounts: (Pick<TimeAccount, 'id' | 'user_id' | 'balance' | 'balance_limit' | 'time_account_setting_id' | 'name' | 'deleted_at'> & {
-        time_account_setting: TimeAccountSetting;
-    })[];
+    user: User & Pick<Relations<'user'>, 'current_working_hours'>;
+    time_accounts: (Pick<TimeAccount, 'id' | 'user_id' | 'balance' | 'balance_limit' | 'time_account_setting_id' | 'name' | 'deleted_at'> &
+        Pick<Relations<'timeAccount'>, 'time_account_setting'>)[];
     time_account_settings: TimeAccountSetting[];
     defaultTimeAccountId: TimeAccount['id'];
 }>();

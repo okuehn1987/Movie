@@ -23,6 +23,8 @@ class UserWorkingWeekFactory extends Factory
             "wednesday" => 1,
             "thursday" => 1,
             "friday" => 1,
+            "saturday" => 1,
+            "sunday" => 1,
         ];
     }
 }

@@ -8,6 +8,8 @@ import {
     OperatingSiteUser,
     OrganizationUser,
     Permission,
+    RelationPick,
+    Relations,
     User,
     UserLeaveDays,
     UserWorkingHours,
@@ -20,16 +22,11 @@ import PermissionSelector from './PermissionSelector.vue';
 import { nextTick } from 'vue';
 
 const props = defineProps<{
-    user?: User & {
-        supervisor: Pick<User, 'id'>;
-        organization_user: OrganizationUser;
-        operating_site_user: OperatingSiteUser;
-        group_user: GroupUser | null;
-
-        userWorkingHours: UserWorkingHours[];
-        userWorkingWeeks: UserWorkingWeek[];
-        userLeaveDays: (UserLeaveDays | null)[];
-    };
+    user?: User &
+        RelationPick<'user', 'supervisor', 'id'> &
+        Pick<Relations<'user'>, 'organization_user' | 'operating_site_user' | 'group_user' | 'user_working_hours' | 'user_working_weeks'> & {
+            user_leave_days: (UserLeaveDays | null)[];
+        };
     supervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];
     groups: Pick<Group, 'id' | 'name'>[];
@@ -66,11 +63,11 @@ const userForm = useForm({
     home_office: false,
     home_office_hours_per_week: null as null | number, //TODO: check if we need active_since
 
-    userWorkingHours: [] as (Pick<UserWorkingHours, 'weekly_working_hours'> & { active_since: string; id: UserWorkingHours['id'] | null })[],
+    user_working_hours: [] as (Pick<UserWorkingHours, 'weekly_working_hours'> & { active_since: string; id: UserWorkingHours['id'] | null })[],
 
-    userLeaveDays: [] as (Pick<UserLeaveDays, 'leave_days'> & { active_since: string; id: UserLeaveDays['id'] | null })[],
+    user_leave_days: [] as (Pick<UserLeaveDays, 'leave_days'> & { active_since: string; id: UserLeaveDays['id'] | null })[],
 
-    userWorkingWeeks: [] as { id: UserWorkingWeek['id'] | null; active_since: string; weekdays: Weekday[] }[],
+    user_working_weeks: [] as { id: UserWorkingWeek['id'] | null; active_since: string; weekdays: Weekday[] }[],
     initialRemainingLeaveDays: 0,
 
     overtime_calculations_start: DateTime.now().toFormat('yyyy-MM-dd'),
@@ -129,28 +126,28 @@ if (props.user) {
     userForm.home_office_hours_per_week = props.user.home_office_hours_per_week;
     userForm.overtime_calculations_start = props.user.overtime_calculations_start;
 
-    userForm.userLeaveDays = props.user.userLeaveDays
+    userForm.user_leave_days = props.user.user_leave_days
         .filter(e => e !== null)
         .map(e => ({ ...e, active_since: DateTime.fromSQL(e.active_since).toFormat('yyyy-MM') }));
-    if (userForm.userLeaveDays.length == 0)
-        userForm.userLeaveDays.push({ id: null, active_since: DateTime.now().toFormat('yyyy-MM'), leave_days: 0 });
+    if (userForm.user_leave_days.length == 0)
+        userForm.user_leave_days.push({ id: null, active_since: DateTime.now().toFormat('yyyy-MM'), leave_days: 0 });
 
-    userForm.userWorkingHours = props.user.userWorkingHours;
-    if (userForm.userWorkingHours.length == 0)
-        userForm.userWorkingHours.push({ id: null, active_since: DateTime.now().toFormat('yyyy-MM-dd'), weekly_working_hours: 0 });
+    userForm.user_working_hours = props.user.user_working_hours;
+    if (userForm.user_working_hours.length == 0)
+        userForm.user_working_hours.push({ id: null, active_since: DateTime.now().toFormat('yyyy-MM-dd'), weekly_working_hours: 0 });
 
-    for (const entry of props.user.userWorkingWeeks) {
+    for (const entry of props.user.user_working_weeks) {
         const weekdays = [] as Weekday[];
         for (const w of WEEKDAYS) if (entry[w]) weekdays.push(w);
 
-        userForm.userWorkingWeeks.push({
+        userForm.user_working_weeks.push({
             id: entry.id,
             active_since: entry.active_since,
             weekdays,
         });
     }
-    if (userForm.userWorkingWeeks.length == 0)
-        userForm.userWorkingWeeks.push({ id: null, active_since: DateTime.now().toFormat('yyyy-MM-dd'), weekdays: [] });
+    if (userForm.user_working_weeks.length == 0)
+        userForm.user_working_weeks.push({ id: null, active_since: DateTime.now().toFormat('yyyy-MM-dd'), weekdays: [] });
 
     for (const key in userForm.organizationUser) {
         userForm.organizationUser[key as keyof typeof userForm.organizationUser] =
@@ -197,7 +194,7 @@ function submit() {
 
 function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since: string }) {
     if (props.user && !can('user', 'update')) return true;
-    const original = props.user?.userLeaveDays.find(e => e?.id === item.id);
+    const original = props.user?.user_leave_days.find(e => e?.id === item.id);
     if (original) return original.active_since < DateTime.now().startOf('month').toFormat('yyyy-MM-dd');
     return false;
 }
@@ -283,11 +280,11 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
             <v-card-text>
                 <v-row>
                     <v-col cols="12">
-                        <v-alert type="error" v-if="userForm.errors.userWorkingHours">{{ userForm.errors.userWorkingHours }}</v-alert>
+                        <v-alert type="error" v-if="userForm.errors.user_working_hours">{{ userForm.errors.user_working_hours }}</v-alert>
                     </v-col>
                     <v-col cols="12">
                         <v-data-table-virtual
-                            :items="userForm.userWorkingHours"
+                            :items="userForm.user_working_hours"
                             :headers="[
                                 {
                                     title: 'Stunden pro Woche',
@@ -312,7 +309,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                                 <v-btn
                                     v-if="!user || can('user', 'update')"
                                     color="primary"
-                                    @click.stop="userForm.userWorkingHours.push({ active_since: '', id: null, weekly_working_hours: 0 })"
+                                    @click.stop="userForm.user_working_hours.push({ active_since: '', id: null, weekly_working_hours: 0 })"
                                 >
                                     <v-icon icon="mdi-plus"></v-icon>
                                 </v-btn>
@@ -323,7 +320,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                                     type="number"
                                     variant="underlined"
                                     v-model="item.weekly_working_hours"
-                                    :error-messages="userForm.errors[`userWorkingHours.${index}.weekly_working_hours`]"
+                                    :error-messages="userForm.errors[`user_working_hours.${index}.weekly_working_hours`]"
                                     :disabled="
                                         (user && !can('user', 'update')) ||
                                         (!!item.active_since && item.active_since < DateTime.now().toFormat('yyyy-MM-dd'))
@@ -337,7 +334,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                                     variant="underlined"
                                     :min="mode == 'edit' ? DateTime.now().toFormat('yyyy-MM-dd') : undefined"
                                     v-model="item.active_since"
-                                    :error-messages="userForm.errors[`userWorkingHours.${index}.active_since`]"
+                                    :error-messages="userForm.errors[`user_working_hours.${index}.active_since`]"
                                     :disabled="
                                         (user && !can('user', 'update')) ||
                                         (!!item.active_since && item.active_since < DateTime.now().toFormat('yyyy-MM-dd'))
@@ -347,7 +344,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             <template v-slot:item.actions="{ item, index }">
                                 <v-btn
                                     color="error"
-                                    @click.stop="userForm.userWorkingHours.splice(index, 1)"
+                                    @click.stop="userForm.user_working_hours.splice(index, 1)"
                                     v-if="(!user || can('user', 'update')) && (!item.id || item.active_since > DateTime.now().toFormat('yyyy-MM-dd'))"
                                     ><v-icon icon="mdi-delete"></v-icon></v-btn
                             ></template>
@@ -363,11 +360,11 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
             <v-card-text>
                 <v-row>
                     <v-col cols="12">
-                        <v-alert type="error" v-if="userForm.errors.userWorkingWeeks">{{ userForm.errors.userWorkingWeeks }}</v-alert>
+                        <v-alert type="error" v-if="userForm.errors.user_working_weeks">{{ userForm.errors.user_working_weeks }}</v-alert>
                     </v-col>
                     <v-col cols="12">
                         <v-data-table-virtual
-                            :items="userForm.userWorkingWeeks"
+                            :items="userForm.user_working_weeks"
                             :headers="[
                                 {
                                     title: 'Beschäftigungstage',
@@ -392,7 +389,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                                 <v-btn
                                     v-if="!user || can('user', 'update')"
                                     color="primary"
-                                    @click.stop="userForm.userWorkingWeeks.push({ active_since: '', id: null, weekdays: [] })"
+                                    @click.stop="userForm.user_working_weeks.push({ active_since: '', id: null, weekdays: [] })"
                                 >
                                     <v-icon icon="mdi-plus"></v-icon>
                                 </v-btn>
@@ -413,7 +410,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                                             value: Info.weekdays('long', { locale: 'en' })[i]?.toLowerCase(),
                                         }))
                                     "
-                                    :error-messages="userForm.errors[`userWorkingWeeks.${index}.weekdays`]"
+                                    :error-messages="userForm.errors[`user_working_weeks.${index}.weekdays`]"
                                 />
                             </template>
                             <template v-slot:item.active_since="{ item, index }">
@@ -427,13 +424,13 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                                         (user && !can('user', 'update')) ||
                                         (!!item.active_since && item.active_since < DateTime.now().toFormat('yyyy-MM-dd'))
                                     "
-                                    :error-messages="userForm.errors[`userWorkingWeeks.${index}.active_since`]"
+                                    :error-messages="userForm.errors[`user_working_weeks.${index}.active_since`]"
                                 ></v-text-field>
                             </template>
                             <template v-slot:item.actions="{ item, index }">
                                 <v-btn
                                     color="error"
-                                    @click.stop="userForm.userWorkingWeeks.splice(index, 1)"
+                                    @click.stop="userForm.user_working_weeks.splice(index, 1)"
                                     v-if="(!user || can('user', 'update')) && (!item.id || item.active_since > DateTime.now().toFormat('yyyy-MM-dd'))"
                                     ><v-icon icon="mdi-delete"></v-icon></v-btn
                             ></template>
@@ -450,11 +447,11 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
             <v-card-text>
                 <v-row>
                     <v-col cols="12">
-                        <v-alert type="error" v-if="userForm.errors.userLeaveDays">{{ userForm.errors.userLeaveDays }}</v-alert>
+                        <v-alert type="error" v-if="userForm.errors.user_leave_days">{{ userForm.errors.user_leave_days }}</v-alert>
                     </v-col>
                     <v-col cols="12">
                         <v-data-table-virtual
-                            :items="userForm.userLeaveDays"
+                            :items="userForm.user_leave_days"
                             :headers="[
                                 {
                                     title: 'Anzahl der Urlaubstage',
@@ -479,7 +476,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                                 <v-btn
                                     v-if="!user || can('user', 'update')"
                                     color="primary"
-                                    @click.stop="userForm.userLeaveDays.push({ active_since: '', id: null, leave_days: 0 })"
+                                    @click.stop="userForm.user_leave_days.push({ active_since: '', id: null, leave_days: 0 })"
                                 >
                                     <v-icon icon="mdi-plus"></v-icon>
                                 </v-btn>
@@ -490,7 +487,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                                     type="number"
                                     variant="underlined"
                                     v-model="item.leave_days"
-                                    :error-messages="userForm.errors[`userLeaveDays.${index}.leave_days`]"
+                                    :error-messages="userForm.errors[`user_leave_days.${index}.leave_days`]"
                                     :disabled="isLeaveDayDisabled(item)"
                                 ></v-text-field>
                             </template>
@@ -502,13 +499,13 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                                     variant="underlined"
                                     v-model="item.active_since"
                                     :disabled="isLeaveDayDisabled(item)"
-                                    :error-messages="userForm.errors[`userLeaveDays.${index}.active_since`]"
+                                    :error-messages="userForm.errors[`user_leave_days.${index}.active_since`]"
                                 ></v-text-field>
                             </template>
                             <template v-slot:item.actions="{ item, index }">
                                 <v-btn
                                     color="error"
-                                    @click.stop="userForm.userLeaveDays.splice(index, 1)"
+                                    @click.stop="userForm.user_leave_days.splice(index, 1)"
                                     v-if="(!user || can('user', 'update')) && (!item.id || item.active_since > DateTime.now().toFormat('yyyy-MM-dd'))"
                                     ><v-icon icon="mdi-delete"></v-icon></v-btn
                             ></template>

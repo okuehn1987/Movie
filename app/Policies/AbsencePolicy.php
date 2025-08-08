@@ -7,19 +7,19 @@ use App\Models\User;
 
 class AbsencePolicy
 {
-    use _AllowSuperAdminAndOrganizationOwner;
+    use _AllowSuperAdmin;
 
     public function viewIndex(User $authUser, User $user)
     {
         return
-            $authUser->id === $user->id ||
+            $authUser->is($user) ||
             $authUser->id === $user->supervisor_id ||
             $authUser->hasPermissionOrDelegation($user, 'absence_permission', 'read');
     }
     public function viewShow(User $authUser, User $user): bool
     {
         return
-            $authUser->id === $user->id ||
+            $authUser->is($user) ||
             $authUser->id === $user->supervisor_id ||
             ($authUser->group_id !== null && $authUser->group_id === $user->group_id) ||
             $authUser->hasPermissionOrDelegation($user, 'absence_permission', 'read');
@@ -28,7 +28,7 @@ class AbsencePolicy
     public function create(User $authUser, User $user): bool
     {
         return
-            $authUser->id === $user->id ||
+            $authUser->is($user) ||
             $authUser->id === $user->supervisor_id ||
             $authUser->hasPermissionOrDelegation($user, 'absence_permission', 'write');
     }
@@ -36,15 +36,13 @@ class AbsencePolicy
     public function update(User $authUser, User $user): bool
     {
         return
-            $authUser->id == $user->id ||
             $authUser->id === $user->supervisor_id  ||
+            !$user->supervisor_id && $authUser->is($user) ||
             $authUser->hasPermissionOrDelegation($user, 'absence_permission', 'write');
     }
 
-    public function delete(User $authUser, User $user): bool
+    public function delete(User $authUser, Absence $absence): bool
     {
-        return
-            $authUser->id === $user->supervisor_id ||
-            $authUser->hasPermissionOrDelegation($user, 'absence_permission', 'write');
+        return $absence->status === 'created' && $authUser->is($absence->user);
     }
 }

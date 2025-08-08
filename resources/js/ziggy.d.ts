@@ -134,9 +134,43 @@ declare module 'ziggy-js' {
     ],
     "absence.index": [],
     "absence.store": [],
+    "absence.destroy": [
+        {
+            "name": "absence",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "absence.updateStatus": [
         {
             "name": "absence",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "absence.absencePatch.store": [
+        {
+            "name": "absence",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "absencePatch.update": [
+        {
+            "name": "absencePatch",
+            "required": true
+        }
+    ],
+    "absencePatch.destroy": [
+        {
+            "name": "absencePatch",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "absencePatch.updateStatus": [
+        {
+            "name": "absencePatch",
             "required": true,
             "binding": "id"
         }
@@ -278,7 +312,6 @@ declare module 'ziggy-js' {
         }
     ],
     "profile.update": [],
-    "register": [],
     "login": [],
     "password.request": [],
     "password.email": [],

@@ -20,6 +20,7 @@ class WorkLogFactory extends Factory
         return [
             'start' => $this->faker->dateTimeBetween('-2 hour', '-1 hour'),
             'end' => Carbon::now(),
+            'status' => 'created',
         ];
     }
 }

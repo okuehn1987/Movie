@@ -1,15 +1,11 @@
 <script setup lang="ts">
-import { TimeAccount, TimeAccountSetting, User, UserWorkingHours, UserWorkingWeek } from '@/types/types';
+import { Relations, TimeAccount, TimeAccountSetting, User } from '@/types/types';
 import { accountType, getTruncationCycleDisplayName, roundTo } from '@/utils';
 
 defineProps<{
-    user: User & {
-        currentWorkingHours: UserWorkingHours;
-        currentWorkingWeek: UserWorkingWeek;
-    };
-    item: Pick<TimeAccount, 'id' | 'user_id' | 'balance' | 'balance_limit' | 'time_account_setting_id' | 'name' | 'deleted_at'> & {
-        time_account_setting: TimeAccountSetting;
-    };
+    user: User & Pick<Relations<'user'>, 'current_working_hours'>;
+    item: Pick<TimeAccount, 'id' | 'user_id' | 'balance' | 'balance_limit' | 'time_account_setting_id' | 'name' | 'deleted_at'> &
+        Pick<Relations<'timeAccount'>, 'time_account_setting'>;
     time_account_settings: TimeAccountSetting[];
 }>();
 
@@ -89,14 +85,14 @@ const timeAccountSettingsForm = useForm({
                                     label="Limit in Stunden"
                                     :hint="
                                         'entspricht ' +
-                                        roundTo(timeAccountSettingsForm.balance_limit / user.currentWorkingHours.weekly_working_hours, 2) +
+                                        roundTo(timeAccountSettingsForm.balance_limit / (user.current_working_hours?.weekly_working_hours ?? 40), 2) +
                                         'x wöchentliche Arbeitszeit'
                                     "
                                     :error-messages="timeAccountSettingsForm.errors.balance_limit"
                                 ></v-text-field>
                             </v-col>
                             <v-col cols="12" class="text-end">
-                                <v-btn type="submit" color="primary" :loading="timeAccountSettingsForm.processing"> Speichern </v-btn>
+                                <v-btn type="submit" color="primary" :loading="timeAccountSettingsForm.processing">Speichern</v-btn>
                             </v-col>
                         </v-row>
                     </v-form>

@@ -15,10 +15,11 @@ class TimeAccountTransaction extends Model
 
     public static function scopeForUser(Builder $query, User $user)
     {
+        $timeAccounts = $user->timeAccounts()->withTrashed()->get()->pluck('id');
         return $query->where(
             fn($q) => $q
-                ->whereIn('from_id', $user->timeAccounts()->withTrashed()->select('id'))
-                ->orWhereIn('to_id', $user->timeAccounts()->withTrashed()->select('id'))
+                ->whereIn('from_id', $timeAccounts)
+                ->orWhereIn('to_id', $timeAccounts)
         );
     }
 

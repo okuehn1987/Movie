@@ -68,21 +68,21 @@ class UserController extends Controller
             'home_office' => 'required|boolean',
             'home_office_hours_per_week' => 'nullable|min:0|numeric',
 
-            'userWorkingHours' => 'required|array',
-            'userWorkingHours.*.id' => 'nullable|exists:user_working_hours,id',
-            'userWorkingHours.*.weekly_working_hours' => 'required|min:0|decimal:0,2',
-            'userWorkingHours.*.active_since' => 'required|date',
+            'user_working_hours' => 'required|array',
+            'user_working_hours.*.id' => 'nullable|exists:user_working_hours,id',
+            'user_working_hours.*.weekly_working_hours' => 'required|min:0|decimal:0,2',
+            'user_working_hours.*.active_since' => 'required|date',
 
-            'userWorkingWeeks' => 'required|array',
-            'userWorkingWeeks.*.id' => 'nullable|exists:user_working_weeks,id',
-            'userWorkingWeeks.*.weekdays' => 'required|array',
-            'userWorkingWeeks.*.weekdays.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
-            'userWorkingWeeks.*.active_since' => 'required|date',
+            'user_working_weeks' => 'required|array',
+            'user_working_weeks.*.id' => 'nullable|exists:user_working_weeks,id',
+            'user_working_weeks.*.weekdays' => 'required|array',
+            'user_working_weeks.*.weekdays.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
+            'user_working_weeks.*.active_since' => 'required|date',
 
-            'userLeaveDays' => 'required|array',
-            'userLeaveDays.*.id' => 'nullable|exists:user_leave_days,id',
-            'userLeaveDays.*.leave_days' => 'required|integer|min:0',
-            'userLeaveDays.*.active_since' => 'required|date',
+            'user_leave_days' => 'required|array',
+            'user_leave_days.*.id' => 'nullable|exists:user_leave_days,id',
+            'user_leave_days.*.leave_days' => 'required|integer|min:0',
+            'user_leave_days.*.active_since' => 'required|date',
 
             "overtime_calculations_start" => "required|date",
 
@@ -151,20 +151,25 @@ class UserController extends Controller
 
         $user->load(['groupUser', 'operatingSiteUser', 'organizationUser', 'supervisor:id']);
 
-        $user['userWorkingHours'] = [
-            $user->userWorkingHours()->orderBy('active_since', 'asc')->whereDate('active_since', '<=', Carbon::now())->first(),
-            ...$user->userWorkingHours()->orderBy('active_since', 'asc')->whereDate('active_since', '>', Carbon::now())->get()->toArray(),
-        ];
+        $user['user_working_hours'] = $user->userWorkingHours()
+            ->orderBy('active_since', 'asc')
+            ->whereDate('active_since', '>', Carbon::now())
+            ->get()
+            ->merge([$user->currentWorkingHours]);
 
-        $user['userWorkingWeeks'] = [
-            $user->userWorkingWeeks()->orderBy('active_since', 'asc')->whereDate('active_since', '<=', Carbon::now())->first(),
-            ...$user->userWorkingWeeks()->orderBy('active_since', 'asc')->whereDate('active_since', '>', Carbon::now())->get()->toArray(),
-        ];
+        $user['user_working_weeks'] = $user->userWorkingWeeks()
+            ->orderBy('active_since', 'asc')
+            ->whereDate('active_since', '>', Carbon::now())
+            ->get()
+            ->merge([$user->currentWorkingWeek]);
 
-        $user['userLeaveDays'] = [
-            $user->userLeaveDays()->where('type', 'annual')->orderBy('active_since', 'asc')->whereDate('active_since', '<=', Carbon::now())->first(),
-            ...$user->userLeaveDays()->where('type', 'annual')->orderBy('active_since', 'asc')->whereDate('active_since', '>', Carbon::now())->get()->toArray(),
-        ];
+        $user['user_leave_days'] = collect(
+            $user->userLeaveDays()
+                ->where('type', 'annual')
+                ->orderBy('active_since', 'asc')
+                ->whereDate('active_since', '>', Carbon::now())
+                ->get()
+        )->merge([$user->currentLeaveDays]);
 
         return Inertia::render('User/UserShow/GeneralInformation', [
             'user' => $user,
@@ -218,16 +223,13 @@ class UserController extends Controller
     {
         Gate::authorize('viewIndex', [TimeAccount::class, $user]);
 
-        $user['currentWorkingHours'] = $user->userWorkingHours()->latest('active_since')->first();
-        $user['currentWorkingWeek'] = $user->userWorkingWeeks()->latest('active_since')->first();
-
         $timeAccounts =  $user->timeAccounts()
             ->withTrashed()
             ->with(['timeAccountSetting'])
             ->get(["id", "user_id", "balance", "balance_limit", "time_account_setting_id", "name", "deleted_at"]);
 
         return Inertia::render('User/UserShow/TimeAccounts/TimeAccounts', [
-            'user' => $user,
+            'user' => $user->load(['currentWorkingHours', 'currentWorkingWeek']),
             'time_accounts' => $timeAccounts,
             'time_account_settings' => TimeAccountSetting::inOrganization()->get(['id', 'type', 'truncation_cycle_length_in_months']),
             'defaultTimeAccountId' => $user->defaultTimeAccount->id,
@@ -245,7 +247,7 @@ class UserController extends Controller
             ->with(['timeAccountSetting'])
             ->get(["id", "user_id", "balance", "balance_limit", "time_account_setting_id", "name", "deleted_at"]);
 
-        $userTransactions = TimeAccountTransaction::forUser($user)->with('user:id,first_name,last_name')->latest()->paginate(13);
+        $userTransactions = TimeAccountTransaction::forUser($user)->with('user:id,first_name,last_name')->orderByDesc('id')->paginate(13);
 
         return Inertia::render('User/UserShow/TimeAccountTransactions', [
             'user' => $user,
@@ -319,7 +321,7 @@ class UserController extends Controller
             'type' => 'remaining'
         ]);
 
-        foreach ($validated['userLeaveDays'] as $leaveDay) {
+        foreach ($validated['user_leave_days'] as $leaveDay) {
             UserLeaveDay::create([
                 'user_id' => $user->id,
                 'leave_days' => $leaveDay['leave_days'],
@@ -327,14 +329,14 @@ class UserController extends Controller
                 'type' => 'annual'
             ]);
         }
-        foreach ($validated['userWorkingHours'] as $workingHour) {
+        foreach ($validated['user_working_hours'] as $workingHour) {
             UserWorkingHour::create([
                 'user_id' => $user->id,
                 'weekly_working_hours' => $workingHour['weekly_working_hours'],
                 'active_since' => Carbon::parse($workingHour['active_since'])
             ]);
         }
-        foreach ($validated['userWorkingWeeks'] as $workingWeek) {
+        foreach ($validated['user_working_weeks'] as $workingWeek) {
             UserWorkingWeek::create([
                 'user_id' => $user->id,
                 ...collect($workingWeek['weekdays'])->flatMap(fn($e) => [$e => true]),
@@ -431,10 +433,10 @@ class UserController extends Controller
         $user->userLeaveDays()
             ->where('type', 'annual')
             ->whereDate('active_since', '>', Carbon::now())
-            ->whereNotIn('id', collect($validated['userLeaveDays'])->map(fn($e) => $e['id'])->toArray())
+            ->whereNotIn('id', collect($validated['user_leave_days'])->map(fn($e) => $e['id'])->toArray())
             ->delete();
 
-        foreach ($validated['userLeaveDays'] as $leaveDay) {
+        foreach ($validated['user_leave_days'] as $leaveDay) {
             if (Carbon::now()->startOfYear()->gt(Carbon::parse($leaveDay['active_since'])))
                 continue;
 
@@ -450,10 +452,10 @@ class UserController extends Controller
 
         $user->userWorkingWeeks()
             ->whereDate('active_since', '>', Carbon::now())
-            ->whereNotIn('id', collect($validated['userWorkingWeeks'])->map(fn($e) => $e['id'])->toArray())
+            ->whereNotIn('id', collect($validated['user_working_weeks'])->map(fn($e) => $e['id'])->toArray())
             ->delete();
 
-        foreach ($validated['userWorkingWeeks'] as $workingWeek) {
+        foreach ($validated['user_working_weeks'] as $workingWeek) {
             if (Carbon::now()->startOfDay()->gt(Carbon::parse($workingWeek['active_since'])))
                 continue;
 
@@ -475,10 +477,10 @@ class UserController extends Controller
 
         $user->userWorkingHours()
             ->whereDate('active_since', '>', Carbon::now())
-            ->whereNotIn('id', collect($validated['userWorkingHours'])->map(fn($e) => $e['id'])->toArray())
+            ->whereNotIn('id', collect($validated['user_working_hours'])->map(fn($e) => $e['id'])->toArray())
             ->delete();
 
-        foreach ($validated['userWorkingHours'] as $workingHour) {
+        foreach ($validated['user_working_hours'] as $workingHour) {
             if (Carbon::now()->startOfDay()->gt(Carbon::parse($workingHour['active_since'])))
                 continue;
 

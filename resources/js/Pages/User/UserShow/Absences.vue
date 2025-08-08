@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Absence, AbsenceType, User } from '@/types/types';
+import { Absence, RelationPick, User } from '@/types/types';
 import { DateTime } from 'luxon';
 import UserShowNavBar from './partial/UserShowNavBar.vue';
 
@@ -8,10 +8,10 @@ defineProps<{
     user: User & {
         leaveDaysForYear: number;
         usedLeaveDaysForYear: number;
-        absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'user_id' | 'absence_type_id'> & {
-            absence_type: Pick<AbsenceType, 'id' | 'name'>;
-            usedDays: number;
-        })[];
+        absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'user_id' | 'absence_type_id'> &
+            RelationPick<'absence', 'absence_type', 'id' | 'name'> & {
+                usedDays: number;
+            })[];
     };
 }>();
 </script>
@@ -29,7 +29,7 @@ defineProps<{
                                     ...e,
                                     start: DateTime.fromSQL(e.start).toFormat('dd.MM.yyyy'),
                                     end: DateTime.fromSQL(e.end).toFormat('dd.MM.yyyy'),
-                                    absence_type: e.absence_type.name,
+                                    absence_type: e.absence_type?.name,
                                     usedDays: e.usedDays.toString(),
                                 }))
                             "

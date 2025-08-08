@@ -23,19 +23,34 @@ class HasOrganizationAccess
     {
         $organization = Organization::getCurrent();
 
-        if($request->user()->role == 'super-admin') return $next($request);
+        if ($request->user()->role == 'super-admin') return $next($request);
 
         foreach ($request->route()->parameters as $key => $instanceObject) {
             $targetOrgId = match (true) {
                 $instanceObject instanceof \App\Models\OperatingSite, $instanceObject instanceof \App\Models\AbsenceType,
                 $instanceObject instanceof \App\Models\Group, $instanceObject instanceof \App\Models\SpecialWorkingHoursFactor,
-                $instanceObject instanceof \App\Models\TimeAccountSetting, => $instanceObject->organization_id,
-                $instanceObject instanceof \App\Models\Absence => $instanceObject->absenceType()->select('organization_id')->first()->organization_id,
-                $instanceObject instanceof \App\Models\TimeAccount => $instanceObject->timeAccountSetting()->select('organization_id')->first()->organization_id,
-                $instanceObject instanceof \App\Models\OperatingTime, $instanceObject instanceof \App\Models\User =>  $instanceObject->operatingSite()->select('organization_id')->first()->organization_id,
-                $instanceObject instanceof \App\Models\TravelLog,  $instanceObject instanceof \App\Models\WorkLog, $instanceObject instanceof \App\Models\WorkLogPatch => $instanceObject->user->operatingSite()->select('organization_id')->first()->organization_id,
-                $instanceObject instanceof Organization => $instanceObject->id,
-                $instanceObject instanceof DatabaseNotification => \App\Models\User::find($instanceObject->notifiable_id)->operatingSite()->select('organization_id')->first()->organization_id,
+                $instanceObject instanceof \App\Models\TimeAccountSetting,
+                => $instanceObject->organization_id,
+
+                $instanceObject instanceof \App\Models\Absence, $instanceObject instanceof \App\Models\AbsencePatch
+                => $instanceObject->absenceType()->select('organization_id')->first()->organization_id,
+
+                $instanceObject instanceof \App\Models\TimeAccount
+                => $instanceObject->timeAccountSetting()->select('organization_id')->first()->organization_id,
+
+                $instanceObject instanceof \App\Models\OperatingTime, $instanceObject instanceof \App\Models\User
+                => $instanceObject->operatingSite()->select('organization_id')->first()->organization_id,
+
+                $instanceObject instanceof \App\Models\TravelLog,  $instanceObject instanceof \App\Models\WorkLog,
+                $instanceObject instanceof \App\Models\WorkLogPatch
+                => $instanceObject->user->operatingSite()->select('organization_id')->first()->organization_id,
+
+                $instanceObject instanceof Organization
+                => $instanceObject->id,
+
+                $instanceObject instanceof DatabaseNotification
+                => \App\Models\User::find($instanceObject->notifiable_id)->operatingSite()->select('organization_id')->first()->organization_id,
+
                 default => null
             };
             if ($targetOrgId != $organization->id) {

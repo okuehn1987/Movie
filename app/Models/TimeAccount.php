@@ -77,6 +77,17 @@ class TimeAccount extends Model
 
         DB::transaction(function () use ($amount, $description, $from, $to) {
             TimeAccount::whereIn('id', [$from?->id, $to?->id])->lockForUpdate()->get();
+
+            TimeAccountTransaction::create([
+                'from_id' => $from?->id ?? null,
+                'from_previous_balance' => $from ? TimeAccount::find($from->id)->balance : null,
+                'to_id' => $to?->id ?? null,
+                'to_previous_balance' => $to ? TimeAccount::find($to->id)->balance : null,
+                'amount' => $amount,
+                'description' => $description,
+                'modified_by' => Auth::id(),
+            ]);
+
             $from?->forceFill([
                 'balance' => DB::raw("balance - ($amount)")
             ])->saveQuietly();
@@ -84,14 +95,6 @@ class TimeAccount extends Model
             $to?->forceFill([
                 'balance' => DB::raw("balance + ($amount)")
             ])->saveQuietly();
-
-            TimeAccountTransaction::create([
-                'from_id' => $from?->id ?? null,
-                'to_id' => $to?->id ?? null,
-                'amount' => $amount,
-                'description' => $description,
-                'modified_by' => Auth::id(),
-            ]);
         });
     }
 

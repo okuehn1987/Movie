@@ -2,23 +2,52 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasPatches;
+use App\Models\Traits\IsAccountable;
 use Carbon\Carbon;
+use Illuminate\Container\Attributes\CurrentUser;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class Absence extends Model
 {
-    use HasFactory, SoftDeletes, ScopeInOrganization;
+    use HasFactory, SoftDeletes;
+    use ScopeInOrganization, HasPatches, IsAccountable;
 
     protected $guarded = [];
 
+    private static function getPatchModel()
+    {
+        return AbsencePatch::class;
+    }
+
+    public static function boot()
+    {
+        parent::boot();
+        self::saving(function (Absence $model) {
+            //TODO: check if we need to split on save
+            // //if the entry spans multiple days we need to split it into different entries
+            // if ($model->end && !Carbon::parse($model->start)->isSameDay($model->end)) {
+            //     // run backwards for easier mutation
+            //     for ($day = Carbon::parse($model->end)->startOfDay(); !$day->isSameDay($model->start); $day->subDay()) {
+            //         $model->replicate()->fill([
+            //             'start' => $day->copy()->startOfDay(),
+            //             'end' => min(Carbon::parse($model->end)->copy(), $day->copy()->endOfDay()),
+            //         ])->save();
+            //     }
+            //     $model->end = Carbon::parse($model->start)->copy()->endOfDay();
+            // }
+            Shift::computeAffected($model);
+        });
+    }
+
+
     public function getHidden()
     {
-        $user = User::find(Auth::id());
-        if ($user && $user->cannot('viewShow', [AbsenceType::class, $this->user])) return ['absence_type_id', 'absenceType'];
+        $user = request()->user();
+        if ($user && $user->cannot('viewShow', [AbsenceType::class, $user->usersInOrganization->find($this->user_id)])) return ['absence_type_id', 'absenceType'];
         return [];
     }
 
@@ -26,6 +55,7 @@ class Absence extends Model
     {
         return $this->belongsTo(User::class);
     }
+
     public function absenceType()
     {
         return $this->belongsTo(AbsenceType::class);
@@ -38,59 +68,23 @@ class Absence extends Model
 
     public function getUsedDaysAttribute()
     {
+        return self::calculateUsedDays($this);
+    }
+
+    public static function calculateUsedDays(Absence|AbsencePatch $entry)
+    {
         $usedDays = 0;
-        for ($day = Carbon::parse($this->start)->startOfDay(); $day->lte(Carbon::parse($this->end)); $day->addDay()) {
-            $currentWorkingWeek = $this->user->userWorkingWeekForDate($day);
-            $workingDaysInWeek = $currentWorkingWeek?->numberOfWorkingDays;
+        for ($day = Carbon::parse($entry->start)->startOfDay(); $day->lte(Carbon::parse($entry->end)); $day->addDay()) {
+            $currentWorkingWeek = $entry->user->userWorkingWeekForDate($day);
 
             if (
-                $workingDaysInWeek > 0 &&
-                $currentWorkingWeek->hasWorkDay($day) &&
-                !$this->user->operatingSite->hasHoliday($day)
+                $currentWorkingWeek?->hasWorkDay($day) &&
+                !$entry->user->loadMissing('operatingSite')->operatingSite->hasHoliday($day)
             ) {
                 $usedDays++;
             };
         }
 
         return $usedDays;
-    }
-
-    public function accountAsTransaction()
-    {
-        DB::transaction(function () {
-            WorkLog::where('user_id', $this->user_id)->lockForUpdate()->get();
-
-            $this->accepted_at = Carbon::now();
-            $this->status = 'accepted';
-
-            // check all days of absence until today
-            $end = Carbon::parse($this->end)->gte(Carbon::now()) ? Carbon::now() : Carbon::parse($this->end);
-
-            for ($day = Carbon::parse($this->start)->startOfDay(); $day->lte($end); $day->addDay()) {
-                if (!WorkingHoursCalculation::whereDate('day', $day)->exists()) continue;
-
-                $hasAppliedAbsenceForDay = $this->user
-                    ->absences()
-                    ->where('id', '!=', $this->id)
-                    ->where('status', 'accepted')
-                    ->whereDate('start', '<=', $day)
-                    ->whereDate('end', '>=', $day)
-                    ->exists();
-                if ($hasAppliedAbsenceForDay) continue;
-
-                $sollSekunden = $this->user->getSollsekundenForDate($day);
-
-                $istSekunden =  WorkLog::whereDate('start', $day)
-                    ->where('user_id', $this->user_id)
-                    ->get()
-                    ->sum('duration');
-
-                $this->user->defaultTimeAccount->addBalance(
-                    max($sollSekunden - $istSekunden, 0),
-                    'Abwesenheit akzeptiert am ' . Carbon::parse($this->accepted_at)->format('d.m.Y H:i:s')
-                );
-            }
-            $this->save();
-        });
     }
 }

@@ -2,7 +2,7 @@
     "singleQuote": true,
     "arrowParens": "avoid",
     "printWidth": 150,
-    "htmlWhitespaceSensitivity": "css",
+    "htmlWhitespaceSensitivity": "ignore",
     "trailingComma": "all",
     "tabWidth": 4,
     "semi": true,

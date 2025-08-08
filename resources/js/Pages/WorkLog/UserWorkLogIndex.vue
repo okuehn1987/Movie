@@ -11,7 +11,7 @@ type PatchProp = Omit<WorkLogPatch, 'deleted_at' | 'created_at' | 'user_id'>;
 const props = defineProps<{
     user: Pick<User, 'id' | 'first_name' | 'last_name'>;
     workLogs: (WorkLog & {
-        work_log_patches: PatchProp[];
+        patches: PatchProp[];
     })[];
 }>();
 
@@ -66,13 +66,18 @@ function submit() {
 function editWorkLog(id: WorkLog['id']) {
     const workLog = props.workLogs.find(e => e.id === id);
     if (!workLog) return;
-    const lastPatch = workLog.work_log_patches.at(-1);
+    const lastPatch = workLog.patches.at(-1);
     if (!lastPatch) {
         patchLog.value = null;
         patchMode.value = 'edit';
-    } else if (lastPatch && lastPatch.status === 'created') {
-        patchLog.value = lastPatch;
-        patchMode.value = 'show';
+    } else {
+        if (lastPatch.status === 'created') {
+            patchLog.value = lastPatch;
+            patchMode.value = 'show';
+        } else if (lastPatch.status == 'accepted') {
+            patchLog.value = lastPatch;
+            patchMode.value = 'edit';
+        }
     }
     let start = workLog.start;
     let end = workLog.end;
@@ -97,7 +102,7 @@ function retreatPatch() {
     const workLog = props.workLogs.find(e => e.id === workLogForm.id);
     if (!workLog) return;
 
-    const lastPatch = workLog.work_log_patches.at(-1);
+    const lastPatch = workLog.patches.at(-1);
     if (!lastPatch) return;
 
     router.delete(
@@ -139,7 +144,7 @@ const tableHeight = useMaxScrollHeight(0);
                 :items="
                     workLogs
                         .map(workLog => {
-                            const lastAcceptedPatch = workLog.work_log_patches
+                            const lastAcceptedPatch = workLog.patches
                                 .filter(e => e.status === 'accepted')
                                 .toSorted((a, b) => (a.updated_at < b.updated_at ? 1 : -1))[0];
                             return {
@@ -159,7 +164,7 @@ const tableHeight = useMaxScrollHeight(0);
                                 declined: 'Abgelehnt',
                                 accepted: 'Akzeptiert',
                                 none: 'Nicht vorhanden',
-                            }[workLogs.find(e => e.id === workLog.id)?.work_log_patches.at(-1)?.status || 'none'],
+                            }[workLogs.find(e => e.id === workLog.id)?.patches.at(-1)?.status || 'none'],
                         }))
                 "
             >
@@ -168,7 +173,7 @@ const tableHeight = useMaxScrollHeight(0);
                         v-if="editableWorkLogs.find(e => e.id === item.id) && can('workLogPatch', 'create')"
                         color="primary"
                         @click.stop="editWorkLog(item.id)"
-                        :icon="workLogs.find(log => log.id === item.id)?.work_log_patches.at(-1)?.status === 'created' ? 'mdi-eye' : 'mdi-pencil'"
+                        :icon="workLogs.find(log => log.id === item.id)?.patches.at(-1)?.status === 'created' ? 'mdi-eye' : 'mdi-pencil'"
                         variant="text"
                         data-testid="entryToWorkLog"
                     >
@@ -222,7 +227,7 @@ const tableHeight = useMaxScrollHeight(0);
                                     </v-col>
                                     <v-col cols="12" md="3">
                                         <v-text-field
-                                            :disabled="!!patchLog"
+                                            :disabled="patchMode == 'show'"
                                             type="time"
                                             label="Ende"
                                             data-testid="userTimeCorrectionEndTime"
