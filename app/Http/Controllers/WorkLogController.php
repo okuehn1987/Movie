@@ -47,12 +47,22 @@ class WorkLogController extends Controller
                 'end' => null,
                 'user_id' => $authUser->id,
                 'status' => 'accepted',
-                'accepted_at' => now()
+                'accepted_at' => now(),
             ]);
         }
 
         return back()->with('success', 'Arbeitsstatus erfolgreich eingetragen.');
     }
+
+    public function destroy(WorkLog $workLog)
+    {
+        Gate::authorize('delete', [WorkLog::class, $workLog->user]);
+
+        $workLog->delete();
+
+        return back()->with('success', 'Arbeitseintrag erfolgreich gelöscht.');
+    }
+
     public function userWorkLogs(User $user)
     {
         Gate::authorize('viewShow', [WorkLog::class, $user]);
@@ -68,6 +78,9 @@ class WorkLogController extends Controller
                 'workLogPatch' => [
                     'create' => Gate::allows('create', [WorkLogPatch::class, $user]),
                     'delete' => Gate::allows('delete', [WorkLogPatch::class, $user]),
+                ],
+                'workLog' => [
+                    'delete' => Gate::allows('delete', [WorkLog::class, $user]),
                 ]
             ]
         ]);

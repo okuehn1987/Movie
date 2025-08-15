@@ -41,8 +41,22 @@ class AbsencePolicy
             $authUser->hasPermissionOrDelegation($user, 'absence_permission', 'write');
     }
 
-    public function delete(User $authUser, Absence $absence): bool
+    public function deleteDispute(User $authUser, Absence $absence): bool
     {
         return $absence->status === 'created' && $authUser->is($absence->user);
+    }
+
+    public function delete(User $authUser, Absence $absence): bool
+    {
+        return  $authUser->id === $absence->user->supervisor_id ||
+            ($authUser->is($absence->user) && !$authUser->supervisor_id) ||
+            $authUser->hasPermissionOrDelegation($absence->user, 'absence_permission', 'write');
+    }
+
+    public function deleteRequestable(User $authUser, Absence $absence)
+    {
+        return $authUser->is($absence->user) ||
+            $authUser->id === $absence->user->supervisor_id ||
+            $authUser->hasPermissionOrDelegation($absence->user, 'absence_permission', 'write');
     }
 }

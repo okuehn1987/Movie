@@ -41,6 +41,23 @@ class Absence extends Model
             // }
             Shift::computeAffected($model);
         });
+
+        self::deleting(function (Absence $model) {
+            $patch = new AbsencePatch([
+                'start' => '1970-01-01',
+                'end' => '1970-01-01',
+                'user_id' => $model->user_id,
+                'absence_type_id' => $model->absence_type_id,
+                'status' => 'accepted',
+                'accepted_at' => now(),
+                'comment' => $model->comment,
+                'type' => 'delete',
+                'absence_id' => $model->id,
+            ]);
+
+            Shift::computeAffected($patch);
+            $patch->saveQuietly();
+        });
     }
 
 

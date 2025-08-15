@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { User, WorkLog, WorkLogPatch } from '@/types/types';
 import { useMaxScrollHeight } from '@/utils';
@@ -41,17 +42,19 @@ const workLogForm = useForm({
 function submit() {
     workLogForm
         .transform(d => {
-            const start_time = DateTime.fromFormat(d.start_time, 'HH:mm');
-            const end_time = DateTime.fromFormat(d.end_time, 'HH:mm');
+            const start_time = DateTime.fromFormat(d.start_time, 'HH:mm:ss');
+            const end_time = DateTime.fromFormat(d.end_time, 'HH:mm:ss');
             return {
                 ...d,
                 start: DateTime.fromISO(d.start.toISOString()).set({
                     hour: start_time.hour,
                     minute: start_time.minute,
+                    second: start_time.second,
                 }),
                 end: DateTime.fromISO(d.end.toISOString()).set({
                     hour: end_time.hour,
                     minute: end_time.minute,
+                    second: end_time.second,
                 }),
                 workLog: workLogForm.id,
             };
@@ -92,8 +95,8 @@ function editWorkLog(id: WorkLog['id']) {
     workLogForm.id = id;
     workLogForm.start = new Date(start);
     workLogForm.end = end ? new Date(end) : new Date();
-    workLogForm.start_time = DateTime.fromSQL(start).toFormat('HH:mm');
-    workLogForm.end_time = DateTime.fromSQL(end || DateTime.now().toSQL()).toFormat('HH:mm');
+    workLogForm.start_time = DateTime.fromSQL(start).toFormat('HH:mm:ss');
+    workLogForm.end_time = DateTime.fromSQL(end || DateTime.now().toSQL()).toFormat('HH:mm:ss');
     workLogForm.is_home_office = isHomeOffice;
     showDialog.value = true;
 }
@@ -136,9 +139,9 @@ const tableHeight = useMaxScrollHeight(0);
                     { title: 'Korrektur', key: 'status' },
                     {
                         title: '',
-                        key: 'action',
+                        key: 'actions',
                         sortable: false,
-                        align: 'end',
+                        width: '1px',
                     },
                 ]"
                 :items="
@@ -168,16 +171,23 @@ const tableHeight = useMaxScrollHeight(0);
                         }))
                 "
             >
-                <template v-slot:item.action="{ item }">
-                    <v-btn
-                        v-if="editableWorkLogs.find(e => e.id === item.id) && can('workLogPatch', 'create')"
-                        color="primary"
-                        @click.stop="editWorkLog(item.id)"
-                        :icon="workLogs.find(log => log.id === item.id)?.patches.at(-1)?.status === 'created' ? 'mdi-eye' : 'mdi-pencil'"
-                        variant="text"
-                        data-testid="entryToWorkLog"
-                    >
-                    </v-btn>
+                <template v-slot:item.actions="{ item }">
+                    <div class="d-flex ga-2">
+                        <v-btn
+                            v-if="editableWorkLogs.find(e => e.id === item.id) && can('workLogPatch', 'create')"
+                            color="primary"
+                            @click.stop="editWorkLog(item.id)"
+                            :icon="workLogs.find(log => log.id === item.id)?.patches.at(-1)?.status === 'created' ? 'mdi-eye' : 'mdi-pencil'"
+                            variant="text"
+                            data-testid="entryToWorkLog"
+                        ></v-btn>
+                        <ConfirmDelete
+                            v-if="can('workLog', 'delete')"
+                            title="Eintrag löschen"
+                            content="Möchten Sie diesen Eintrag wirklich löschen? Dies kann nicht rückgängig gemacht werden."
+                            :route="route('workLog.destroy', { workLog: item.id })"
+                        ></ConfirmDelete>
+                    </div>
                 </template>
             </v-data-table-virtual>
 
@@ -207,6 +217,7 @@ const tableHeight = useMaxScrollHeight(0);
                                         <v-text-field
                                             type="time"
                                             label="Start"
+                                            step="1"
                                             data-testid="userTimeCorrectionStartTime"
                                             required
                                             :error-messages="workLogForm.errors.start_time"
@@ -230,6 +241,7 @@ const tableHeight = useMaxScrollHeight(0);
                                             :disabled="patchMode == 'show'"
                                             type="time"
                                             label="Ende"
+                                            step="1"
                                             data-testid="userTimeCorrectionEndTime"
                                             required
                                             :error-messages="workLogForm.errors.end_time"
@@ -244,8 +256,7 @@ const tableHeight = useMaxScrollHeight(0);
                                             :error-messages="workLogForm.errors.comment"
                                             variant="filled"
                                             rows="3"
-                                        >
-                                        </v-textarea>
+                                        ></v-textarea>
                                     </v-col>
                                     <v-col cols="12" md="3">
                                         <v-checkbox
@@ -265,15 +276,17 @@ const tableHeight = useMaxScrollHeight(0);
                                             :loading="workLogForm.processing"
                                             @click.stop="retreatPatch"
                                             color="primary"
-                                            >Antrag zurückziehen</v-btn
                                         >
+                                            Antrag zurückziehen
+                                        </v-btn>
                                         <v-btn
                                             v-else-if="can('workLogPatch', 'create') && patchMode === 'edit'"
                                             :loading="workLogForm.processing"
                                             type="submit"
                                             color="primary"
-                                            >Korrektur beantragen</v-btn
                                         >
+                                            Korrektur beantragen
+                                        </v-btn>
                                     </v-col>
                                 </v-row>
                             </v-form>
