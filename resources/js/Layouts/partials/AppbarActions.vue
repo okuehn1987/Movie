@@ -35,14 +35,9 @@ function readNotification(notification: Notification) {
     <v-menu v-if="$page.props.auth.user.unread_notifications.length > 0">
         <template v-slot:activator="{ props }">
             <v-btn color="primary" v-bind="props" stacked>
-                <v-badge
-                    v-if="$page.props.auth.user.unread_notifications.length > 0"
-                    :content="$page.props.auth.user.unread_notifications.length"
-                    color="error"
-                >
+                <v-badge :content="$page.props.auth.user.unread_notifications.length" color="error">
                     <v-icon icon="mdi-bell"></v-icon>
                 </v-badge>
-                <v-icon v-else icon="mdi-bell"></v-icon>
             </v-btn>
         </template>
         <v-list>
