@@ -338,6 +338,7 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
               data: {
                   title: `${User['first_name']} ${User['last_name']} hat eine Zeitkorrektur beantragt.`;
                   work_log_patch_id: WorkLogPatch['id'];
+                  status: Status;
               };
           }
         | {
@@ -345,6 +346,7 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
               data: {
                   title: `${User['first_name']} ${User['last_name']} hat eine Abwesenheit beantragt.`;
                   absence_id: Absence['id'];
+                  status: Status;
               };
           }
         | {
@@ -352,6 +354,7 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
               data: {
                   title: `${User['first_name']} ${User['last_name']} hat eine Abwesenheitkorrektur beantragt.`;
                   absence_patch_id: AbsencePatch['id'];
+                  status: Status;
               };
           }
         | {
@@ -407,6 +410,7 @@ export type RelationMap = {
         user: User;
         patches: AbsencePatch[];
         current_accepted_patch: AbsencePatch | null;
+        latest_patch: AbsencePatch | null;
     };
     absencePatch: {
         absence: Absence;
@@ -491,6 +495,7 @@ export type RelationMap = {
         user: User;
         patches: TravelLogPatch[];
         current_accepted_patch: TravelLogPatch | null;
+        latest_patch: TravelLogPatch | null;
     };
     travelLogAddress: {
         organization: Organization;
@@ -550,6 +555,7 @@ export type RelationMap = {
         shift: Shift | null;
         patches: WorkLogPatch[];
         current_accepted_patch: WorkLogPatch | null;
+        latest_patch: WorkLogPatch | null;
     };
     workLogPatch: {
         user: User;
@@ -593,7 +599,17 @@ export type RelationPick<
     TKeys extends keyof UnArray<NonNullable<RelationMap[TModel][TRelation]>>,
 > = Prettify<{
     [x in TRelation]: RelationMap[TModel][TRelation] extends Array<unknown>
-        ? Pick<UnArray<NonNullable<RelationMap[TModel][TRelation]>>, TKeys>[]
-        : Pick<UnArray<NonNullable<RelationMap[TModel][TRelation]>>, TKeys>;
+        ? Pick<UnArray<NonNullable<RelationMap[TModel][TRelation]>>, TKeys>[] | (null extends RelationMap[TModel][TRelation] ? null : never)
+        : Pick<UnArray<NonNullable<RelationMap[TModel][TRelation]>>, TKeys> | (null extends RelationMap[TModel][TRelation] ? null : never);
 }>;
 type UnArray<T> = T extends Array<infer U> ? U : T;
+
+export type Relation<
+    TModel extends keyof RelationMap,
+    TRelation extends keyof RelationMap[TModel],
+    TKeys extends keyof UnArray<NonNullable<RelationMap[TModel][TRelation]>>,
+> = Prettify<{
+    [x in TRelation]: RelationMap[TModel][TRelation] extends Array<unknown>
+        ? Pick<UnArray<NonNullable<RelationMap[TModel][TRelation]>>, TKeys>[] | (null extends RelationMap[TModel][TRelation] ? null : never)
+        : Pick<UnArray<NonNullable<RelationMap[TModel][TRelation]>>, TKeys> | (null extends RelationMap[TModel][TRelation] ? null : never);
+}>[TRelation];

@@ -21,7 +21,7 @@ class WorkLogPatchController extends Controller
 
         $validated = $request->validate([
             'start' => 'required|date',
-            'end' => 'required|date',
+            'end' => 'required|date|after:start',
             'comment' => 'nullable|string',
             'is_home_office' => 'required|boolean',
             'workLog' => 'required|exists:work_logs,id'

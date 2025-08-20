@@ -39,7 +39,7 @@ function deleteAbsence() {
 const denyDeleteAbsenceForm = useForm({});
 function denyAbsenceDelete() {
     if (!absenceToDelete.value) return;
-    denyDeleteAbsenceForm.post(route('absence.denyDestroy', { absence: absenceToDelete.value.id }), {
+    denyDeleteAbsenceForm.delete(route('absence.denyDestroy', { absence: absenceToDelete.value.id }), {
         onSuccess: () => {
             showAbsenceDialog.value = false;
         },

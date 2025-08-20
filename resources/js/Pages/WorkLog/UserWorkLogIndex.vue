@@ -1,28 +1,27 @@
 <script setup lang="ts">
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { User, WorkLog, WorkLogPatch } from '@/types/types';
+import { Relation, User, WorkLog } from '@/types/types';
 import { useMaxScrollHeight } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { computed, onMounted, ref } from 'vue';
 
-type PatchProp = Omit<WorkLogPatch, 'deleted_at' | 'created_at' | 'user_id'>;
+type patchkeys = 'id' | 'work_log_id' | 'status' | 'start' | 'end' | 'is_home_office' | 'comment';
 
 const props = defineProps<{
     user: Pick<User, 'id' | 'first_name' | 'last_name'>;
     workLogs: (WorkLog & {
-        patches: PatchProp[];
+        latest_patch: Relation<'workLog', 'latest_patch', patchkeys>;
+        current_accepted_patch: Relation<'workLog', 'current_accepted_patch', patchkeys>;
     })[];
 }>();
 
 const showDialog = ref(false);
 
 const patchMode = ref<'edit' | 'show' | null>(null);
-const patchLog = ref<WorkLog | PatchProp | null>(null);
+const patchLog = ref<Relation<'workLog', 'current_accepted_patch', patchkeys>>(null);
 const inputVariant = computed(() => (patchLog.value ? 'plain' : 'underlined'));
-
-const editableWorkLogs = computed(() => props.workLogs.filter((_, i) => i < 10 ** 10)); // 10 ** 10 to display for now but keep the feature
 
 onMounted(() => {
     const workLogId = route().params['workLog'];
@@ -69,7 +68,7 @@ function submit() {
 function editWorkLog(id: WorkLog['id']) {
     const workLog = props.workLogs.find(e => e.id === id);
     if (!workLog) return;
-    const lastPatch = workLog.patches.at(-1);
+    const lastPatch = workLog.latest_patch;
     if (!lastPatch) {
         patchLog.value = null;
         patchMode.value = 'edit';
@@ -77,27 +76,24 @@ function editWorkLog(id: WorkLog['id']) {
         if (lastPatch.status === 'created') {
             patchLog.value = lastPatch;
             patchMode.value = 'show';
-        } else if (lastPatch.status == 'accepted') {
+        } else if (lastPatch.status === 'accepted') {
+            patchLog.value = lastPatch;
+            patchMode.value = 'edit';
+        } else {
             patchLog.value = lastPatch;
             patchMode.value = 'edit';
         }
     }
-    let start = workLog.start;
-    let end = workLog.end;
-    let isHomeOffice = workLog.is_home_office;
-    if (patchLog.value) {
-        start = patchLog.value.start;
-        end = patchLog.value.end;
-        isHomeOffice = patchLog.value.is_home_office;
-        workLogForm.comment = 'comment' in patchLog.value ? patchLog.value?.comment : null;
-    }
+    const start = (patchLog.value ?? workLog).start;
+    const end = (patchLog.value ?? workLog).end;
 
+    workLogForm.comment = patchLog.value?.comment ?? workLog.comment;
     workLogForm.id = id;
     workLogForm.start = new Date(start);
     workLogForm.end = end ? new Date(end) : new Date();
     workLogForm.start_time = DateTime.fromSQL(start).toFormat('HH:mm:ss');
     workLogForm.end_time = DateTime.fromSQL(end || DateTime.now().toSQL()).toFormat('HH:mm:ss');
-    workLogForm.is_home_office = isHomeOffice;
+    workLogForm.is_home_office = (patchLog.value ?? workLog).is_home_office;
     showDialog.value = true;
 }
 
@@ -105,7 +101,7 @@ function retreatPatch() {
     const workLog = props.workLogs.find(e => e.id === workLogForm.id);
     if (!workLog) return;
 
-    const lastPatch = workLog.patches.at(-1);
+    const lastPatch = workLog.latest_patch;
     if (!lastPatch) return;
 
     router.delete(
@@ -136,7 +132,7 @@ const tableHeight = useMaxScrollHeight(0);
                     { title: 'Ende', key: 'end' },
                     { title: 'Dauer', key: 'duration' },
                     { title: 'Homeoffice', key: 'is_home_office' },
-                    { title: 'Korrektur', key: 'status' },
+                    { title: 'Korrektur', key: 'displayStatus' },
                     {
                         title: '',
                         key: 'actions',
@@ -147,37 +143,32 @@ const tableHeight = useMaxScrollHeight(0);
                 :items="
                     workLogs
                         .map(workLog => {
-                            const lastAcceptedPatch = workLog.patches
-                                .filter(e => e.status === 'accepted')
-                                .toSorted((a, b) => (a.updated_at < b.updated_at ? 1 : -1))[0];
+                            const data = workLog.current_accepted_patch ?? workLog;
                             return {
-                                ...(lastAcceptedPatch ?? workLog),
+                                start: DateTime.fromSQL(data.start).toFormat('dd.MM.yyyy HH:mm'),
+                                end: data.end ? DateTime.fromSQL(data.end).toFormat('dd.MM.yyyy HH:mm') : 'Noch nicht beendet',
+                                duration: data.end ? DateTime.fromSQL(data.end).diff(DateTime.fromSQL(data.start)).toFormat('hh:mm') : '',
+                                is_home_office: data.is_home_office ? 'Ja' : 'Nein',
                                 id: workLog.id,
+                                displayStatus: {
+                                    created: 'Beantragt',
+                                    declined: 'Abgelehnt',
+                                    accepted: 'Akzeptiert',
+                                    none: 'Nicht vorhanden',
+                                }[workLog.latest_patch?.status || 'none'],
+                                status: workLog.latest_patch?.status,
                             };
                         })
-                        .toSorted((a, b) => (a.start < b.start ? 1 : -1))
-                        .map(workLog => ({
-                            start: DateTime.fromSQL(workLog.start).toFormat('dd.MM.yyyy HH:mm'),
-                            end: workLog.end ? DateTime.fromSQL(workLog.end).toFormat('dd.MM.yyyy HH:mm') : 'Noch nicht beendet',
-                            duration: workLog.end ? DateTime.fromSQL(workLog.end).diff(DateTime.fromSQL(workLog.start)).toFormat('hh:mm') : '',
-                            is_home_office: workLog.is_home_office ? 'Ja' : 'Nein',
-                            id: workLog.id,
-                            status: {
-                                created: 'Beantragt',
-                                declined: 'Abgelehnt',
-                                accepted: 'Akzeptiert',
-                                none: 'Nicht vorhanden',
-                            }[workLogs.find(e => e.id === workLog.id)?.patches.at(-1)?.status || 'none'],
-                        }))
+                        .toSorted((a, b) => b.start.localeCompare(a.start))
                 "
             >
                 <template v-slot:item.actions="{ item }">
                     <div class="d-flex ga-2">
                         <v-btn
-                            v-if="editableWorkLogs.find(e => e.id === item.id) && can('workLogPatch', 'create')"
+                            v-if="can('workLogPatch', 'create')"
                             color="primary"
                             @click.stop="editWorkLog(item.id)"
-                            :icon="workLogs.find(log => log.id === item.id)?.patches.at(-1)?.status === 'created' ? 'mdi-eye' : 'mdi-pencil'"
+                            :icon="item.status === 'created' ? 'mdi-eye' : 'mdi-pencil'"
                             variant="text"
                             data-testid="entryToWorkLog"
                         ></v-btn>

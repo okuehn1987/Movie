@@ -71,7 +71,10 @@ class WorkLogController extends Controller
             'user' => $user->only('id', 'first_name', 'last_name'),
             'workLogs' => WorkLog::where('user_id', $user->id)
                 ->whereNotNull('end')
-                ->with('patches:id,work_log_id,updated_at,status,start,end,is_home_office,comment')
+                ->with([
+                    'latestPatch:id,work_log_patches.work_log_id,status,start,end,is_home_office,comment',
+                    'currentAcceptedPatch:id,work_log_patches.work_log_id,status,start,end,is_home_office,comment'
+                ])
                 ->orderBy('start', 'DESC')
                 ->get(),
             'can' => [
