@@ -6,6 +6,7 @@ import { useMaxScrollHeight } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { computed, onMounted, ref } from 'vue';
+import CreateNewWorkLog from './CreateNewWorkLog.vue';
 
 type patchkeys = 'id' | 'work_log_id' | 'status' | 'start' | 'end' | 'is_home_office' | 'comment';
 
@@ -35,7 +36,7 @@ onMounted(() => {
 });
 
 const workLogForm = useForm({
-    id: -1,
+    id: null as WorkLog['id'] | null,
     start: new Date(),
     end: new Date(),
     comment: null as null | string,
@@ -144,36 +145,46 @@ const tableHeight = useMaxScrollHeight(0);
                     { title: 'Ende', key: 'end' },
                     { title: 'Dauer', key: 'duration' },
                     { title: 'Homeoffice', key: 'is_home_office' },
-                    { title: 'Korrektur', key: 'displayStatus' },
+                    { title: 'Stand', key: 'displayStatus' },
                     {
                         title: '',
                         key: 'actions',
                         sortable: false,
                         width: '1px',
+                        align: 'end',
                     },
                 ]"
                 :items="
                     workLogs
                         .map(workLog => {
                             const data = workLog.current_accepted_patch ?? workLog;
+
                             return {
                                 start: DateTime.fromSQL(data.start).toFormat('dd.MM.yyyy HH:mm'),
                                 end: data.end ? DateTime.fromSQL(data.end).toFormat('dd.MM.yyyy HH:mm') : 'Noch nicht beendet',
                                 duration: data.end ? DateTime.fromSQL(data.end).diff(DateTime.fromSQL(data.start)).toFormat('hh:mm') : '',
                                 is_home_office: data.is_home_office ? 'Ja' : 'Nein',
                                 id: workLog.id,
-                                displayStatus: {
-                                    created: 'Beantragt',
-                                    declined: 'Abgelehnt',
-                                    accepted: 'Akzeptiert',
-                                    none: 'Nicht vorhanden',
-                                }[workLog.latest_patch?.status || 'none'],
+                                displayStatus: workLog.latest_patch
+                                    ? {
+                                          created: 'Korrektur Beantragt',
+                                          declined: 'Korrektur Abgelehnt',
+                                          accepted: 'Korrektur Akzeptiert',
+                                      }[workLog.latest_patch.status]
+                                    : {
+                                          created: 'Beantragt',
+                                          declined: 'Abgelehnt',
+                                          accepted: 'Akzeptiert',
+                                      }[workLog.status],
                                 status: workLog.latest_patch?.status,
                             };
                         })
                         .toSorted((a, b) => b.start.localeCompare(a.start))
                 "
             >
+                <template v-slot:header.actions>
+                    <CreateNewWorkLog :user></CreateNewWorkLog>
+                </template>
                 <template v-slot:item.actions="{ item }">
                     <div class="d-flex ga-2">
                         <v-btn

@@ -127,6 +127,13 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "absence.denyDestroy": [
+        {
+            "name": "absence",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "absence.destroyDispute": [
         {
             "name": "absence",
@@ -228,9 +235,23 @@ declare module 'ziggy-js' {
     ],
     "workLog.index": [],
     "workLog.store": [],
+    "workLog.update": [
+        {
+            "name": "workLog",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "workLog.destroy": [
         {
             "name": "workLog",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.createWorklog": [
+        {
+            "name": "user",
             "required": true,
             "binding": "id"
         }
