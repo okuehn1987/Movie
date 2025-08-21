@@ -6,6 +6,7 @@ use App\Models\Absence;
 use App\Models\AbsencePatch;
 use App\Models\User;
 use App\Models\WorkLogPatch;
+use App\Notifications\AbsenceDeleteNotification;
 use Carbon\Carbon;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
@@ -106,7 +107,7 @@ class DisputeController extends Controller
         $authUser = request()->user();
 
         $openDeleteNotifications = $authUser->notifications()
-            ->where('type', 'App\\Notifications\\AbsenceDeleteNotification')
+            ->where('type', AbsenceDeleteNotification::class)
             ->where('data->status', 'created')
             ->get();
 

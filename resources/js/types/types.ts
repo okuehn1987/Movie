@@ -365,6 +365,26 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
                   status: Status;
               };
           }
+        | {
+              type: 'App\\Notifications\\DisputeStatusNotification';
+              data: {
+                  title: string;
+                  type: 'delete' | 'create';
+              } & (
+                  | {
+                        log_id: Absence['id'];
+                        log_model: 'App\\Models\\Absence';
+                    }
+                  | {
+                        log_id: AbsencePatch['id'];
+                        log_model: 'App\\Models\\AbsencePatch';
+                    }
+                  | {
+                        log_id: WorkLogPatch['id'];
+                        log_model: 'App\\Models\\WorkLogPatch';
+                    }
+              );
+          }
     );
 
 export type PermissionValue = 'read' | 'write' | null;

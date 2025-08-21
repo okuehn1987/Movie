@@ -26,6 +26,12 @@ const inputVariant = computed(() => (patchLog.value ? 'plain' : 'underlined'));
 onMounted(() => {
     const workLogId = route().params['workLog'];
     if (workLogId) return editWorkLog(Number(workLogId) as WorkLog['id']);
+
+    const workLogPatchId = Number(route().params['openWorkLogPatch']);
+    if (workLogPatchId) {
+        const workLog = props.workLogs.find(w => w.latest_patch?.id == workLogPatchId || w.current_accepted_patch?.id == workLogPatchId);
+        if (workLog) return editWorkLog(workLog.id);
+    }
 });
 
 const workLogForm = useForm({
@@ -87,13 +93,19 @@ function editWorkLog(id: WorkLog['id']) {
     const start = (patchLog.value ?? workLog).start;
     const end = (patchLog.value ?? workLog).end;
 
-    workLogForm.comment = patchLog.value?.comment ?? workLog.comment;
-    workLogForm.id = id;
-    workLogForm.start = new Date(start);
-    workLogForm.end = end ? new Date(end) : new Date();
-    workLogForm.start_time = DateTime.fromSQL(start).toFormat('HH:mm:ss');
-    workLogForm.end_time = DateTime.fromSQL(end || DateTime.now().toSQL()).toFormat('HH:mm:ss');
-    workLogForm.is_home_office = (patchLog.value ?? workLog).is_home_office;
+    const formData = {
+        comment: patchLog.value?.comment ?? workLog.comment,
+        id: id,
+        start: new Date(start),
+        end: end ? new Date(end) : new Date(),
+        start_time: DateTime.fromSQL(start).toFormat('HH:mm:ss'),
+        end_time: DateTime.fromSQL(end || DateTime.now().toSQL()).toFormat('HH:mm:ss'),
+        is_home_office: (patchLog.value ?? workLog).is_home_office,
+    };
+
+    workLogForm.defaults(formData);
+    workLogForm.reset();
+
     showDialog.value = true;
 }
 
@@ -273,6 +285,7 @@ const tableHeight = useMaxScrollHeight(0);
                                         <v-btn
                                             v-else-if="can('workLogPatch', 'create') && patchMode === 'edit'"
                                             :loading="workLogForm.processing"
+                                            :disabled="!workLogForm.isDirty"
                                             type="submit"
                                             color="primary"
                                         >

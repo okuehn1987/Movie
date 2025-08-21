@@ -51,7 +51,8 @@ class AbsenceNotification extends Notification
     {
         return [
             'title' => $this->user->name . ' hat eine Abwesenheit beantragt.',
-            'absence_id' => $this->absence->id
+            'absence_id' => $this->absence->id,
+            'status' => 'created',
         ];
     }
 }
