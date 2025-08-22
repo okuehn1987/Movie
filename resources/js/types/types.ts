@@ -334,9 +334,17 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
     read_at: DateTimeString | null;
 } & (
         | {
+              type: 'App\\Notifications\\WorkLogNotification';
+              data: {
+                  title: string;
+                  work_log_id: WorkLog['id'];
+                  status: Status;
+              };
+          }
+        | {
               type: 'App\\Notifications\\WorkLogPatchNotification';
               data: {
-                  title: `${User['first_name']} ${User['last_name']} hat eine Zeitkorrektur beantragt.`;
+                  title: string;
                   work_log_patch_id: WorkLogPatch['id'];
                   status: Status;
               };
@@ -344,7 +352,7 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
         | {
               type: 'App\\Notifications\\AbsenceNotification';
               data: {
-                  title: `${User['first_name']} ${User['last_name']} hat eine Abwesenheit beantragt.`;
+                  title: string;
                   absence_id: Absence['id'];
                   status: Status;
               };
@@ -352,7 +360,7 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
         | {
               type: 'App\\Notifications\\AbsencePatchNotification';
               data: {
-                  title: `${User['first_name']} ${User['last_name']} hat eine Abwesenheitkorrektur beantragt.`;
+                  title: string;
                   absence_patch_id: AbsencePatch['id'];
                   status: Status;
               };
@@ -360,7 +368,7 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
         | {
               type: 'App\\Notifications\\AbsenceDeleteNotification';
               data: {
-                  title: `${User['first_name']} ${User['last_name']} hat die Löschung einer Abwesenheit beantragt.`;
+                  title: string;
                   absence_id: Absence['id'];
                   status: Status;
               };
@@ -382,6 +390,10 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
                   | {
                         log_id: WorkLogPatch['id'];
                         log_model: 'App\\Models\\WorkLogPatch';
+                    }
+                  | {
+                        log_id: WorkLog['id'];
+                        log_model: 'App\\Models\\WorkLog';
                     }
               );
           }

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Notification } from '@/types/types';
+import { useNow } from '@/utils';
 import { Link, router, usePage } from '@inertiajs/vue3';
+import { DateTime } from 'luxon';
 
 function readNotification(notification: Notification) {
     router.post(
@@ -16,6 +18,10 @@ function openNotification(notification: Notification) {
     if (notification.type == 'App\\Notifications\\WorkLogPatchNotification')
         data = route('dispute.index', {
             openPatch: notification.data.work_log_patch_id,
+        });
+    else if (notification.type == 'App\\Notifications\\WorkLogNotification')
+        data = route('dispute.index', {
+            openWorkLog: notification.data.work_log_id,
         });
     else if (notification.type == 'App\\Notifications\\AbsenceNotification')
         data = route('dispute.index', {
@@ -36,9 +42,26 @@ function openNotification(notification: Notification) {
             data = route('absence.index', { openAbsencePatch: notification.data.log_id });
         else if (notification.data.log_model == 'App\\Models\\WorkLogPatch')
             data = route('user.workLog.index', { user: usePage().props.auth.user.id, openWorkLogPatch: notification.data.log_id });
+        else if (notification.data.log_model == 'App\\Models\\WorkLog')
+            data = route('user.workLog.index', { user: usePage().props.auth.user.id, workLog: notification.data.log_id });
     }
 
     return data && router.get(data);
+}
+const now = useNow();
+function convertTimeStamp(notification: Notification) {
+    const endTime = DateTime.fromISO(notification.created_at);
+    const diff = now.value.diff(endTime);
+    if (diff.as('minutes') < 1) {
+        return 'Jetzt';
+    }
+    if (diff.as('hours') < 1) {
+        return 'vor ' + Math.floor(diff.as('minutes')) + ' minuten';
+    }
+    if (endTime.day !== now.value.day || endTime.month !== now.value.month || endTime.year !== now.value.year) {
+        return endTime.toFormat('dd.MM - HH:mm') + ' Uhr';
+    }
+    return endTime.toFormat('HH:mm') + ' Uhr';
 }
 </script>
 
@@ -51,13 +74,22 @@ function openNotification(notification: Notification) {
                 </v-badge>
             </v-btn>
         </template>
-        <v-list>
-            <template v-for="(notification, index) in $page.props.auth.user.unread_notifications" :key="notification.id">
+        <v-list @click.stop="() => {}">
+            <template
+                v-for="(notification, index) in $page.props.auth.user.unread_notifications.toSorted((a, b) =>
+                    b.created_at.localeCompare(a.created_at),
+                )"
+                :key="notification.id"
+            >
                 <v-divider v-if="index != 0"></v-divider>
                 <v-list-item>
-                    <v-list-item-title>{{ notification.data.title }}</v-list-item-title>
-
-                    <template v-slot:append>
+                    <v-list-item-title>
+                        <div>{{ notification.data.title }}</div>
+                        <div>
+                            <sub>{{ convertTimeStamp(notification) }}</sub>
+                        </div>
+                    </v-list-item-title>
+                    <template #append>
                         <div class="ms-4 ga-4 d-flex">
                             <v-divider vertical></v-divider>
                             <v-btn

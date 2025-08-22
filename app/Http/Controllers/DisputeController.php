@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Absence;
 use App\Models\AbsencePatch;
 use App\Models\User;
+use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
 use App\Notifications\AbsenceDeleteNotification;
 use Carbon\Carbon;
@@ -25,6 +26,7 @@ class DisputeController extends Controller
             'absencePatchRequests' => self::getAbsencePatchRequests(),
             'absenceDeleteRequests' => self::getAbsenceDeleteRequests(),
             'workLogPatchRequests' => self::getWorkLogPatchRequests(),
+            'workLogRequests' => self::getWorkLogRequests(),
         ]);
     }
 
@@ -40,6 +42,20 @@ class DisputeController extends Controller
             ])
             ->get(['id', 'start', 'end', 'is_home_office', 'user_id', 'work_log_id', 'comment'])
             ->filter(fn($patch) => $authUser->can('update', [WorkLogPatch::class, $patch->user]))
+            ->values();
+    }
+
+    private function getWorkLogRequests()
+    {
+        $authUser = request()->user();
+
+        return WorkLog::inOrganization()
+            ->where('status', 'created')
+            ->with([
+                'user' => fn($q) => $q->select(['id', 'first_name', 'last_name', 'operating_site_id', 'supervisor_id'])->withTrashed()
+            ])
+            ->get(['id', 'start', 'end', 'is_home_office', 'user_id', 'comment'])
+            ->filter(fn($log) => $authUser->can('update', [WorkLog::class, $log->user]))
             ->values();
     }
 

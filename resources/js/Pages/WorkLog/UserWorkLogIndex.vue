@@ -6,6 +6,7 @@ import { useMaxScrollHeight } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { computed, onMounted, ref } from 'vue';
+import CreateNewWorkLog from './CreateNewWorkLog.vue';
 
 type patchkeys = 'id' | 'work_log_id' | 'status' | 'start' | 'end' | 'is_home_office' | 'comment';
 
@@ -35,13 +36,15 @@ onMounted(() => {
 });
 
 const workLogForm = useForm({
-    id: -1,
+    id: null as WorkLog['id'] | null,
     start: new Date(),
     end: new Date(),
     comment: null as null | string,
     start_time: '',
     end_time: '',
     is_home_office: false,
+    type: 'log' as 'log' | 'patch',
+    status: 'created' as WorkLog['status'],
 });
 
 function submit() {
@@ -77,7 +80,7 @@ function editWorkLog(id: WorkLog['id']) {
     const lastPatch = workLog.latest_patch;
     if (!lastPatch) {
         patchLog.value = null;
-        patchMode.value = 'edit';
+        patchMode.value = workLog.status == 'created' ? 'show' : 'edit';
     } else {
         if (lastPatch.status === 'created') {
             patchLog.value = lastPatch;
@@ -93,7 +96,7 @@ function editWorkLog(id: WorkLog['id']) {
     const start = (patchLog.value ?? workLog).start;
     const end = (patchLog.value ?? workLog).end;
 
-    const formData = {
+    workLogForm.defaults({
         comment: patchLog.value?.comment ?? workLog.comment,
         id: id,
         start: new Date(start),
@@ -101,9 +104,10 @@ function editWorkLog(id: WorkLog['id']) {
         start_time: DateTime.fromSQL(start).toFormat('HH:mm:ss'),
         end_time: DateTime.fromSQL(end || DateTime.now().toSQL()).toFormat('HH:mm:ss'),
         is_home_office: (patchLog.value ?? workLog).is_home_office,
-    };
+        type: patchLog.value ? 'patch' : 'log',
+        status: (patchLog.value ?? workLog).status,
+    });
 
-    workLogForm.defaults(formData);
     workLogForm.reset();
 
     showDialog.value = true;
@@ -144,36 +148,46 @@ const tableHeight = useMaxScrollHeight(0);
                     { title: 'Ende', key: 'end' },
                     { title: 'Dauer', key: 'duration' },
                     { title: 'Homeoffice', key: 'is_home_office' },
-                    { title: 'Korrektur', key: 'displayStatus' },
+                    { title: 'Stand', key: 'displayStatus' },
                     {
                         title: '',
                         key: 'actions',
                         sortable: false,
                         width: '1px',
+                        align: 'end',
                     },
                 ]"
                 :items="
                     workLogs
                         .map(workLog => {
                             const data = workLog.current_accepted_patch ?? workLog;
+
                             return {
                                 start: DateTime.fromSQL(data.start).toFormat('dd.MM.yyyy HH:mm'),
                                 end: data.end ? DateTime.fromSQL(data.end).toFormat('dd.MM.yyyy HH:mm') : 'Noch nicht beendet',
                                 duration: data.end ? DateTime.fromSQL(data.end).diff(DateTime.fromSQL(data.start)).toFormat('hh:mm') : '',
                                 is_home_office: data.is_home_office ? 'Ja' : 'Nein',
                                 id: workLog.id,
-                                displayStatus: {
-                                    created: 'Beantragt',
-                                    declined: 'Abgelehnt',
-                                    accepted: 'Akzeptiert',
-                                    none: 'Nicht vorhanden',
-                                }[workLog.latest_patch?.status || 'none'],
-                                status: workLog.latest_patch?.status,
+                                displayStatus: workLog.latest_patch
+                                    ? {
+                                          created: 'Korrektur Beantragt',
+                                          declined: 'Korrektur Abgelehnt',
+                                          accepted: 'Korrektur Akzeptiert',
+                                      }[workLog.latest_patch.status]
+                                    : {
+                                          created: 'Beantragt',
+                                          declined: 'Abgelehnt',
+                                          accepted: 'Akzeptiert',
+                                      }[workLog.status],
+                                status: (workLog.latest_patch ?? workLog).status,
                             };
                         })
                         .toSorted((a, b) => b.start.localeCompare(a.start))
                 "
             >
+                <template v-slot:header.actions>
+                    <CreateNewWorkLog :user></CreateNewWorkLog>
+                </template>
                 <template v-slot:item.actions="{ item }">
                     <div class="d-flex ga-2">
                         <v-btn
@@ -196,7 +210,7 @@ const tableHeight = useMaxScrollHeight(0);
 
             <v-dialog max-width="1000" v-model="showDialog">
                 <template v-slot:default="{ isActive }">
-                    <v-card title="Zeitkorrektur">
+                    <v-card :title="workLogForm.type == 'patch' ? 'Zeitkorrektur' : 'Buchung'">
                         <template #append>
                             <v-btn icon variant="text" @click="isActive.value = false">
                                 <v-icon>mdi-close</v-icon>
@@ -214,6 +228,7 @@ const tableHeight = useMaxScrollHeight(0);
                                             v-model="workLogForm.start"
                                             :variant="inputVariant"
                                             style="height: 73px"
+                                            :disabled="workLogForm.status == 'created'"
                                         ></v-date-input>
                                     </v-col>
                                     <v-col cols="12" md="3">
@@ -225,6 +240,7 @@ const tableHeight = useMaxScrollHeight(0);
                                             required
                                             :error-messages="workLogForm.errors.start_time"
                                             v-model="workLogForm.start_time"
+                                            :disabled="workLogForm.status == 'created'"
                                             :variant="inputVariant"
                                         ></v-text-field>
                                     </v-col>
@@ -237,11 +253,12 @@ const tableHeight = useMaxScrollHeight(0);
                                             v-model="workLogForm.end"
                                             :variant="inputVariant"
                                             style="height: 73px"
+                                            :disabled="workLogForm.status == 'created'"
                                         ></v-date-input>
                                     </v-col>
                                     <v-col cols="12" md="3">
                                         <v-text-field
-                                            :disabled="patchMode == 'show'"
+                                            :disabled="workLogForm.status == 'created'"
                                             type="time"
                                             label="Ende"
                                             step="1"
@@ -257,13 +274,14 @@ const tableHeight = useMaxScrollHeight(0);
                                             label="Bemerkung (optional)"
                                             v-model="workLogForm.comment"
                                             :error-messages="workLogForm.errors.comment"
+                                            :disabled="workLogForm.status == 'created'"
                                             variant="filled"
                                             rows="3"
                                         ></v-textarea>
                                     </v-col>
                                     <v-col cols="12" md="3">
                                         <v-checkbox
-                                            :disabled="!!patchLog"
+                                            :disabled="workLogForm.status == 'created'"
                                             label="Homeoffice"
                                             required
                                             :error-messages="workLogForm.errors.is_home_office"
@@ -275,7 +293,7 @@ const tableHeight = useMaxScrollHeight(0);
 
                                     <v-col cols="12" class="text-end">
                                         <v-btn
-                                            v-if="patchLog && can('workLogPatch', 'delete') && patchMode === 'show'"
+                                            v-if="workLogForm.status == 'created' && can('workLogPatch', 'delete') && patchMode === 'show'"
                                             :loading="workLogForm.processing"
                                             @click.stop="retreatPatch"
                                             color="primary"
