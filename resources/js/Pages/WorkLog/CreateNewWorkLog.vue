@@ -35,7 +35,7 @@ function submit() {
                 }),
             };
         })
-        .post(route('user.createWorklog', { user: props.user.id }), {
+        .post(route('user.workLog.store', { user: props.user.id }), {
             onSuccess: () => {
                 showCreationDialog.value = false;
             },

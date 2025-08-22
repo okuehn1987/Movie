@@ -249,7 +249,7 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
-    "user.createWorklog": [
+    "user.workLog.store": [
         {
             "name": "user",
             "required": true,
