@@ -38,7 +38,7 @@ function changeWorkLogStatus() {
         hover
         items-per-page="5"
         v-model:page="currentPage"
-        no-data-text="keine Zeitkorrekturen vorhanden."
+        no-data-text="kein Antrag vorhanden."
         @click:row="openWorkLog"
         :items="
             workLogs.map(log => ({
@@ -58,7 +58,7 @@ function changeWorkLogStatus() {
     </v-data-table>
 
     <v-dialog v-if="workLogDialog" v-model="showWorkLogDialog" max-width="1000">
-        <v-card :title="'Zeitkorrektur von ' + workLogDialog.user.first_name + ' ' + workLogDialog.user.last_name">
+        <v-card :title="'Buchungsantrag von ' + workLogDialog.user.first_name + ' ' + workLogDialog.user.last_name">
             <template #append>
                 <v-btn icon variant="text" @click="showWorkLogDialog = false">
                     <v-icon>mdi-close</v-icon>
