@@ -21,6 +21,7 @@ return [
     'after' => ':attribute muss nach :date liegen.',
     'after_or_equal' => ':attribute muss nach oder am :date liegen.',
     'array' => ':attribute muss ein Array sein.',
+    'before' => ':attribute muss vor :date liegen.',
     'boolean' => ':attribute muss wahr oder falsch sein.',
     'can' => ':attribute enthält einen nicht autorisierten Wert.',
     'confirmed' => 'Die :attribute-Bestätigung stimmt nicht überein.',

@@ -40,7 +40,8 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::resource('group', GroupController::class)->only(['index', 'store', 'update', 'destroy']);
 
     Route::resource('workLogPatch', WorkLogPatchController::class)->only(['destroy', 'store', 'update']);
-    Route::resource('workLog', WorkLogController::class)->only(['index', 'store', 'destroy']);
+    Route::resource('workLog', WorkLogController::class)->only(['index', 'store', 'destroy', 'update']);
+    Route::post('/user/{user}/workLogs', [WorkLogController::class, 'createWorkLog'])->name('user.workLog.store');
     Route::get('/user/{user}/workLogs', [WorkLogController::class, 'userWorkLogs'])->name('user.workLog.index');
     Route::resource('travelLog', TravelLogController::class)->only(['store', 'update']);
 

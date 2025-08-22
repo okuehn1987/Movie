@@ -86,6 +86,20 @@ class DatabaseSeeder extends Seeder
             ->has(UserWorkingWeek::factory(1))
             ->create();
 
+        User::factory([
+            'operating_site_id' => 1,
+            'password' => Hash::make('user'),
+            'email' => 'user@user.com',
+            'first_name' => 'user',
+            'last_name' => 'user',
+            'role' => 'employee',
+            'supervisor_id' => $admin->id,
+        ])
+            ->has(UserWorkingHour::factory(1, ['weekly_working_hours' => 40, 'active_since' => now()->startOfYear()]))
+            ->has(TimeAccount::factory(1, ['time_account_setting_id' => 1]))
+            ->has(UserWorkingWeek::factory(1))
+            ->create();
+
         // Shift::factory(1, ['start' => now()->subHour(), 'end' => now(), 'user_id' => $admin->id])
         //     ->has(WorkLog::factory(3, ['user_id' => $admin->id]))
         //     ->has(WorkLog::factory(1, ['end' => null, 'start' => now()->subHour(), 'user_id' => $admin->id]))->create();
@@ -99,7 +113,7 @@ class DatabaseSeeder extends Seeder
             // $group = $user->organization->groups->random();
             // $user->group_id = $group->id;
             $user->timeAccounts()->first()->addBalance(10 * 3600, 'seeder balance');
-            $user->supervisor_id = User::whereIn('operating_site_id', $user->organization->operatingSites()->get()->pluck('id'))->where('id', '!=', $user->id)
+            $user->supervisor_id = $user->supervisor_id ?? User::whereIn('operating_site_id', $user->organization->operatingSites()->get()->pluck('id'))->where('id', '!=', $user->id)
                 ->whereNotIn('id', $user->allSuperviseesFlat()->pluck('id'))
                 ->inRandomOrder()->first()?->id;
             $user->save();

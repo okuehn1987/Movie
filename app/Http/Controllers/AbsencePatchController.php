@@ -7,6 +7,7 @@ use App\Models\AbsencePatch;
 use App\Models\AbsenceType;
 use App\Models\User;
 use App\Notifications\AbsencePatchNotification;
+use App\Notifications\DisputeStatusNotification;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -50,11 +51,17 @@ class AbsencePatchController extends Controller
             'accepted' => 'required|boolean'
         ])['accepted'];
 
-        $absencePatchNotification = $authUser->unreadNotifications()
+        $absencePatchNotification = $authUser->notifications()
+            ->where('type', AbsencePatchNotification::class)
+            ->where('data->status', 'created')
             ->where('data->absence_patch_id', $absencePatch->id)
             ->first();
 
-        if ($absencePatchNotification) $absencePatchNotification->markAsRead();
+        if ($absencePatchNotification) {
+            $absencePatchNotification->markAsRead();
+            $absencePatchNotification->update(['data->status' => 'accepted']);
+            $absencePatch->user->notify(new DisputeStatusNotification($absencePatch->user, $absencePatch, $is_accepted ? 'accepted' : 'declined'));
+        }
 
         if ($is_accepted) $absencePatch->accept();
         else $absencePatch->decline();
@@ -67,10 +74,11 @@ class AbsencePatchController extends Controller
         Gate::authorize('delete', $absencePatch);
 
         if ($absencePatch->delete()) {
-            $patchNotification = $authUser->unreadNotifications()
-                ->where('data->absence_patch_id', $absencePatch->id)->first();
-
-            if ($patchNotification) $patchNotification->markAsRead();
+            $authUser->notifications()
+                ->where('type', AbsencePatchNotification::class)
+                ->where('data->status', 'created')
+                ->where('data->absence_patch_id', $absencePatch->id)
+                ->delete();
         }
 
         return back()->with('success', 'Korrekturantrag erfolgreich zurückgezogen');

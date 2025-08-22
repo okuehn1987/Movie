@@ -2,24 +2,26 @@
 
 namespace App\Notifications;
 
-use App\Models\Absence;
 use App\Models\User;
+use App\Models\WorkLog;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class AbsenceNotification extends Notification
+class WorkLogNotification extends Notification
 {
     use Queueable;
 
-    protected $user, $absence;
+    protected $user, $log;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(User $user, Absence $absence)
+    public function __construct(User $user, WorkLog $log)
     {
         $this->user = $user;
-        $this->absence = $absence;
+        $this->log = $log;
     }
 
     /**
@@ -35,11 +37,12 @@ class AbsenceNotification extends Notification
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable)
+    public function toMail(object $notifiable): MailMessage
     {
-        return [
-            //
-        ];
+        return (new MailMessage)
+            ->line('The introduction to the notification.')
+            ->action('Notification Action', url('/'))
+            ->line('Thank you for using our application!');
     }
 
     /**
@@ -47,11 +50,11 @@ class AbsenceNotification extends Notification
      *
      * @return array<string, mixed>
      */
-    public function toArray(object $notifiable): array
+    public function toArray($notifiable): array
     {
         return [
-            'title' => $this->user->name . ' hat eine Abwesenheit beantragt.',
-            'absence_id' => $this->absence->id,
+            'title' => $this->user->name . ' hat eine neue Buchung beantragt.',
+            'work_log_id' => $this->log->id,
             'status' => 'created',
         ];
     }
