@@ -8,7 +8,9 @@ import { DateTime } from 'luxon';
 import UserForm from './partial/UserForm.vue';
 
 defineProps<{
-    users: (User & Canable & RelationPick<'user', 'group', 'id' | 'name'>)[];
+    users: (Pick<User, 'id' | 'first_name' | 'last_name' | 'date_of_birth' | 'email' | 'staff_number' | 'job_role' | 'group_id'> &
+        Canable &
+        RelationPick<'user', 'group', 'id' | 'name'>)[];
     supervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
     groups: Pick<Group, 'id' | 'name'>[];
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];
@@ -32,6 +34,7 @@ const userTableHeight = useMaxScrollHeight(0);
                     { title: 'Abteilung', key: 'group.name' },
                     { title: 'Personalnummer', key: 'staff_number' },
                     { title: 'Geburtsdatum', key: 'date_of_birth' },
+                    { title: 'Stellenbezeichnung', key: 'job_role' },
                     { title: '', key: 'actions', align: 'end' },
                 ]"
                 :items="
@@ -63,15 +66,8 @@ const userTableHeight = useMaxScrollHeight(0);
                                                 :operating_sites
                                                 :permissions
                                                 mode="create"
-                                                @success="isActive.value = false"
-                                            >
-                                                <!-- TODO: add close icon back to dialog (this is the wrong spot) -->
-                                                <!-- <template #append>
-                                                    <v-btn icon variant="text" @click="isActive.value = false">
-                                                        <v-icon>mdi-close</v-icon>
-                                                    </v-btn>
-                                                </template> -->
-                                            </UserForm>
+                                                @close="isActive.value = false"
+                                            ></UserForm>
                                         </v-col>
                                     </v-row>
                                 </v-card-text>

@@ -4,7 +4,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { Tree, User } from '@/types/types';
 
 defineProps<{
-    users: Tree<Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id' | 'email'>, 'all_supervisees'>[];
+    users: Tree<Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id' | 'email' | 'job_role'>, 'all_supervisees'>[];
 }>();
 </script>
 <template>

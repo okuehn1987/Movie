@@ -43,6 +43,7 @@ class UserController extends Controller
             "federal_state" => ["required", Rule::in(HolidayService::getRegionCodes($request["country"]))],
             "phone_number" => "nullable|string",
             "staff_number" => "nullable|integer",
+            "job_role" => "nullable|string|max:50",
             "group_id" => [
                 "nullable",
                 Rule::exists('groups', 'id')->where('organization_id', Organization::getCurrent()->id)
@@ -118,7 +119,16 @@ class UserController extends Controller
         Gate::authorize('viewIndex', User::class);
 
         return Inertia::render('User/UserIndex', [
-            'users' => User::inOrganization()->with('group:id,name')->get()->map(fn($u) => [
+            'users' => User::inOrganization()->with('group:id,name')->get([
+                'id',
+                'first_name',
+                'last_name',
+                'date_of_birth',
+                'email',
+                'staff_number',
+                'job_role',
+                'group_id'
+            ])->map(fn($u) => [
                 ...$u->toArray(),
                 'can' => [
                     'user' => [
@@ -265,9 +275,10 @@ class UserController extends Controller
                 'first_name',
                 'last_name',
                 'supervisor_id',
-                'email'
+                'email',
+                'job_role',
             ]),
-            'supervisor' => $user->supervisor()->first(['id', 'first_name', 'last_name', 'email']),
+            'supervisor' => $user->supervisor()->first(['id', 'first_name', 'last_name', 'email', 'job_role']),
 
             'can' => self::getUserShowCans($user),
         ]);
@@ -306,6 +317,7 @@ class UserController extends Controller
             'date_of_birth' => Carbon::parse($validated['date_of_birth']),
             'home_office' => $validated['home_office'],
             'home_office_hours_per_week' => $validated['home_office'] ? $validated['home_office_hours_per_week'] ?? 0 : null,
+            'job_role' => $validated['job_role'],
             'email_verified_at' => now(),
         ]);
         $user->save();
@@ -396,7 +408,7 @@ class UserController extends Controller
         Gate::authorize('update', $user);
 
         $validated = self::validateUser($request, [
-            "email" => "required|email",
+            "email" => ['required', 'email', Rule::unique('users')->ignore($user->id)],
         ]);
 
         $user->update([
@@ -421,6 +433,7 @@ class UserController extends Controller
             'home_office' => $validated['home_office'],
             'home_office_hours_per_week' => $validated['home_office'] ? $validated['home_office_hours_per_week'] ?? 0 : null,
             "overtime_calculations_start" => $validated['overtime_calculations_start'],
+            'job_role' => $validated['job_role'],
         ]);
         $user->organizationUser->update($validated['organizationUser']);
         $user->operatingSiteUser->update($validated['operatingSiteUser']);

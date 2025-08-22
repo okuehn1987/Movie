@@ -162,7 +162,7 @@ class User extends Authenticatable
     }
     public function allSupervisees()
     {
-        return $this->supervisees()->with('allSupervisees:id,supervisor_id,first_name,last_name,email');
+        return $this->supervisees()->with('allSupervisees:id,supervisor_id,first_name,last_name,email,job_role');
     }
     public function allSuperviseesFlat(): Collection
     {

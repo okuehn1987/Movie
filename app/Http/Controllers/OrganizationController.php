@@ -185,8 +185,8 @@ class OrganizationController extends Controller
 
         return Inertia::render('Organization/OrganizationOrganigram', [
             'users' => User::inOrganization()->whereNull('supervisor_id')
-                ->with('allSupervisees:id,first_name,last_name,supervisor_id,email')
-                ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'email']),
+                ->with('allSupervisees:id,first_name,last_name,supervisor_id,email,job_role')
+                ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'email', 'job_role']),
         ]);
     }
 
