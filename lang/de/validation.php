@@ -192,6 +192,9 @@ return [
         'permissions' => 'Berechtigungen',
         'userWorkingHours' => 'Wöchentliche Arbeitszeit',
         'userWorkingWeek' => 'Arbeitstage des Mitarbeiters',
+        'active_since' => 'Aktiv seit',
+        'user_working_weeks.*.weekdays' => 'Beschäftigungstage',
+        'user_working_hours.*.weekly_working_hours' => 'Stunden pro Woche',
         'year' => 'Jahr',
         'month' => 'Monat',
         'description' => 'Beschreibung'
