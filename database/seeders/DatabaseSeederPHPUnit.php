@@ -50,6 +50,25 @@ class DatabaseSeederPHPUnit extends Seeder
                                 'active_since' => now()->subYear()->startOfYear(),
                             ]))
                     )
+                    ->has(
+                        User::factory(1, ['date_of_birth' => now()->subYears(25), 'first_name' => 'tim'])
+                            ->has(TimeAccount::factory(1, [
+                                'time_account_setting_id' => 1,
+                                'balance_limit' => 52.5 * 2 * 3600,
+                            ]))->has(UserWorkingHour::factory(1, [
+                                'active_since' => now()->subYear()->startOfYear(),
+                                'weekly_working_hours' => 37.5,
+                            ]))->has(UserWorkingWeek::factory(1, [
+                                'active_since' => now()->subYear()->startOfYear(),
+                                "monday" => 1,
+                                "tuesday" => 1,
+                                "wednesday" => 1,
+                                "thursday" => 1,
+                                "friday" => 1,
+                                "saturday" => 0,
+                                "sunday" => 0,
+                            ]))
+                    )
                     ->has(OperatingTime::factory(7, ['start' => '09:00:00', 'end' => '17:00:00'])
                         ->sequence(fn(Sequence $sequence) => ['type' => [
                             'monday',

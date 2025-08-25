@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Notifications\AbsenceDeleteNotification;
 use App\Notifications\AbsenceNotification;
 use App\Notifications\AbsencePatchNotification;
+use App\Notifications\DisputeStatusNotification;
 use App\Services\HolidayService;
 use Carbon\Carbon;
 use Illuminate\Container\Attributes\CurrentUser;
@@ -141,8 +142,6 @@ class AbsenceController extends Controller
         return back()->with('success', 'Abwesenheit erfolgreich beantragt.');
     }
 
-
-
     public function updateStatus(Request $request, Absence $absence, #[CurrentUser] User $authUser)
     {
         Gate::authorize('update', [Absence::class, $absence->user]);
@@ -151,11 +150,17 @@ class AbsenceController extends Controller
             'accepted' => 'required|boolean'
         ])['accepted'];
 
-        $absenceNotification = $authUser->unreadNotifications()
+        $absenceNotification = $authUser->notifications()
+            ->where('type', AbsenceNotification::class)
+            ->where('data->status', 'created')
             ->where('data->absence_id', $absence->id)
             ->first();
 
-        if ($absenceNotification) $absenceNotification->markAsRead();
+        if ($absenceNotification) {
+            $absenceNotification->markAsRead();
+            $absenceNotification->update(['data->status' => 'accepted']);
+            $absence->user->notify(new DisputeStatusNotification($absence->user, $absence, $is_accepted ? 'accepted' : 'declined'));
+        };
 
         if ($is_accepted) $absence->accept();
         else $absence->decline();
@@ -163,11 +168,17 @@ class AbsenceController extends Controller
         return back()->with('success',  "Abwesenheit erfolgreich " . ($is_accepted ? 'akzeptiert' : 'abgelehnt') . ".");
     }
 
-    public function destroyDispute(Absence $absence)
+    public function destroyDispute(Absence $absence, #[CurrentUser] User $authUser)
     {
         Gate::authorize('deleteDispute', $absence);
 
         $absence->deleteQuietly();
+
+        $authUser->notifications()
+            ->where('type', AbsenceNotification::class)
+            ->where('data->status', 'created')
+            ->where('data->absence_id', $absence->id)
+            ->delete();
 
         return back()->with('success', 'Abwesenheitsantrag erfolgreich zurückgezogen');
     }
@@ -180,7 +191,7 @@ class AbsenceController extends Controller
             $absence->delete();
 
             $openDeleteNotification = $authUser->notifications()
-                ->where('type', 'App\\Notifications\\AbsenceDeleteNotification')
+                ->where('type', AbsenceDeleteNotification::class)
                 ->where('data->status', 'created')
                 ->where('data->absence_id', $absence->id)
                 ->first();
@@ -188,19 +199,21 @@ class AbsenceController extends Controller
             if ($openDeleteNotification) {
                 $openDeleteNotification->markAsRead();
                 $openDeleteNotification->update(['data->status' => 'accepted']);
+                $absence->user->notify(new DisputeStatusNotification($absence->user, $absence, 'accepted', 'delete'));
             }
+            return back()->with('success', 'Die Abwesenheit wurde erfolgreich gelöscht.');
         } else {
             $authUser->supervisor->notify(new AbsenceDeleteNotification($authUser, $absence));
+            return back()->with('success', 'Der Antrag auf Löschung wurder erfolgreich eingeleitet.');
         }
-
-        return back();
     }
+
     public function denyDestroy(Absence $absence, #[CurrentUser] User $authUser)
     {
         Gate::allows('delete', $absence);
 
         $openDeleteNotification = $authUser->notifications()
-            ->where('type', 'App\\Notifications\\AbsenceDeleteNotification')
+            ->where('type', AbsenceDeleteNotification::class)
             ->where('data->status', 'created')
             ->where('data->absence_id', $absence->id)
             ->first();
@@ -208,8 +221,9 @@ class AbsenceController extends Controller
         if ($openDeleteNotification) {
             $openDeleteNotification->markAsRead();
             $openDeleteNotification->update(['data->status' => 'declined']);
+            $absence->user->notify(new DisputeStatusNotification($absence->user, $absence, 'declined', 'delete'));
         }
 
-        return back();
+        return back()->with('success', 'Der Antrag auf Löschung wurde abgelehnt.');
     }
 }

@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
+use App\Notifications\DisputeStatusNotification;
+use App\Notifications\WorkLogNotification;
+use Carbon\Carbon;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -54,11 +57,78 @@ class WorkLogController extends Controller
         return back()->with('success', 'Arbeitsstatus erfolgreich eingetragen.');
     }
 
+    public function createWorkLog(Request $request, User $user, #[CurrentUser] User $authUser)
+    {
+        Gate::authorize('create', [WorkLog::class, $authUser]);
+
+        $validated = $request->validate([
+            'start' => 'required|date',
+            'end' => ['required', 'date', 'after:start', function ($attr, $value, $fail) use ($user) {
+                $last = $user->latestWorkLog;
+                $lastEnded = $last?->end != null;
+
+                if ($last && !$lastEnded && $value > $last->shift->start) {
+                    $fail('Der Eintrag muss vor der aktiven Schicht enden.');
+                };
+            }],
+            'comment' => 'nullable|string',
+            'is_home_office' => 'required|boolean',
+        ]);
+
+        $workLog = WorkLog::create([
+            'is_home_office' => $validated['is_home_office'],
+            'start' => Carbon::parse($validated['start']),
+            'end' => Carbon::parse($validated['end']),
+            'status' => 'created',
+            'comment' => $validated['comment'],
+            'user_id' => $user->id
+        ]);
+
+        $supervisor = $workLog->user->supervisor;
+        $requiresApproval = $supervisor && $supervisor->id != $authUser->id;
+        if (!$requiresApproval) $workLog->accept();
+        else $supervisor->notify(new WorkLogNotification($workLog->user, $workLog));
+
+        return back()->with('success', 'Buchung erfolgreich ' . ($requiresApproval ? 'beantragt.' : 'gespeichert.'));
+    }
+
+    public function update(Request $request, WorkLog $workLog, #[CurrentUser] User $authUser)
+    {
+        Gate::authorize('update', [WorkLog::class, $workLog->user]);
+
+        $is_accepted = $request->validate([
+            'accepted' => 'required|boolean'
+        ])['accepted'];
+
+        $workLogNotification = $authUser->notifications()
+            ->where('type', WorkLogNotification::class)
+            ->where('data->status', 'created')
+            ->where('data->work_log_id', $workLog->id)
+            ->first();
+
+        if ($workLogNotification) {
+            $workLogNotification->markAsRead();
+            $workLogNotification->update(['data->status' => 'accepted']);
+            $workLog->user->notify(new DisputeStatusNotification($workLog->user, $workLog, $is_accepted ? 'accepted' : 'declined'));
+        }
+
+        if ($is_accepted) $workLog->accept();
+        else $workLog->decline();
+
+        return back()->with('success',  "Buchung erfolgreich " . ($is_accepted ? 'akzeptiert' : 'abgelehnt') . ".");
+    }
+
     public function destroy(WorkLog $workLog)
     {
         Gate::authorize('delete', [WorkLog::class, $workLog->user]);
 
-        $workLog->delete();
+        if ($workLog->delete()) {
+            $workLog->user->supervisor->notifications()
+                ->where('type', WorkLogNotification::class)
+                ->where('data->status', 'created')
+                ->where('data->work_log_id', $workLog->id)
+                ->delete();
+        }
 
         return back()->with('success', 'Arbeitseintrag erfolgreich gelöscht.');
     }
@@ -71,7 +141,10 @@ class WorkLogController extends Controller
             'user' => $user->only('id', 'first_name', 'last_name'),
             'workLogs' => WorkLog::where('user_id', $user->id)
                 ->whereNotNull('end')
-                ->with('patches:id,work_log_id,updated_at,status,start,end,is_home_office,comment')
+                ->with([
+                    'latestPatch:id,work_log_patches.work_log_id,status,start,end,is_home_office,comment',
+                    'currentAcceptedPatch:id,work_log_patches.work_log_id,status,start,end,is_home_office,comment'
+                ])
                 ->orderBy('start', 'DESC')
                 ->get(),
             'can' => [

@@ -1,8 +1,13 @@
-import { Absence, AbsencePatch, AbsenceType, RelationPick, User, WorkLogPatch } from '@/types/types';
+import { Absence, AbsencePatch, AbsenceType, Relation, User, WorkLog, WorkLogPatch } from '@/types/types';
 
-export type WorkLogPatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id' | 'work_log_id' | 'comment'> &
-    RelationPick<'workLogPatch', 'log', 'id' | 'start' | 'end' | 'is_home_office'> &
-    RelationPick<'workLogPatch', 'user', 'id' | 'first_name' | 'last_name'>;
+export type WorkLogPatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id' | 'work_log_id' | 'comment'> & {
+    log: Relation<'workLogPatch', 'log', 'id' | 'start' | 'end' | 'is_home_office'>;
+    user: Relation<'workLogPatch', 'user', 'id' | 'first_name' | 'last_name'>;
+};
+
+export type WorkLogProp = Pick<WorkLog, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id' | 'comment'> & {
+    user: Relation<'workLog', 'user', 'id' | 'first_name' | 'last_name'>;
+};
 
 export type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id' | 'operating_site_id'>;
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
+use App\Notifications\DisputeStatusNotification;
 use App\Notifications\PatchNotification;
 use App\Notifications\WorkLogPatchNotification;
 use Carbon\Carbon;
@@ -21,7 +22,7 @@ class WorkLogPatchController extends Controller
 
         $validated = $request->validate([
             'start' => 'required|date',
-            'end' => 'required|date',
+            'end' => 'required|date|after:start',
             'comment' => 'nullable|string',
             'is_home_office' => 'required|boolean',
             'workLog' => 'required|exists:work_logs,id'
@@ -56,10 +57,17 @@ class WorkLogPatchController extends Controller
             'accepted' => 'required|boolean'
         ])['accepted'];
 
-        $patchNotification = $authUser->unreadNotifications()
-            ->where('data->work_log_patch_id', $workLogPatch->id)->first();
+        $patchNotification = $authUser->notifications()
+            ->where('type', WorkLogPatchNotification::class)
+            ->where('data->status', 'created')
+            ->where('data->work_log_patch_id', $workLogPatch->id)
+            ->first();
 
-        if ($patchNotification) $patchNotification->markAsRead();
+        if ($patchNotification) {
+            $patchNotification->markAsRead();
+            $patchNotification->update(['data->status' => 'accepted']);
+            $workLogPatch->user->notify(new DisputeStatusNotification($workLogPatch->user, $workLogPatch, $is_accepted ? 'accepted' : 'declined'));
+        }
 
         if ($is_accepted) $workLogPatch->accept();
         else $workLogPatch->decline();
@@ -67,11 +75,17 @@ class WorkLogPatchController extends Controller
         return back()->with('success',  "Zeitkorrektur erfolgreich " . ($is_accepted ? 'akzeptiert' : 'abgelehnt') . ".");
     }
 
-    public function destroy(WorkLogPatch $workLogPatch)
+    public function destroy(WorkLogPatch $workLogPatch, #[CurrentUser] User $authUser)
     {
         Gate::authorize('delete', [WorkLogPatch::class, $workLogPatch->user]);
 
-        $workLogPatch->delete();
+        if ($workLogPatch->delete()) {
+            $authUser->notifications()
+                ->where('type', WorkLogPatchNotification::class)
+                ->where('data->status', 'created')
+                ->where('data->work_log_patch_id', $workLogPatch->id)
+                ->delete();
+        }
 
         return back()->with('success',  "Antrag auf Zeitkorrektur erfolgreich zurückgezogen.");
     }

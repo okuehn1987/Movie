@@ -36,4 +36,11 @@ class WorkLogPolicy
             $authUser->id === $user->supervisor_id ||
             $authUser->hasPermissionOrDelegation($user, 'workLog_permission', 'write');
     }
+
+    public function update(User $authUser, User $user): bool
+    {
+        return ($authUser->is($user) && $user->supervisor_id == null) ||
+            $authUser->id === $user->supervisor_id ||
+            $authUser->hasPermissionOrDelegation($user, 'workLog_permission', 'write');
+    }
 }

@@ -5,18 +5,20 @@ namespace Tests\Feature;
 use App\Models\AbsenceType;
 use App\Models\Shift;
 use App\Models\User;
+use App\Models\WorkLog;
 use Exception;
 use Tests\TestCase;
 
 class CalculationTest extends TestCase
 {
-    private $oldUser, $youngUser;
+    private $oldUser, $youngUser, $tim;
     public function setUp(): void
     {
         parent::setUp();
         $this->travelTo(now()->startOfDay()->addHours(9));
         $this->oldUser = User::whereDate('date_of_birth', '<=', now()->subYears(18))->first();
         $this->youngUser = User::whereDate('date_of_birth', '>', now()->subYears(18))->first();
+        $this->tim = User::where('first_name', 'tim')->first();
     }
     public function test_should_only_handle_work_related_models(): void
     {
@@ -40,8 +42,10 @@ class CalculationTest extends TestCase
             'status' => 'accepted',
             'accepted_at' =>  now()
         ]);
-        $this->assertModelExists($workLog->shift);
-        $this->assertTrue($workLog->shift->hasEnded);
+
+
+        $this->assertModelExists($workLog->fresh()->shift);
+        $this->assertTrue($workLog->fresh()->shift->hasEnded);
         $this->assertEquals((24 - 9) * 3600 + 3 * 3600 - 45 * 60, $this->oldUser->defaultTimeAccount->fresh()->balance);
     }
 
@@ -627,4 +631,114 @@ class CalculationTest extends TestCase
 
         $this->assertEquals(-7 * 3600 - 30 * 60, $this->oldUser->defaultTimeAccount->fresh()->balance);
     }
+
+    public function test_patching_splitted_logs()
+    {
+        $this->travelTo('2025-08-11 13:01:43');
+
+        $this->tim->workLogs()->create([
+            'start' =>  '2025-08-11 07:58:39',
+            'end' =>  '2025-08-11 13:01:43',
+            'status' => 'accepted',
+            'accepted_at' => '2025-08-11 13:25:23'
+        ]);
+
+        $this->tim->removeMissingWorkTimeForDate(now());
+        $this->travelTo('2025-08-12 8:00:00');
+
+        $workLog = $this->tim->workLogs()->create([
+            'start' =>  '2025-08-11 13:25:23',
+            'end' =>  '2025-08-12 08:00:47',
+            'status' => 'accepted',
+            'accepted_at' => '2025-08-12 08:00:47'
+        ]);
+        $this->tim->workLogs()->create([
+            'start' =>  '2025-08-12 08:01:09',
+            'end' =>  null,
+            'status' => 'accepted',
+            'accepted_at' => '2025-08-12 08:01:09'
+        ]);
+
+        $splittedWorkLog = WorkLog::where('start', '2025-08-12 00:00:00')
+            ->where('end', '2025-08-12 08:00:47')
+            ->first();
+
+        $this->tim->workLogPatches()->create([
+            'start' =>  '2025-08-11 13:25:23',
+            'end' =>  '2025-08-11 17:00:59',
+            'status' => 'accepted',
+            'accepted_at' => '2025-08-12 08:40:35',
+            'work_log_id' => $workLog->id,
+        ]);
+        $this->tim->workLogPatches()->create([
+            'start' =>  '2025-08-12 08:00:00',
+            'end' =>  '2025-08-12 08:00:47',
+            'status' => 'accepted',
+            'accepted_at' => '2025-08-12 08:40:35',
+            'work_log_id' => $splittedWorkLog->id,
+        ]);
+
+        $this->assertEquals(3740, $this->tim->defaultTimeAccount->fresh()->balance);
+    }
+
+    // public function testWeirdShit()
+    // {
+    //     $this->travelTo('2025-06-20 13:15:02');
+
+    //     $log = $this->tim->workLogs()->create([
+    //         'start' =>  '2025-06-20 13:15:02',
+    //         'end' =>  '2025-06-20 13:15:04',
+    //         'status' => 'accepted',
+    //         'accepted_at' =>  '2025-06-20 13:15:02',
+    //     ]);
+    //     $this->tim->workLogPatches()->create([
+    //         'start' =>  '2025-06-20 08:40:02',
+    //         'end' =>  '2025-06-20 13:15:04',
+    //         'status' => 'accepted',
+    //         'accepted_at' =>  '2025-06-23 09:01:18',
+    //         'work_log_id' => $log->id,
+    //     ]);
+    //     $log2 = $this->tim->workLogs()->createQuietly([
+    //         'start' => '2025-06-20 13:53:54',
+    //         'end' =>  null,
+    //         'status' => 'accepted',
+    //         'accepted_at' =>  '2025-06-20 13:53:54',
+    //     ]);
+
+    //     $this->tim->removeMissingWorkTimeForDate(now());
+
+    //     $this->travelTo(now()->startOfDay()->addHours(9)->addDays(3));
+
+    //     $log2->update([
+    //         'end' =>  '2025-06-23 08:37:51',
+    //     ]);
+
+    //     $this->tim->workLogPatches()->create([
+    //         'start' =>  $log2->start,
+    //         'end' =>  '2025-06-20 16:11:59',
+    //         'status' => 'accepted',
+    //         'accepted_at' =>  '2025-06-23 11:23:18',
+    //         'work_log_id' => $log2->id,
+    //     ]);
+
+    //     $logs = $this->tim->workLogs()->whereNotIn('id', [$log->id, $log2->id])->get();
+
+    //     dump($logs->map->only('start', 'end'));
+
+    //     $logs->each(fn($wl) =>  $this->tim->workLogPatches()->create([
+    //         'start' =>  $wl->start,
+    //         'end' =>  $wl->start,
+    //         'status' => 'accepted',
+    //         'accepted_at' =>  '2025-06-23 11:23:18',
+    //         'work_log_id' => $wl->id,
+    //     ]));
+
+    //     dump($this->tim->defaultTimeAccount->fromTransactions->map->toArray());
+    //     dump($this->tim->defaultTimeAccount->toTransactions->map->toArray());
+
+
+    //     // dump($this->tim->workLogs->map->toArray());
+    //     dump(gmdate('H:i:s', $this->tim->defaultTimeAccount->fresh()->balance));
+    //     $this->assertEquals(0, 0);
+    // }
 }

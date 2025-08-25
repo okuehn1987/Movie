@@ -39,7 +39,7 @@ function deleteAbsence() {
 const denyDeleteAbsenceForm = useForm({});
 function denyAbsenceDelete() {
     if (!absenceToDelete.value) return;
-    denyDeleteAbsenceForm.post(route('absence.denyDestroy', { absence: absenceToDelete.value.id }), {
+    denyDeleteAbsenceForm.delete(route('absence.denyDestroy', { absence: absenceToDelete.value.id }), {
         onSuccess: () => {
             showAbsenceDialog.value = false;
         },
@@ -102,7 +102,7 @@ function denyAbsenceDelete() {
             </v-card-text>
 
             <v-col cols="12" class="d-flex justify-end ga-2">
-                <v-btn color="primary" @click.stop="denyAbsenceDelete()" :loading="deleteAbsenceForm.processing">Löschen ablehnen</v-btn>
+                <v-btn color="primary" @click.stop="denyAbsenceDelete()" :loading="denyDeleteAbsenceForm.processing">Löschen ablehnen</v-btn>
                 <v-btn color="error" @click.stop="deleteAbsence()" :loading="deleteAbsenceForm.processing">Abwesenheit Löschen</v-btn>
             </v-col>
         </v-card>

@@ -3,9 +3,10 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { AbsenceType } from '@/types/types';
 import AbsencePatchRequests from './partial/AbsencePatchRequests.vue';
 import AbsenceRequests from './partial/AbsenceRequests.vue';
-import { AbsencePatchProp, AbsenceProp, UserProp, WorkLogPatchProp } from './partial/disputeTypes';
+import { AbsencePatchProp, AbsenceProp, UserProp, WorkLogPatchProp, WorkLogProp } from './partial/disputeTypes';
 import WorkLogPatches from './partial/WorkLogPatches.vue';
 import AbsenceDeleteRequests from './partial/AbsenceDeleteRequests.vue';
+import WorkLogRequests from './partial/WorkLogRequests.vue';
 
 defineProps<{
     absenceRequests: (AbsenceProp & {
@@ -22,6 +23,7 @@ defineProps<{
         user: UserProp;
     })[];
     workLogPatchRequests: WorkLogPatchProp[];
+    workLogRequests: WorkLogProp[];
 }>();
 </script>
 <template>
@@ -39,6 +41,9 @@ defineProps<{
             </v-col>
             <v-col cols="12" sm="6">
                 <v-card title="Zeitkorrekturen"><WorkLogPatches :patches="workLogPatchRequests" /></v-card>
+            </v-col>
+            <v-col cols="12" sm="6">
+                <v-card title="Manuelle Buchungsanträge"><WorkLogRequests :workLogs="workLogRequests" /></v-card>
             </v-col>
             <v-col cols="12" sm="6">
                 <v-card title="Abwesenheitslöschungen">
