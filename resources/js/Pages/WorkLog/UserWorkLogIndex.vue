@@ -47,29 +47,22 @@ const workLogForm = useForm({
     status: 'created' as WorkLog['status'],
 });
 
-function parseTimeFlexible(t: string) {
-    let dt = DateTime.fromFormat(t, 'HH:mm:ss');
-    if (!dt.isValid) dt = DateTime.fromFormat(t, 'HH:mm');
-    return dt;
-}
-
 function submit() {
     workLogForm
         .transform(d => {
-            const startTime = parseTimeFlexible(d.start_time);
-            const endTime = parseTimeFlexible(d.end_time);
-
+            const start_time = DateTime.fromFormat(d.start_time, 'HH:mm:ss');
+            const end_time = DateTime.fromFormat(d.end_time, 'HH:mm:ss');
             return {
                 ...d,
-                start: DateTime.fromJSDate(d.start).set({
-                    hour: startTime?.hour,
-                    minute: startTime?.minute,
-                    second: startTime?.second,
+                start: DateTime.fromISO(d.start.toISOString()).set({
+                    hour: start_time.hour,
+                    minute: start_time.minute,
+                    second: start_time.second,
                 }),
-                end: DateTime.fromJSDate(d.end).set({
-                    hour: endTime?.hour,
-                    minute: endTime?.minute,
-                    second: endTime?.second,
+                end: DateTime.fromISO(d.end.toISOString()).set({
+                    hour: end_time.hour,
+                    minute: end_time.minute,
+                    second: end_time.second,
                 }),
                 workLog: workLogForm.id,
             };
