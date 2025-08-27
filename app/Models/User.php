@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable
 {
@@ -496,11 +497,61 @@ class User extends Authenticatable
             }
         )->shouldCache();
     }
+
     public function organizationUsers(): Attribute
     {
         return Attribute::make(
             get: function () {
                 return Organization::getCurrent()->organizationUsers;
+            }
+        )->shouldCache();
+    }
+
+    public function allAbsenceTypes(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                return Organization::getCurrent()->absenceTypes()->get();
+            }
+        )->shouldCache();
+    }
+
+    public function currentAbsencePeriod(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $futureAbsences = Absence::inOrganization()
+                    ->where('status', 'accepted')
+                    ->whereDate('end', '>=', now())
+                    ->where('user_id', $this->id)
+                    ->get(['id', 'start', 'end', 'user_id', 'absence_type_id']);
+
+                $lastDay = null;
+                $absenceTypes = collect();
+
+                for ($day = now()->startOfDay();; $day->addDay()) {
+                    $userWorkingWeek = $this->userWorkingWeekForDate($day);
+                    $shouldWork = $userWorkingWeek->hasWorkDay($day) &&
+                        !$this->operatingSite->hasHoliday($day);
+
+                    $absencesForDay = $futureAbsences->filter(fn($a) => Carbon::parse($a['start'])->lte($day) && Carbon::parse($a['end'])->gte($day));
+
+                    if ($absencesForDay->count() > 0 || !$shouldWork) {
+                        $absenceTypes = $absenceTypes->merge($absencesForDay->pluck('absence_type_id'));
+                        $lastDay = $day->copy();
+                    } else {
+                        break;
+                    }
+                }
+                return [
+                    'end' => $lastDay?->format('d.m.Y'),
+                    'type' => request()->user()->can(
+                        'viewShow',
+                        [AbsenceType::class, $this]
+                    ) ?
+                        $absenceTypes->unique()->map(fn($t) => request()->user()->allAbsenceTypes->find($t)->abbreviation)->join(' / ') :
+                        null
+                ];
             }
         )->shouldCache();
     }
