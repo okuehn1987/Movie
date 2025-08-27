@@ -47,11 +47,17 @@ const workLogForm = useForm({
     status: 'created' as WorkLog['status'],
 });
 
+function parseTimeFlexible(s: string) {
+    let t = DateTime.fromFormat(s, 'HH:mm:ss');
+    if (!t.isValid) t = DateTime.fromFormat(s, 'HH:mm');
+    return t;
+}
+
 function submit() {
     workLogForm
         .transform(d => {
-            const start_time = DateTime.fromFormat(d.start_time, 'HH:mm:ss');
-            const end_time = DateTime.fromFormat(d.end_time, 'HH:mm:ss');
+            const start_time = parseTimeFlexible(d.start_time);
+            const end_time = parseTimeFlexible(d.end_time);
             return {
                 ...d,
                 start: DateTime.fromISO(d.start.toISOString()).set({
@@ -257,7 +263,6 @@ const tableHeight = useMaxScrollHeight(0);
                                         ></v-date-input>
                                     </v-col>
                                     <v-col cols="12" md="3">
-                                        {{ workLogForm.end_time }}
                                         <v-text-field
                                             :disabled="workLogForm.status == 'created'"
                                             type="time"
