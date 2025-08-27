@@ -14,11 +14,24 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\PasswordResetNotification;
 
 class User extends Authenticatable
 {
     use \Znck\Eloquent\Traits\BelongsToThrough;
     use HasFactory, Notifiable, SoftDeletes, ScopeInOrganization;
+
+    /**
+     * Send a password reset notification to the user.
+     * Overrides native laravel Password Reset notification.
+     *
+     * @param  string  $token
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $url = route('password.reset', ['token' => $token]);
+        $this->notify(new PasswordResetNotification($url, $this));
+    }
 
     protected $guarded = ['password', 'role', 'email_verified_at'];
 
