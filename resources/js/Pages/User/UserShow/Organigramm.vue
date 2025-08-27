@@ -7,8 +7,8 @@ import UserShowNavBar from './partial/UserShowNavBar.vue';
 defineProps<{
     user: User;
 
-    organigramUsers: Tree<Pick<User, 'id' | 'first_name' | 'last_name' | 'email' | 'supervisor_id'>, 'all_supervisees'>[];
-    supervisor: Pick<User, 'id' | 'first_name' | 'last_name' | 'email'> | null;
+    organigramUsers: Tree<Pick<User, 'id' | 'first_name' | 'last_name' | 'email' | 'supervisor_id' | 'job_role'>, 'all_supervisees'>[];
+    supervisor: Pick<User, 'id' | 'first_name' | 'last_name' | 'email' | 'job_role'> | null;
 }>();
 </script>
 <template>

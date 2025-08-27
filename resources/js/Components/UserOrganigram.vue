@@ -5,22 +5,29 @@ import { computed, ref } from 'vue';
 
 const props = defineProps<{
     currentUser: User;
-    users: Tree<Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id' | 'email'>, 'all_supervisees'>[];
-    supervisor?: Pick<User, 'id' | 'first_name' | 'last_name' | 'email'> | null;
+    users: Tree<Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id' | 'email' | 'job_role'>, 'all_supervisees'>[];
+    supervisor?: Pick<User, 'id' | 'first_name' | 'last_name' | 'email' | 'job_role'> | null;
 }>();
 
 const opened = ref(props.supervisor ? [props.supervisor.id] : []);
 
 const items = computed(() => {
     const users = filterTree(
-        mapTree(props.users, 'all_supervisees', u => ({ name: u.first_name + ' ' + u.last_name, value: u.id })),
+        mapTree(props.users, 'all_supervisees', u => ({
+            name: u.first_name + ' ' + u.last_name + (u.job_role ? ` (${u.job_role})` : ''),
+            value: u.id,
+        })),
         'all_supervisees',
         () => true,
     );
     if (props.supervisor) {
         return [
             {
-                name: props.supervisor.first_name + ' ' + props.supervisor.last_name,
+                name:
+                    props.supervisor.first_name +
+                    ' ' +
+                    props.supervisor.last_name +
+                    ` (${props.supervisor.job_role ? props.supervisor.job_role : 'Vorgesetzter'})`,
                 value: props.supervisor.id,
                 all_supervisees: users,
             },

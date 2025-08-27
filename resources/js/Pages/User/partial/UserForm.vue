@@ -36,7 +36,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-    success: [];
+    close: [];
 }>();
 
 const WEEKDAYS = Info.weekdays('long', { locale: 'en' }).map(e => e.toLowerCase()) as Weekday[];
@@ -51,10 +51,11 @@ const userForm = useForm({
     street: '',
     house_number: '',
     address_suffix: '',
-    country: '' as Country,
+    country: props.countries[0]?.value ?? ('' as Country),
     federal_state: '',
     phone_number: '',
     staff_number: null as null | string,
+    job_role: null as null | string,
     password: '',
     group_id: null as null | Group['id'],
     operating_site_id: null as null | OperatingSite['id'],
@@ -118,6 +119,7 @@ if (props.user) {
     userForm.federal_state = props.user.federal_state;
     userForm.phone_number = props.user.phone_number ?? '';
     userForm.staff_number = props.user.staff_number;
+    userForm.job_role = props.user.job_role;
     userForm.password = props.user.password;
     userForm.group_id = props.user.group_id;
     userForm.operating_site_id = props.user.operating_site_id;
@@ -170,26 +172,29 @@ function submit() {
         groupUser: Object.fromEntries(Object.entries(data.groupUser).filter(([k]) => props.permissions.find(p => p.name == k))),
         operatingSiteUser: Object.fromEntries(Object.entries(data.operatingSiteUser).filter(([k]) => props.permissions.find(p => p.name == k))),
     }));
-    if (props.mode == 'edit' && props.user) form.patch(route('user.update', { user: props.user.id }));
-    else {
+    const onError = () => {
+        nextTick(() => {
+            const alerts = [...document.querySelectorAll('#userForm [role="alert"]')];
+            const error = alerts.filter(e => e.children.length > 0)[0] as HTMLElement | undefined;
+
+            if (error) {
+                // offsetParent is the nearest positioned ancestor (in this case luckily the card in which the error is located)
+                error.offsetParent?.scrollIntoView({
+                    behavior: 'smooth',
+                });
+            }
+        });
+    };
+
+    if (props.mode == 'edit' && props.user) form.patch(route('user.update', { user: props.user.id }), { onError });
+    else
         form.post(route('user.store'), {
             onSuccess: () => {
-                userForm.reset();
-                emit('success');
+                form.reset();
+                emit('close');
             },
-            onError: () =>
-                nextTick(() => {
-                    const alerts = [...document.querySelectorAll('#userForm [role="alert"]')];
-                    const error = alerts.filter(e => e.children.length > 0)[0] as HTMLElement | undefined;
-                    if (error) {
-                        // offsetParent is the nearest positioned ancestor (in this case luckily the card in which the error is located)
-                        error.offsetParent?.scrollIntoView({
-                            behavior: 'smooth',
-                        });
-                    }
-                }),
+            onError,
         });
-    }
 }
 
 function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since: string }) {
@@ -201,10 +206,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
 </script>
 <template>
     <v-form id="userForm" @submit.prevent="submit" :disabled="user && !can('user', 'update')">
-        <v-card class="mb-4">
-            <v-card-item>
-                <v-card-title class="mb-2">Persönliche Daten</v-card-title>
-            </v-card-item>
+        <v-card class="mb-4" title="Persönliche Daten">
             <v-card-text>
                 <v-row>
                     <v-col cols="12" md="6">
@@ -234,7 +236,14 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             :error-messages="userForm.errors.staff_number"
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="12" md="6" v-if="mode == 'edit'"></v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field
+                            v-model="userForm.job_role"
+                            label="Stellenbezeichnung (optional)"
+                            :error-messages="userForm.errors.job_role"
+                        ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6" v-if="mode == 'create'"></v-col>
                     <v-col cols="12" md="6">
                         <v-text-field v-model="userForm.street" label="Straße (optional)" :error-messages="userForm.errors.street"></v-text-field>
                     </v-col>
@@ -272,6 +281,11 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                     </v-col>
                 </v-row>
             </v-card-text>
+            <template #append>
+                <v-btn icon variant="text" @click="emit('close')">
+                    <v-icon>mdi-close</v-icon>
+                </v-btn>
+            </template>
         </v-card>
         <v-card class="mb-4">
             <v-card-item>
@@ -279,8 +293,8 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
             </v-card-item>
             <v-card-text>
                 <v-row>
-                    <v-col cols="12">
-                        <v-alert type="error" v-if="userForm.errors.user_working_hours">{{ userForm.errors.user_working_hours }}</v-alert>
+                    <v-col cols="12" v-if="userForm.errors.user_working_hours">
+                        <v-alert type="error">{{ userForm.errors.user_working_hours }}</v-alert>
                     </v-col>
                     <v-col cols="12">
                         <v-data-table-virtual
@@ -355,14 +369,11 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4">
-            <v-card-item>
-                <v-card-title class="mb-2">Arbeitswoche</v-card-title>
-            </v-card-item>
+        <v-card class="mb-4" title="Arbeitswoche">
             <v-card-text>
                 <v-row>
-                    <v-col cols="12">
-                        <v-alert type="error" v-if="userForm.errors.user_working_weeks">{{ userForm.errors.user_working_weeks }}</v-alert>
+                    <v-col cols="12" v-if="userForm.errors.user_working_weeks">
+                        <v-alert type="error">{{ userForm.errors.user_working_weeks }}</v-alert>
                     </v-col>
                     <v-col cols="12">
                         <v-data-table-virtual
@@ -444,14 +455,11 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
             </v-card-text>
         </v-card>
 
-        <v-card class="mb-4">
-            <v-card-item>
-                <v-card-title class="mb-2">Urlaubstage</v-card-title>
-            </v-card-item>
+        <v-card class="mb-4" title="Urlaubstage">
             <v-card-text>
                 <v-row>
-                    <v-col cols="12">
-                        <v-alert type="error" v-if="userForm.errors.user_leave_days">{{ userForm.errors.user_leave_days }}</v-alert>
+                    <v-col cols="12" v-if="userForm.errors.user_leave_days">
+                        <v-alert type="error">{{ userForm.errors.user_leave_days }}</v-alert>
                     </v-col>
                     <v-col cols="12">
                         <v-data-table-virtual
@@ -528,10 +536,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4">
-            <v-card-item>
-                <v-card-title class="mb-2">Homeoffice</v-card-title>
-            </v-card-item>
+        <v-card class="mb-4" title="Homeoffice">
             <v-card-text>
                 <v-row>
                     <v-col cols="12" md="6">
@@ -558,10 +563,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4">
-            <v-card-item>
-                <v-card-title class="mb-2">Organisation</v-card-title>
-            </v-card-item>
+        <v-card class="mb-4" title="Organisation">
             <v-card-text>
                 <v-row>
                     <PermissionSelector
@@ -574,10 +576,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4">
-            <v-card-item>
-                <v-card-title class="mb-2">Betriebsstätte</v-card-title>
-            </v-card-item>
+        <v-card class="mb-4" title="Betriebsstätte">
             <v-card-text>
                 <v-row>
                     <v-col cols="12" class="mb-4">
@@ -600,10 +599,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4">
-            <v-card-item>
-                <v-card-title class="mb-2">Abteilung</v-card-title>
-            </v-card-item>
+        <v-card class="mb-4" title="Abteilung">
             <v-card-text>
                 <v-row>
                     <v-col cols="12" class="mb-4">
@@ -627,10 +623,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4">
-            <v-card-item>
-                <v-card-title class="mb-2">Vorgesetzter</v-card-title>
-            </v-card-item>
+        <v-card class="mb-4" title="Vorgesetzter">
             <v-card-text>
                 <v-row>
                     <v-col cols="12" md="6">
