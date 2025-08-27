@@ -14,6 +14,7 @@ const props = defineProps<{
 
 const openModal = defineModel<boolean>({ required: true });
 const selectedUser = defineModel<User['id']>('selectedUser', { required: true });
+const currentUser = computed(() => props.users.find(u => u.id === selectedUser.value));
 
 const absenceForm = useForm({
     user_id: props.selectedAbsence?.user_id ?? selectedUser.value,
@@ -113,6 +114,16 @@ const requiresApproval = computed(() => {
                                     :error-messages="absenceForm.errors.end"
                                 ></v-text-field>
                             </v-col>
+                            <v-alert type="info" class="w-100">
+                                <v-row>
+                                    <v-col cols="12" md="6">
+                                        <div>Bereits verwendete Urlaubstage für {{ DateTime.now().year }}</div>
+                                    </v-col>
+                                    <v-col cols="12" md="6">
+                                        <div>{{ currentUser?.usedLeaveDaysForYear }} von {{ currentUser?.leaveDaysForYear }}</div>
+                                    </v-col>
+                                </v-row>
+                            </v-alert>
                             <v-col cols="12">
                                 <div class="d-flex ga-2 justify-end">
                                     <template v-if="selectedAbsence">
