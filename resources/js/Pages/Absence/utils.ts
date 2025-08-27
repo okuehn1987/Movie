@@ -15,7 +15,7 @@ export type AbsencePatchProp = Pick<AbsencePatch, 'id' | 'start' | 'end' | 'abse
     };
 export type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'> &
     Canable &
-    RelationPick<'user', 'user_working_weeks', 'id' | 'active_since' | Weekday>;
+    RelationPick<'user', 'user_working_weeks', 'id' | 'active_since' | Weekday> & { leaveDaysForYear: number; usedLeaveDaysForYear: number };
 
 export function getEntryState(entry: AbsenceProp | AbsencePatchProp) {
     if ('patches_exists' in entry && entry.patches_exists) return 'hasOpenPatch';
