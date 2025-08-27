@@ -257,6 +257,7 @@ const tableHeight = useMaxScrollHeight(0);
                                         ></v-date-input>
                                     </v-col>
                                     <v-col cols="12" md="3">
+                                        {{ workLogForm.end_time }}
                                         <v-text-field
                                             :disabled="workLogForm.status == 'created'"
                                             type="time"
