@@ -27,7 +27,7 @@ function getTransactionType(t: TimeAccountTransaction) {
 }
 
 function getAccountName(id: TimeAccountTransaction['from_id'] | TimeAccountTransaction['to_id']) {
-    const account = props.time_accounts.find(ta => ta.id == id);  
+    const account = props.time_accounts.find(ta => ta.id == id);
     if (!account) return '';
     return account?.name + (account?.deleted_at ? ' (gelöscht)' : '');
 }
@@ -79,13 +79,13 @@ function getAccountName(id: TimeAccountTransaction['from_id'] | TimeAccountTrans
                     <span>- {{ item.formatted_amount }}</span>
                 </v-chip>
                 <v-chip color="grey" v-else-if="item.transactionType == 'transfer'">
-                    <span class="text-black"> {{ item.formatted_amount }}</span>
+                    <span class="text-black">{{ item.formatted_amount }}</span>
                 </v-chip>
             </template>
 
             <template v-slot:item.modified_by="{ item }">
-                <v-chip color="purple-darken-1" v-if="item.modified_by">{{ item.user.first_name }} {{ item.user.last_name }}</v-chip>
-                <span v-else>System </span>
+                <v-chip color="purple-darken-1" v-if="item.modified_by">{{ item.user?.first_name }} {{ item.user?.last_name }}</v-chip>
+                <span v-else>System</span>
             </template>
             <template v-slot:bottom>
                 <v-pagination v-if="lastPage > 1" v-model="currentPage" :length="lastPage"></v-pagination>

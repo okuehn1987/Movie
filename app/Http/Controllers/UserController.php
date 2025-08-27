@@ -28,7 +28,7 @@ use Inertia\Inertia;
 class UserController extends Controller
 {
 
-    private function validateUser(Request $request, array $additionalRules = [])
+    private function validateUser(Request $request, array $additionalRules = [], string $mode = 'create')
     {
         return $request->validate([
             "first_name" => "required|string",
@@ -68,18 +68,45 @@ class UserController extends Controller
             'user_working_hours' => 'required|array',
             'user_working_hours.*.id' => 'nullable|exists:user_working_hours,id',
             'user_working_hours.*.weekly_working_hours' => 'required|min:0|decimal:0,2',
-            'user_working_hours.*.active_since' => 'required|date',
+            'user_working_hours.*.active_since' => ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
+                $index  = explode('.', $attribute)[1];
+                $currentWorkingHour = $request['user_working_hours'][$index];
+                if ($mode == 'update' && !isset($currentWorkingHour['id']) && Carbon::parse($currentWorkingHour['active_since'])->lt(Carbon::now()->endOfDay())) {
+                    $fail('validation.after')->translate([
+                        'attribute' => __('validation.attributes.active_since'),
+                        'date' => Carbon::now()->format('d.m.Y')
+                    ]);
+                }
+            }],
 
             'user_working_weeks' => 'required|array',
             'user_working_weeks.*.id' => 'nullable|exists:user_working_weeks,id',
             'user_working_weeks.*.weekdays' => 'required|array',
             'user_working_weeks.*.weekdays.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
-            'user_working_weeks.*.active_since' => 'required|date',
+            'user_working_weeks.*.active_since' =>  ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
+                $index  = explode('.', $attribute)[1];
+                $currentWorkingWeek = $request['user_working_weeks'][$index];
+                if ($mode == 'update' && !isset($currentWorkingWeek['id']) && Carbon::parse($currentWorkingWeek['active_since'])->lt(Carbon::now()->endOfDay())) {
+                    $fail('validation.after')->translate([
+                        'attribute' => __('validation.attributes.active_since'),
+                        'date' => Carbon::now()->format('d.m.Y')
+                    ]);
+                }
+            }],
 
             'user_leave_days' => 'required|array',
             'user_leave_days.*.id' => 'nullable|exists:user_leave_days,id',
             'user_leave_days.*.leave_days' => 'required|integer|min:0',
-            'user_leave_days.*.active_since' => 'required|date',
+            'user_leave_days.*.active_since' => ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
+                $index  = explode('.', $attribute)[1];
+                $currentLeaveDays = $request['user_leave_days'][$index];
+                if ($mode == 'update' && !isset($currentLeaveDays['id']) && Carbon::parse($currentLeaveDays['active_since'])->lt(Carbon::now()->startOfYear())) {
+                    $fail('validation.after_or_equal')->translate([
+                        'attribute' => __('validation.attributes.active_since'),
+                        'date' => Carbon::now()->startOfYear()->format('m.Y')
+                    ]);
+                }
+            }],
 
             "overtime_calculations_start" => "required|date",
 
@@ -409,7 +436,7 @@ class UserController extends Controller
 
         $validated = self::validateUser($request, [
             "email" => ['required', 'email', Rule::unique('users')->ignore($user->id)],
-        ]);
+        ], 'update');
 
         $user->update([
             'first_name' => $validated['first_name'],
