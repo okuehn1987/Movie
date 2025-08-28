@@ -266,9 +266,9 @@ class User extends Authenticatable
         )->shouldCache();
     }
 
-    public function userWorkingWeekForDate(CarbonInterface $date): UserWorkingWeek | null
+    public function userWorkingWeekForDate(CarbonInterface $date, $userWorkingWeeks = null): UserWorkingWeek | null
     {
-        return $this->workingWeeks->where('active_since', '<=', $date->format('Y-m-d'))
+        return ($userWorkingWeeks ?? $this->workingWeeks)->where('active_since', '<=', $date->format('Y-m-d'))
             ->sortByDesc('active_since')
             ->first();
     }
@@ -349,30 +349,45 @@ class User extends Authenticatable
         )->shouldCache();
     }
 
-    public function usedLeaveDaysForYear(CarbonInterface $year): int
+    public function usedLeaveDaysForYear(CarbonInterface $year, $userWorkingWeeks = null, $absences = null): int
     {
-        //FIXME: possibly counting to many days for overlapping absences
-        $relevantAbsences = $this->absences()
-            ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
-            ->whereDate('start', '<=', $year->copy()->endOfYear())
-            ->whereDate('end', '>=', $year->copy()->startOfYear())
-            ->get();
+        $startOfYear = $year->copy()->startOfYear();
+        $endOfYear = $year->copy()->endOfYear();
+
+        $relevantAbsences = ($absences ?? collect(
+            $this->absences()->doesntHave('currentAcceptedPatch')
+                ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
+                ->whereDate('start', '<=', $endOfYear)
+                ->whereDate('end', '>=', $startOfYear)
+                ->get()
+        )->merge(
+            $this->absencePatches()
+                ->with('log.currentAcceptedPatch')
+                ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
+                ->where('status', 'accepted')
+                ->whereNot('type', 'delete')
+                ->whereDate('start', '<=', $endOfYear)
+                ->whereDate('end', '>=', $startOfYear)
+                ->get()
+                ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p))
+        ));
+
+        $absenceData = $relevantAbsences->flatMap(fn($a) => collect(
+            range(0, Carbon::parse(max($a->start, $startOfYear))->diffInDays(min($a->end, $endOfYear)))
+        )->map(
+            fn($i) => Carbon::parse(max($a->start, $startOfYear))->addDays($i)->startOfDay()
+        ))->unique()->sort();
 
         $usedDays = 0;
-        foreach ($relevantAbsences as $absence) {
-            for ($day = Carbon::parse($absence->start)->startOfDay(); $day->lte(Carbon::parse($absence->end)); $day->addDay()) {
-                if ($day->year != $year->year) continue;
-                $currentWorkingWeek = $this->userWorkingWeekForDate($day);
-
-                if (
-                    $currentWorkingWeek?->hasWorkDay($day) &&
-                    !$this->operatingSite->hasHoliday($day)
-                ) {
-                    $usedDays++;
-                };
-            }
+        foreach ($absenceData as $day) {
+            $currentWorkingWeek = $this->userWorkingWeekForDate($day, $userWorkingWeeks);
+            if (
+                $currentWorkingWeek?->hasWorkDay($day) &&
+                !$this->operatingSite->hasHoliday($day)
+            ) {
+                $usedDays++;
+            };
         }
-
         return $usedDays;
     }
 
@@ -383,12 +398,12 @@ class User extends Authenticatable
         )->shouldCache();
     }
 
-    public function leaveDaysForYear(CarbonInterface $year): int
+    public function leaveDaysForYear(CarbonInterface $year, $userLeaveDays = null): int
     {
         $leaveDays = 0;
         for ($m = 1; $m <= 12; $m++) {
             $month = $year->setMonth($m)->startOfMonth();
-            $activeEntry = $this->leaveDays
+            $activeEntry = ($userLeaveDays ?? $this->leaveDays)
                 ->where('type', 'annual')
                 ->where('active_since', '<=', $month)
                 ->sortByDesc('active_since')
@@ -398,7 +413,7 @@ class User extends Authenticatable
             }
         }
 
-        $leaveDays += $this->leaveDays
+        $leaveDays += ($userLeaveDays ?? $this->leaveDays)
             ->where('type', 'remaining')
             ->filter(fn($ld) => Carbon::parse($ld->active_since)->year == $year->year)
             ->first()?->leave_days ?? 0;
