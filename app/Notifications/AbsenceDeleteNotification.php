@@ -12,7 +12,7 @@ class AbsenceDeleteNotification extends Notification
 {
     use Queueable;
 
-    protected $user, $absence;
+    protected $user, $absence, $url;
 
     /**
      * Create a new notification instance.
@@ -30,17 +30,21 @@ class AbsenceDeleteNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['mail'];
     }
 
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable)
+    public function toMail(object $notifiable): MailMessage
     {
-        return [
-            //
-        ];
+        $buttonText = 'Passwort Zurücksetzen';
+        return (new MailMessage)
+            ->line('für Ihr Konto ist eine Anfrage zum Löschen einer Abwesenheit bei uns eingegangen.')
+            ->line('Um zu Ihrer Anfrage zu gelangen, klicken Sie bitte auf "' . $buttonText . '".')
+            ->action($buttonText, $this->url)
+            ->line('Aus Sicherheitsgründen ist dieser Link nur 60 Minuten gültig.')
+            ->line('Wenn Sie diese Anfrage nicht gestellt haben sollten, können Sie diese Email ignorieren.');
     }
 
     /**

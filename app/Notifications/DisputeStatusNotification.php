@@ -18,7 +18,7 @@ class DisputeStatusNotification extends Notification
 {
     use Queueable;
 
-    protected $user, $log, $status, $type;
+    protected $user, $log, $status, $type, $url;
 
     /**
      * Create a new notification instance.
@@ -46,7 +46,13 @@ class DisputeStatusNotification extends Notification
      */
     public function toMail(object $notifiable)
     {
-        //
+        $buttonText = 'Antrag einsehen';
+        return (new MailMessage)
+            ->line('für dein Konto liegt eine neue Aktualisierung zu einem Antrag vor.')
+            ->line('Um fortzufahren, klicke bitte auf "' . $buttonText . '".')
+            //TODO: muss $this->url mit ins construct und zu welcher url führt es eigentlich?
+            ->action($buttonText, $this->url)
+            ->line('Aus Sicherheitsgründen ist dieser Link nur 60 Minuten gültig.');
     }
 
     /**
