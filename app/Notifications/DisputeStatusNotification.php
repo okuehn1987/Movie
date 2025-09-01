@@ -12,6 +12,7 @@ use App\Models\WorkLogPatch;
 use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class DisputeStatusNotification extends Notification
@@ -38,7 +39,7 @@ class DisputeStatusNotification extends Notification
      */
     public function via(): array
     {
-        return ['database'];
+        return ['mail', 'database'];
     }
 
     /**
@@ -47,12 +48,17 @@ class DisputeStatusNotification extends Notification
     public function toMail(object $notifiable)
     {
         $buttonText = 'Antrag einsehen';
-        return (new MailMessage)
-            ->line('für dein Konto liegt eine neue Aktualisierung zu einem Antrag vor.')
-            ->line('Um fortzufahren, klicke bitte auf "' . $buttonText . '".')
-            //TODO: muss $this->url mit ins construct und zu welcher url führt es eigentlich?
-            ->action($buttonText, $this->url)
-            ->line('Aus Sicherheitsgründen ist dieser Link nur 60 Minuten gültig.');
+
+        $message = (new MailMessage)->subject('Herta Antragsaktualisierung');
+
+        if ($this->status === 'declined') $message
+            ->line('Dein Antrag wurde abgelehnt');
+        else  $message
+            ->line('Dein Antrag wurde akzeptiert.')
+            ->action($buttonText, $this->getNotificationURL())
+            ->line('Um ihn zu öffnen, klicke bitte auf "' . $buttonText . '".');
+
+        return $message;
     }
 
     /**
@@ -98,5 +104,44 @@ class DisputeStatusNotification extends Notification
             'log_model' => $modelClass,
             'type' => $this->type
         ];
+    }
+
+
+    public function readNotification(array $notification)
+    {
+        \Illuminate\Notifications\DatabaseNotification::find($notification['id'])?->markAsRead();
+    }
+
+    public function getNotificationURL()
+    {
+        if ($this->type === 'delete') return null;
+
+        return match (true) {
+            $this->log instanceof Absence =>
+            route('absence.index', [
+                'openAbsence' => $this->log->id,
+            ]),
+
+            $this->log instanceof AbsencePatch =>
+            route('absence.index', [
+                'openAbsencePatch' => $this->log->id,
+            ]),
+
+            $this->log instanceof WorkLogPatch =>
+            route('user.workLog.index', [
+                'user' =>  $this->log->user_id,
+                'openWorkLogPatch' => $this->log->id,
+            ]),
+
+            $this->log instanceof WorkLog =>
+            route('user.workLog.index', [
+                'user' => $this->log->user_id,
+                'workLog' => $this->log->id
+            ]),
+
+            //TODO: TravelLogs still missing
+        };
+
+        return null;
     }
 }

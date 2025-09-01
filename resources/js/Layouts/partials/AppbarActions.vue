@@ -43,7 +43,7 @@ function openNotification(notification: Notification) {
         else if (notification.data.log_model == 'App\\Models\\WorkLogPatch')
             data = route('user.workLog.index', { user: usePage().props.auth.user.id, openWorkLogPatch: notification.data.log_id });
         else if (notification.data.log_model == 'App\\Models\\WorkLog')
-            data = route('user.workLog.index', { user: usePage().props.auth.user.id, workLog: notification.data.log_id });
+            data = route('user.workLog.index', { user: usePage().props.auth.user.id, openWorkLog: notification.data.log_id });
     }
 
     return data && router.get(data);
@@ -94,10 +94,8 @@ function convertTimeStamp(notification: Notification) {
                             <v-divider vertical></v-divider>
                             <v-btn
                                 v-if="
-                                    (notification.type != 'App\\Notifications\\DisputeStatusNotification' ||
-                                        (notification.type == 'App\\Notifications\\DisputeStatusNotification' &&
-                                            notification.data.type != 'delete')) &&
-                                    notification.type !== 'App\\Notifications\\AbsenceDeleteNotification'
+                                    notification.type != 'App\\Notifications\\DisputeStatusNotification' ||
+                                    (notification.type == 'App\\Notifications\\DisputeStatusNotification' && notification.data.type != 'delete')
                                 "
                                 color="primary"
                                 icon="mdi-eye"

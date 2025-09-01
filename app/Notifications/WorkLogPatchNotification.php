@@ -31,7 +31,7 @@ class WorkLogPatchNotification extends Notification
      */
     public function via(): array
     {
-        return ['database'];
+        return ['mail', 'database'];
     }
 
     /**
@@ -39,7 +39,12 @@ class WorkLogPatchNotification extends Notification
      */
     public function toMail(object $notifiable)
     {
-        //
+        $buttonText = 'Antrag einsehen';
+        return (new MailMessage)
+            ->subject('Herta Zeitkorrekturantrag')
+            ->line('für einen User liegt ein Zeitkorrekturantrag vor.')
+            ->line('Um fortzufahren, klicke bitte auf "' . $buttonText . '".')
+            ->action($buttonText,  $this->getNotificationURL());
     }
 
     /**
@@ -54,5 +59,17 @@ class WorkLogPatchNotification extends Notification
             'work_log_patch_id' => $this->patch->id,
             'status' => 'created',
         ];
+    }
+
+    public function readNotification(array $notification)
+    {
+        \Illuminate\Notifications\DatabaseNotification::find($notification['id'])?->markAsRead();
+    }
+
+    public function getNotificationURL()
+    {
+        return  route('dispute.index', [
+            'openPatch' => $this->patch->id,
+        ]);
     }
 }

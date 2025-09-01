@@ -3,9 +3,9 @@
 namespace App\Notifications;
 
 use App\Models\Absence;
-use App\Models\AbsencePatch;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class AbsenceDeleteNotification extends Notification
@@ -30,21 +30,20 @@ class AbsenceDeleteNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(object $notifiable)
     {
-        $buttonText = 'Passwort Zurücksetzen';
+        $buttonText = 'Antrag einsehen';
         return (new MailMessage)
-            ->line('für Ihr Konto ist eine Anfrage zum Löschen einer Abwesenheit bei uns eingegangen.')
-            ->line('Um zu Ihrer Anfrage zu gelangen, klicken Sie bitte auf "' . $buttonText . '".')
-            ->action($buttonText, $this->url)
-            ->line('Aus Sicherheitsgründen ist dieser Link nur 60 Minuten gültig.')
-            ->line('Wenn Sie diese Anfrage nicht gestellt haben sollten, können Sie diese Email ignorieren.');
+            ->subject('Herta Löschung Nutzer Abwesenheit')
+            ->line('für einen User liegt ein Löschungsantrag vor.')
+            ->line('Um fortzufahren, klicke bitte auf "' . $buttonText . '".')
+            ->action($buttonText,  $this->getNotificationURL());
     }
 
     /**
@@ -59,5 +58,17 @@ class AbsenceDeleteNotification extends Notification
             'absence_id' => $this->absence->id,
             'status' => 'created',
         ];
+    }
+
+    public function readNotification(array $notification)
+    {
+        \Illuminate\Notifications\DatabaseNotification::find($notification['id'])?->markAsRead();
+    }
+
+    public function getNotificationURL()
+    {
+        return  route('dispute.index', [
+            'openAbsenceDelete' => $this->absence->id,
+        ]);
     }
 }
