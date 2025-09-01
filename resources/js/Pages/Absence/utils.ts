@@ -4,7 +4,7 @@ export type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'absence_type_i
     RelationPick<'absence', 'absence_type', 'id' | 'abbreviation'> & {
         patches_exists: boolean;
         status: 'accepted' | 'created';
-    };
+    } & Canable;
 
 export type AbsencePatchProp = Pick<AbsencePatch, 'id' | 'start' | 'end' | 'absence_type_id' | 'user_id' | 'absence_id'> &
     RelationPick<'absencePatch', 'absence_type', 'id' | 'abbreviation'> & {
@@ -12,7 +12,7 @@ export type AbsencePatchProp = Pick<AbsencePatch, 'id' | 'start' | 'end' | 'abse
             patches_exists: boolean;
         };
         status: 'accepted' | 'created';
-    };
+    } & Canable;
 export type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'> &
     Canable &
     RelationPick<'user', 'user_working_weeks', 'id' | 'active_since' | Weekday> & { leaveDaysForYear: number; usedLeaveDaysForYear: number };
