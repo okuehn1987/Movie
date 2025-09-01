@@ -132,6 +132,7 @@ return [
     'starts_with' => ':attribute muss mit einem der folgenden Werte beginnen: :values.',
     'string' => ':attribute muss ein Text sein.',
     'timezone' => ':attribute muss eine gültige Zeitzone sein.',
+    'unique' => ':attribute ist bereits vergeben.',
     'uploaded' => 'Der Upload von :attribute ist fehlgeschlagen.',
     'uppercase' => ':attribute muss in Großbuchstaben sein.',
     'url' => ':attribute muss eine gültige URL sein.',
@@ -192,6 +193,9 @@ return [
         'permissions' => 'Berechtigungen',
         'userWorkingHours' => 'Wöchentliche Arbeitszeit',
         'userWorkingWeek' => 'Arbeitstage des Mitarbeiters',
+        'active_since' => 'Aktiv seit',
+        'user_working_weeks.*.weekdays' => 'Beschäftigungstage',
+        'user_working_hours.*.weekly_working_hours' => 'Stunden pro Woche',
         'year' => 'Jahr',
         'month' => 'Monat',
         'description' => 'Beschreibung'

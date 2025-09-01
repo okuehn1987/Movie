@@ -111,6 +111,7 @@ export type User = DBObject<'user'> &
         weekly_working_hours: number;
         overtime_calculations_start: DateString;
         is_supervisor: boolean;
+        job_role: string | null;
     } & (
         | {
               home_office: true;

@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable
 {
@@ -162,7 +163,7 @@ class User extends Authenticatable
     }
     public function allSupervisees()
     {
-        return $this->supervisees()->with('allSupervisees:id,supervisor_id,first_name,last_name,email');
+        return $this->supervisees()->with('allSupervisees:id,supervisor_id,first_name,last_name,email,job_role');
     }
     public function allSuperviseesFlat(): Collection
     {
@@ -265,9 +266,9 @@ class User extends Authenticatable
         )->shouldCache();
     }
 
-    public function userWorkingWeekForDate(CarbonInterface $date): UserWorkingWeek | null
+    public function userWorkingWeekForDate(CarbonInterface $date, $userWorkingWeeks = null): UserWorkingWeek | null
     {
-        return $this->workingWeeks->where('active_since', '<=', $date->format('Y-m-d'))
+        return ($userWorkingWeeks ?? $this->workingWeeks)->where('active_since', '<=', $date->format('Y-m-d'))
             ->sortByDesc('active_since')
             ->first();
     }
@@ -348,30 +349,45 @@ class User extends Authenticatable
         )->shouldCache();
     }
 
-    public function usedLeaveDaysForYear(CarbonInterface $year): int
+    public function usedLeaveDaysForYear(CarbonInterface $year, $userWorkingWeeks = null, $absences = null): int
     {
-        //FIXME: possibly counting to many days for overlapping absences
-        $relevantAbsences = $this->absences()
-            ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
-            ->whereDate('start', '<=', $year->copy()->endOfYear())
-            ->whereDate('end', '>=', $year->copy()->startOfYear())
-            ->get();
+        $startOfYear = $year->copy()->startOfYear();
+        $endOfYear = $year->copy()->endOfYear();
+
+        $relevantAbsences = ($absences ?? collect(
+            $this->absences()->doesntHave('currentAcceptedPatch')
+                ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
+                ->whereDate('start', '<=', $endOfYear)
+                ->whereDate('end', '>=', $startOfYear)
+                ->get()
+        )->merge(
+            $this->absencePatches()
+                ->with('log.currentAcceptedPatch')
+                ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
+                ->where('status', 'accepted')
+                ->whereNot('type', 'delete')
+                ->whereDate('start', '<=', $endOfYear)
+                ->whereDate('end', '>=', $startOfYear)
+                ->get()
+                ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p))
+        ));
+
+        $absenceData = $relevantAbsences->flatMap(fn($a) => collect(
+            range(0, Carbon::parse(max($a->start, $startOfYear))->diffInDays(min($a->end, $endOfYear)))
+        )->map(
+            fn($i) => Carbon::parse(max($a->start, $startOfYear))->addDays($i)->startOfDay()
+        ))->unique()->sort();
 
         $usedDays = 0;
-        foreach ($relevantAbsences as $absence) {
-            for ($day = Carbon::parse($absence->start)->startOfDay(); $day->lte(Carbon::parse($absence->end)); $day->addDay()) {
-                if ($day->year != $year->year) continue;
-                $currentWorkingWeek = $this->userWorkingWeekForDate($day);
-
-                if (
-                    $currentWorkingWeek?->hasWorkDay($day) &&
-                    !$this->operatingSite->hasHoliday($day)
-                ) {
-                    $usedDays++;
-                };
-            }
+        foreach ($absenceData as $day) {
+            $currentWorkingWeek = $this->userWorkingWeekForDate($day, $userWorkingWeeks);
+            if (
+                $currentWorkingWeek?->hasWorkDay($day) &&
+                !$this->operatingSite->hasHoliday($day)
+            ) {
+                $usedDays++;
+            };
         }
-
         return $usedDays;
     }
 
@@ -382,12 +398,12 @@ class User extends Authenticatable
         )->shouldCache();
     }
 
-    public function leaveDaysForYear(CarbonInterface $year): int
+    public function leaveDaysForYear(CarbonInterface $year, $userLeaveDays = null): int
     {
         $leaveDays = 0;
         for ($m = 1; $m <= 12; $m++) {
             $month = $year->setMonth($m)->startOfMonth();
-            $activeEntry = $this->leaveDays
+            $activeEntry = ($userLeaveDays ?? $this->leaveDays)
                 ->where('type', 'annual')
                 ->where('active_since', '<=', $month)
                 ->sortByDesc('active_since')
@@ -397,7 +413,7 @@ class User extends Authenticatable
             }
         }
 
-        $leaveDays += $this->leaveDays
+        $leaveDays += ($userLeaveDays ?? $this->leaveDays)
             ->where('type', 'remaining')
             ->filter(fn($ld) => Carbon::parse($ld->active_since)->year == $year->year)
             ->first()?->leave_days ?? 0;
@@ -507,11 +523,61 @@ class User extends Authenticatable
             }
         )->shouldCache();
     }
+
     public function organizationUsers(): Attribute
     {
         return Attribute::make(
             get: function () {
                 return Organization::getCurrent()->organizationUsers;
+            }
+        )->shouldCache();
+    }
+
+    public function allAbsenceTypes(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                return Organization::getCurrent()->absenceTypes()->get();
+            }
+        )->shouldCache();
+    }
+
+    public function currentAbsencePeriod(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $futureAbsences = Absence::inOrganization()
+                    ->where('status', 'accepted')
+                    ->whereDate('end', '>=', now())
+                    ->where('user_id', $this->id)
+                    ->get(['id', 'start', 'end', 'user_id', 'absence_type_id']);
+
+                $lastDay = null;
+                $absenceTypes = collect();
+
+                for ($day = now()->startOfDay();; $day->addDay()) {
+                    $userWorkingWeek = $this->userWorkingWeekForDate($day);
+                    $shouldWork = $userWorkingWeek->hasWorkDay($day) &&
+                        !$this->operatingSite->hasHoliday($day);
+
+                    $absencesForDay = $futureAbsences->filter(fn($a) => Carbon::parse($a['start'])->lte($day) && Carbon::parse($a['end'])->gte($day));
+
+                    if ($absencesForDay->count() > 0 || !$shouldWork) {
+                        $absenceTypes = $absenceTypes->merge($absencesForDay->pluck('absence_type_id'));
+                        $lastDay = $day->copy();
+                    } else {
+                        break;
+                    }
+                }
+                return [
+                    'end' => $lastDay?->format('d.m.Y'),
+                    'type' => request()->user()->can(
+                        'viewShow',
+                        [AbsenceType::class, $this]
+                    ) ?
+                        $absenceTypes->unique()->map(fn($t) => request()->user()->allAbsenceTypes->find($t)->abbreviation)->join(' / ') :
+                        null
+                ];
             }
         )->shouldCache();
     }

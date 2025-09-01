@@ -34,7 +34,7 @@ use Carbon\CarbonInterval;
 class UserController extends Controller
 {
 
-    private function validateUser(Request $request, array $additionalRules = [])
+    private function validateUser(Request $request, array $additionalRules = [], string $mode = 'create')
     {
         return $request->validate([
             "first_name" => "required|string",
@@ -49,6 +49,7 @@ class UserController extends Controller
             "federal_state" => ["required", Rule::in(HolidayService::getRegionCodes($request["country"]))],
             "phone_number" => "nullable|string",
             "staff_number" => "nullable|integer",
+            "job_role" => "nullable|string|max:50",
             "group_id" => [
                 "nullable",
                 Rule::exists('groups', 'id')->where('organization_id', Organization::getCurrent()->id)
@@ -73,18 +74,45 @@ class UserController extends Controller
             'user_working_hours' => 'required|array',
             'user_working_hours.*.id' => 'nullable|exists:user_working_hours,id',
             'user_working_hours.*.weekly_working_hours' => 'required|min:0|decimal:0,2',
-            'user_working_hours.*.active_since' => 'required|date',
+            'user_working_hours.*.active_since' => ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
+                $index  = explode('.', $attribute)[1];
+                $currentWorkingHour = $request['user_working_hours'][$index];
+                if ($mode == 'update' && !isset($currentWorkingHour['id']) && Carbon::parse($currentWorkingHour['active_since'])->lt(Carbon::now()->endOfDay())) {
+                    $fail('validation.after')->translate([
+                        'attribute' => __('validation.attributes.active_since'),
+                        'date' => Carbon::now()->format('d.m.Y')
+                    ]);
+                }
+            }],
 
             'user_working_weeks' => 'required|array',
             'user_working_weeks.*.id' => 'nullable|exists:user_working_weeks,id',
             'user_working_weeks.*.weekdays' => 'required|array',
             'user_working_weeks.*.weekdays.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
-            'user_working_weeks.*.active_since' => 'required|date',
+            'user_working_weeks.*.active_since' =>  ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
+                $index  = explode('.', $attribute)[1];
+                $currentWorkingWeek = $request['user_working_weeks'][$index];
+                if ($mode == 'update' && !isset($currentWorkingWeek['id']) && Carbon::parse($currentWorkingWeek['active_since'])->lt(Carbon::now()->endOfDay())) {
+                    $fail('validation.after')->translate([
+                        'attribute' => __('validation.attributes.active_since'),
+                        'date' => Carbon::now()->format('d.m.Y')
+                    ]);
+                }
+            }],
 
             'user_leave_days' => 'required|array',
             'user_leave_days.*.id' => 'nullable|exists:user_leave_days,id',
             'user_leave_days.*.leave_days' => 'required|integer|min:0',
-            'user_leave_days.*.active_since' => 'required|date',
+            'user_leave_days.*.active_since' => ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
+                $index  = explode('.', $attribute)[1];
+                $currentLeaveDays = $request['user_leave_days'][$index];
+                if ($mode == 'update' && !isset($currentLeaveDays['id']) && Carbon::parse($currentLeaveDays['active_since'])->lt(Carbon::now()->startOfYear())) {
+                    $fail('validation.after_or_equal')->translate([
+                        'attribute' => __('validation.attributes.active_since'),
+                        'date' => Carbon::now()->startOfYear()->format('m.Y')
+                    ]);
+                }
+            }],
 
             "overtime_calculations_start" => "required|date",
 
@@ -124,7 +152,16 @@ class UserController extends Controller
         Gate::authorize('viewIndex', User::class);
 
         return Inertia::render('User/UserIndex', [
-            'users' => User::inOrganization()->with('group:id,name')->get()->map(fn($u) => [
+            'users' => User::inOrganization()->with('group:id,name')->get([
+                'id',
+                'first_name',
+                'last_name',
+                'date_of_birth',
+                'email',
+                'staff_number',
+                'job_role',
+                'group_id'
+            ])->map(fn($u) => [
                 ...$u->toArray(),
                 'can' => [
                     'user' => [
@@ -271,9 +308,10 @@ class UserController extends Controller
                 'first_name',
                 'last_name',
                 'supervisor_id',
-                'email'
+                'email',
+                'job_role',
             ]),
-            'supervisor' => $user->supervisor()->first(['id', 'first_name', 'last_name', 'email']),
+            'supervisor' => $user->supervisor()->first(['id', 'first_name', 'last_name', 'email', 'job_role']),
 
             'can' => self::getUserShowCans($user),
         ]);
@@ -312,6 +350,7 @@ class UserController extends Controller
             'date_of_birth' => Carbon::parse($validated['date_of_birth']),
             'home_office' => $validated['home_office'],
             'home_office_hours_per_week' => $validated['home_office'] ? $validated['home_office_hours_per_week'] ?? 0 : null,
+            'job_role' => $validated['job_role'],
             'email_verified_at' => now(),
         ]);
         $user->save();
@@ -402,8 +441,8 @@ class UserController extends Controller
         Gate::authorize('update', $user);
 
         $validated = self::validateUser($request, [
-            "email" => "required|email",
-        ]);
+            "email" => ['required', 'email', Rule::unique('users')->ignore($user->id)],
+        ], 'update');
 
         $user->update([
             'first_name' => $validated['first_name'],
@@ -427,6 +466,7 @@ class UserController extends Controller
             'home_office' => $validated['home_office'],
             'home_office_hours_per_week' => $validated['home_office'] ? $validated['home_office_hours_per_week'] ?? 0 : null,
             "overtime_calculations_start" => $validated['overtime_calculations_start'],
+            'job_role' => $validated['job_role'],
         ]);
         $user->organizationUser->update($validated['organizationUser']);
         $user->operatingSiteUser->update($validated['operatingSiteUser']);

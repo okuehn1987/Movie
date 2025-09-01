@@ -75,10 +75,17 @@ function withdrawRequest() {
                                 <v-text-field type="date" label="Bis" :model-value="selectedAbsence.end"></v-text-field>
                             </v-col>
                             <v-col cols="12" class="text-end">
-                                <v-btn v-if="can('absence', 'update', absenceUser)" @click.stop="openDispute" type="button" color="primary">
+                                <v-btn v-if="can('user', 'viewDisputes')" @click.stop="openDispute" type="button" color="primary">
                                     Antrag öffnen
                                 </v-btn>
-                                <v-btn v-else @click.stop="withdrawRequest" type="button" color="primary">Antrag zurückziehen</v-btn>
+                                <v-btn
+                                    v-else-if="can('absence', 'deleteDispute', selectedAbsence)"
+                                    @click.stop="withdrawRequest"
+                                    type="button"
+                                    color="primary"
+                                >
+                                    Antrag zurückziehen
+                                </v-btn>
                             </v-col>
                         </v-row>
                     </v-form>

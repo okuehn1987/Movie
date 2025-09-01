@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Absence, RelationPick, Relations, Seconds, Shift, ShiftEntries, User } from '@/types/types';
+import { DateString, Relations, Seconds, Shift, ShiftEntries, User } from '@/types/types';
+import { formatDuration } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
+import { ref } from 'vue';
 import Absences from './partial/Absences.vue';
 import WorkingHours from './partial/WorkingHours.vue';
-import { ref } from 'vue';
-import { formatDuration } from '@/utils';
-
-type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'user_id' | 'absence_type_id'>;
 
 defineProps<{
     user: User &
@@ -18,9 +16,7 @@ defineProps<{
     supervisor: Pick<User, 'id' | 'first_name' | 'last_name'>;
     overtime: number;
     workingHours: { totalHours: number; homeOfficeHours: number };
-    currentAbsences: (AbsenceProp &
-        RelationPick<'absence', 'user', 'id' | 'first_name' | 'last_name'> &
-        RelationPick<'absence', 'absence_type', 'id' | 'abbreviation'>)[];
+    currentAbsences: { name: string; end: DateString; type: string }[];
     lastWeekEntries: (Pick<ShiftEntries, 'id' | 'start' | 'end'> & { duration: Seconds })[];
 }>();
 
