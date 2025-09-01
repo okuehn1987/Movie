@@ -108,7 +108,7 @@ class Shift extends Model
      *  \App\Models\TravelLog | \App\Models\TravelLogPatch
      * > 
      * $entries */
-    public static function workDuration(\Illuminate\Support\Collection $entries)
+    public static function workDuration(\Illuminate\Support\Collection $entries): int
     {
         $entries = $entries->filter(fn($e) => $e->end !== null);
         $duration = 0;
@@ -133,6 +133,24 @@ class Shift extends Model
         return Attribute::make(
             get: function () {
                 return self::workDuration($this->entries);
+            }
+        );
+    }
+
+    public function homeofficeDuration(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                return $this->entries->filter(fn($e) => $e->is_home_office)->sum(fn($e) => $e->duration);
+            }
+        );
+    }
+
+    public function travellogDuration(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                return $this->entries->filter(fn($e) => $e instanceof TravelLog || $e instanceof TravelLogPatch)->sum(fn($e) => $e->duration);
             }
         );
     }
@@ -335,7 +353,8 @@ class Shift extends Model
                 )
             )->unique()->filter(fn($d) => $d->gte('1970-01-02'));
 
-            $diffToApply = 0;
+            $diffToApply = $breakDurationChange;
+            $dayChanges = (object)[];
             foreach ($affectedDays as $day) {
                 if ($type == 'absence' && $day->gt(now()->endOfDay())) continue;
 
@@ -425,13 +444,15 @@ class Shift extends Model
                 };
 
                 //if ist > soll overtime can be added immediatly else schedule will subtract the missing amount at 0:00 
-                if ($day->isSameDay(now()) || $hasAbsenceForDay || $hasAbbauGleitzeitkontoForDay)
-                    $diffToApply += max($sollForAffectedDay, $newIstForAffectedDay) - max($sollForAffectedDay, $oldIstForAffectedDay);
-                else
-                    $diffToApply += $newIstForAffectedDay - $oldIstForAffectedDay;
-            }
 
-            $diffToApply += $breakDurationChange;
+                if ($day->isSameDay(now()) || $hasAbsenceForDay || $hasAbbauGleitzeitkontoForDay)
+                    $change =  max($sollForAffectedDay, $newIstForAffectedDay) - max($sollForAffectedDay, $oldIstForAffectedDay);
+                else
+                    $change =  $newIstForAffectedDay - $oldIstForAffectedDay;
+
+                $diffToApply += $change;
+                $dayChanges->{$day->format('Y-m-d')} = $change;
+            }
 
             $transactionDescription = match (true) {
                 $model instanceof WorkLog
@@ -448,12 +469,11 @@ class Shift extends Model
                 => $model->type != 'delete' ? 'Abwesenheitskorrektur' : 'Abwesenheitslöschung',
             };
 
-            //TODO: message doesnt make sense for multiple affected shifts
             $transactionMessage = match ($type) {
                 'work' =>  'Berechnung für ' .
-                    Carbon::parse($newShifts->map(fn($s) => $s['shift'])->min('start') ?? $model->start)->format('d.m.Y H:i') .
+                    Carbon::parse($variant == 'log' || $model->type == 'patch' ? $model->start : $previousModel->start)->format('d.m.Y H:i') .
                     ' - ' .
-                    Carbon::parse($newShifts->map(fn($s) => $s['shift'])->max('end') ?? $model->end)->format('d.m.Y H:i') .
+                    Carbon::parse($model->end)->format('d.m.Y H:i') .
                     ' aufgrund von ' . $transactionDescription,
                 'absence' => 'Berechnung für ' .
                     ($model->start == $model->end ?
@@ -463,10 +483,29 @@ class Shift extends Model
                     ' aufgrund von ' . $transactionDescription,
             };
 
-            $model->user->defaultTimeAccount->addBalance(
+            $createdTransaction = $model->user->defaultTimeAccount->addBalance(
                 $diffToApply,
                 $transactionMessage
             );
+
+            if ($createdTransaction) {
+                $createdTransaction->changes()->createMany([
+                    [
+                        'date' => $variant == 'log' || $model->type == 'patch' ? $model->end : $previousModel->end,
+                        'amount' => $breakDurationChange,
+                    ],
+                    ...array_map(
+                        fn($date, $amount) => [
+                            'date' => $date,
+                            'amount' => $amount
+                        ],
+                        array_keys((array)$dayChanges),
+                        array_values((array)$dayChanges)
+                    )
+                ]);
+            }
+
+
 
             if ($type == 'work') {
                 $baseLog?->updateQuietly(['shift_id' => $model->shift_id]);

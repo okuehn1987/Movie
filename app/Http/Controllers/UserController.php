@@ -14,6 +14,7 @@ use App\Models\Shift;
 use App\Models\TimeAccount;
 use App\Models\TimeAccountSetting;
 use App\Models\TimeAccountTransaction;
+use App\Models\TimeAccountTransactionChange;
 use App\Models\TravelLog;
 use App\Models\TravelLogPatch;
 use App\Models\User;
@@ -29,7 +30,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\CarbonInterval;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -544,7 +545,6 @@ class UserController extends Controller
 
         return Inertia::render('User/UserShow/TimeStatements', [
             'user' => $user,
-            'work_logs' => $user->workLogs()->whereBetween('start', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])->get(),
             'can' => self::getUserShowCans($user),
         ]);
     }
@@ -557,12 +557,35 @@ class UserController extends Controller
         Gate::authorize('viewShow', [AbsenceType::class, $user]);
         Gate::authorize('viewShow', [User::class, $user]);
 
-        $date = Carbon::now()->startOfMonth();
+        $validated = $request->validate([
+            'start' => 'required|date_format:Y-m|after_or_equal:' . Carbon::parse($user->created_at)->format('Y-m') . '|before_or_equal:end',
+            'end' => 'required|date_format:Y-m|after_or_equal:start|before_or_equal:' . Carbon::now()->format('Y-m'),
+        ]);
+
+        $start = Carbon::parse($validated['start'])->startOfMonth();
+        $end = Carbon::parse($validated['end'])->endOfMonth();
+
+        $lastTransactionBeforeStatement = $user->defaultTimeAccount->allTimeAccountTransactions()
+            ->orderByDesc(TimeAccountTransactionChange::select('date')
+                ->whereDate('date', '<', $start->format('Y-m-d'))
+                ->whereColumn('time_account_transaction_id', 'time_account_transactions.id')
+                ->orderByDesc('date')
+                ->limit(1))
+            ->first();
+
+        $previousBalance = $lastTransactionBeforeStatement->from_id == $user->defaultTimeAccount->id ?
+            $lastTransactionBeforeStatement->from_previous_balance :
+            $lastTransactionBeforeStatement->to_previous_balance;
+
+        $allTransactionChanges = TimeAccountTransactionChange::whereIn(
+            'time_account_transaction_id',
+            TimeAccountTransaction::forUser($user)->select('id')
+        )->select('date', DB::raw('sum(amount) as amount'))->groupBy('date')->whereBetween('date', [$start, $end])->get();
 
         $shifts = Shift::where('user_id', $user->id)
-            ->with(['user'])
+            ->with('user')
             ->get()
-            ->filter(fn($s) => Carbon::parse($s->start)->between($date->copy()->startOfMonth(), $date->copy()->endOfMonth()))
+            ->filter(fn($s) => Carbon::parse($s->start)->between($start, $end))
             ->each
             ->append('entries');
 
@@ -572,130 +595,227 @@ class UserController extends Controller
             ->get();
 
         $absences = $absences->map(fn($a) => $a->currentAcceptedPatch ?? $a)
-            ->filter(fn($a) => $date->lte(Carbon::parse($a->end)) && $date->copy()->endOfMonth()->gte(Carbon::parse($a->start)));
+            ->filter(fn($a) => $start->lte(Carbon::parse($a->end)) && $end->gte(Carbon::parse($a->start)));
 
-        function formatDuration(string $seconds, string $fallback = ''): string
+
+
+        function countEntriesOfChunk($chunk)
         {
-            if ($seconds == 0) return $fallback;
-            $hours = floor(abs($seconds) / 3600);
-            $seconds %= 3600;
-            $minutes =  floor(abs($seconds) / 60);
-            $seconds %= 60;
-            return ($seconds < 0 ? '-' : '') . str_pad($hours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($minutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad(abs($seconds), 2, '0', STR_PAD_LEFT);
+
+            $count = 0;
+
+            foreach ((array)$chunk as $item) {
+
+                if (count($item->data) == 0) $count++;
+                foreach ($item->data as $d) {
+                    $count += count($d->entries);
+                }
+            }
+            return $count;
         }
 
-        $entryIndex = 0;
-        $data =
-            collect(range(1, $date->copy()->daysInMonth()))->reduce(
-                function ($values, $i) use ($shifts, $absences, $user, $date, &$entryIndex) {
-                    $day = $date->copy()->startOfMonth()->addDays($i - 1);
-                    $shifts = $shifts->where(fn($s) => $day->between(
-                        Carbon::parse($s->start)->startOfDay(),
-                        Carbon::parse($s->end)->endOfDay()
-                    ))->filter(fn($s) => $s->entries->isNotEmpty());
+        $monthData = [];
+        $CHUNK_SIZE = 30;
 
-                    $absence = $absences->first(fn($a) => $day->between(Carbon::parse($a->start)->startOfDay(), Carbon::parse($a->end)->endOfDay()));
+        for ($date = $start->copy(); $date->lte($end); $date->addMonth()) {
 
-                    $values->{$day->format('d')} = [];
+            $entryIndex = 0;
+            $previousMonth = end($monthData);
 
-                    if ($day->format('d') == "06") dd($shifts, $shifts->map->entries, $absence);
+            if ($previousMonth) {
+                $previousBalance += $previousMonth->data->reduce(fn($carry, $item) => $carry + $item->transaction_value, 0);
+            }
 
-                    if ($shifts->isEmpty() && !$absence) {
-                        $values->{$day->format('d')} = (object)[
+            $monthData[] = (object)[
+                'month' => $date->copy(),
+                'previous_balance' => $previousBalance,
+                'leave_days_used' => $user->usedLeaveDaysForMonth($date),
+                'leave_days' => $user->leaveDaysForYear($date),
+                'leave_days_used_before' =>  collect(
+                    range(0, $start->copy()->startOfYear()->diffInMonths($date))
+                )->map(
+                    fn($i) => $start->copy()->startOfYear()->addMonths($i)
+                )->filter(fn($m) => !$m->isSameMonth($date))->unique()->sort()->reduce(fn($carry, $month) => $carry + $user->usedLeaveDaysForMonth($month), 0),
+                'is' => null,
+                'missing_break' => null,
+                'transaction_value' => null,
+                'should' => null,
+                'data' => collect(collect(range(1, $date->copy()->daysInMonth()))->reduce(
+                    function ($values, $i) use ($shifts, $absences, $user, $date, &$entryIndex, $allTransactionChanges, $CHUNK_SIZE) {
+                        $otherChunks =  collect($values)->slice(0, -1)->toArray();
+
+                        $currentChunk = $values[count($values) - 1] ?? (object)[];
+                        $currentValue = (object)[];
+
+                        $day = $date->copy()->addDays($i - 1);
+                        $holiday = HolidayService::getHolidayName($user->operatingSite->country, $user->operatingSite->federal_state, $day);
+
+                        $currentValueEntryCount = countEntriesOfChunk($currentChunk);
+
+                        if ($currentValueEntryCount >= $CHUNK_SIZE) {
+                            $entryIndex = 0;
+                            $otherChunks[] = $currentChunk;
+                            $currentChunk = (object)[];
+                        }
+
+                        $transactionValue = $allTransactionChanges->firstWhere('date', $day->format('Y-m-d'))?->amount ?? 0;
+
+                        $shifts = $shifts->where(fn($s) => $day->between(
+                            Carbon::parse($s->start)->startOfDay(),
+                            Carbon::parse($s->end)->endOfDay()
+                        ))->filter(fn($s) => $s->entries->isNotEmpty());
+
+                        $absence = $absences->first(fn($a) => $day->between(Carbon::parse($a->start)->startOfDay(), Carbon::parse($a->end)->endOfDay()));
+
+                        $currentValue->{$day->format('d')} = [];
+                        $sollZeit = $user->getSollsekundenForDate($day);
+
+                        if ($shifts->isEmpty() && (!$absence || $user->shouldWork($day))) {
+                            $currentValue->{$day->format('d')} = (object)[
+                                'day' => $day->format('d'),
+                                'type' => 'empty',
+                                'holiday' => $holiday,
+                                'should_text' => self::formatDuration($sollZeit),
+                                'should' => $sollZeit,
+                                'transaction_value_text' => self::formatDuration($transactionValue),
+                                'transaction_value' => $transactionValue,
+                                'entryIndex' => ++$entryIndex,
+                                'data' => [],
+                            ];
+                            return [...$otherChunks, (object)[...(array)$currentChunk, ...(array)$currentValue]];
+                        }
+
+
+                        if ($shifts->isEmpty() && $absence) {
+                            $currentValue->{$day->format('d')} = (object)[
+                                'day' => $day->format('d'),
+                                'type' => 'absence',
+                                'holiday' => $holiday,
+                                'should_text' => self::formatDuration($sollZeit),
+                                'should' => $sollZeit,
+                                'absence_type' => $absence->absenceType?->name ?? 'Abwesend',
+                                'transaction_value_text' => self::formatDuration($transactionValue),
+                                'transaction_value' => $transactionValue,
+                                'entryIndex' => ++$entryIndex,
+                                'data' => [],
+                            ];
+                            return  [...$otherChunks, (object)[...(array)$currentChunk, ...(array)$currentValue]];
+                        }
+                        $currentValue->{$day->format('d')} = (object)[
                             'day' => $day->format('d'),
-                            'type' => 'empty',
-                            'should' => formatDuration($user->getSollsekundenForDate($day)),
-                            'transaction_value' => '',
-                            'entryIndex' => ++$entryIndex,
+                            'type' => 'shift',
+                            'holiday' => $holiday,
+                            'should_text' => self::formatDuration($sollZeit),
+                            'should' => $sollZeit,
+                            'absence_type' => $absence?->absenceType->name ?? null,
                             'data' => [],
-                        ];
-                        return $values;
-                    }
 
-
-                    if ($shifts->isEmpty() && $absence) {
-                        $values->{$day->format('d')} = (object)[
-                            'day' => $day->format('d'),
-                            'type' => 'absence',
-                            'absence_type' => $absence->absenceType?->name ?? 'Abwesend',
-                            'entryIndex' => ++$entryIndex,
-                            'data' => [],
                         ];
-                        return $values;
-                    }
-                    $values->{$day->format('d')} = (object)[
-                        'day' => $day->format('d'),
-                        'type' => 'shift',
-                        'absence_type' => $absence?->absenceType->name ?? null,
-                        'data' => [],
-                    ];
-                    foreach ($shifts as $shift) {
-                        $entries = $values->{$day->copy()->format('d')}?->data;
-                        $values->{$day->format('d')}->data[] = (object)[
-                            'shift_id' => $shift->id,
-                            'entryIndex' => (
-                                (property_exists($values, $day->copy()->format('d')) &&
-                                    count($values->{$day->copy()->format('d')}?->data) > 0 &&
-                                    end($entries)?->shift_id == $shift->id
-                                )
-                                ? $entryIndex
-                                : ++$entryIndex
-                            ),
-                            'entries' => $shift->entries->filter(fn($entry) => $day->between(
+                        foreach ($shifts as $shift) {
+                            $entries = $currentValue->{$day->copy()->format('d')}?->data;
+                            $missingBreak = $shift->missingBreakDuration();
+                            $is = $day->isSameDay(Carbon::parse($shift->end))
+                                ? ($absence ? max(
+                                    Shift::workDuration($shift->entries) - $missingBreak,
+                                    $sollZeit
+                                ) : $shift->workDuration($shift->entries) - $missingBreak)
+                                : 0;
+
+                            $relevantShiftEntries = $shift->entries->filter(fn($entry) => $day->between(
                                 Carbon::parse($entry->start)->startOfDay(),
                                 Carbon::parse($entry->end)->endOfDay()
-                            ))->map(
-                                fn($entry) => [
-                                    'type' => match (true) {
-                                        $entry instanceof TravelLog => 'travel',
-                                        $entry->is_home_office => 'homeoffice',
-                                        default => 'office',
-                                    },
-                                    'start' => Carbon::parse(Carbon::parse($entry->start)->isSameDay($day) ? $entry->start : $day->copy()->startOfDay())->format('H:i:s'),
-                                    'end' => Carbon::parse(Carbon::parse($entry->end)->isSameDay($day) ? $entry->end : $day->copy()->endOfDay())->format('H:i:s'),
-                                    'duration' => formatDuration(
-                                        Carbon::parse($entry->start)->isSameDay($day) && Carbon::parse($entry->end)->isSameDay($day)
-                                            ? $entry->duration
-                                            : ((Carbon::parse($entry->start)->lt($day->copy()->startOfDay())
-                                                ? $day->copy()->startOfDay()
-                                                : Carbon::parse($entry->start)
-                                            )->diffInSeconds(
-                                                Carbon::parse($entry->end)->gt($day->copy()->endOfDay())
-                                                    ? $day->copy()->endOfDay()
-                                                    : Carbon::parse($entry->end)
-                                            ))
-                                    ),
-                                ]
-                            ),
-                            'should' => formatDuration($user->getSollsekundenForDate($day), '00:00:00'),
-                            'is' => $day->isSameDay(Carbon::parse($shift->end))
-                                ? ($absence ? formatDuration(max(
-                                    Shift::workDuration($shift->entries)  - $shift->missingBreakDuration(),
-                                    $user->getSollsekundenForDate($day)
-                                )) : formatDuration($shift->workDuration($shift->entries) - $shift->missingBreakDuration(), '00:00:00'))
-                                : '',
-                            'pause' => $day->isSameDay(Carbon::parse($shift->end)) ? formatDuration($shift->missingBreakDuration()) . '/' . formatDuration($shift->breakDuration($shift->entries)) : '',
-                            'transaction_value' => '',
-                        ];
+                            ));
+
+                            $currentValue->{$day->format('d')}->data[] = (object)[
+                                'shift_id' => $shift->id,
+                                'workDuration' => $shift->currentWorkDuration,
+                                'homeofficeDuration' => $shift->homeofficeDuration,
+                                'travellogDuration' => $shift->travellogDuration,
+                                'entryIndex' => (
+                                    (property_exists($currentValue, $day->copy()->format('d')) &&
+                                        count($currentValue->{$day->copy()->format('d')}?->data) > 0 &&
+                                        end($entries)?->shift_id == $shift->id
+                                    )
+                                    ? $entryIndex
+                                    : ++$entryIndex
+                                ),
+                                'entries' => $relevantShiftEntries->map(
+                                    fn($entry) => [
+                                        'type' => match (true) {
+                                            $entry instanceof TravelLog, $entry instanceof TravelLogPatch => 'Dienstreise',
+                                            $entry->is_home_office => 'Homeoffice',
+                                            default => 'Betrieb',
+                                        },
+                                        'start' => Carbon::parse(Carbon::parse($entry->start)->isSameDay($day) ? $entry->start : $day->copy()->startOfDay())->format('H:i:s'),
+                                        'end' => Carbon::parse(Carbon::parse($entry->end)->isSameDay($day) ? $entry->end : $day->copy()->endOfDay())->format('H:i:s'),
+                                        'duration' => self::formatDuration(
+                                            Carbon::parse($entry->start)->isSameDay($day) && Carbon::parse($entry->end)->isSameDay($day)
+                                                ? $entry->duration
+                                                : ((Carbon::parse($entry->start)->lt($day->copy()->startOfDay())
+                                                    ? $day->copy()->startOfDay()
+                                                    : Carbon::parse($entry->start)
+                                                )->diffInSeconds(
+                                                    Carbon::parse($entry->end)->gt($day->copy()->endOfDay())
+                                                        ? $day->copy()->endOfDay()
+                                                        : Carbon::parse($entry->end)
+                                                ))
+                                        ),
+                                    ]
+                                ),
+                                'missing_break_text' => $day->isSameDay(Carbon::parse($shift->end)) ? self::formatDuration($missingBreak) : '',
+                                'missing_break' => $day->isSameDay(Carbon::parse($shift->end)) ? $missingBreak : 0,
+                                'is_text' => $day->isSameDay(Carbon::parse($shift->end))
+                                    ? ($absence ? self::formatDuration($is) : self::formatDuration($is, '00:00:00'))
+                                    : '',
+                                'is' =>  $is,
+                                'transaction_value_text' => self::formatDuration($transactionValue),
+                                'transaction_value' => $transactionValue,
+                            ];
+                        }
+
+                        if (countEntriesOfChunk((object)[...(array)$currentChunk, ...(array)$currentValue]) >= $CHUNK_SIZE) {
+                            return [...$otherChunks, $currentChunk, $currentValue];
+                        }
+
+                        return  [...$otherChunks, (object)[...(array)$currentChunk, ...(array)$currentValue]];
+                    },
+                    []
+                ))->map(
+                    function ($data) {
+                        $dataKeys = (object)[];
+                        $dataKeys->entries = $data;
+                        $dataKeys->is = collect(array_values((array)$data))->flatMap(fn($d) => $d->type == 'empty' ? [] : $d->data)->reduce(fn($carry, $item) => $carry + $item->is, 0);
+                        $dataKeys->missing_break = collect(array_values((array)$data))->flatMap(fn($d) => $d->type == 'empty' ? [] : $d->data)->reduce(fn($carry, $item) => $carry + $item->missing_break, 0);
+                        $dataKeys->transaction_value = collect(array_values((array)$data))->flatMap(fn($d) => $d->type != 'shift' ? [$d] : $d->data)->reduce(fn($carry, $item) => $carry + $item->transaction_value, 0);
+                        $dataKeys->should = collect(array_values((array)$data))->map(fn($e) => $e->should)->reduce(fn($carry, $item) => $carry + $item, 0);
+
+                        return $dataKeys;
                     }
+                )->values(),
+            ];
+        }
 
-                    return $values;
-                },
-                (object)[]
-            );
+        foreach ($monthData as $month) {
+            $allShiftEntriesOfMonth = $month->data->flatMap(fn($d) => collect(array_values((array)$d->entries))->flatMap(fn($e) => collect($e->data)));
+            $month->is = $month->data->sum(fn($item) => $item->is);
+            $month->missing_break = $month->data->sum(fn($item) => $item->missing_break);
+            $month->transaction_value = $month->data->sum(fn($item) => $item->transaction_value);
+            $month->should = $month->data->sum(fn($item) => $item->should);
+            $month->workDuration = $allShiftEntriesOfMonth->sum(fn($item) => $item->workDuration);
+            $month->homeofficeDuration = $allShiftEntriesOfMonth->sum(fn($item) => $item->homeofficeDuration);
+            $month->travellogDuration = $allShiftEntriesOfMonth->sum(fn($item) => $item->travellogDuration);
+        }
 
-        // dd($data);
         $props = [
-            'data' => $data,
             'organization' => Organization::getCurrent(),
             'federal_state' => HolidayService::$COUNTRIES[$user->operatingSite->country]['regions'][$user->operatingSite->federal_state],
             'user' => $user->load('operatingSite'),
-            'month' => $date
+            'monthData' => $monthData,
         ];
 
-        return view('print.timeStatement', $props);
-        // $pdf = PDF::loadView('print.timeStatement', $props)->setPaper('a4', 'landscape');
-        // return $pdf->download('timeStatement.pdf');
+        $fileNameDate = $validated['start'] == $validated['end'] ? $validated['start'] : $validated['start'] . '-' . $validated['end'];
+        $pdf = PDF::loadView('print.timeStatement', $props)->setPaper('a4', 'landscape');
+        return $pdf->stream($user->last_name . '_' . $user->first_name . '_' . $fileNameDate . '_Zeitnachweis.pdf');
     }
 
     private function getUserShowCans(User $user)
@@ -720,5 +840,15 @@ class UserController extends Controller
                 'viewIndex' => Gate::allows('viewIndex', User::class),
             ]
         ];
+    }
+
+    public static function formatDuration(string $seconds, string $fallback = ''): string
+    {
+        if ($seconds == 0) return $fallback;
+        $hours = floor(abs($seconds) / 3600);
+        $seconds %= 3600;
+        $minutes =  floor(abs($seconds) / 60);
+        $seconds %= 60;
+        return ($seconds < 0 ? '-' : '') . str_pad($hours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($minutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad(abs($seconds), 2, '0', STR_PAD_LEFT);
     }
 }

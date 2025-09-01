@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Middleware\CheckIfGateWasUsedToAuthorizeRequest;
+use App\Http\Middleware\CheckQueryCountForRequest;
 use App\Http\Middleware\HasOrganizationAccess;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard')->name('home');
 
-Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAuthorizeRequest::class])->group(function () {
+Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAuthorizeRequest::class, CheckQueryCountForRequest::class])->group(function () {
     //super admin routes
     Route::resource('organization', OrganizationController::class)->only(['index', 'store', 'destroy']);
     Route::get('/organization/{organization}/tree', [OrganizationController::class, 'organigram'])->name('organization.tree');

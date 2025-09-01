@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Organization;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -29,6 +30,8 @@ class AppServiceProvider extends ServiceProvider
         if (!$this->app->environment('local'))
             \Illuminate\Support\Facades\URL::forceScheme('https');
         Model::shouldBeStrict($this->app->environment('local'));
+
+        DB::connection()->enableQueryLog();
 
         Vite::prefetch(concurrency: 3);
 
