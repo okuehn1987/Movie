@@ -373,7 +373,7 @@ class User extends Authenticatable
         ));
 
         $absenceData = $relevantAbsences->flatMap(fn($a) => collect(
-            range(0, Carbon::parse(max($a->start, $startOfYear))->diffInDays(min($a->end, $endOfYear)))
+            range(0, Carbon::parse(max($a->start, $startOfYear))->startOfDay()->diffInDays(Carbon::parse(min($a->end, $endOfYear))->startOfDay()))
         )->map(
             fn($i) => Carbon::parse(max($a->start, $startOfYear))->addDays($i)->startOfDay()
         ))->unique()->sort();
