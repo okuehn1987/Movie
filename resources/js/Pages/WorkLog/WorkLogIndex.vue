@@ -16,7 +16,7 @@ defineProps<{
 function getPT(user: PropUser & { userWorkingWeekCount: number }) {
     if (!user.current_working_hours) return null;
 
-    return Math.round(user.default_time_account.balance / 3600 / (user.current_working_hours?.weekly_working_hours / user.userWorkingWeekCount));
+    return Math.round(user.default_time_account.balance / 3600 / (user.current_working_hours?.weekly_working_hours / user.userWorkingWeekCount) * 10) / 10;
 }
 </script>
 <template>
