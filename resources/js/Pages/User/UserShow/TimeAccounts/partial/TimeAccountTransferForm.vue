@@ -13,7 +13,7 @@ const timeAccountTransferForm = useForm({
 });
 </script>
 <template>
-    <v-dialog @after-leave="timeAccountTransferForm.reset()" max-width="1000">
+    <v-dialog @after-leave="timeAccountTransferForm.reset()" max-width="1000" v-if="time_accounts.length >= 2">
         <template v-slot:activator="{ props: activatorProps }">
             <v-btn v-bind="activatorProps" color="secondary" class="me-2">
                 <v-icon icon="mdi-transfer"></v-icon>
@@ -52,6 +52,7 @@ const timeAccountTransferForm = useForm({
                                     label="Von"
                                     v-model="timeAccountTransferForm.from_id"
                                     :error-messages="timeAccountTransferForm.errors.from_id"
+                                    clearable
                                 ></v-select>
                             </v-col>
                             <v-col cols="12" md="4">
@@ -68,6 +69,7 @@ const timeAccountTransferForm = useForm({
                                     label="Nach"
                                     v-model="timeAccountTransferForm.to_id"
                                     :error-messages="timeAccountTransferForm.errors.to_id"
+                                    clearable
                                 ></v-select>
                             </v-col>
                             <v-col cols="12" md="4">
@@ -86,7 +88,7 @@ const timeAccountTransferForm = useForm({
                                 ></v-text-field>
                             </v-col>
                             <v-col cols="12" class="text-end">
-                                <v-btn type="submit" color="primary" :loading="timeAccountTransferForm.processing"> Speichern </v-btn>
+                                <v-btn type="submit" color="primary" :loading="timeAccountTransferForm.processing">Speichern</v-btn>
                             </v-col>
                         </v-row>
                     </v-form>

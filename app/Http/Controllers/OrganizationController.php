@@ -103,7 +103,7 @@ class OrganizationController extends Controller
                 ->toArray()
         ]);
 
-        $defaultTimeAccountSetting = $org->timeAccountSettings()->create(TimeAccountSetting::getDefaultSettings());
+        $defaultTimeAccountSetting = $org->timeAccountSettings()->createMany(TimeAccountSetting::getDefaultSettings());
 
         $user->timeAccounts()->create([
             'name' => 'Gleitzeitkonto',

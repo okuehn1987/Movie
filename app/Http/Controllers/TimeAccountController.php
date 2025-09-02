@@ -75,8 +75,12 @@ class TimeAccountController extends Controller
     {
         Gate::authorize('delete', [TimeAccount::class, $timeAccount->user]);
 
-        if ($timeAccount->balance != 0 || $timeAccount->id == $timeAccount->user->defaultTimeAccount->id) {
-            return back()->with('error', 'Das Arbeitszeitkonto kann nicht gelöscht werden');
+        if ($timeAccount->id == $timeAccount->user->defaultTimeAccount->id) {
+            return back()->with('error', 'Das Standard-Arbeitszeitkonto kann nicht gelöscht werden.');
+        }
+
+        if ($timeAccount->balance != 0) {
+            return back()->with('error', 'Das Arbeitszeitkonto kann nicht gelöscht werden, da es noch ein Guthaben hat.');
         }
 
         $timeAccount->delete();
