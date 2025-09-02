@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use Carbon\Carbon;
-use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Laravel\Pennant\Feature;
 use Spatie\Holidays\Countries\Germany;

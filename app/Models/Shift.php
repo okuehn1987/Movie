@@ -444,7 +444,6 @@ class Shift extends Model
                 };
 
                 //if ist > soll overtime can be added immediatly else schedule will subtract the missing amount at 0:00 
-
                 if ($day->isSameDay(now()) || $hasAbsenceForDay || $hasAbbauGleitzeitkontoForDay)
                     $change =  max($sollForAffectedDay, $newIstForAffectedDay) - max($sollForAffectedDay, $oldIstForAffectedDay);
                 else

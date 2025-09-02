@@ -52,12 +52,6 @@ return new class extends Migration
         });
 
         foreach ($users as $user) {
-            // $state = [
-            //     'user' => $user->first_name . ' ' . $user->last_name,
-            //     'balance_before' => $user->defaultTimeAccount->balance,
-            //     'balance_before_text' => CarbonInterval::seconds(abs($user->defaultTimeAccount->balance))->cascade()->forHumans(),
-            // ];
-
             $user->defaultTimeAccount->updateQuietly(['balance' => 0]);
             $user->defaultTimeAccount->toTransactions()->delete();
             $user->defaultTimeAccount->fromTransactions()->delete();
@@ -108,9 +102,6 @@ return new class extends Migration
                     'accepted_at' => $e->accepted_at ?? $e->start,
                 ]));
             }
-
-            // $state['balance_after'] = $user->defaultTimeAccount->fresh()->balance;
-            // $state['balance_after_text'] = CarbonInterval::seconds(abs($user->defaultTimeAccount->fresh()->balance))->cascade()->forHumans();
         }
     }
 

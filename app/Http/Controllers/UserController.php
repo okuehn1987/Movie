@@ -597,15 +597,10 @@ class UserController extends Controller
         $absences = $absences->map(fn($a) => $a->currentAcceptedPatch ?? $a)
             ->filter(fn($a) => $start->lte(Carbon::parse($a->end)) && $end->gte(Carbon::parse($a->start)));
 
-
-
         function countEntriesOfChunk($chunk)
         {
-
             $count = 0;
-
             foreach ((array)$chunk as $item) {
-
                 if (count($item->data) == 0) $count++;
                 foreach ($item->data as $d) {
                     $count += count($d->entries);
@@ -618,7 +613,6 @@ class UserController extends Controller
         $CHUNK_SIZE = 30;
 
         for ($date = $start->copy(); $date->lte($end); $date->addMonth()) {
-
             $entryIndex = 0;
             $previousMonth = end($monthData);
 
@@ -685,7 +679,6 @@ class UserController extends Controller
                             return [...$otherChunks, (object)[...(array)$currentChunk, ...(array)$currentValue]];
                         }
 
-
                         if ($shifts->isEmpty() && $absence) {
                             $currentValue->{$day->format('d')} = (object)[
                                 'day' => $day->format('d'),
@@ -701,6 +694,7 @@ class UserController extends Controller
                             ];
                             return  [...$otherChunks, (object)[...(array)$currentChunk, ...(array)$currentValue]];
                         }
+
                         $currentValue->{$day->format('d')} = (object)[
                             'day' => $day->format('d'),
                             'type' => 'shift',
@@ -711,6 +705,7 @@ class UserController extends Controller
                             'data' => [],
 
                         ];
+
                         foreach ($shifts as $shift) {
                             $entries = $currentValue->{$day->copy()->format('d')}?->data;
                             $missingBreak = $shift->missingBreakDuration();

@@ -232,7 +232,7 @@ const tableHeight = useMaxScrollHeight(0);
                                             required
                                             :error-messages="workLogForm.errors.start"
                                             v-model="workLogForm.start"
-                                            variant="underlined"
+                                            :variant="inputVariant"
                                             style="height: 73px"
                                             :disabled="workLogForm.status == 'created'"
                                         ></v-date-input>
@@ -257,7 +257,7 @@ const tableHeight = useMaxScrollHeight(0);
                                             required
                                             :error-messages="workLogForm.errors.end"
                                             v-model="workLogForm.end"
-                                            variant="underlined"
+                                            :variant="inputVariant"
                                             style="height: 73px"
                                             :disabled="workLogForm.status == 'created'"
                                         ></v-date-input>
@@ -272,7 +272,7 @@ const tableHeight = useMaxScrollHeight(0);
                                             required
                                             :error-messages="workLogForm.errors.end_time"
                                             v-model="workLogForm.end_time"
-                                            variant="underlined"
+                                            :variant="inputVariant"
                                         ></v-text-field>
                                     </v-col>
                                     <v-col cols="12">
@@ -292,7 +292,7 @@ const tableHeight = useMaxScrollHeight(0);
                                             required
                                             :error-messages="workLogForm.errors.is_home_office"
                                             v-model="workLogForm.is_home_office"
-                                            variant="underlined"
+                                            :variant="inputVariant"
                                             hide-details
                                         ></v-checkbox>
                                     </v-col>

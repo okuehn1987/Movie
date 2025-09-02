@@ -35,7 +35,6 @@ class TravelLogPatch extends Model
                 $model->end = Carbon::parse($model->start)->copy()->endOfDay();
                 Shift::computeAffected($model);
 
-
                 for ($day = Carbon::parse($model->start)->startOfDay()->addDay(); $day->lte($end); $day->addDay()) {
                     $log = TravelLog::createQuietly([
                         ...$model->log->toArray(),
