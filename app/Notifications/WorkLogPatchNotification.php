@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\User;
 use App\Models\WorkLogPatch;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -42,7 +43,9 @@ class WorkLogPatchNotification extends Notification
         $buttonText = 'Antrag einsehen';
         return (new MailMessage)
             ->subject('Herta Zeitkorrekturantrag')
-            ->line('für einen User liegt ein Zeitkorrekturantrag vor.')
+            ->line('für den Nutzer "' . $this->user->name . '" liegt ein Antrag auf eine Zeitkorrektur für den Zeitraum vom "' .
+                Carbon::parse($this->patch->start)->format('d.m.Y') . '" bis zum "' .
+                Carbon::parse($this->patch->end)->format('d.m.Y') . '" vor.')
             ->line('Um fortzufahren, klicke bitte auf "' . $buttonText . '".')
             ->action($buttonText,  $this->getNotificationURL());
     }

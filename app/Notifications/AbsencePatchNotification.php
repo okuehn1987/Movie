@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\AbsencePatch;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -41,8 +42,10 @@ class AbsencePatchNotification extends Notification
         $buttonText = 'Antrag einsehen';
 
         return (new MailMessage)
-            ->subject('Herta Antrag für Abwesenheitskorrektur')
-            ->line('für einen User liegt ein Antrag auf eine Abwesenheitskorrektur vor.')
+            ->subject('Herta Abwesenheitskorrekturantrag')
+            ->line('für den Nutzer "' . $this->user->name . '" liegt ein Antrag auf Korrektur einer Abwesenheit für den Zeitraum vom "' .
+                Carbon::parse($this->absencePatch->start)->format('d.m.Y') . '" bis zum "' .
+                Carbon::parse($this->absencePatch->end)->format('d.m.Y') . '" vor.')
             ->line('Um fortzufahren, klicke bitte auf "' . $buttonText . '".')
             ->action($buttonText,  $this->getNotificationURL());
     }

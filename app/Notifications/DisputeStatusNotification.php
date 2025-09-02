@@ -9,6 +9,7 @@ use App\Models\TravelLogPatch;
 use App\Models\User;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Database\Eloquent\Model;
@@ -51,10 +52,38 @@ class DisputeStatusNotification extends Notification
 
         $message = (new MailMessage)->subject('Herta Antragsaktualisierung');
 
+        $modelUserNotificationText = match (true) {
+            $this->log instanceof WorkLog => 'auf Arbeitszeitbuchung',
+            $this->log instanceof WorkLogPatch => 'auf Arbeitszeitkorrektur',
+            $this->log instanceof TravelLog => 'auf Dienstreise',
+            $this->log instanceof TravelLogPatch => 'auf Dienstreisenkorrektur',
+            $this->log instanceof Absence => 'auf Abwesenheit',
+            $this->log instanceof AbsencePatch => 'auf Abwesenheitskorrektur',
+        };
+
         if ($this->status === 'declined') $message
-            ->line('Dein Antrag wurde abgelehnt');
+            ->line('Dein Antrag ' . $modelUserNotificationText .
+                ($this->log instanceof Absence || $this->log instanceof AbsencePatch ?
+                    ' mit dem angegebenen Grund "' . $this->log->absenceType->name . '"' : '') .
+                ' für den Zeitraum vom "' .
+                Carbon::parse($this->log->start)->format('d.m.Y') . '" bis zum "' .
+                Carbon::parse($this->log->end)->format('d.m.Y') . '" wurde abgelehnt.')
+            ->action($buttonText, $this->getNotificationURL())
+            ->line('Um ihn zu öffnen, klicke bitte auf "' . $buttonText . '".');
+        else if ($this->type === 'delete')  $message
+            ->line('Dein Antrag auf Löschung einer Abwesenheit' .
+                ($this->log instanceof Absence || $this->log instanceof AbsencePatch ?
+                    ' mit dem angegebenen Grund "' . $this->log->absenceType->name . '"' : '') .
+                ' für den Zeitraum vom "' .
+                Carbon::parse($this->log->start)->format('d.m.Y') . '" bis zum "' .
+                Carbon::parse($this->log->end)->format('d.m.Y') . '" wurde akzeptiert.');
         else  $message
-            ->line('Dein Antrag wurde akzeptiert.')
+            ->line('Dein Antrag ' . $modelUserNotificationText .
+                ($this->log instanceof Absence || $this->log instanceof AbsencePatch ?
+                    ' mit dem angegebenen Grund "' . $this->log->absenceType->name . '"' : '') .
+                ' für den Zeitraum vom "' .
+                Carbon::parse($this->log->start)->format('d.m.Y') . '" bis zum "' .
+                Carbon::parse($this->log->end)->format('d.m.Y') . '" wurde akzeptiert.')
             ->action($buttonText, $this->getNotificationURL())
             ->line('Um ihn zu öffnen, klicke bitte auf "' . $buttonText . '".');
 
@@ -93,6 +122,7 @@ class DisputeStatusNotification extends Notification
             AbsencePatch::class => 'einer Abwesenheitskorrektur',
         };
 
+
         $text  = match ($this->type) {
             'delete' => 'Ein Antrag auf Löschung ' . $modelText . ' von dir wurde',
             'create' => 'Ein Antrag  ' . $modelText . ' von dir wurde'
@@ -114,8 +144,6 @@ class DisputeStatusNotification extends Notification
 
     public function getNotificationURL()
     {
-        if ($this->type === 'delete') return null;
-
         return match (true) {
             $this->log instanceof Absence =>
             route('absence.index', [

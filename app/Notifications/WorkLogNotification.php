@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\User;
 use App\Models\WorkLog;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -41,7 +42,9 @@ class WorkLogNotification extends Notification
         $buttonText = 'Antrag einsehen';
         return (new MailMessage)
             ->subject('Herta Buchungsantrag')
-            ->line('für einen User liegt ein Buchungsantrag vor.')
+            ->line('für den Nutzer "' . $this->user->name . '" liegt ein Antrag auf eine Buchung für den Zeitraum vom "' .
+                Carbon::parse($this->log->start)->format('d.m.Y') . '" bis zum "' .
+                Carbon::parse($this->log->end)->format('d.m.Y') . '" vor.')
             ->line('Um fortzufahren, klicke bitte auf "' . $buttonText . '".')
             ->action($buttonText,  $this->getNotificationURL());
     }

@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\Absence;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -40,8 +41,10 @@ class AbsenceDeleteNotification extends Notification
     {
         $buttonText = 'Antrag einsehen';
         return (new MailMessage)
-            ->subject('Herta Löschung Nutzer Abwesenheit')
-            ->line('für einen User liegt ein Löschungsantrag vor.')
+            ->subject('Herta Nutzerabwesenheitslöschung')
+            ->line('für den Nutzer "' . $this->user->name . '" liegt ein Antrag auf Löschung einer Abwesenheit für den Zeitraum vom "' .
+                Carbon::parse($this->absence->start)->format('d.m.Y') . '" bis zum "' .
+                Carbon::parse($this->absence->end)->format('d.m.Y') . '" vor.')
             ->line('Um fortzufahren, klicke bitte auf "' . $buttonText . '".')
             ->action($buttonText,  $this->getNotificationURL());
     }
