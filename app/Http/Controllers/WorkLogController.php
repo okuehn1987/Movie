@@ -22,7 +22,7 @@ class WorkLogController extends Controller
         return Inertia::render('WorkLog/WorkLogIndex', [
             'users' => [
                 ...User::inOrganization()
-                    ->whereHas('workLogs')->with(['defaultTimeAccount:id,balance,user_id', 'latestWorkLog', 'currentWorkingHours', 'currentWorkingWeek'])
+                    ->whereHas('workLogs')->with(['defaultTimeAccount:id,balance,user_id', 'latestWorkLog', 'currentWorkingHours:id,weekly_working_hours', 'currentWorkingWeek'])
                     ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'time_balance_yellow_threshold', 'time_balance_red_threshold'])
                     ->filter(fn($u) => $authUser->can('viewShow', [WorkLog::class, $u]))
             ],
