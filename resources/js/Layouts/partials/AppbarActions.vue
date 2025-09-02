@@ -66,19 +66,17 @@ function convertTimeStamp(notification: Notification) {
 </script>
 
 <template>
-    <v-menu v-if="$page.props.auth.user.unread_notifications.length > 0">
+    <v-menu v-if="$page.props.unreadNotifications.length > 0">
         <template v-slot:activator="{ props }">
             <v-btn color="primary" v-bind="props" stacked>
-                <v-badge :content="$page.props.auth.user.unread_notifications.length" color="error">
+                <v-badge :content="$page.props.unreadNotifications.length" color="error">
                     <v-icon icon="mdi-bell"></v-icon>
                 </v-badge>
             </v-btn>
         </template>
         <v-list @click.stop="() => {}">
             <template
-                v-for="(notification, index) in $page.props.auth.user.unread_notifications.toSorted((a, b) =>
-                    b.created_at.localeCompare(a.created_at),
-                )"
+                v-for="(notification, index) in $page.props.unreadNotifications.toSorted((a, b) => b.created_at.localeCompare(a.created_at))"
                 :key="notification.id"
             >
                 <v-divider v-if="index != 0"></v-divider>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, usePoll } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import { useDisplay } from 'vuetify';
 import AppbarActions from './partials/AppbarActions.vue';
@@ -13,6 +13,10 @@ defineProps<{
 const isMobile = useDisplay().smAndDown;
 const showDrawer = ref(!isMobile.value);
 const appname = import.meta.env['VITE_APP_NAME'];
+
+usePoll(10000, {
+    only: ['unreadNotifications'],
+});
 </script>
 
 <template>
@@ -33,7 +37,7 @@ const appname = import.meta.env['VITE_APP_NAME'];
                         </div>
                     </v-list-item-title>
                     <template #append>
-                        <v-btn @click.stop="showDrawer = false" icon="mdi-close" variant="text"> </v-btn>
+                        <v-btn @click.stop="showDrawer = false" icon="mdi-close" variant="text"></v-btn>
                     </template>
                 </v-list-item>
             </v-list>
@@ -50,7 +54,7 @@ const appname = import.meta.env['VITE_APP_NAME'];
                 @click.stop="router.visit(backurl, { preserveState: true })"
             ></v-app-bar-nav-icon>
 
-            <v-toolbar-title> {{ title }} </v-toolbar-title>
+            <v-toolbar-title>{{ title }}</v-toolbar-title>
 
             <slot name="appbarActions" />
 
