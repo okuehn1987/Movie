@@ -112,6 +112,8 @@ export type User = DBObject<'user'> &
         overtime_calculations_start: DateString;
         is_supervisor: boolean;
         job_role: string | null;
+        time_balance_yellow_threshold: number | null;
+        time_balance_red_threshold: number | null;
     } & (
         | {
               home_office: true;

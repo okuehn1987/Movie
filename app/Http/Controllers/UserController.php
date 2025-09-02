@@ -62,6 +62,10 @@ class UserController extends Controller
 
             'is_supervisor' => 'required|boolean',
 
+            'use_time_balance_traffic_light' => 'required|boolean',
+            'time_balance_yellow_threshold' => 'nullable|required_if:use_time_balance_traffic_light,true|integer',
+            'time_balance_red_threshold' => 'nullable|required_if:use_time_balance_traffic_light,true|integer',
+
             'home_office' => 'required|boolean',
             'home_office_hours_per_week' => 'nullable|min:0|numeric',
 
@@ -345,6 +349,8 @@ class UserController extends Controller
             'home_office' => $validated['home_office'],
             'home_office_hours_per_week' => $validated['home_office'] ? $validated['home_office_hours_per_week'] ?? 0 : null,
             'job_role' => $validated['job_role'],
+            'time_balance_yellow_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_yellow_threshold'] : null,
+            'time_balance_red_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_red_threshold'] : null,
             'email_verified_at' => now(),
         ]);
         $user->save();
@@ -461,6 +467,8 @@ class UserController extends Controller
             'home_office_hours_per_week' => $validated['home_office'] ? $validated['home_office_hours_per_week'] ?? 0 : null,
             "overtime_calculations_start" => $validated['overtime_calculations_start'],
             'job_role' => $validated['job_role'],
+            'time_balance_yellow_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_yellow_threshold']  : null,
+            'time_balance_red_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_red_threshold'] : null,
         ]);
         $user->organizationUser->update($validated['organizationUser']);
         $user->operatingSiteUser->update($validated['operatingSiteUser']);

@@ -63,6 +63,9 @@ const userForm = useForm({
     is_supervisor: false,
     home_office: false,
     home_office_hours_per_week: null as null | number, //TODO: check if we need active_since
+    use_time_balance_traffic_light: false,
+    time_balance_yellow_threshold: null as null | number,
+    time_balance_red_threshold: null as null | number,
 
     user_working_hours: [] as (Pick<UserWorkingHours, 'weekly_working_hours'> & { active_since: string; id: UserWorkingHours['id'] | null })[],
 
@@ -127,6 +130,9 @@ if (props.user) {
     userForm.home_office = props.user.home_office;
     userForm.home_office_hours_per_week = props.user.home_office_hours_per_week;
     userForm.overtime_calculations_start = props.user.overtime_calculations_start;
+    userForm.use_time_balance_traffic_light = props.user.time_balance_red_threshold !== null && props.user.time_balance_yellow_threshold !== null;
+    userForm.time_balance_yellow_threshold = props.user.time_balance_yellow_threshold;
+    userForm.time_balance_red_threshold = props.user.time_balance_red_threshold;
 
     userForm.user_leave_days = props.user.user_leave_days
         .filter(e => e !== null)
@@ -531,6 +537,37 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             v-model="userForm.initialRemainingLeaveDays"
                             :label="`Trage die aus ${DateTime.now().year - 1} übernommenen Urlaubstage des Mitarbeitenden ein`"
                             :error-messages="userForm.errors.initialRemainingLeaveDays"
+                        ></v-text-field>
+                    </v-col>
+                </v-row>
+            </v-card-text>
+        </v-card>
+        <v-card class="mb-4" title="Gleitzeitkonto">
+            <v-card-text>
+                <v-row>
+                    <v-col cols="12">
+                        <v-checkbox
+                            v-model="userForm.use_time_balance_traffic_light"
+                            label="Gleitzeitampelsystem verwenden"
+                            :error-messages="userForm.errors.use_time_balance_traffic_light"
+                        ></v-checkbox>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field
+                            type="number"
+                            v-model="userForm.time_balance_yellow_threshold"
+                            label="Gelbe Grenze für Überstunden im Gleitzeitkonto"
+                            :error-messages="userForm.errors.time_balance_yellow_threshold"
+                            :disabled="!userForm.use_time_balance_traffic_light"
+                        ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field
+                            type="number"
+                            v-model="userForm.time_balance_red_threshold"
+                            label="Rote Grenze für Überstunden im Gleitzeitkonto"
+                            :error-messages="userForm.errors.time_balance_red_threshold"
+                            :disabled="!userForm.use_time_balance_traffic_light"
                         ></v-text-field>
                     </v-col>
                 </v-row>
