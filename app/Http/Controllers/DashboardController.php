@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Absence;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;

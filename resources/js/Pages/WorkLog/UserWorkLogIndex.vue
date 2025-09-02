@@ -22,7 +22,7 @@ const showDialog = ref(false);
 
 const patchMode = ref<'edit' | 'show' | null>(null);
 const patchLog = ref<Relation<'workLog', 'current_accepted_patch', patchkeys>>(null);
-const inputVariant = computed(() => (patchLog.value ? 'plain' : 'underlined'));
+const inputVariant = computed(() => (patchMode.value == 'show' ? 'plain' : 'underlined'));
 
 onMounted(() => {
     const workLogId = route().params['workLog'];
@@ -313,7 +313,7 @@ const tableHeight = useMaxScrollHeight(0);
                                             type="submit"
                                             color="primary"
                                         >
-                                            Korrektur beantragen
+                                            Korrektur {{ can('workLogPatch', 'update') ? 'speichern' : 'beantragen' }}
                                         </v-btn>
                                     </v-col>
                                 </v-row>

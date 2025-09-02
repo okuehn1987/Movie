@@ -46,6 +46,8 @@ class WorkLog extends Model
             }
         });
         self::deleting(function (WorkLog $model) {
+            $model->patches->each->deleteQuietly();
+
             $patch = new WorkLogPatch([
                 'start' => '1970-01-01',
                 'end' => '1970-01-01',

@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Middleware\CheckIfGateWasUsedToAuthorizeRequest;
+use App\Http\Middleware\CheckQueryCountForRequest;
 use App\Http\Middleware\HasOrganizationAccess;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard')->name('home');
 
-Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAuthorizeRequest::class])->group(function () {
+Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAuthorizeRequest::class, CheckQueryCountForRequest::class])->group(function () {
     //super admin routes
     Route::resource('organization', OrganizationController::class)->only(['index', 'store', 'destroy']);
     Route::get('/organization/{organization}/tree', [OrganizationController::class, 'organigram'])->name('organization.tree');
@@ -21,6 +22,8 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::get('/user/{user}/absences', [UserController::class, 'absences'])->name('user.absences');
     Route::get('/user/{user}/timeAccounts', [UserController::class, 'timeAccounts'])->name('user.timeAccounts');
     Route::get('/user/{user}/timeAccountTransactions', [UserController::class, 'timeAccountTransactions'])->name('user.timeAccountTransactions');
+    Route::get('/user/{user}/timeStatements', [UserController::class, 'timeStatements'])->name('user.timeStatements');
+    Route::get('/user/{user}/timeStatementDoc', [UserController::class, 'timeStatementDoc'])->name('user.timeStatementDoc');
     Route::get('/user/{user}/userOrganigram', [UserController::class, 'userOrganigram'])->name('user.userOrganigram');
     Route::get('/user/profile', [UserController::class, 'profile'])->name('user.profile');
 
