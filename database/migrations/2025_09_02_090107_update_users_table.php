@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->integer('time_balance_yellow_threshold')->nullable();
-            $table->integer('time_balance_red_threshold')->nullable();
+            $table->float('time_balance_yellow_threshold')->nullable();
+            $table->float('time_balance_red_threshold')->nullable();
         });
     }
 
