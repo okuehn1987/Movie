@@ -281,7 +281,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                     </v-col>
                 </v-row>
             </v-card-text>
-            <template #append>
+            <template #append v-if="mode == 'create'">
                 <v-btn icon variant="text" @click="emit('close')">
                     <v-icon>mdi-close</v-icon>
                 </v-btn>

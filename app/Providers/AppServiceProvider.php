@@ -36,7 +36,6 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Support\Facades\URL::forceScheme('https');
         Model::shouldBeStrict($this->app->environment('local'));
 
-        DB::connection()->enableQueryLog();
         DB::listen(function (QueryExecuted $event) {
             if ($event->time > 50) {
                 Log::warning('Slow query', ['sql' => Str::replaceArray('?', $event->bindings, $event->sql), 'time' => $event->time]);

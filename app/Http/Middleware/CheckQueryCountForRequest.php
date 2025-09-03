@@ -18,6 +18,7 @@ class CheckQueryCountForRequest
      */
     public function handle(Request $request, Closure $next): Response
     {
+        DB::connection()->enableQueryLog();
         $response = $next($request);
         $queries = DB::getQueryLog();
 
@@ -29,6 +30,9 @@ class CheckQueryCountForRequest
                 'query_count' => count($queries),
             ]);
         }
+
+        DB::connection()->disableQueryLog();
+        DB::flushQueryLog();
 
         return $response;
     }

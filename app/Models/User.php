@@ -637,13 +637,9 @@ class User extends Authenticatable
                 $absenceTypes = collect();
 
                 for ($day = now()->startOfDay();; $day->addDay()) {
-                    $userWorkingWeek = $this->userWorkingWeekForDate($day);
-                    $shouldWork = $userWorkingWeek->hasWorkDay($day) &&
-                        !$this->operatingSite->hasHoliday($day);
-
                     $absencesForDay = $futureAbsences->filter(fn($a) => Carbon::parse($a['start'])->lte($day) && Carbon::parse($a['end'])->gte($day));
 
-                    if ($absencesForDay->count() > 0 || !$shouldWork) {
+                    if ($absencesForDay->count() > 0 || !$this->shouldWork($day)) {
                         $absenceTypes = $absenceTypes->merge($absencesForDay->pluck('absence_type_id'));
                         $lastDay = $day->copy();
                     } else {

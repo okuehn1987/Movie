@@ -28,8 +28,6 @@ return new class extends Migration
             $table->integer('amount');
         });
 
-        // DB::beginTransaction();
-
         Shift::query()->delete();
 
         $users = User::with([
