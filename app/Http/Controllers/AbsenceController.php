@@ -229,4 +229,9 @@ class AbsenceController extends Controller
 
         return back()->with('success', 'Der Antrag auf Löschung wurde abgelehnt.');
     }
+
+    public function filter(Request $request)
+    {
+        dd($request->all());
+    }
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { AbsenceType, User } from '@/types/types';
+import { AbsenceType, Status, User } from '@/types/types';
 import { throttle, useMaxScrollHeight } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
@@ -14,7 +14,7 @@ const props = defineProps<{
     users: UserProp[];
     absences: AbsenceProp[];
     absencePatches: AbsencePatchProp[];
-    absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval'>[];
+    absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval' | 'type'>[];
     holidays: Record<string, string> | null;
 }>();
 
@@ -56,6 +56,12 @@ if (openAbsenceFromRoute) {
     selectedUser.value = openAbsenceFromRoute.user_id;
     openEditCreateAbsenceModal.value = true;
 }
+
+const filterForm = useForm({
+    selected_user: [] as User['id'][],
+    selected_absence_types: [] as AbsenceType['id'][],
+    selected_status: [] as Status[],
+});
 
 function createAbsenceModal(user_id: User['id'], start?: DateTime) {
     selectedUser.value = user_id;
@@ -120,7 +126,55 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
         ></ShowAbsenceModal>
         <v-card>
             <v-card-text>
-                <div class="d-flex flex-wrap justify-center align-center">
+                <div class="d-flex flex-wrap justify-space-between align-center">
+                    <v-dialog max-width="1000">
+                        <template #activator="{ props: activatorProps }">
+                            <v-btn v-bind="activatorProps" variant="flat" color="primary"><v-icon>mdi-filter</v-icon></v-btn>
+                        </template>
+                        <template #default="{ isActive }">
+                            <v-card :title="'Abwesenheiten filtern'">
+                                <template #append>
+                                    <v-btn icon variant="text" @click="isActive.value = false">
+                                        <v-icon>mdi-close</v-icon>
+                                    </v-btn>
+                                </template>
+                                <v-card-text>
+                                    <v-form @submit.prevent="filterForm.post(route('absence.filter'))">
+                                        <v-autocomplete
+                                            label="Nutzer"
+                                            :items="users.map(u => ({ title: u.first_name + ' ' + u.last_name, value: u.id }))"
+                                            v-model="filterForm.selected_user"
+                                            clearable
+                                            chips
+                                            multiple
+                                            variant="underlined"
+                                        ></v-autocomplete>
+                                        <v-select
+                                            label="Abwesenheitsgrund"
+                                            :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
+                                            v-model="filterForm.selected_absence_types"
+                                            clearable
+                                            chips
+                                            multiple
+                                        ></v-select>
+                                        <v-select
+                                            label="Abwesenheitsstatus"
+                                            :items="[
+                                                { title: 'Erstellt', value: 'created' },
+                                                { title: 'Akzeptiert', value: 'accepted' },
+                                                { title: 'Abgelehnt', value: 'declined' },
+                                            ]"
+                                            v-model="filterForm.selected_status"
+                                            clearable
+                                            chips
+                                            multiple
+                                        ></v-select>
+                                        <div class="d-flex justify-end"><v-btn color="primary" type="submit">Speichern</v-btn></div>
+                                    </v-form>
+                                </v-card-text>
+                            </v-card>
+                        </template>
+                    </v-dialog>
                     <div class="d-flex flex-wrap align-center">
                         <div class="d-flex">
                             <v-btn @click.stop="date = date.minus({ year: 1 })" variant="text" icon color="primary">
@@ -143,6 +197,7 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
                             </v-btn>
                         </div>
                     </div>
+                    <div style="width: 64px"></div>
                 </div>
             </v-card-text>
             <v-divider></v-divider>

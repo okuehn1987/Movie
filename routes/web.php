@@ -31,6 +31,7 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::delete('/absence/{absence}/denyDestroy', [AbsenceController::class, 'denyDestroy'])->name('absence.denyDestroy');
     Route::delete('/absence/{absence}/destroyDispute', [AbsenceController::class, 'destroyDispute'])->name('absence.destroyDispute');
     Route::patch('/absence/{absence}/updateStatus', [AbsenceController::class, 'updateStatus'])->name('absence.updateStatus');
+    Route::post('/absence/filter', [AbsenceController::class, 'filter'])->name('absence.filter');
 
     Route::resource('absence.absencePatch', AbsencePatchController::class)->only(['store', 'update', 'destroy'])->shallow();
     Route::patch('/absencePatch/{absencePatch}/updateStatus', [AbsencePatchController::class, 'updateStatus'])->name('absencePatch.updateStatus');

@@ -148,6 +148,7 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "absence.filter": [],
     "absence.absencePatch.store": [
         {
             "name": "absence",
