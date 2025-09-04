@@ -132,6 +132,13 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "organization.update.post": [
+        {
+            "name": "organization",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "absence.index": [],
     "absence.store": [],
     "absence.destroy": [

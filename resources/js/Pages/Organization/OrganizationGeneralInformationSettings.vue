@@ -15,10 +15,13 @@ const organizationForm = useForm({
     vacation_limitation_period: props.organization.vacation_limitation_period,
 });
 function submit() {
-    organizationForm.patch(
-        route('organization.update', {
+    console.log('Logo:', organizationForm.logo);
+    console.log('Type of logo:', typeof organizationForm.logo);
+    organizationForm.post(
+        route('organization.update.post', {
             organization: props.organization.id,
         }),
+        { method: 'patch' },
     );
 }
 </script>
