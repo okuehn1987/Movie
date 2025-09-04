@@ -268,19 +268,4 @@ class AbsenceController extends Controller
 
         return back()->with('success', 'Der Antrag auf Löschung wurde abgelehnt.');
     }
-
-    public function filter(Request $request)
-    {
-
-        $validated = $request->validate([
-            "selected_user" => 'nullable|array',
-            "selected_user.*" => 'integer',
-
-            "selected_absence_types" => 'nullable|array',
-            "selected_absence_types.*" => 'integer',
-
-            "selected_status" => 'nullable|array',
-            "selected_status.*" => 'in:created,accepted,declined',
-        ]);
-    }
 }

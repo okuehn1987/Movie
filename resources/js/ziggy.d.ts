@@ -95,6 +95,20 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "user.documents": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.timeStatementDoc": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "user.userOrganigram": [
         {
             "name": "user",
@@ -148,7 +162,6 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
-    "absence.filter": [],
     "absence.absencePatch.store": [
         {
             "name": "absence",
@@ -334,6 +347,7 @@ declare module 'ziggy-js' {
         }
     ],
     "profile.update": [],
+    "profile.updateSettings": [],
     "login": [],
     "password.request": [],
     "password.email": [],

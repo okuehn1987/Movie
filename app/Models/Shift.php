@@ -260,7 +260,7 @@ class Shift extends Model
                 default => throw new Exception('Invalid model type for shift calculation'),
             };
 
-            if (!$model->accepted_at) return;
+            if (!$model->accepted_at || $model->status != 'accepted') return;
 
             Shift::lockFor($model->user);
             /** @var \Illuminate\Support\Collection<int,\App\Models\Shift>*/
@@ -507,7 +507,11 @@ class Shift extends Model
 
 
             if ($type == 'work') {
-                $baseLog?->updateQuietly(['shift_id' => $model->shift_id]);
+                $baseLog?->updateQuietly([
+                    'shift_id' => $model->shift_id,
+                    'status' => 'accepted',
+                    'accepted_at' => $baseLog->accepted_at ?? $baseLog->end
+                ]);
                 $oldShifts->each->delete();
                 $newShifts->each(fn($s) => $s['shift']->updateQuietly(['is_accounted' => true]));
             };

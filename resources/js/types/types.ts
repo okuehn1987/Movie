@@ -112,6 +112,7 @@ export type User = DBObject<'user'> &
         overtime_calculations_start: DateString;
         is_supervisor: boolean;
         job_role: string | null;
+        notification_channels: ('database' | 'mail')[];
     } & (
         | {
               home_office: true;

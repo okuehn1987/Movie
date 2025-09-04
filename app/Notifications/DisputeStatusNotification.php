@@ -38,9 +38,9 @@ class DisputeStatusNotification extends Notification
      *
      * @return array<int, string>
      */
-    public function via(): array
+    public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return $notifiable->notification_channels;
     }
 
     /**

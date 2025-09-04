@@ -4,7 +4,7 @@ import { AbsenceType, Status, User } from '@/types/types';
 import { throttle, useMaxScrollHeight } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
-import { computed, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import AbsenceTableCell from './partials/AbsenceTableCell.vue';
 import EditCreateAbsence from './partials/EditCreateAbsence.vue';
 import { AbsencePatchProp, AbsenceProp, getEntryState, UserProp } from './utils';
@@ -33,6 +33,14 @@ const currentEntries = computed(() => {
             props.absences.filter(
                 a => a.start <= date.value.endOf('month').toFormat('yyyy-MM-dd') && a.end >= date.value.startOf('month').toFormat('yyyy-MM-dd'),
             ),
+        )
+        .filter(
+            entry =>
+                (filterForm.selected_users.length == 0 || filterForm.selected_users.includes(entry.user_id)) &&
+                (filterForm.selected_absence_types.length == 0 ||
+                    !entry.absence_type_id ||
+                    filterForm.selected_absence_types.includes(entry.absence_type_id)) &&
+                (filterForm.selected_statuses.length == 0 || filterForm.selected_statuses.includes(entry.status)),
         );
 });
 const openEditCreateAbsenceModal = ref(false);
@@ -57,10 +65,10 @@ if (openAbsenceFromRoute) {
     openEditCreateAbsenceModal.value = true;
 }
 
-const filterForm = useForm({
-    selected_user: [] as User['id'][],
+const filterForm = reactive({
+    selected_users: [] as User['id'][],
     selected_absence_types: [] as AbsenceType['id'][],
-    selected_status: [] as Status[],
+    selected_statuses: ['created', 'accepted'] as Status[],
 });
 
 function createAbsenceModal(user_id: User['id'], start?: DateTime) {
@@ -139,38 +147,35 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
                                     </v-btn>
                                 </template>
                                 <v-card-text>
-                                    <v-form @submit.prevent="filterForm.post(route('absence.filter'))">
-                                        <v-autocomplete
-                                            label="Nutzer"
-                                            :items="users.map(u => ({ title: u.first_name + ' ' + u.last_name, value: u.id }))"
-                                            v-model="filterForm.selected_user"
-                                            clearable
-                                            chips
-                                            multiple
-                                            variant="underlined"
-                                        ></v-autocomplete>
-                                        <v-select
-                                            label="Abwesenheitsgrund"
-                                            :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
-                                            v-model="filterForm.selected_absence_types"
-                                            clearable
-                                            chips
-                                            multiple
-                                        ></v-select>
-                                        <v-select
-                                            label="Abwesenheitsstatus"
-                                            :items="[
-                                                { title: 'Erstellt', value: 'created' },
-                                                { title: 'Akzeptiert', value: 'accepted' },
-                                                { title: 'Abgelehnt', value: 'declined' },
-                                            ]"
-                                            v-model="filterForm.selected_status"
-                                            clearable
-                                            chips
-                                            multiple
-                                        ></v-select>
-                                        <div class="d-flex justify-end"><v-btn color="primary" type="submit">Speichern</v-btn></div>
-                                    </v-form>
+                                    <v-autocomplete
+                                        label="Nutzer"
+                                        :items="users.map(u => ({ title: u.first_name + ' ' + u.last_name, value: u.id }))"
+                                        v-model="filterForm.selected_users"
+                                        clearable
+                                        chips
+                                        multiple
+                                        variant="underlined"
+                                    ></v-autocomplete>
+                                    <v-select
+                                        label="Abwesenheitsgrund"
+                                        :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
+                                        v-model="filterForm.selected_absence_types"
+                                        clearable
+                                        chips
+                                        multiple
+                                    ></v-select>
+                                    <v-select
+                                        label="Abwesenheitsstatus"
+                                        :items="[
+                                            { title: 'Erstellt', value: 'created' },
+                                            { title: 'Akzeptiert', value: 'accepted' },
+                                            { title: 'Abgelehnt', value: 'declined' },
+                                        ]"
+                                        v-model="filterForm.selected_statuses"
+                                        clearable
+                                        chips
+                                        multiple
+                                    ></v-select>
                                 </v-card-text>
                             </v-card>
                         </template>
@@ -206,7 +211,11 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
                 style="white-space: pre"
                 :style="{ maxHeight: absenceTableHeight }"
                 id="absence-table"
-                :items="users.map(u => ({ ...u, name: u.last_name + ', ' + u.first_name }))"
+                :items="
+                    users
+                        .filter(u => filterForm.selected_users.length == 0 || filterForm.selected_users.includes(u.id))
+                        .map(u => ({ ...u, name: u.last_name + ', ' + u.first_name }))
+                "
                 :headers="[
                 {
                     title: 'Name',

@@ -31,7 +31,7 @@ class AbsencePatchNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return $notifiable->notification_channels;
     }
 
     /**

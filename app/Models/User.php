@@ -40,6 +40,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_supervisor' => 'boolean',
+        'notification_channels' => 'array',
     ];
 
     protected $hidden = [
@@ -555,7 +556,9 @@ class User extends Authenticatable
             fn($s) =>
             $s->entries->filter(
                 fn($e) =>
-                Carbon::parse($e->start)->between($date->copy()->startOfDay(), $date->copy()->endOfDay()) &&
+                $e->status == 'accepted' &&
+                    $e->accepted_at != null &&
+                    Carbon::parse($e->start)->between($date->copy()->startOfDay(), $date->copy()->endOfDay()) &&
                     Carbon::parse($e->end)->between($date->copy()->startOfDay(), $date->copy()->endOfDay())
             )
         );
