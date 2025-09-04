@@ -150,7 +150,7 @@ const tableHeight = useMaxScrollHeight(0);
                 fixed-header
                 :style="{ maxHeight: tableHeight }"
                 :headers="[
-                    { title: 'Start', key: 'start' },
+                    { title: 'Start', key: 'start_text' },
                     { title: 'Ende', key: 'end' },
                     { title: 'Dauer', key: 'duration' },
                     { title: 'Homeoffice', key: 'is_home_office' },
@@ -169,7 +169,8 @@ const tableHeight = useMaxScrollHeight(0);
                             const data = workLog.current_accepted_patch ?? workLog;
 
                             return {
-                                start: DateTime.fromSQL(data.start).toFormat('dd.MM.yyyy HH:mm'),
+                                start: data.start,
+                                start_text: DateTime.fromSQL(data.start).toFormat('dd.MM.yyyy HH:mm'),
                                 end: data.end ? DateTime.fromSQL(data.end).toFormat('dd.MM.yyyy HH:mm') : 'Noch nicht beendet',
                                 duration: data.end ? DateTime.fromSQL(data.end).diff(DateTime.fromSQL(data.start)).toFormat('hh:mm') : '',
                                 is_home_office: data.is_home_office ? 'Ja' : 'Nein',
