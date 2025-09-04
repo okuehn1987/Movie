@@ -1,0 +1,1 @@
+import{_ as m}from"./UpdatePasswordForm.vue_vue_type_script_setup_true_lang-CIDePsoi.js";import"./app-CjNtd2Dl.js";export{m as default};
