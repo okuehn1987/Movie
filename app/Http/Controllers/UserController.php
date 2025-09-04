@@ -539,11 +539,11 @@ class UserController extends Controller
         return back()->with("success", "Mitarbeitenden erfolgreich aktualisiert.");
     }
 
-    public function timeStatements(Request $request, User $user)
+    public function documents(Request $request, User $user)
     {
         Gate::authorize('viewIndex', [TimeAccountTransaction::class, $user]);
 
-        return Inertia::render('User/UserShow/TimeStatements', [
+        return Inertia::render('User/UserShow/Documents', [
             'user' => $user,
             'can' => self::getUserShowCans($user),
         ]);

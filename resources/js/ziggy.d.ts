@@ -95,7 +95,7 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
-    "user.timeStatements": [
+    "user.documents": [
         {
             "name": "user",
             "required": true,
