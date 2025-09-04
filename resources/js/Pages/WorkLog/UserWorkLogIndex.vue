@@ -150,11 +150,11 @@ const tableHeight = useMaxScrollHeight(0);
                 fixed-header
                 :style="{ maxHeight: tableHeight }"
                 :headers="[
-                    { title: 'Start', key: 'start_text' },
-                    { title: 'Ende', key: 'end' },
-                    { title: 'Dauer', key: 'duration' },
-                    { title: 'Homeoffice', key: 'is_home_office' },
-                    { title: 'Stand', key: 'displayStatus' },
+                    { title: 'Start', key: 'start_text', width: '20%' },
+                    { title: 'Ende', key: 'end', width: '20%' },
+                    { title: 'Dauer', key: 'duration', width: '20%' },
+                    { title: 'Homeoffice', key: 'is_home_office', width: '20%' },
+                    { title: 'Stand', key: 'displayStatus', width: '20%' },
                     {
                         title: '',
                         key: 'actions',
