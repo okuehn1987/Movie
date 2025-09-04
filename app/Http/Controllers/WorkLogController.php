@@ -39,6 +39,7 @@ class WorkLogController extends Controller
         if ($last && $last->end == null) {
             WorkLog::find($last->id)->update([
                 'end' => now(),
+                'accepted_at' => now(),
             ]);
         } else {
             $validated = $request->validate([

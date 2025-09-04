@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Organization;
 use App\Models\TimeAccount;
 use App\Models\TimeAccountSetting;
+use App\Models\TimeAccountTransactionChange;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -35,7 +36,7 @@ class TimeAccountController extends Controller
             'time_account_setting_id' => $validated['time_account_setting_id'],
         ]);
 
-        $timeAccount->addBalance($validated['balance'] * 3600, 'Initialer Kontostand');
+        TimeAccountTransactionChange::createFor($timeAccount->addBalance($validated['balance'] * 3600, 'Initialer Kontostand'), now());
 
         return back()->with('success', 'Arbeitszeitkonto erfolgreich erstellt.');
     }

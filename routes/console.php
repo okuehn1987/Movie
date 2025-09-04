@@ -3,6 +3,7 @@
 use App\Models\Absence;
 use App\Models\Organization;
 use App\Models\Shift;
+use App\Models\TimeAccountTransactionChange;
 use App\Models\User;
 use App\Models\UserLeaveDay;
 use App\Models\WorkingHoursCalculation;
@@ -35,7 +36,7 @@ Schedule::call(function () {
 
     foreach ($timeAccounts as $timeAccount) {
         if ($timeAccount->balance > $timeAccount->balance_limit)
-            $timeAccount->addBalance(- ($timeAccount->balance - $timeAccount->balance_limit), 'Monatsabrechnung');
+            TimeAccountTransactionChange::createFor($timeAccount->addBalance(- ($timeAccount->balance - $timeAccount->balance_limit), 'Monatsabrechnung'), now());
     }
 })->name('monthlyBalanceTruncation')->dailyAt("01:00");
 

@@ -42,10 +42,11 @@ class WorkLogPatchController extends Controller
         ]);
 
         $supervisor = $workLog->user->supervisor;
-        if (!$supervisor || $supervisor->is($authUser)) $patch->accept();
+        $requiresApproval = $supervisor && !$authUser->can('update', [WorkLogPatch::class, $user]);
+        if (!$requiresApproval) $patch->accept();
         else $supervisor->notify(new WorkLogPatchNotification($workLog->user, $patch));
 
-        return back()->with('success',  'Korrektur der Arbeitszeit erfolgreich beantragt.');
+        return back()->with('success',  "Korrektur der Arbeitszeit erfolgreich " . ($requiresApproval ? 'beantragt' : 'gespeichert') . ".");
     }
 
     public function update(Request $request, WorkLogPatch $workLogPatch, #[CurrentUser] User $authUser)
