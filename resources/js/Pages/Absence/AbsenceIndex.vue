@@ -42,6 +42,21 @@ const selectedUser = ref<null | User['id']>(null);
 const selectedDate = ref<DateTime | null>(null);
 const selectedAbsenceUser = computed(() => props.users.find(u => u.id === selectedAbsence.value?.user_id));
 
+const openAbsenceFromRoute = (() => {
+    if (route().params['openAbsence']) {
+        return props.absences?.find(absence => absence.id == Number(route().params['openAbsence'])) ?? null;
+    }
+    if (route().params['openAbsencePatch']) {
+        return props.absencePatches?.find(absence => absence.id == Number(route().params['openAbsencePatch'])) ?? null;
+    } else return null;
+})();
+
+if (openAbsenceFromRoute) {
+    selectedAbsence.value = openAbsenceFromRoute;
+    selectedUser.value = openAbsenceFromRoute.user_id;
+    openEditCreateAbsenceModal.value = true;
+}
+
 function createAbsenceModal(user_id: User['id'], start?: DateTime) {
     selectedUser.value = user_id;
     const absenceToEdit = currentEntries.value

@@ -61,7 +61,8 @@ function changeAbsenceStatus(accepted: boolean) {
             { title: 'Von', key: 'start' },
             { title: 'Bis', key: 'end' },
         ]"
-        ><template v-slot:bottom>
+    >
+        <template v-slot:bottom>
             <v-pagination v-if="absenceRequests.length > 5" v-model="currentPage" :length="Math.ceil(absenceRequests.length / 5)"></v-pagination>
         </template>
     </v-data-table>

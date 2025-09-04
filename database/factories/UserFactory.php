@@ -40,7 +40,8 @@ class UserFactory extends Factory
             'zip' => fake()->postcode(),
             'federal_state' => collect(HolidayService::getRegionCodes('DE'))->random(),
             'country' => 'DE',
-            'operating_site_id' => OperatingSite::first()
+            'operating_site_id' => OperatingSite::first(),
+            'job_role' => fake()->jobTitle(),
         ];
     }
 

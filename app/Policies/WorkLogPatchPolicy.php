@@ -12,20 +12,21 @@ class WorkLogPatchPolicy
 
     public function create(User $authUser, User $user): bool
     {
-        return $authUser->is($user);
+        return $authUser->is($user) ||
+            $user->supervisor_id === $authUser->id ||
+            $authUser->hasPermissionOrDelegation($user, 'workLogPatch_permission', 'write');
     }
 
     public function update(User $authUser, User $user): bool
     {
         return
+            $user->id == $authUser->id && $user->supervisor_id == null ||
             $user->supervisor_id === $authUser->id ||
             $authUser->hasPermissionOrDelegation($user, 'workLogPatch_permission', 'write');
     }
 
     public function delete(User $authUser, User $user): bool
     {
-        return
-            $authUser->id === $user->id ||
-            $authUser->hasPermissionOrDelegation($user, 'workLogPatch_permission', 'write');
+        return $authUser->is($user);
     }
 }

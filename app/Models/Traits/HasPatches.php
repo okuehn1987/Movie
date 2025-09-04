@@ -19,4 +19,9 @@ trait HasPatches
     {
         return $this->patches()->one()->OfMany(['accepted_at' => 'max'], fn(Builder $q) => $q->where('status', 'accepted'));
     }
+
+    public function latestPatch()
+    {
+        return $this->patches()->one()->OfMany(['created_at' => 'max']);
+    }
 }

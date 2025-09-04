@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Absence;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -16,28 +15,21 @@ class DashboardController extends Controller
         Gate::authorize('publicAuth', User::class);
 
         $visibleUsers = User::inOrganization()
-            ->get(['id', 'supervisor_id', 'group_id', 'operating_site_id'])
-            ->filter(fn($u) => $user->can('viewShow', [Absence::class, $u]))
-            ->pluck('id');
+            ->with(['operatingSite:id,country,federal_state'])
+            ->get(['id', 'supervisor_id', 'group_id', 'operating_site_id', 'first_name', 'last_name'])
+            ->filter(fn($u) => $user->can('viewShow', [Absence::class, $u]));
 
-        $currentAbsences = Absence::inOrganization()
-            ->where('status', 'accepted')
-            ->where('start', '<=', Carbon::now()->format('Y-m-d'))
-            ->where('end', '>=', Carbon::now()->format('Y-m-d'))
-            ->whereIn('user_id', $visibleUsers)
-            ->with(['user:id,first_name,last_name,supervisor_id', 'absenceType:id,abbreviation'])
-            ->get(['id', 'start', 'end', 'user_id', 'absence_type_id'])
-            ->toArray();
+        $currentAbsences = $visibleUsers->map(fn($u) => [...$u->currentAbsencePeriod, 'name' => $u->name])
+            ->filter(fn($a) => $a['end'] !== null)
+            ->values();
 
-        $lastWeekEntries =  collect([
-            ...$user->currentWeekShifts
-                ->flatMap
-                ->entries
-                ->filter(fn($e) => $e->end)
-                ->sortByDesc('start')
-                ->map(fn($e) => collect($e->append('duration'))->only(['id', 'start', 'end', 'duration']))
-                ->toArray()
-        ]);
+        $lastWeekEntries = $user->currentWeekShifts
+            ->flatMap
+            ->entries
+            ->filter(fn($e) => $e->end)
+            ->sortByDesc('start')
+            ->map(fn($e) => collect($e->append('duration'))->only(['id', 'start', 'end', 'duration']))
+            ->values();
 
         return Inertia::render('Dashboard/Dashboard', [
             'user' => [...$user->load(['latestWorkLog'])->toArray(), 'current_shift' => $user->currentShift()->first(['id', 'user_id', 'start', 'end'])?->append('current_work_duration')],

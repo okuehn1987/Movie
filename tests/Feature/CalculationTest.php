@@ -681,6 +681,46 @@ class CalculationTest extends TestCase
         $this->assertEquals(3740, $this->tim->defaultTimeAccount->fresh()->balance);
     }
 
+    public function test_patching_running_shift()
+    {
+        $this->travelTo('2025-07-28 17:00:00');
+
+        $log = $this->tim->workLogs()->create([
+            'start' =>  '2025-07-28 16:55:21',
+            'end' =>  '2025-07-28 16:56:21',
+            'status' => 'accepted',
+            'accepted_at' => '2025-07-28 16:55:21'
+        ]);
+
+        $patch = $this->tim->workLogPatches()->create([
+            'start' =>  '2025-07-28 08:50:21',
+            'end' =>  '2025-07-28 16:56:21',
+            'status' => 'created',
+            'work_log_id' => $log->id,
+        ]);
+
+        $workLog = $this->tim->workLogs()->create([
+            'start' =>  '2025-07-28 16:56:22',
+            'end' =>  null,
+            'status' => 'accepted',
+            'accepted_at' => '2025-07-28 16:56:22'
+        ]);
+
+        $patch->accept();
+
+        $workLog->update([
+            'end' =>  '2025-07-28 17:03:01',
+            'accepted_at' => '2025-07-28 17:03:01'
+        ]);
+
+        $this->assertEquals(12 * 60 + 40, $this->tim->defaultTimeAccount->fresh()->balance);
+    }
+
+    // public function test_missing_break_in_absence()
+    // {
+    //  TODO: martin break 16.1.25 && 17.1.25
+    // }
+
     // public function testWeirdShit()
     // {
     //     $this->travelTo('2025-06-20 13:15:02');

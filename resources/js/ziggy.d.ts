@@ -95,6 +95,20 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "user.timeStatements": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.timeStatementDoc": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "user.userOrganigram": [
         {
             "name": "user",
@@ -121,6 +135,13 @@ declare module 'ziggy-js' {
     "absence.index": [],
     "absence.store": [],
     "absence.destroy": [
+        {
+            "name": "absence",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "absence.denyDestroy": [
         {
             "name": "absence",
             "required": true,
@@ -228,9 +249,23 @@ declare module 'ziggy-js' {
     ],
     "workLog.index": [],
     "workLog.store": [],
+    "workLog.update": [
+        {
+            "name": "workLog",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "workLog.destroy": [
         {
             "name": "workLog",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.workLog.store": [
+        {
+            "name": "user",
             "required": true,
             "binding": "id"
         }

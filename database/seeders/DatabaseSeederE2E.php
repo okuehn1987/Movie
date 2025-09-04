@@ -13,6 +13,7 @@ use App\Models\Organization;
 use App\Models\OrganizationUser;
 use App\Models\TimeAccount;
 use App\Models\TimeAccountSetting;
+use App\Models\TimeAccountTransactionChange;
 use App\Models\User;
 use App\Models\UserWorkingHour;
 use App\Models\UserWorkingWeek;
@@ -156,7 +157,7 @@ class DatabaseSeederE2E extends Seeder
         foreach (User::with(['organization', 'organization.groups', 'timeAccounts', 'operatingSite'])->get() as $user) {
             // $group = $user->organization->groups->random();
             // $user->group_id = $group->id;
-            $user->timeAccounts()->first()->addBalance(10 * 3600, 'seeder balance');
+            TimeAccountTransactionChange::createFor($user->timeAccounts()->first()->addBalance(10 * 3600, 'seeder balance'), now());
             $user->supervisor_id = User::whereIn('operating_site_id', $user->organization->operatingSites()->get()->pluck('id'))->where('id', '!=', $user->id)
                 ->whereNotIn('id', $user->allSuperviseesFlat()->pluck('id'))
                 ->inRandomOrder()->first()?->id;

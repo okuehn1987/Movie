@@ -3,7 +3,7 @@
 name: Playwright-Tests
 on:
     pull_request:
-        branches: [master, optimize-playwright-workflows]
+        branches: [optimize-playwright-workflows] # [master]
 
 jobs:
     setup-and-run-tests:
