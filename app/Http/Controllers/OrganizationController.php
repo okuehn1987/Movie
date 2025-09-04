@@ -169,6 +169,11 @@ class OrganizationController extends Controller
 
         $path = $validated['logo'] ? Storage::disk('organization_logos')->putFile($validated['logo']) : null;
 
+        if ($organization->logo && $path)
+            Storage::disk('organization_logos')->delete($organization->logo);
+        else
+            $path = $organization->logo ?? $path;
+
         $organization->update([...$validated, 'logo' => $path]);
 
         return back()->with('success', 'Organisation erfolgreich aktualisiert.');
