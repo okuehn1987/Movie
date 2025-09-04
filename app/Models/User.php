@@ -237,10 +237,17 @@ class User extends Authenticatable
         return $this->userWorkingHours()->one()->ofMany(['active_since' => 'Max'], fn($q) => $q->whereDate('active_since', '<=', now()));
     }
 
-    public function userWorkingHoursForDate(CarbonInterface $date): UserWorkingHour | null
+    public function workingHours(): Attribute
     {
-        return $this->userWorkingHours()->where('active_since', '<=', $date->format('Y-m-d'))
-            ->latest('active_since')
+        return Attribute::make(
+            get: fn() => $this->userWorkingHours()->get()
+        )->shouldCache();
+    }
+
+    public function userWorkingHoursForDate(CarbonInterface $date, $userWorkingHours = null): UserWorkingHour | null
+    {
+        return ($userWorkingHours ?? $this->workingHours)->where('active_since', '<=', $date->format('Y-m-d'))
+            ->sortByDesc('active_since')
             ->first();
     }
 
@@ -533,14 +540,6 @@ class User extends Authenticatable
 
         $currentWorkingHours = $this->userWorkingHoursForDate($date);
         $currentWorkingWeek = $this->userWorkingWeekForDate($date);
-
-        if (!$currentWorkingHours || !$currentWorkingWeek) return 0;
-
-        $shouldWork =
-            $currentWorkingWeek->hasWorkDay($date) &&
-            !$this->operatingSite->hasHoliday($date);
-
-        if (!$shouldWork) return 0;
 
         return $currentWorkingHours['weekly_working_hours'] / $currentWorkingWeek->numberOfWorkingDays * 3600;
     }
