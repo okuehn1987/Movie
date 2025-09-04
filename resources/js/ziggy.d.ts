@@ -347,6 +347,7 @@ declare module 'ziggy-js' {
         }
     ],
     "profile.update": [],
+    "profile.updateSettings": [],
     "login": [],
     "password.request": [],
     "password.email": [],
