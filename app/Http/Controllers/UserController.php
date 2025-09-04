@@ -664,35 +664,37 @@ class UserController extends Controller
                         $currentValue->{$day->format('d')} = [];
                         $sollZeit = $user->getSollsekundenForDate($day);
 
-                        if ($shifts->isEmpty() && (!$absence || $user->shouldWork($day))) {
-                            $currentValue->{$day->format('d')} = (object)[
-                                'day' => $day->format('d'),
-                                'type' => 'empty',
-                                'holiday' => $holiday,
-                                'should_text' => self::formatDuration($sollZeit),
-                                'should' => $sollZeit,
-                                'transaction_value_text' => self::formatDuration($transactionValue),
-                                'transaction_value' => $transactionValue,
-                                'entryIndex' => ++$entryIndex,
-                                'data' => [],
-                            ];
-                            return [...$otherChunks, (object)[...(array)$currentChunk, ...(array)$currentValue]];
-                        }
+                        if ($shifts->isEmpty()) {
+                            if ($absence && $user->shouldWork($day)) {
+                                $currentValue->{$day->format('d')} = (object)[
+                                    'day' => $day->format('d'),
+                                    'type' => 'absence',
+                                    'holiday' => $holiday,
+                                    'should_text' => self::formatDuration($sollZeit),
+                                    'should' => $sollZeit,
+                                    'absence_type' => $absence->absenceType?->name ?? 'Abwesend',
+                                    'transaction_value_text' => self::formatDuration($transactionValue),
+                                    'transaction_value' => $transactionValue,
+                                    'entryIndex' => ++$entryIndex,
+                                    'data' => [],
+                                ];
 
-                        if ($shifts->isEmpty() && $absence) {
-                            $currentValue->{$day->format('d')} = (object)[
-                                'day' => $day->format('d'),
-                                'type' => 'absence',
-                                'holiday' => $holiday,
-                                'should_text' => self::formatDuration($sollZeit),
-                                'should' => $sollZeit,
-                                'absence_type' => $absence->absenceType?->name ?? 'Abwesend',
-                                'transaction_value_text' => self::formatDuration($transactionValue),
-                                'transaction_value' => $transactionValue,
-                                'entryIndex' => ++$entryIndex,
-                                'data' => [],
-                            ];
-                            return  [...$otherChunks, (object)[...(array)$currentChunk, ...(array)$currentValue]];
+
+                                return  [...$otherChunks, (object)[...(array)$currentChunk, ...(array)$currentValue]];
+                            } else {
+                                $currentValue->{$day->format('d')} = (object)[
+                                    'day' => $day->format('d'),
+                                    'type' => 'empty',
+                                    'holiday' => $holiday,
+                                    'should_text' => self::formatDuration($sollZeit),
+                                    'should' => $sollZeit,
+                                    'transaction_value_text' => self::formatDuration($transactionValue),
+                                    'transaction_value' => $transactionValue,
+                                    'entryIndex' => ++$entryIndex,
+                                    'data' => [],
+                                ];
+                                return [...$otherChunks, (object)[...(array)$currentChunk, ...(array)$currentValue]];
+                            }
                         }
 
                         $currentValue->{$day->format('d')} = (object)[
