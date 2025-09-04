@@ -13,40 +13,39 @@ function readNotification(notification: Notification) {
 }
 
 function openNotification(notification: Notification) {
-    readNotification(notification);
-    let data;
+    let url;
     if (notification.type == 'App\\Notifications\\WorkLogPatchNotification')
-        data = route('dispute.index', {
+        url = route('dispute.index', {
             openPatch: notification.data.work_log_patch_id,
         });
     else if (notification.type == 'App\\Notifications\\WorkLogNotification')
-        data = route('dispute.index', {
+        url = route('dispute.index', {
             openWorkLog: notification.data.work_log_id,
         });
     else if (notification.type == 'App\\Notifications\\AbsenceNotification')
-        data = route('dispute.index', {
+        url = route('dispute.index', {
             openAbsence: notification.data.absence_id,
         });
     else if (notification.type == 'App\\Notifications\\AbsencePatchNotification')
-        data = route('dispute.index', {
+        url = route('dispute.index', {
             openAbsencePatch: notification.data.absence_patch_id,
         });
     else if (notification.type == 'App\\Notifications\\AbsenceDeleteNotification')
-        data = route('dispute.index', {
+        url = route('dispute.index', {
             openAbsenceDelete: notification.data.absence_id,
         });
     else if (notification.type == 'App\\Notifications\\DisputeStatusNotification') {
         if (notification.data.type == 'delete') return;
-        if (notification.data.log_model == 'App\\Models\\Absence') data = route('absence.index', { openAbsence: notification.data.log_id });
+        if (notification.data.log_model == 'App\\Models\\Absence') url = route('absence.index', { openAbsence: notification.data.log_id });
         else if (notification.data.log_model == 'App\\Models\\AbsencePatch')
-            data = route('absence.index', { openAbsencePatch: notification.data.log_id });
+            url = route('absence.index', { openAbsencePatch: notification.data.log_id });
         else if (notification.data.log_model == 'App\\Models\\WorkLogPatch')
-            data = route('user.workLog.index', { user: usePage().props.auth.user.id, openWorkLogPatch: notification.data.log_id });
+            url = route('user.workLog.index', { user: usePage().props.auth.user.id, openWorkLogPatch: notification.data.log_id });
         else if (notification.data.log_model == 'App\\Models\\WorkLog')
-            data = route('user.workLog.index', { user: usePage().props.auth.user.id, workLog: notification.data.log_id });
+            url = route('user.workLog.index', { user: usePage().props.auth.user.id, workLog: notification.data.log_id });
     }
 
-    return data && router.get(data);
+    return url && router.get(url, {}, { onSuccess: () => readNotification(notification) });
 }
 const now = useNow();
 function convertTimeStamp(notification: Notification) {
@@ -92,10 +91,8 @@ function convertTimeStamp(notification: Notification) {
                             <v-divider vertical></v-divider>
                             <v-btn
                                 v-if="
-                                    (notification.type != 'App\\Notifications\\DisputeStatusNotification' ||
-                                        (notification.type == 'App\\Notifications\\DisputeStatusNotification' &&
-                                            notification.data.type != 'delete')) &&
-                                    notification.type !== 'App\\Notifications\\AbsenceDeleteNotification'
+                                    notification.type != 'App\\Notifications\\DisputeStatusNotification' ||
+                                    (notification.type == 'App\\Notifications\\DisputeStatusNotification' && notification.data.type != 'delete')
                                 "
                                 color="primary"
                                 icon="mdi-eye"

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { AbsenceType, User } from '@/types/types';
+import { AbsenceType, Status, User } from '@/types/types';
 import { throttle, useMaxScrollHeight } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
-import { computed, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import AbsenceTableCell from './partials/AbsenceTableCell.vue';
 import EditCreateAbsence from './partials/EditCreateAbsence.vue';
 import { AbsencePatchProp, AbsenceProp, getEntryState, UserProp } from './utils';
@@ -14,7 +14,7 @@ const props = defineProps<{
     users: UserProp[];
     absences: AbsenceProp[];
     absencePatches: AbsencePatchProp[];
-    absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval'>[];
+    absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval' | 'type'>[];
     holidays: Record<string, string> | null;
 }>();
 
@@ -33,6 +33,14 @@ const currentEntries = computed(() => {
             props.absences.filter(
                 a => a.start <= date.value.endOf('month').toFormat('yyyy-MM-dd') && a.end >= date.value.startOf('month').toFormat('yyyy-MM-dd'),
             ),
+        )
+        .filter(
+            entry =>
+                (filterForm.selected_users.length == 0 || filterForm.selected_users.includes(entry.user_id)) &&
+                (filterForm.selected_absence_types.length == 0 ||
+                    !entry.absence_type_id ||
+                    filterForm.selected_absence_types.includes(entry.absence_type_id)) &&
+                (filterForm.selected_statuses.length == 0 || filterForm.selected_statuses.includes(entry.status)),
         );
 });
 const openEditCreateAbsenceModal = ref(false);
@@ -56,6 +64,12 @@ if (openAbsenceFromRoute) {
     selectedUser.value = openAbsenceFromRoute.user_id;
     openEditCreateAbsenceModal.value = true;
 }
+
+const filterForm = reactive({
+    selected_users: [] as User['id'][],
+    selected_absence_types: [] as AbsenceType['id'][],
+    selected_statuses: ['created', 'accepted'] as Status[],
+});
 
 function createAbsenceModal(user_id: User['id'], start?: DateTime) {
     selectedUser.value = user_id;
@@ -120,7 +134,52 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
         ></ShowAbsenceModal>
         <v-card>
             <v-card-text>
-                <div class="d-flex flex-wrap justify-center align-center">
+                <div class="d-flex flex-wrap justify-space-between align-center">
+                    <v-dialog max-width="1000">
+                        <template #activator="{ props: activatorProps }">
+                            <v-btn v-bind="activatorProps" variant="flat" color="primary"><v-icon>mdi-filter</v-icon></v-btn>
+                        </template>
+                        <template #default="{ isActive }">
+                            <v-card :title="'Abwesenheiten filtern'">
+                                <template #append>
+                                    <v-btn icon variant="text" @click="isActive.value = false">
+                                        <v-icon>mdi-close</v-icon>
+                                    </v-btn>
+                                </template>
+                                <v-card-text>
+                                    <v-autocomplete
+                                        label="Nutzer"
+                                        :items="users.map(u => ({ title: u.first_name + ' ' + u.last_name, value: u.id }))"
+                                        v-model="filterForm.selected_users"
+                                        clearable
+                                        chips
+                                        multiple
+                                        variant="underlined"
+                                    ></v-autocomplete>
+                                    <v-select
+                                        label="Abwesenheitsgrund"
+                                        :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
+                                        v-model="filterForm.selected_absence_types"
+                                        clearable
+                                        chips
+                                        multiple
+                                    ></v-select>
+                                    <v-select
+                                        label="Abwesenheitsstatus"
+                                        :items="[
+                                            { title: 'Erstellt', value: 'created' },
+                                            { title: 'Akzeptiert', value: 'accepted' },
+                                            { title: 'Abgelehnt', value: 'declined' },
+                                        ]"
+                                        v-model="filterForm.selected_statuses"
+                                        clearable
+                                        chips
+                                        multiple
+                                    ></v-select>
+                                </v-card-text>
+                            </v-card>
+                        </template>
+                    </v-dialog>
                     <div class="d-flex flex-wrap align-center">
                         <div class="d-flex">
                             <v-btn @click.stop="date = date.minus({ year: 1 })" variant="text" icon color="primary">
@@ -143,6 +202,7 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
                             </v-btn>
                         </div>
                     </div>
+                    <div style="width: 64px"></div>
                 </div>
             </v-card-text>
             <v-divider></v-divider>
@@ -151,7 +211,11 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
                 style="white-space: pre"
                 :style="{ maxHeight: absenceTableHeight }"
                 id="absence-table"
-                :items="users.map(u => ({ ...u, name: u.last_name + ', ' + u.first_name }))"
+                :items="
+                    users
+                        .filter(u => filterForm.selected_users.length == 0 || filterForm.selected_users.includes(u.id))
+                        .map(u => ({ ...u, name: u.last_name + ', ' + u.first_name }))
+                "
                 :headers="[
                 {
                     title: 'Name',

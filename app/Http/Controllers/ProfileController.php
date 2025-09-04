@@ -38,4 +38,21 @@ class ProfileController extends Controller
 
         return back()->with('success', 'Profilinformationen erfolgreich gespeichert.');
     }
+
+    public function updateSettings(Request $request): RedirectResponse
+    {
+        Gate::authorize('publicAuth', User::class);
+
+        $validated = $request->validate([
+            'mail_notifications' => 'required|boolean',
+            'app_notifications' => 'required|boolean',
+        ]);
+
+        $notification_channels = [];
+        if ($validated['mail_notifications']) $notification_channels[] = 'mail';
+        if ($validated['app_notifications']) $notification_channels[] = 'database';
+        $request->user()->update(['notification_channels' => $notification_channels]);
+
+        return back()->with('success', 'Einstellungen erfolgreich gespeichert.');
+    }
 }

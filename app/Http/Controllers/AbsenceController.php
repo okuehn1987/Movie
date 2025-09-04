@@ -34,7 +34,6 @@ class AbsenceController extends Controller
 
         $absences = Absence::inOrganization()
             ->doesntHave('currentAcceptedPatch')
-            ->whereIn('status', ['accepted', 'created'])
             ->where(fn($q) => $q->whereDate('start', '<=', $date->copy()->endOfMonth())->whereDate('end', '>=', $date->copy()->startOfMonth()))
             ->with([
                 'absenceType' => fn($q) => $q->select(['id', 'abbreviation'])->withTrashed(),
@@ -44,7 +43,6 @@ class AbsenceController extends Controller
             ->get(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status']);
 
         $absencePatches = AbsencePatch::inOrganization()
-            ->whereIn('status', ['accepted', 'created'])
             ->where(fn($q) => $q->whereDate('start', '<=', $date->copy()->endOfMonth())->whereDate('end', '>=', $date->copy()->startOfMonth()))
             ->whereHas('log')
             ->with([
@@ -66,7 +64,9 @@ class AbsenceController extends Controller
                             'update',
                             [Absence::class, $authUser->usersInOrganization->find($a->user_id)]
                         )
-                    ))
+                    ) ||
+                    ($a->status === 'declined' && $a->user_id === $authUser->id)
+                )
             );
 
         $absences = $absences->filter($absenceFilter)->map(fn(Absence $a) => [
@@ -200,7 +200,7 @@ class AbsenceController extends Controller
 
         if ($absenceNotification) {
             $absenceNotification->markAsRead();
-            $absenceNotification->update(['data->status' => 'accepted']);
+            $absenceNotification->update(['data->status' => $is_accepted ? 'accepted' : 'declined']);
             $absence->user->notify(new DisputeStatusNotification($absence->user, $absence, $is_accepted ? 'accepted' : 'declined'));
         };
 

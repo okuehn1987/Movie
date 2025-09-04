@@ -59,7 +59,7 @@ class AbsencePatchController extends Controller
 
         if ($absencePatchNotification) {
             $absencePatchNotification->markAsRead();
-            $absencePatchNotification->update(['data->status' => 'accepted']);
+            $absencePatchNotification->update(['data->status' => $is_accepted ? 'accepted' : 'declined']);
             $absencePatch->user->notify(new DisputeStatusNotification($absencePatch->user, $absencePatch, $is_accepted ? 'accepted' : 'declined'));
         }
 

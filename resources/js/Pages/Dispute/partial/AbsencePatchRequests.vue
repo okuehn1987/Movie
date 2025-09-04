@@ -10,7 +10,7 @@ const props = defineProps<{
 }>();
 
 const absencePatchDialog = ref<AbsencePatchProp | null>(
-    props.absencePatchRequests?.find(absencePatch => absencePatch.absence_id == Number(route().params['openAbsencePatch'])) ?? null,
+    props.absencePatchRequests?.find(absencePatch => absencePatch.id == Number(route().params['openAbsencePatch'])) ?? null,
 );
 const showAbsenceDialog = ref(!!absencePatchDialog.value);
 const submitAbsenceSuccess = ref(false);
