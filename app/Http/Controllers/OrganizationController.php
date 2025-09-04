@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Gate;
 use App\Services\HolidayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
@@ -160,13 +161,15 @@ class OrganizationController extends Controller
             'name' => "required|string",
             'tax_registration_id' => "nullable|string",
             "commercial_registration_id" => "nullable|string",
-            "logo" => "nullable|file",
+            "logo" => "nullable|image",
             "website" => "nullable|string",
             "night_surcharges" => "required|boolean",
             "vacation_limitation_period" => "required|boolean",
         ]);
 
-        $organization->update($validated);
+        $path = $validated['logo'] ? Storage::disk('organization_logos')->putFile($validated['logo']) : null;
+
+        $organization->update([...$validated, 'logo' => $path]);
 
         return back()->with('success', 'Organisation erfolgreich aktualisiert.');
     }
