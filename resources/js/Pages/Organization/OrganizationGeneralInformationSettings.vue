@@ -45,7 +45,10 @@ function submit() {
                         <v-text-field v-model="organizationForm.website" label="Webseite (optional)"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-file-input label="Firmenlogo (optional)" v-model="organizationForm.logo"></v-file-input>
+                        <v-file-input
+                            :label="$page.props.organization.logo ? 'Firmenlogo ändern' : 'Firmenlogo (optional)'"
+                            v-model="organizationForm.logo"
+                        ></v-file-input>
                     </v-col>
 
                     <v-col cols="12" md="3">

@@ -178,6 +178,14 @@ class OrganizationController extends Controller
 
         return back()->with('success', 'Organisation erfolgreich aktualisiert.');
     }
+
+    public function getLogo(Organization $organization)
+    {
+        Gate::authorize('publicAuth', User::class);
+
+        return response(Storage::disk('organization_logos')->get($organization->logo));
+    }
+
     public function destroy(Organization $organization)
     {
         Gate::authorize('delete', $organization);

@@ -139,6 +139,13 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "organization.getLogo": [
+        {
+            "name": "organization",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "absence.index": [],
     "absence.store": [],
     "absence.destroy": [
