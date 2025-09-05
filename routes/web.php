@@ -29,6 +29,8 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
 
     Route::patch('organization/saveSettings', [OrganizationController::class, 'saveSettings'])->name('organization.saveSettings');
     Route::resource('organization', OrganizationController::class)->only(['show', 'update']);
+    Route::post('/organization/{organization}', [OrganizationController::class, 'update'])->name('organization.update.post');
+    Route::get('/organization/{organization}/getLogo', [OrganizationController::class, 'getLogo'])->name('organization.getLogo');
 
     Route::resource('absence', AbsenceController::class)->only(['index', 'store', 'destroy']);
     Route::delete('/absence/{absence}/denyDestroy', [AbsenceController::class, 'denyDestroy'])->name('absence.denyDestroy');

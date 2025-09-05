@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Gate;
 use App\Services\HolidayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
@@ -160,16 +161,31 @@ class OrganizationController extends Controller
             'name' => "required|string",
             'tax_registration_id' => "nullable|string",
             "commercial_registration_id" => "nullable|string",
-            "logo" => "nullable|file",
+            "logo" => "nullable|image",
             "website" => "nullable|string",
             "night_surcharges" => "required|boolean",
             "vacation_limitation_period" => "required|boolean",
         ]);
 
-        $organization->update($validated);
+        $path = $validated['logo'] ? Storage::disk('organization_logos')->putFile($validated['logo']) : null;
+
+        if ($organization->logo && $path)
+            Storage::disk('organization_logos')->delete($organization->logo);
+        else
+            $path = $organization->logo ?? $path;
+
+        $organization->update([...$validated, 'logo' => $path]);
 
         return back()->with('success', 'Organisation erfolgreich aktualisiert.');
     }
+
+    public function getLogo(Organization $organization)
+    {
+        Gate::authorize('publicAuth', User::class);
+
+        return response(Storage::disk('organization_logos')->get($organization->logo));
+    }
+
     public function destroy(Organization $organization)
     {
         Gate::authorize('delete', $organization);

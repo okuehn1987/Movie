@@ -15,11 +15,16 @@ const organizationForm = useForm({
     vacation_limitation_period: props.organization.vacation_limitation_period,
 });
 function submit() {
-    organizationForm.patch(
-        route('organization.update', {
-            organization: props.organization.id,
-        }),
-    );
+    organizationForm
+        .transform(data => ({
+            ...data,
+            _method: 'patch',
+        }))
+        .post(
+            route('organization.update.post', {
+                organization: props.organization.id,
+            }),
+        );
 }
 </script>
 <template>
@@ -40,7 +45,10 @@ function submit() {
                         <v-text-field v-model="organizationForm.website" label="Webseite (optional)"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
-                        <v-file-input label="Firmenlogo (optional)" v-model="organizationForm.logo"></v-file-input>
+                        <v-file-input
+                            :label="$page.props.organization.logo ? 'Firmenlogo ändern' : 'Firmenlogo (optional)'"
+                            v-model="organizationForm.logo"
+                        ></v-file-input>
                     </v-col>
 
                     <v-col cols="12" md="3">
