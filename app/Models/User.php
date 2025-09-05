@@ -227,6 +227,11 @@ class User extends Authenticatable
         return $this->hasOne(Organization::class, 'owner_id', 'organization_id');
     }
 
+    public function userAbsenceFilters()
+    {
+        return $this->hasMany(UserAbsenceFilter::class);
+    }
+
     public function userWorkingHours()
     {
         return $this->hasMany(UserWorkingHour::class);

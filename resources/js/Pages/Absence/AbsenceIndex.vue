@@ -71,6 +71,13 @@ const filterForm = reactive({
     selected_statuses: ['created', 'accepted'] as Status[],
 });
 
+const setForm = useForm({
+    set_name: '',
+    filtered_users: filterForm.selected_users,
+    filtered_absence_types: filterForm.selected_absence_types,
+    filtered_statuses: filterForm.selected_statuses,
+});
+
 function createAbsenceModal(user_id: User['id'], start?: DateTime) {
     selectedUser.value = user_id;
     const absenceToEdit = currentEntries.value
@@ -112,6 +119,10 @@ const reload = throttle(() => {
 watch(date, reload);
 
 const absenceTableHeight = useMaxScrollHeight(80 + 1);
+
+const showSetNameInput = ref(false);
+// const showSetEditSelect = ref(false);
+// const showSetDeleteSelect = ref(false);
 </script>
 <template>
     <AdminLayout title="Abwesenheiten">
@@ -140,42 +151,97 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
                             <v-btn v-bind="activatorProps" variant="flat" color="primary"><v-icon>mdi-filter</v-icon></v-btn>
                         </template>
                         <template #default="{ isActive }">
-                            <v-card :title="'Abwesenheiten filtern'">
+                            <v-card>
+                                <template #title>
+                                    <div class="d-flex justify-space-between align-center w-100">
+                                        <span>Abwesenheiten filtern</span>
+                                        <div>
+                                            <!-- <v-btn
+                                                icon
+                                                variant="text"
+                                                class="mr-2"
+                                                @click="
+                                                    showSetDeleteSelect === false
+                                                        ? (showSetDeleteSelect = true) && (showSetEditSelect = false) && (showSetNameInput = false)
+                                                        : (showSetDeleteSelect = false)
+                                                "
+                                            >
+                                                <v-icon>mdi-delete</v-icon>
+                                            </v-btn>
+                                            <v-btn
+                                                icon
+                                                variant="text"
+                                                class="mr-2"
+                                                @click="
+                                                    showSetEditSelect === false
+                                                        ? (showSetEditSelect = true) && (showSetDeleteSelect = false) && (showSetNameInput = false)
+                                                        : (showSetEditSelect = false)
+                                                "
+                                            >
+                                                <v-icon>mdi-pencil</v-icon>
+                                            </v-btn> -->
+                                            <v-btn
+                                                icon
+                                                variant="text"
+                                                class="mr-2"
+                                                @click="showSetNameInput === false ? (showSetNameInput = true) : (showSetNameInput = false)"
+                                            >
+                                                <v-icon>mdi-plus</v-icon>
+                                            </v-btn>
+                                        </div>
+                                    </div>
+                                </template>
                                 <template #append>
                                     <v-btn icon variant="text" @click="isActive.value = false">
                                         <v-icon>mdi-close</v-icon>
                                     </v-btn>
                                 </template>
                                 <v-card-text>
-                                    <v-autocomplete
-                                        label="Nutzer"
-                                        :items="users.map(u => ({ title: u.first_name + ' ' + u.last_name, value: u.id }))"
-                                        v-model="filterForm.selected_users"
-                                        clearable
-                                        chips
-                                        multiple
+                                    <v-form @submit.prevent="setForm.post(route('userAbsenceFilter.store'))">
+                                        <v-text-field
+                                            v-if="showSetNameInput === true"
+                                            label="Name für Filterkategorie"
+                                            v-model="setForm.set_name"
+                                        ></v-text-field>
+                                        <!-- <v-autocomplete v-if="showSetEditSelect" label="Filterkategoriesuche" variant="underlined"></v-autocomplete> -->
+                                        <!-- <v-autocomplete
+                                        v-if="showSetDeleteSelect === true"
+                                        label="Filterkategorie löschen"
                                         variant="underlined"
-                                    ></v-autocomplete>
-                                    <v-select
-                                        label="Abwesenheitsgrund"
-                                        :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
-                                        v-model="filterForm.selected_absence_types"
-                                        clearable
-                                        chips
-                                        multiple
-                                    ></v-select>
-                                    <v-select
-                                        label="Abwesenheitsstatus"
-                                        :items="[
-                                            { title: 'Erstellt', value: 'created' },
-                                            { title: 'Akzeptiert', value: 'accepted' },
-                                            { title: 'Abgelehnt', value: 'declined' },
-                                        ]"
-                                        v-model="filterForm.selected_statuses"
-                                        clearable
-                                        chips
-                                        multiple
-                                    ></v-select>
+                                    ></v-autocomplete> -->
+                                        <v-autocomplete
+                                            label="Nutzer"
+                                            :items="users.map(u => ({ title: u.first_name + ' ' + u.last_name, value: u.id }))"
+                                            v-model="setForm.filtered_users"
+                                            clearable
+                                            chips
+                                            multiple
+                                            variant="underlined"
+                                        ></v-autocomplete>
+                                        <v-select
+                                            label="Abwesenheitsgrund"
+                                            :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
+                                            v-model="setForm.filtered_absence_types"
+                                            clearable
+                                            chips
+                                            multiple
+                                        ></v-select>
+                                        <v-select
+                                            label="Abwesenheitsstatus"
+                                            :items="[
+                                                { title: 'Erstellt', value: 'created' },
+                                                { title: 'Akzeptiert', value: 'accepted' },
+                                                { title: 'Abgelehnt', value: 'declined' },
+                                            ]"
+                                            v-model="filterForm.selected_statuses"
+                                            clearable
+                                            chips
+                                            multiple
+                                        ></v-select>
+                                        <div class="d-flex justify-end">
+                                            <v-btn color="primary" type="submit">Speichern</v-btn>
+                                        </div>
+                                    </v-form>
                                 </v-card-text>
                             </v-card>
                         </template>

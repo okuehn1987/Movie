@@ -322,6 +322,17 @@ export type TimeAccountTransaction = DBObject<'timeAccountTransaction'> &
         description: string;
     };
 
+export type UserAbsenceFilter = DBObject<'userAbcenceFilter'> & {
+    user_id: User['id'];
+    name: string;
+    data: {
+        version: 'v1';
+        absence_type_ids: AbsenceType['id'];
+        user_ids: User['id'];
+        statuses: Status[];
+    };
+};
+
 export type UserWorkingWeek = DBObject<'userWorkingWeek'> &
     SoftDelete &
     Record<Weekday, boolean> & {
@@ -574,6 +585,10 @@ export type RelationMap = {
         notifications: Notification[];
         read_notifications: Notification[];
         unread_notifications: Notification[];
+        user_absence_filters: UserAbsenceFilter[];
+    };
+    userAbsenceFilter: {
+        user: User;
     };
     userLeaveDays: {
         user: User;
