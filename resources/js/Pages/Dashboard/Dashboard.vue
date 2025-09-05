@@ -93,12 +93,12 @@ const currentPage = ref(1);
                         </v-card-text>
                     </v-card>
                 </v-col> -->
-                    <v-col cols="12">
+                    <!-- <v-col cols="12">
                         <v-card>
                             <v-card-title>Informationen</v-card-title>
                             <v-card-item>TODO: to be implemented</v-card-item>
                         </v-card>
-                    </v-col>
+                    </v-col> -->
                 </v-row>
             </v-col>
         </v-row>

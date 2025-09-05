@@ -490,7 +490,7 @@ class Shift extends Model
             if ($createdTransaction) {
                 $createdTransaction->changes()->createMany([
                     [
-                        'date' => $variant == 'log' || $model->type == 'patch' ? $model->end : $previousModel->end,
+                        'date' => $variant == 'log' || $model->type == 'patch' ? ($model->end ?? $model->start) : $previousModel->end,
                         'amount' => $breakDurationChange,
                     ],
                     ...array_map(
