@@ -6,8 +6,6 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from 'ziggy-js';
 import { de } from 'vuetify/locale';
 
-const appName = import.meta.env['VITE_APP_NAME'];
-
 import { Settings } from 'luxon';
 Settings.defaultLocale = 'de';
 
@@ -64,7 +62,7 @@ import canPlugin from './canPlugin';
 import useFormPlugin from './useFormPlugin';
 
 createInertiaApp({
-    title: title => `${title} - ${appName}`,
+    title: title => title,
     resolve: name => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob<DefineComponent>('./Pages/**/*.vue')),
     setup({ el, App, props, plugin }) {
         createApp({ render: () => h(App, props) })
