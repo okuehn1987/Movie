@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { AbsenceType, Status, User } from '@/types/types';
+import { AbsenceType, Status, User, UserAbsenceFilter } from '@/types/types';
 import { throttle, useMaxScrollHeight } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import AbsenceTableCell from './partials/AbsenceTableCell.vue';
 import EditCreateAbsence from './partials/EditCreateAbsence.vue';
 import { AbsencePatchProp, AbsenceProp, getEntryState, UserProp } from './utils';
@@ -16,6 +16,7 @@ const props = defineProps<{
     absencePatches: AbsencePatchProp[];
     absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval' | 'type'>[];
     holidays: Record<string, string> | null;
+    user_absence_filters: UserAbsenceFilter[];
 }>();
 
 const dateParam = route().params['date'];
@@ -65,18 +66,32 @@ if (openAbsenceFromRoute) {
     openEditCreateAbsenceModal.value = true;
 }
 
-const filterForm = reactive({
+const filterForm = useForm({
+    set: null as null | string | { value: UserAbsenceFilter['id']; title: string },
     selected_users: [] as User['id'][],
     selected_absence_types: [] as AbsenceType['id'][],
     selected_statuses: ['created', 'accepted'] as Status[],
 });
 
-const setForm = useForm({
-    set_name: '',
-    filtered_users: filterForm.selected_users,
-    filtered_absence_types: filterForm.selected_absence_types,
-    filtered_statuses: filterForm.selected_statuses,
-});
+watch(
+    () => filterForm.set,
+    newValue => {
+        if (newValue == null) return;
+        let selectedFilter;
+        if (typeof newValue == 'object' && filterForm.isDirty) selectedFilter = props.user_absence_filters.find(f => f.id == newValue.value);
+        else if (typeof newValue == 'string') selectedFilter = props.user_absence_filters.find(f => f.name == newValue);
+        if (!selectedFilter) return;
+
+        const data = {
+            set: typeof newValue == 'string' ? { title: newValue, value: selectedFilter.id } : newValue,
+            selected_users: selectedFilter.data.user_ids,
+            selected_absence_types: selectedFilter.data.absence_type_ids,
+            selected_statuses: selectedFilter.data.statuses,
+        };
+        filterForm.defaults(data);
+        filterForm.reset();
+    },
+);
 
 function createAbsenceModal(user_id: User['id'], start?: DateTime) {
     selectedUser.value = user_id;
@@ -120,9 +135,13 @@ watch(date, reload);
 
 const absenceTableHeight = useMaxScrollHeight(80 + 1);
 
-const showSetNameInput = ref(false);
-// const showSetEditSelect = ref(false);
-// const showSetDeleteSelect = ref(false);
+function submit() {
+    if (typeof filterForm.set != 'string' && filterForm.set?.value) {
+        filterForm.patch(route('userAbsenceFilter.update', { userAbsenceFilter: filterForm.set.value }));
+    } else {
+        filterForm.post(route('userAbsenceFilter.store'));
+    }
+}
 </script>
 <template>
     <AdminLayout title="Abwesenheiten">
@@ -143,6 +162,7 @@ const showSetNameInput = ref(false);
             :absenceUser="selectedAbsenceUser"
             v-model="openShowAbsenceModal"
         ></ShowAbsenceModal>
+        {{ user_absence_filters }}
         <v-card>
             <v-card-text>
                 <div class="d-flex flex-wrap justify-space-between align-center">
@@ -155,40 +175,6 @@ const showSetNameInput = ref(false);
                                 <template #title>
                                     <div class="d-flex justify-space-between align-center w-100">
                                         <span>Abwesenheiten filtern</span>
-                                        <div>
-                                            <!-- <v-btn
-                                                icon
-                                                variant="text"
-                                                class="mr-2"
-                                                @click="
-                                                    showSetDeleteSelect === false
-                                                        ? (showSetDeleteSelect = true) && (showSetEditSelect = false) && (showSetNameInput = false)
-                                                        : (showSetDeleteSelect = false)
-                                                "
-                                            >
-                                                <v-icon>mdi-delete</v-icon>
-                                            </v-btn>
-                                            <v-btn
-                                                icon
-                                                variant="text"
-                                                class="mr-2"
-                                                @click="
-                                                    showSetEditSelect === false
-                                                        ? (showSetEditSelect = true) && (showSetDeleteSelect = false) && (showSetNameInput = false)
-                                                        : (showSetEditSelect = false)
-                                                "
-                                            >
-                                                <v-icon>mdi-pencil</v-icon>
-                                            </v-btn> -->
-                                            <v-btn
-                                                icon
-                                                variant="text"
-                                                class="mr-2"
-                                                @click="showSetNameInput === false ? (showSetNameInput = true) : (showSetNameInput = false)"
-                                            >
-                                                <v-icon>mdi-plus</v-icon>
-                                            </v-btn>
-                                        </div>
                                     </div>
                                 </template>
                                 <template #append>
@@ -197,22 +183,22 @@ const showSetNameInput = ref(false);
                                     </v-btn>
                                 </template>
                                 <v-card-text>
-                                    <v-form @submit.prevent="setForm.post(route('userAbsenceFilter.store'))">
-                                        <v-text-field
-                                            v-if="showSetNameInput === true"
-                                            label="Name für Filterkategorie"
-                                            v-model="setForm.set_name"
-                                        ></v-text-field>
-                                        <!-- <v-autocomplete v-if="showSetEditSelect" label="Filterkategoriesuche" variant="underlined"></v-autocomplete> -->
-                                        <!-- <v-autocomplete
-                                        v-if="showSetDeleteSelect === true"
-                                        label="Filterkategorie löschen"
-                                        variant="underlined"
-                                    ></v-autocomplete> -->
+                                    <!-- TODO: Error-messages missing -->
+                                    <v-form @submit.prevent="submit()">
+                                        <v-combobox
+                                            label="Auswahl Filtergruppe"
+                                            auto-select-first="exact"
+                                            variant="underlined"
+                                            :items="user_absence_filters.map(u => ({ value: u.id, title: u.name }))"
+                                            v-model="filterForm.set"
+                                            :error-messages="filterForm.errors.set"
+                                            required
+                                            clearable
+                                        ></v-combobox>
                                         <v-autocomplete
                                             label="Nutzer"
                                             :items="users.map(u => ({ title: u.first_name + ' ' + u.last_name, value: u.id }))"
-                                            v-model="setForm.filtered_users"
+                                            v-model="filterForm.selected_users"
                                             clearable
                                             chips
                                             multiple
@@ -221,7 +207,7 @@ const showSetNameInput = ref(false);
                                         <v-select
                                             label="Abwesenheitsgrund"
                                             :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
-                                            v-model="setForm.filtered_absence_types"
+                                            v-model="filterForm.selected_absence_types"
                                             clearable
                                             chips
                                             multiple
@@ -238,8 +224,12 @@ const showSetNameInput = ref(false);
                                             chips
                                             multiple
                                         ></v-select>
-                                        <div class="d-flex justify-end">
-                                            <v-btn color="primary" type="submit">Speichern</v-btn>
+                                        <div class="d-flex justify-space-between">
+                                            <v-btn v-if="typeof filterForm.set == 'object'" color="error">Filter löschen</v-btn>
+                                            <div v-else></div>
+                                            <v-btn :disabled="!filterForm.isDirty" color="primary" type="submit">
+                                                {{ typeof filterForm.set == 'string' ? 'Filter anlegen' : 'Filter bearbeiten' }}
+                                            </v-btn>
                                         </div>
                                     </v-form>
                                 </v-card-text>

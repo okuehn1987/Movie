@@ -327,8 +327,8 @@ export type UserAbsenceFilter = DBObject<'userAbcenceFilter'> & {
     name: string;
     data: {
         version: 'v1';
-        absence_type_ids: AbsenceType['id'];
-        user_ids: User['id'];
+        absence_type_ids: AbsenceType['id'][];
+        user_ids: User['id'][];
         statuses: Status[];
     };
 };

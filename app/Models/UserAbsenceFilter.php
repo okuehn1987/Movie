@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class UserAbsenceFilter extends Model
 {
     protected $guarded = [];
+    protected $casts = ['data' => 'array'];
 
     public function user()
     {

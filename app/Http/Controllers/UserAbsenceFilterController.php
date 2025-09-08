@@ -16,20 +16,44 @@ class UserAbsenceFilterController extends Controller
         $validated = $request->validate([
             'set_name' => 'required|string',
 
-            'filtered_users' => 'present|array',
-            'filtered_users.*' => Rule::in(User::inOrganization()->pluck('id')),
+            'selected_users' => 'present|array',
+            'selected_users.*' => Rule::in(User::inOrganization()->pluck('id')),
 
-            'filtered_absence_types' => 'present|array',
-            'filtered_absence_types.*' => Rule::in(AbsenceType::inOrganization()->pluck('id')),
+            'selected_absence_types' => 'present|array',
+            'selected_absence_types.*' => Rule::in(AbsenceType::inOrganization()->pluck('id')),
 
-            "filtered_statuses" => 'present|array',
-            "filtered_statuses.*" => 'in:created,accepted,declined',
+            "selected_statuses" => 'present|array',
+            "selected_statuses.*" => 'in:created,accepted,declined',
         ]);
+
+        UserAbsenceFilter::create([
+            'user_id' => $authUser->id,
+            'name' => $validated['set_name'],
+            'data' => [
+                'user_ids' => $validated['selected_users'],
+                'absence_type_ids' => $validated['selected_absence_types'],
+                'statuses' => $validated['selected_statuses'],
+            ],
+        ]);
+
+        return back()->with('success', 'Filtergruppe erfolgreich erstellt.');
     }
 
-    public function update(Request $request)
+    public function update(Request $request, #[CurrentUser] User $authUser)
     {
-        //
+        dd($request->all());
+        $validated = $request->validate([
+            'set_name' => 'required|string',
+
+            'selected_users' => 'present|array',
+            'selected_users.*' => Rule::in(User::inOrganization()->pluck('id')),
+
+            'selected_absence_types' => 'present|array',
+            'selected_absence_types.*' => Rule::in(AbsenceType::inOrganization()->pluck('id')),
+
+            "selected_statuses" => 'present|array',
+            "selected_statuses.*" => 'in:created,accepted,declined',
+        ]);
     }
 
     public function destroy(Request $request)
