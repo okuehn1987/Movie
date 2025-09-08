@@ -2,24 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AbsenceType;
+use App\Models\User;
+use Illuminate\Container\Attributes\CurrentUser;
+use App\Models\UserAbsenceFilter;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 
 class UserAbsenceFilterController extends Controller
 {
-    public function store(Request $request)
+    public function store(Request $request, #[CurrentUser] User $authUser)
     {
-        dd($request->all());
-
         $validated = $request->validate([
             'set_name' => 'required|string',
 
-            'filtered_users' => 'nullable|array',
-            'filtered_users.*' => 'integer',
+            'filtered_users' => 'present|array',
+            'filtered_users.*' => Rule::in(User::inOrganization()->pluck('id')),
 
-            'filtered_absence_types' => 'nullable|array',
-            'filtered_absence_types.*' => 'integer',
+            'filtered_absence_types' => 'present|array',
+            'filtered_absence_types.*' => Rule::in(AbsenceType::inOrganization()->pluck('id')),
 
-            "filtered_statuses" => 'nullable|array',
+            "filtered_statuses" => 'present|array',
             "filtered_statuses.*" => 'in:created,accepted,declined',
         ]);
     }
