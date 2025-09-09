@@ -13,8 +13,9 @@ class UserAbsenceFilterController extends Controller
 {
     public function store(Request $request, #[CurrentUser] User $authUser)
     {
+        // dd($request->all());
         $validated = $request->validate([
-            'set_name' => 'required|string',
+            'set' => 'required|string',
 
             'selected_users' => 'present|array',
             'selected_users.*' => Rule::in(User::inOrganization()->pluck('id')),
@@ -28,7 +29,7 @@ class UserAbsenceFilterController extends Controller
 
         UserAbsenceFilter::create([
             'user_id' => $authUser->id,
-            'name' => $validated['set_name'],
+            'name' => $validated['set'],
             'data' => [
                 'user_ids' => $validated['selected_users'],
                 'absence_type_ids' => $validated['selected_absence_types'],
@@ -39,11 +40,12 @@ class UserAbsenceFilterController extends Controller
         return back()->with('success', 'Filtergruppe erfolgreich erstellt.');
     }
 
-    public function update(Request $request, #[CurrentUser] User $authUser)
+    public function update(Request $request, UserAbsenceFilter $userAbsenceFilter)
     {
-        dd($request->all());
         $validated = $request->validate([
-            'set_name' => 'required|string',
+            'set' => 'required|array',
+            'set.value' => 'integer',
+            'set.title' => 'string',
 
             'selected_users' => 'present|array',
             'selected_users.*' => Rule::in(User::inOrganization()->pluck('id')),
@@ -54,6 +56,17 @@ class UserAbsenceFilterController extends Controller
             "selected_statuses" => 'present|array',
             "selected_statuses.*" => 'in:created,accepted,declined',
         ]);
+
+        $userAbsenceFilter->update([
+            'name' => $validated['set']['title'],
+            'data' => [
+                'user_ids' => $validated['selected_users'],
+                'absence_type_ids' => $validated['selected_absence_types'],
+                'statuses' => $validated['selected_statuses'],
+            ]
+        ]);
+
+        return back()->with('success', 'Filtergruppe erfolgreich aktualisiert.');
     }
 
     public function destroy(Request $request)

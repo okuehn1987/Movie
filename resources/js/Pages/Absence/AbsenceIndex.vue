@@ -162,7 +162,6 @@ function submit() {
             :absenceUser="selectedAbsenceUser"
             v-model="openShowAbsenceModal"
         ></ShowAbsenceModal>
-        {{ user_absence_filters }}
         <v-card>
             <v-card-text>
                 <div class="d-flex flex-wrap justify-space-between align-center">
