@@ -61,6 +61,7 @@ return [
     ],
     'hex_color' => ':attribute muss eine gültige hexadezimale Farbe sein.',
     'image' => ':attribute muss ein Bild sein.',
+    'immutable' => ':attribute darf nicht mehr verändert werden',
     'in' => 'Das ausgewählte :attribute ist ungültig.',
     'in_array' => ':attribute muss in :other existieren.',
     'integer' => ':attribute muss eine ganze Zahl sein.',
@@ -198,7 +199,8 @@ return [
         'user_working_hours.*.weekly_working_hours' => 'Stunden pro Woche',
         'year' => 'Jahr',
         'month' => 'Monat',
-        'description' => 'Beschreibung'
+        'description' => 'Beschreibung',
+        'resignation_date' => 'Kündigungsdatum'
     ],
 
 ];
