@@ -22,13 +22,14 @@ trait ScopeInOrganization
         if (
             new self instanceof \App\Models\TravelLog || new self instanceof \App\Models\TravelLogPatch ||
             new self instanceof \App\Models\WorkLog || new self instanceof \App\Models\WorkLogPatch ||
-            new self instanceof \App\Models\TimeAccount
+            new self instanceof \App\Models\TimeAccount || new self instanceof \App\Models\Ticket
         ) {
             return $builder->whereIn('user_id', User::select('id')->inOrganization());
         }
         if (
             new self instanceof \App\Models\OperatingSite || new self instanceof \App\Models\AbsenceType ||
-            new self instanceof \App\Models\Group ||  new self instanceof \App\Models\SpecialWorkingHoursFactor || new self instanceof \App\Models\TimeAccountSetting
+            new self instanceof \App\Models\Group ||  new self instanceof \App\Models\SpecialWorkingHoursFactor ||
+            new self instanceof \App\Models\TimeAccountSetting || new self instanceof \App\Models\Customer
         ) {
             return $builder->where('organization_id', $org->id);
         }

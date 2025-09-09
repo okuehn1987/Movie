@@ -18,6 +18,15 @@ import { router } from '@inertiajs/vue3';
                           },
                       ]
                     : []),
+                ...($page.props.currentAppModule == 'timesheets'
+                    ? [
+                          {
+                              props: { active: route().current('ticket.index'), prependIcon: 'mdi-ticket-account' },
+                              value: route('ticket.index'),
+                              title: 'Tickets',
+                          },
+                      ]
+                    : []),
                 can('dispute', 'viewIndex') && {
                     props: { active: route().current('dispute.index'), prependIcon: 'mdi-bookmark-outline' },
                     value: route('dispute.index'),
