@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Organization;
+use App\Models\UserAbsenceFilter;
 use Closure;
 use Exception;
 use Illuminate\Http\Request;
@@ -50,6 +51,9 @@ class HasOrganizationAccess
 
                 $instanceObject instanceof DatabaseNotification
                 => \App\Models\User::find($instanceObject->notifiable_id)->operatingSite()->select('organization_id')->first()->organization_id,
+
+                $instanceObject instanceof UserAbsenceFilter
+                => \App\Models\User::find($instanceObject->user_id)->operatingSite()->select('organization_id')->first()->organization_id,
 
                 default => null
             };

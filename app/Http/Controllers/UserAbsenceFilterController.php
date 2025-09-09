@@ -13,7 +13,6 @@ class UserAbsenceFilterController extends Controller
 {
     public function store(Request $request, #[CurrentUser] User $authUser)
     {
-        // dd($request->all());
         $validated = $request->validate([
             'set' => 'required|string',
 
