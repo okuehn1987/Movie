@@ -56,7 +56,7 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $accessableModules = collect(AppModuleService::getAppModules())
-            ->filter(fn($m) => Organization::getCurrent()->modules->pluck('module')->contains($m['value']))
+            ->filter(fn($m) => AppModuleService::hasAppModule($m['value']))
             ->values();
         return [
             ...parent::share($request),
