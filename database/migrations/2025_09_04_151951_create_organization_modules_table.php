@@ -21,7 +21,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Organization::all()->each(fn($org) => $org->modules->create(['module' => 'herta', 'activated_at' => '2024-12-01']));
+        Organization::all()->each(fn($org) => $org->modules()->create(['module' => 'herta', 'activated_at' => '2024-12-01']));
     }
 
     /**
