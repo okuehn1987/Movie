@@ -33,6 +33,7 @@ class UserAbsenceFilterController extends Controller
             'user_id' => $authUser->id,
             'name' => $validated['set'],
             'data' => [
+                'version' => 'v1',
                 'user_ids' => $validated['selected_users'],
                 'absence_type_ids' => $validated['selected_absence_types'],
                 'statuses' => $validated['selected_statuses'],
