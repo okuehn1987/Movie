@@ -30,6 +30,7 @@ class Address extends Model
             User::class => ['id', 'first_name', 'last_name'],
             OperatingSite::class => ['id', 'name'],
             CustomAddress::class => ['id', 'name'],
+            Customer::class => ['id', 'name'],
         ]);
     }
 }

@@ -146,6 +146,13 @@ export type UserLeaveDays = DBObject<'userLeaveDays'> &
         type: 'annual' | 'remaining';
     };
 
+export type Customer = DBObject<'customer'> &
+    SoftDelete & {
+        name: string;
+        email: string | null;
+        phone: string | null;
+    };
+
 export type Flag = 'auto_accept_travel_logs' | 'christmas_vacation_day' | 'new_year_vacation_day' | 'vacation_limitation_period' | 'night_surcharges';
 
 export type Organization = DBObject<'organization'> &
@@ -464,6 +471,10 @@ export type RelationMap = {
         organization: Organization;
         addresses: Address[];
         current_address: Address;
+    };
+    customer: {
+        addresses: (Omit<Address, 'country' | 'federal_state'> & { country: Country; federal_state: FederalState })[];
+        current_address: Omit<Address, 'country' | 'federal_state'> & { country: Country; federal_state: FederalState };
     };
     group: {
         organization: Organization;
