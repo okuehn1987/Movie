@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { CountryProp, OperatingSite, Relations } from '@/types/types';
-import AktuelleArbeitszeiten from './partials/AktuelleArbeitszeiten.vue';
-import AllgemeineInformationen from './partials/AllgemeineInformationen.vue';
+import OperatingSiteInfornmation from './partials/OperatingSiteInfornmation.vue';
 import { ref } from 'vue';
+import OperatingTimeIndex from './partials/OperatingTimeIndex.vue';
 
 defineProps<{
     operatingSite: OperatingSite & Pick<Relations<'operatingSite'>, 'operating_times'>;
@@ -21,10 +21,10 @@ const tab = ref('Allgemeine Informationen');
         </v-tabs>
         <v-tabs-window v-model="tab" class="w-100">
             <v-tabs-window-item value="Allgemeine Informationen">
-                <AllgemeineInformationen :operating-site="operatingSite" :countries />
+                <OperatingSiteInfornmation :operating-site="operatingSite" :countries />
             </v-tabs-window-item>
             <v-tabs-window-item v-if="can('operatingTime', 'viewIndex')" value="Betriebszeiten">
-                <AktuelleArbeitszeiten :operatingSite />
+                <OperatingTimeIndex :operatingSite />
             </v-tabs-window-item>
         </v-tabs-window>
     </AdminLayout>

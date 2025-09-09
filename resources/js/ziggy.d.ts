@@ -50,73 +50,8 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "switchAppModule": [],
     "dashboard": [],
-    "user.index": [],
-    "user.store": [],
-    "user.update": [
-        {
-            "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "user.destroy": [
-        {
-            "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "user.generalInformation": [
-        {
-            "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "user.absences": [
-        {
-            "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "user.timeAccounts": [
-        {
-            "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "user.timeAccountTransactions": [
-        {
-            "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "user.documents": [
-        {
-            "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "user.timeStatementDoc": [
-        {
-            "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "user.userOrganigram": [
-        {
-            "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "user.profile": [],
     "organization.saveSettings": [],
     "organization.show": [
         {
@@ -203,6 +138,7 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "dispute.index": [],
     "absenceType.store": [],
     "absenceType.update": [
         {
@@ -244,6 +180,118 @@ declare module 'ziggy-js' {
         {
             "name": "group",
             "required": true
+        }
+    ],
+    "operatingSite.index": [],
+    "operatingSite.store": [],
+    "operatingSite.show": [
+        {
+            "name": "operatingSite",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "operatingSite.update": [
+        {
+            "name": "operatingSite",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "operatingSite.destroy": [
+        {
+            "name": "operatingSite",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "operatingSite.operatingTime.store": [
+        {
+            "name": "operatingSite",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "operatingTime.destroy": [
+        {
+            "name": "operatingTime",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "notification.update": [
+        {
+            "name": "notification",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "profile.update": [],
+    "profile.updateSettings": [],
+    "user.index": [],
+    "user.store": [],
+    "user.update": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.destroy": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.generalInformation": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.absences": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.documents": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.userOrganigram": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.profile": [],
+    "user.timeAccounts": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.timeAccountTransactions": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.timeStatementDoc": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
         }
     ],
     "workLogPatch.store": [],
@@ -298,37 +346,6 @@ declare module 'ziggy-js' {
             "required": true
         }
     ],
-    "operatingSite.index": [],
-    "operatingSite.store": [],
-    "operatingSite.show": [
-        {
-            "name": "operatingSite",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "operatingSite.update": [
-        {
-            "name": "operatingSite",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "operatingSite.destroy": [
-        {
-            "name": "operatingSite",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "operatingTime.store": [],
-    "operatingTime.destroy": [
-        {
-            "name": "operatingTime",
-            "required": true,
-            "binding": "id"
-        }
-    ],
     "user.timeAccount.store": [
         {
             "name": "user",
@@ -352,16 +369,6 @@ declare module 'ziggy-js' {
     ],
     "timeAccountTransaction.store": [],
     "timeAccountSetting.store": [],
-    "dispute.index": [],
-    "notification.update": [
-        {
-            "name": "notification",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "profile.update": [],
-    "profile.updateSettings": [],
     "login": [],
     "password.request": [],
     "password.email": [],

@@ -21,11 +21,10 @@ const operatingTimeForm = useForm({
     start: '',
     end: '',
     type: 'monday',
-    operating_site_id: props.operatingSite.id,
 });
 
 function submitOperatingTime() {
-    operatingTimeForm.post(route('operatingTime.store'), {
+    operatingTimeForm.post(route('operatingSite.operatingTime.store', { operatingSite: props.operatingSite.id }), {
         onSuccess: () => operatingTimeForm.reset(),
     });
 }

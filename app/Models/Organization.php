@@ -21,6 +21,11 @@ class Organization extends Model
         "new_year_vacation_day" => "31.12 als Urlaubstag"
     ];
 
+    public function modules()
+    {
+        return $this->hasMany(OrganizationModule::class);
+    }
+
     public function operatingSites()
     {
         return $this->hasMany(OperatingSite::class);

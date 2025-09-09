@@ -541,6 +541,8 @@ class User extends Authenticatable
         $currentWorkingHours = $this->userWorkingHoursForDate($date);
         $currentWorkingWeek = $this->userWorkingWeekForDate($date);
 
+        if (!$currentWorkingHours || !$currentWorkingWeek || $currentWorkingWeek->numberOfWorkingDays == 0) return 0;
+
         return $currentWorkingHours['weekly_working_hours'] / $currentWorkingWeek->numberOfWorkingDays * 3600;
     }
 

@@ -438,6 +438,12 @@ export type GroupUser = DBObject<'groupUser'> &
         user_id: User['id'];
     } & Record<Permission['all' | 'group'], PermissionValue>;
 
+export type AppModule = DBObject<'appModule'> & {
+    organization_id: Organization['id'];
+    module: 'herta' | 'timesheets';
+    activated_at: DateTimeString | null;
+};
+
 export type RelationMap = {
     absence: {
         absence_type?: AbsenceType;
@@ -493,6 +499,7 @@ export type RelationMap = {
         time_account_settings: TimeAccountSetting[];
         owner: User;
         custom_addresses: CustomAddress[];
+        modules: AppModule[];
     };
     organizationUser: {
         organization: Organization;

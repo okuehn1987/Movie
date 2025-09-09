@@ -22,13 +22,27 @@ defineProps<{
         absence_type: Pick<AbsenceType, 'id' | 'name'>;
         user: UserProp;
     })[];
-    workLogPatchRequests: WorkLogPatchProp[];
-    workLogRequests: WorkLogProp[];
+    workLogPatchRequests?: WorkLogPatchProp[];
+    workLogRequests?: WorkLogProp[];
 }>();
 </script>
 <template>
     <AdminLayout title="Anträge">
-        <v-row>
+        <v-alert
+            type="info"
+            v-if="
+                [
+                    ...absenceRequests,
+                    ...(workLogPatchRequests ? workLogPatchRequests : []),
+                    ...absenceDeleteRequests,
+                    ...absencePatchRequests,
+                    ...(workLogRequests ? workLogRequests : []),
+                ].length == 0
+            "
+        >
+            Es gibt derzeit keine offenen Anträge
+        </v-alert>
+        <v-row v-else>
             <v-col cols="12" md="6">
                 <v-row>
                     <v-col v-if="absenceRequests.length > 0" cols="12">
@@ -36,7 +50,7 @@ defineProps<{
                             <AbsenceRequests :absenceRequests="absenceRequests" />
                         </v-card>
                     </v-col>
-                    <v-col v-if="workLogPatchRequests.length > 0" cols="12">
+                    <v-col v-if="workLogPatchRequests && workLogPatchRequests.length > 0" cols="12">
                         <v-card title="Zeitkorrekturen"><WorkLogPatches :patches="workLogPatchRequests" /></v-card>
                     </v-col>
                     <v-col v-if="absenceDeleteRequests.length > 0" cols="12">
@@ -58,7 +72,7 @@ defineProps<{
                             <AbsencePatchRequests :absencePatchRequests="absencePatchRequests" />
                         </v-card>
                     </v-col>
-                    <v-col v-if="workLogRequests.length > 0" cols="12">
+                    <v-col v-if="workLogRequests && workLogRequests.length > 0" cols="12">
                         <v-card title="Manuelle Buchungsanträge"><WorkLogRequests :workLogs="workLogRequests" /></v-card>
                     </v-col>
                     <!-- 
