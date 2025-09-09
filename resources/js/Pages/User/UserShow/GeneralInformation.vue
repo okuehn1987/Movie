@@ -9,7 +9,10 @@ defineProps<{
     user: User & {
         supervisor: Pick<User, 'id'>;
         user_leave_days: (UserLeaveDays | null)[];
-    } & Pick<Relations<'user'>, 'organization_user' | 'operating_site_user' | 'group_user' | 'user_working_hours' | 'user_working_weeks'>;
+    } & Pick<
+            Relations<'user'>,
+            'organization_user' | 'operating_site_user' | 'group_user' | 'user_working_hours' | 'user_working_weeks' | 'current_address'
+        >;
     possibleSupervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];
     groups: Pick<Group, 'id' | 'name'>[];

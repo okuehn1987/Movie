@@ -18,8 +18,11 @@ import {
 
 export type UserProp = User &
     RelationPick<'user', 'supervisor', 'id'> &
-    Pick<Relations<'user'>, 'organization_user' | 'operating_site_user' | 'group_user' | 'user_working_weeks' | 'user_leave_days'> & {
-        user_working_hours?: Relations<'user'>['user_working_hours'];
+    Pick<
+        Relations<'user'>,
+        'organization_user' | 'operating_site_user' | 'group_user' | 'user_working_hours' | 'user_working_weeks' | 'current_address'
+    > & {
+        user_leave_days: (UserLeaveDays | null)[];
     };
 
 export type FormData = {

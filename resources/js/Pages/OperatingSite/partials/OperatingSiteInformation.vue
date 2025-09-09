@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { CountryProp, OperatingSite } from '@/types/types';
+import { CountryProp, OperatingSite, Relations } from '@/types/types';
 import { getStates } from '@/utils';
 
 const props = defineProps<{
-    operatingSite: OperatingSite;
+    operatingSite: OperatingSite & Pick<Relations<'operatingSite'>, 'current_address'>;
     countries: CountryProp[];
 }>();
 
@@ -11,13 +11,13 @@ const operatingSiteForm = useForm({
     email: props.operatingSite.email,
     fax: props.operatingSite.fax,
     phone_number: props.operatingSite.phone_number,
-    street: props.operatingSite.street,
-    country: props.operatingSite.country,
-    city: props.operatingSite.city,
-    address_suffix: props.operatingSite.address_suffix,
-    house_number: props.operatingSite.house_number,
-    federal_state: props.operatingSite.federal_state,
-    zip: props.operatingSite.zip,
+    street: props.operatingSite.current_address.street,
+    country: props.operatingSite.current_address.country,
+    city: props.operatingSite.current_address.city,
+    address_suffix: props.operatingSite.current_address.address_suffix,
+    house_number: props.operatingSite.current_address.house_number,
+    federal_state: props.operatingSite.current_address.federal_state,
+    zip: props.operatingSite.current_address.zip,
     name: props.operatingSite.name,
     is_headquarter: props.operatingSite.is_headquarter,
 });

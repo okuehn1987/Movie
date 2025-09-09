@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Addressable;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,7 +20,7 @@ use App\Notifications\PasswordResetNotification;
 class User extends Authenticatable
 {
     use \Znck\Eloquent\Traits\BelongsToThrough;
-    use HasFactory, Notifiable, SoftDeletes, ScopeInOrganization;
+    use HasFactory, Notifiable, SoftDeletes, ScopeInOrganization, Addressable;
 
     /**
      * Send a password reset notification to the user.

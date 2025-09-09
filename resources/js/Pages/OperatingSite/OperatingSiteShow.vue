@@ -6,7 +6,7 @@ import { ref } from 'vue';
 import OperatingTimeIndex from './partials/OperatingTimeIndex.vue';
 
 defineProps<{
-    operatingSite: OperatingSite & Pick<Relations<'operatingSite'>, 'operating_times'>;
+    operatingSite: OperatingSite & Pick<Relations<'operatingSite'>, 'operating_times' | 'current_address'>;
     countries: CountryProp[];
 }>();
 

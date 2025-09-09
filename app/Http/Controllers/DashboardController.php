@@ -17,7 +17,7 @@ class DashboardController extends Controller
         Gate::authorize('publicAuth', User::class);
 
         $visibleUsers = User::inOrganization()
-            ->with(['operatingSite:id,country,federal_state'])
+            ->with(['operatingSite.currentAddress:id,country,federal_state,addresses.addressable_id,addresses.addressable_type'])
             ->get(['id', 'supervisor_id', 'group_id', 'operating_site_id', 'first_name', 'last_name'])
             ->filter(fn($u) => $user->can('viewShow', [Absence::class, $u]));
 

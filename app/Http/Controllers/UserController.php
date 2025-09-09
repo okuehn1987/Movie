@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Absence;
 use App\Models\AbsenceType;
+use App\Models\Address;
 use App\Models\Group;
 use App\Models\GroupUser;
 use App\Models\OperatingSite;
@@ -154,7 +155,7 @@ class UserController extends Controller
         Gate::authorize('viewIndex', User::class);
 
         return Inertia::render('User/UserIndex', [
-            'users' => User::inOrganization()->with('group:id,name')->get([
+            'users' => User::inOrganization()->with(['group:id,name', 'currentAddress'])->get([
                 'id',
                 'first_name',
                 'last_name',
@@ -195,6 +196,7 @@ class UserController extends Controller
             'operatingSiteUser',
             'organizationUser',
             'supervisor:id',
+            'currentAddress',
             'userWorkingWeeks' => function ($q) {
                 $q->orderBy('active_since', 'desc');
             },
@@ -333,13 +335,6 @@ class UserController extends Controller
             'last_name' => $validated['last_name'],
             'email' => $validated['email'],
             'date_of_birth' => $validated['date_of_birth'],
-            'city' => $validated['city'],
-            'zip' => $validated['zip'],
-            'street' => $validated['street'],
-            'house_number' => $validated['house_number'],
-            'address_suffix' => $validated['address_suffix'],
-            'country' => $validated['country'],
-            'federal_state' => $validated['federal_state'],
             'phone_number' => $validated['phone_number'],
             'staff_number' => $validated['staff_number'],
             'password' =>  Hash::make($validated['password']),
@@ -355,6 +350,8 @@ class UserController extends Controller
             'email_verified_at' => now(),
         ]);
         $user->save();
+
+        $user->addresses()->create(collect($validated)->only(Address::$ADDRESS_KEYS)->toArray());
 
         UserLeaveDay::create([
             'user_id' => $user->id,
@@ -450,13 +447,6 @@ class UserController extends Controller
             'last_name' => $validated['last_name'],
             'email' => $validated['email'],
             'date_of_birth' => $validated['date_of_birth'],
-            'city' => $validated['city'],
-            'zip' => $validated['zip'],
-            'street' => $validated['street'],
-            'house_number' => $validated['house_number'],
-            'address_suffix' => $validated['address_suffix'],
-            'country' => $validated['country'],
-            'federal_state' => $validated['federal_state'],
             'phone_number' => $validated['phone_number'],
             'staff_number' => $validated['staff_number'],
             'group_id' => $validated['group_id'],
@@ -469,6 +459,8 @@ class UserController extends Controller
             "overtime_calculations_start" => $validated['overtime_calculations_start'],
             'job_role' => $validated['job_role'],
         ]);
+        $user->addresses()->create(collect($validated)->only(Address::$ADDRESS_KEYS)->toArray());
+
         $user->organizationUser->update($validated['organizationUser']);
         $user->operatingSiteUser->update($validated['operatingSiteUser']);
         $user->groupUser?->update($validated['groupUser']);
@@ -642,7 +634,11 @@ class UserController extends Controller
                         $currentValue = (object)[];
 
                         $day = $date->copy()->addDays($i - 1);
-                        $holiday = HolidayService::getHolidayName($user->operatingSite->country, $user->operatingSite->federal_state, $day);
+                        $holiday = HolidayService::getHolidayName(
+                            $user->operatingSite->currentAddress->country,
+                            $user->operatingSite->currentAddress->federal_state,
+                            $day
+                        );
 
                         $currentValueEntryCount = countEntriesOfChunk($currentChunk);
 
@@ -803,9 +799,10 @@ class UserController extends Controller
             $month->travellogDuration = $allShiftEntriesOfMonth->sum(fn($item) => $item->travellogDuration);
         }
 
+        $operatingSiteAddress = $user->operatingSite->currentAddress;
         $props = [
             'organization' => Organization::getCurrent(),
-            'federal_state' => HolidayService::$COUNTRIES[$user->operatingSite->country]['regions'][$user->operatingSite->federal_state],
+            'federal_state' => HolidayService::$COUNTRIES[$operatingSiteAddress->country]['regions'][$operatingSiteAddress->federal_state],
             'user' => $user->load('operatingSite'),
             'monthData' => $monthData,
         ];

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { Country, CountryProp, DateString, Group, OperatingSite, Permission, User, UserLeaveDays, Weekday } from '@/types/types';
+import { Country, CountryProp, DateString, FederalState, Group, OperatingSite, Permission, User, UserLeaveDays, Weekday } from '@/types/types';
 import { getStates } from '@/utils';
 import { DateTime, Info } from 'luxon';
 import { nextTick } from 'vue';
+import HertaUserFormSections from './HertaUserFormSections.vue';
 import PermissionSelector from './PermissionSelector.vue';
 import { FormData, UserProp } from './userFormTypes';
-import HertaUserFormSections from './HertaUserFormSections.vue';
 
 const props = defineProps<{
     user?: UserProp;
@@ -90,13 +90,13 @@ if (props.user) {
     userForm.last_name = props.user.last_name;
     userForm.email = props.user.email;
     userForm.date_of_birth = props.user.date_of_birth;
-    userForm.city = props.user.city ?? '';
-    userForm.zip = props.user.zip ?? '';
-    userForm.street = props.user.street ?? '';
-    userForm.house_number = props.user.house_number ?? '';
-    userForm.address_suffix = props.user.address_suffix ?? '';
-    userForm.country = props.user.country;
-    userForm.federal_state = props.user.federal_state;
+    userForm.city = props.user.current_address.city ?? '';
+    userForm.zip = props.user.current_address.zip ?? '';
+    userForm.street = props.user.current_address.street ?? '';
+    userForm.house_number = props.user.current_address.house_number ?? '';
+    userForm.address_suffix = props.user.current_address.address_suffix ?? '';
+    userForm.country = props.user.current_address.country ?? ('' as Country);
+    userForm.federal_state = props.user.current_address.federal_state ?? ('' as FederalState);
     userForm.phone_number = props.user.phone_number ?? '';
     userForm.staff_number = props.user.staff_number;
     userForm.job_role = props.user.job_role;

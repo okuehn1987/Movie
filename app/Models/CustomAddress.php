@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Addressable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class CustomAddress extends Model
 {
-    use HasFactory;
+    use HasFactory, Addressable;
 
     public function organization()
     {

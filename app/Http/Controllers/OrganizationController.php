@@ -64,6 +64,10 @@ class OrganizationController extends Controller
 
         $operating_site = OperatingSite::create([
             'name' => $validated['head_quarter_name'],
+            'organization_id' => $org->id,
+            'is_headquarter' => 1
+        ]);
+        $operating_site->addresses()->create([
             'street' => $validated['organization_street'],
             'house_number' => $validated['organization_house_number'],
             'address_suffix' => $validated['organization_address_suffix'],
@@ -71,9 +75,8 @@ class OrganizationController extends Controller
             'city' => $validated['organization_city'],
             'zip' => $validated['organization_zip'],
             'federal_state' => $validated['organization_federal_state'],
-            'organization_id' => $org->id,
-            'is_headquarter' => 1
         ]);
+
         $user = (new User)->forceFill([
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],

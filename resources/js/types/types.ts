@@ -80,21 +80,24 @@ export type Paginator<T> = {
 
 export type Weekday = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
 
-type Address = {
+export type Address = DBObject<'address'> & {
     street: string | null;
     house_number: string | null;
     address_suffix: string | null;
-    country: Country;
+    country: Country | null;
     city: string | null;
     zip: string | null;
-    federal_state: FederalState;
-};
+    federal_state: FederalState | null;
+} & (
+        | { addressable_type: 'App\\Models\\User'; addressable_id: User['id'] }
+        | { addressable_type: 'App\\Models\\OperatingSite'; addressable_id: OperatingSite['id'] }
+        | { addressable_type: 'App\\Models\\CustomAddress'; addressable_id: CustomAddress['id'] }
+    );
 
 export type Status = 'created' | 'declined' | 'accepted';
 
 export type User = DBObject<'user'> &
-    SoftDelete &
-    Address & {
+    SoftDelete & {
         first_name: string;
         last_name: string;
         email: string;
@@ -157,7 +160,6 @@ export type Organization = DBObject<'organization'> &
     };
 
 export type OperatingSite = DBObject<'operatingSite'> &
-    Address &
     SoftDelete & {
         name: string;
         email: string | null;
@@ -195,8 +197,7 @@ export type Substitute = DBObject<'substitute'> &
     };
 
 export type CustomAddress = DBObject<'customAddress'> &
-    SoftDelete &
-    Address & {
+    SoftDelete & {
         organization_id: Organization['id'];
     };
 
@@ -232,28 +233,22 @@ export type WorkLogPatch = DBObject<'workLogPatch'> &
         work_log_id: WorkLog['id'];
     };
 
-export type TravelLogAddress = DBObject<'travelLogAddress'> &
-    Address & {
-        name: string;
-        organization_id: Organization['id'];
-    };
-
 export type TravelLog = DBObject<'travelLog'> &
     BaseLog &
     SoftDelete & {
         start: DateTimeString;
-        start_location_id: TravelLogAddress['id'];
         end: DateTimeString;
-        end_location_id: TravelLogAddress['id'];
+        from_id: Address['id'];
+        to_id: Address['id'];
     };
 export type TravelLogPatch = DBObject<'travelLogPatch'> &
     BaseLog &
     SoftDelete & {
         start: DateTimeString;
-        start_location_id: TravelLogAddress['id'];
         end: DateTimeString;
-        end_location_id: TravelLogAddress['id'];
         travel_log_id: TravelLog['id'];
+        from_id: Address['id'];
+        to_id: Address['id'];
     };
 
 export type ShiftEntries = WorkLog | WorkLogPatch | TravelLog | TravelLogPatch;
@@ -462,8 +457,13 @@ export type RelationMap = {
         organization: Organization;
         absences: Absence[];
     };
+    address: {
+        addressable: User | OperatingSite | CustomAddress;
+    };
     customAddress: {
         organization: Organization;
+        addresses: Address[];
+        current_address: Address;
     };
     group: {
         organization: Organization;
@@ -479,6 +479,8 @@ export type RelationMap = {
         users: User[];
         operating_site_users: OperatingSiteUser[];
         operating_times: OperatingTime[];
+        addresses: (Omit<Address, 'country' | 'federal_state'> & { country: Country; federal_state: FederalState })[];
+        current_address: Omit<Address, 'country' | 'federal_state'> & { country: Country; federal_state: FederalState };
     };
     operatingSiteUser: {
         operatings_site: OperatingSite;
@@ -531,23 +533,22 @@ export type RelationMap = {
         user: User | null;
     };
     travelLog: {
-        start_location: TravelLogAddress;
-        end_location: TravelLogAddress;
         user: User;
         patches: TravelLogPatch[];
         current_accepted_patch: TravelLogPatch | null;
         latest_patch: TravelLogPatch | null;
-    };
-    travelLogAddress: {
-        organization: Organization;
-        travel_logs: TravelLog[];
-        travel_log_patches: TravelLogPatch[];
+        addresses: Address[];
+        current_address: Address;
+        from_address: Address;
+        to_address: Address;
     };
     travelLogPatch: {
-        start_location: TravelLogAddress;
-        end_location: TravelLogAddress;
         user: User;
         log: TravelLog;
+        addresses: Address[];
+        current_address: Address;
+        from_address: Address;
+        to_address: Address;
     };
     user: {
         shifts: Shift[];
@@ -581,6 +582,8 @@ export type RelationMap = {
         notifications: Notification[];
         read_notifications: Notification[];
         unread_notifications: Notification[];
+        addresses: Address[];
+        current_address: Address;
     };
     userLeaveDays: {
         user: User;

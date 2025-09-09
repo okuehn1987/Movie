@@ -87,7 +87,11 @@ class AbsenceController extends Controller
             ]
         ])->values();
 
-        $holidays = HolidayService::getHolidaysForMonth($authUser->operatingSite->country, $authUser->operatingSite->federal_state, $date)
+        $holidays = HolidayService::getHolidaysForMonth(
+            $authUser->operatingSite->currentAddress->country,
+            $authUser->operatingSite->currentAddress->federal_state,
+            $date
+        )
             ->mapWithKeys(
                 fn($val, $key) => [Carbon::parse($key)->format('Y-m-d') => $val]
             );
@@ -96,7 +100,7 @@ class AbsenceController extends Controller
             'users' => fn() => [...User::inOrganization()
                 ->with([
                     'userWorkingWeeks:id,user_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,active_since',
-                    'operatingSite:id,country,federal_state',
+                    'operatingSite.currentAddress:id,country,federal_state,addresses.addressable_id,addresses.addressable_type',
                     'userLeaveDays',
                     'absences' => fn($q) => $q
                         ->doesntHave('currentAcceptedPatch')
