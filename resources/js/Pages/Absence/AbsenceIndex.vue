@@ -142,6 +142,17 @@ function submit() {
         filterForm.post(route('userAbsenceFilter.store'));
     }
 }
+
+function resetFilterForm() {
+    const data = {
+        set: '',
+        selected_users: [],
+        selected_absence_types: [],
+        selected_statuses: ['created', 'accepted'] as Status[],
+    };
+    filterForm.defaults(data);
+    filterForm.reset();
+}
 </script>
 <template>
     <AdminLayout title="Abwesenheiten">
@@ -224,7 +235,22 @@ function submit() {
                                             multiple
                                         ></v-select>
                                         <div class="d-flex justify-space-between">
-                                            <v-btn v-if="typeof filterForm.set == 'object'" color="error">Filter löschen</v-btn>
+                                            <v-btn
+                                                v-if="typeof filterForm.set == 'object' && filterForm.set != null"
+                                                color="error"
+                                                @click="
+                                                    filterForm.delete(
+                                                        route('userAbsenceFilter.destroy', { userAbsenceFilter: filterForm.set.value }),
+                                                        {
+                                                            onSuccess: () => {
+                                                                resetFilterForm();
+                                                            },
+                                                        },
+                                                    )
+                                                "
+                                            >
+                                                Filter löschen
+                                            </v-btn>
                                             <div v-else></div>
                                             <v-btn :disabled="!filterForm.isDirty" color="primary" type="submit">
                                                 {{ typeof filterForm.set == 'string' ? 'Filter anlegen' : 'Filter bearbeiten' }}
