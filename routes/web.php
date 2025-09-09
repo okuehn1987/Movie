@@ -72,6 +72,12 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
         Route::resource('timeAccountTransaction', TimeAccountTransactionController::class)->only(['store']);
         Route::resource('timeAccountSetting', TimeAccountSettingsController::class)->only(['store']);
     });
+
+    //timesheets specific routes
+    Route::middleware(isApp::class . ':timesheets')->group(function () {
+
+        Route::resource('customer', CustomerController::class)->only(['index', 'store', 'update']);
+    });
 });
 
 

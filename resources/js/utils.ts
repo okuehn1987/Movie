@@ -1,7 +1,7 @@
 import { router, usePage } from '@inertiajs/vue3';
 import { DateTime, Duration } from 'luxon';
 import { computed, onMounted, onUnmounted, ref, Ref, watch } from 'vue';
-import { Country, Paginator, FederalState, TimeAccountSetting, Tree } from './types/types';
+import { Country, Paginator, FederalState, TimeAccountSetting, Tree, Address } from './types/types';
 
 export function useNow() {
     const now = ref(DateTime.now());
@@ -181,4 +181,11 @@ export function formatDuration(seconds: number, accuracy: 'seconds' | 'minutes' 
         minutes: 'h:mm',
     };
     return (seconds < 0 ? '-' : '') + Duration.fromObject({ seconds: Math.abs(seconds) }).toFormat(format[accuracy]);
+}
+
+export function formatAddress(obj: Address) {
+    const a = obj.street && obj.house_number ? obj.street + ' ' + obj.house_number : '';
+    const b = obj.zip && obj.city ? obj.zip + ' ' + obj.city : '';
+    return [a, b].filter(e => !!e).join(', ');
+    //FIXME: handle null cases
 }

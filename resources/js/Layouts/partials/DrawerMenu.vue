@@ -18,6 +18,15 @@ import { router } from '@inertiajs/vue3';
                           },
                       ]
                     : []),
+                ...($page.props.currentAppModule == 'timesheets'
+                    ? [
+                          {
+                              props: { active: route().current('customer.index'), prependIcon: 'mdi-folder-account-outline' },
+                              value: route('customer.index'),
+                              title: 'Kundenliste',
+                          },
+                      ]
+                    : []),
                 can('dispute', 'viewIndex') && {
                     props: { active: route().current('dispute.index'), prependIcon: 'mdi-bookmark-outline' },
                     value: route('dispute.index'),

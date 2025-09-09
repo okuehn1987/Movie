@@ -92,6 +92,7 @@ export type Address = DBObject<'address'> & {
         | { addressable_type: 'App\\Models\\User'; addressable_id: User['id'] }
         | { addressable_type: 'App\\Models\\OperatingSite'; addressable_id: OperatingSite['id'] }
         | { addressable_type: 'App\\Models\\CustomAddress'; addressable_id: CustomAddress['id'] }
+        | { addressable_type: 'App\\Models\\Customer'; addressable_id: Customer['id'] }
     );
 
 export type Status = 'created' | 'declined' | 'accepted';
@@ -473,8 +474,8 @@ export type RelationMap = {
         current_address: Address;
     };
     customer: {
-        addresses: (Omit<Address, 'country' | 'federal_state'> & { country: Country; federal_state: FederalState })[];
-        current_address: Omit<Address, 'country' | 'federal_state'> & { country: Country; federal_state: FederalState };
+        addresses: Address[];
+        current_address: Address;
     };
     group: {
         organization: Organization;
