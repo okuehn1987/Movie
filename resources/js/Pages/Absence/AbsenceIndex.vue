@@ -232,6 +232,7 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
                     key: e.day.toString(),
                     sortable: false,
                     align: 'center',
+                    width: '44px' ,
                     headerProps:{ class: {'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate() }}
                 } as const)),
             ]"
