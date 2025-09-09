@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\AbsenceType;
+use App\Models\Address;
 use App\Models\Group;
 use App\Models\OperatingSite;
 use App\Models\OperatingSiteUser;
@@ -33,8 +34,8 @@ class DatabaseSeeder extends Seeder
 
     private static function createTimesheetsOrg()
     {
-        $users = User::factory(10);
-        $operatingSites = OperatingSite::factory(3);
+        $users = User::factory(10)->has(Address::factory(1));
+        $operatingSites = OperatingSite::factory(3)->has(Address::factory(1));
 
         $org = Organization::factory()
             ->has(TimeAccountSetting::factory(1))
@@ -118,12 +119,13 @@ class DatabaseSeeder extends Seeder
 
     private static function createDefaultOrg()
     {
-        $users = User::factory(10);
+        $users = User::factory(10)->has(Address::factory(1));
 
         $org = Organization::factory()
             ->has(TimeAccountSetting::factory(1))
             ->has(
                 OperatingSite::factory(3)
+                    ->has(Address::factory(1))
                     ->has($users->has(UserWorkingHour::factory(1))->has(UserWorkingWeek::factory(1)))
                     ->has(OperatingTime::factory(7, ['start' => '09:00:00', 'end' => '17:00:00'])
                         ->sequence(fn(Sequence $sequence) => ['type' => [
@@ -178,6 +180,7 @@ class DatabaseSeeder extends Seeder
             'role' => 'employee',
             'supervisor_id' => $admin->id,
         ])
+            ->has(Address::factory(1))
             ->has(UserWorkingHour::factory(1, ['weekly_working_hours' => 40, 'active_since' => now()->startOfYear()]))
             ->has(UserWorkingWeek::factory(1))
             ->create();
