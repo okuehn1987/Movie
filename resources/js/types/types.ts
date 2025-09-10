@@ -26,8 +26,10 @@ type SoftDelete = {
 export type Model =
     | 'organization'
     | 'operatingSite'
+    | 'customer'
     | 'group'
     | 'user'
+    | 'ticket'
     | 'timeAccountSetting'
     | 'absence'
     | 'absenceType'
@@ -404,6 +406,25 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
           }
     );
 
+export type Ticket = DBObject<'ticket'> & {
+    title: string;
+    description: string | null;
+    priority: string | null;
+    status: 'created' | 'declined' | 'accepted';
+    customer_id: Customer['id'];
+    user_id: User['id'];
+    assignee_id: User['id'] | null;
+    assigned_at: DateTimeString | null;
+};
+
+export type TicketRecord = DBObject<'record'> & {
+    ticket_id: Ticket['id'];
+    start: DateTimeString;
+    duration: number;
+    description: string | null;
+    resources: string | null;
+};
+
 export type PermissionValue = 'read' | 'write' | null;
 
 export type Permission = {
@@ -474,6 +495,8 @@ export type RelationMap = {
         current_address: Address;
     };
     customer: {
+        organization: Organization;
+        tickets: Ticket[];
         addresses: Address[];
         current_address: Address;
     };
@@ -502,6 +525,7 @@ export type RelationMap = {
         operating_site: OperatingSite;
     };
     organization: {
+        customers: Customer[];
         operating_sites: OperatingSite[];
         operating_site_users: OperatingSiteUser[];
         users: User[];
@@ -528,6 +552,15 @@ export type RelationMap = {
     };
     specialWorkingHoursFactor: {
         organization: Organization;
+    };
+    ticket: {
+        customer: Customer;
+        user: User;
+        assignee: User | null;
+        records: TicketRecord[];
+    };
+    ticketRecord: {
+        ticket: Ticket;
     };
     timeAccount: {
         user: User;

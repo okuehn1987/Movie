@@ -21,6 +21,11 @@ import { router } from '@inertiajs/vue3';
                 ...($page.props.currentAppModule == 'timesheets'
                     ? [
                           {
+                              props: { active: route().current('ticket.index'), prependIcon: 'mdi-ticket-account' },
+                              value: route('ticket.index'),
+                              title: 'Tickets',
+                          },
+                          {
                               props: { active: route().current('customer.index'), prependIcon: 'mdi-folder-account-outline' },
                               value: route('customer.index'),
                               title: 'Kundenliste',

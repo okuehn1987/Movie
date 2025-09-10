@@ -75,8 +75,8 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
 
     //timesheets specific routes
     Route::middleware(isApp::class . ':timesheets')->group(function () {
-
         Route::resource('customer', CustomerController::class)->only(['index', 'store', 'update']);
+        Route::resource('ticket', TicketController::class)->only(['index', 'store', 'update', 'destroy']);
     });
 });
 
