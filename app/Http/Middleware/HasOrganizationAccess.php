@@ -29,11 +29,14 @@ class HasOrganizationAccess
             $targetOrgId = match (true) {
                 $instanceObject instanceof \App\Models\OperatingSite, $instanceObject instanceof \App\Models\AbsenceType,
                 $instanceObject instanceof \App\Models\Group, $instanceObject instanceof \App\Models\SpecialWorkingHoursFactor,
-                $instanceObject instanceof \App\Models\TimeAccountSetting,
+                $instanceObject instanceof \App\Models\TimeAccountSetting, $instanceObject instanceof \App\Models\Customer
                 => $instanceObject->organization_id,
 
                 $instanceObject instanceof \App\Models\Absence, $instanceObject instanceof \App\Models\AbsencePatch
                 => $instanceObject->absenceType()->select('organization_id')->first()->organization_id,
+
+                $instanceObject instanceof \App\Models\CustomerOperatingSite
+                => $instanceObject->customer()->select('organization_id')->first()->organization_id,
 
                 $instanceObject instanceof \App\Models\TimeAccount
                 => $instanceObject->timeAccountSetting()->select('organization_id')->first()->organization_id,

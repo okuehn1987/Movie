@@ -82,6 +82,7 @@ export type Paginator<T> = {
 
 export type Weekday = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
 
+export type AdressKeys = 'street' | 'house_number' | 'address_suffix' | 'country' | 'city' | 'zip' | 'federal_state';
 export type Address = DBObject<'address'> & {
     street: string | null;
     house_number: string | null;
@@ -154,6 +155,8 @@ export type Customer = DBObject<'customer'> &
         name: string;
         email: string | null;
         phone: string | null;
+        reference_number: string | null;
+        organization_id: Organization['id'];
     };
 
 export type Flag = 'auto_accept_travel_logs' | 'christmas_vacation_day' | 'new_year_vacation_day' | 'vacation_limitation_period' | 'night_surcharges';
@@ -468,6 +471,22 @@ export type AppModule = DBObject<'appModule'> & {
     activated_at: DateTimeString | null;
 };
 
+export type CustomerOperatingSite = DBObject<'customerOperatingSite'> & {
+    customer_id: Customer['id'];
+    name: string;
+};
+
+export type JSON = string | number | boolean | null | { [x: string]: JSON } | JSON[];
+
+export type CustomerNote = DBObject<'customerNote'> & {
+    customer_id: Customer['id'];
+    modified_by: User['id'];
+    parent_id: CustomerNote['id'] | null;
+    type: 'complex' | 'primitive' | 'file';
+    key: string | null;
+    value: string;
+};
+
 export type RelationMap = {
     absence: {
         absence_type?: AbsenceType;
@@ -497,6 +516,16 @@ export type RelationMap = {
     customer: {
         organization: Organization;
         tickets: Ticket[];
+        customer_operating_sites: CustomerOperatingSite[];
+        customer_notes: CustomerNote[];
+    };
+    customerNote: {
+        customer: Customer;
+        modified_by: User;
+        parent?: CustomerNote;
+    };
+    customerOperatingSite: {
+        customer: Customer;
         addresses: Address[];
         current_address: Address;
     };

@@ -25,7 +25,7 @@ import { router } from '@inertiajs/vue3';
                               value: route('ticket.index'),
                               title: 'Tickets',
                           },
-                          {
+                          can('customer', 'viewIndex') && {
                               props: { active: route().current('customer.index'), prependIcon: 'mdi-folder-account-outline' },
                               value: route('customer.index'),
                               title: 'Kundenliste',

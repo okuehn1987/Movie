@@ -26,6 +26,11 @@ class Organization extends Model
         return $this->hasMany(OrganizationModule::class);
     }
 
+    public function customers()
+    {
+        return $this->hasMany(Customer::class);
+    }
+
     public function operatingSites()
     {
         return $this->hasMany(OperatingSite::class);

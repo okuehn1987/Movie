@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Addressable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 class Customer extends Model
 {
@@ -21,5 +22,20 @@ class Customer extends Model
     public function organization()
     {
         return $this->belongsTo(Organization::class);
+    }
+
+    public function customerOperatingSites()
+    {
+        return $this->hasMany(CustomerOperatingSite::class);
+    }
+
+    public function customerNotes()
+    {
+        return $this->hasMany(CustomerNote::class);
+    }
+
+    public function rootNotes()
+    {
+        return $this->customerNotes()->whereNull('parent_id');
     }
 }

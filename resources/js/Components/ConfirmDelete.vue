@@ -23,9 +23,9 @@ defineProps<{
                 </template>
                 <v-card-text>
                     <v-row>
-                        <v-col cols="12"> {{ content }}</v-col>
+                        <v-col cols="12">{{ content }}</v-col>
                         <v-col cols="12" class="text-end">
-                            <v-btn @click.stop="router.delete(route, { onSuccess: () => (isActive.value = false) })" color="error"> Löschen </v-btn>
+                            <v-btn @click.stop="router.delete(route, { onSuccess: () => (isActive.value = false) })" color="error">Löschen</v-btn>
                         </v-col>
                     </v-row>
                 </v-card-text>

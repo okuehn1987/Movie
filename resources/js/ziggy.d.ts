@@ -371,9 +371,55 @@ declare module 'ziggy-js' {
     "timeAccountSetting.store": [],
     "customer.index": [],
     "customer.store": [],
+    "customer.show": [
+        {
+            "name": "customer",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "customer.update": [
         {
             "name": "customer",
+            "required": true
+        }
+    ],
+    "customer.destroy": [
+        {
+            "name": "customer",
+            "required": true
+        }
+    ],
+    "customer.customerNote.store": [
+        {
+            "name": "customer",
+            "required": true
+        }
+    ],
+    "customerNote.update": [
+        {
+            "name": "customerNote",
+            "required": true
+        }
+    ],
+    "customerNote.destroy": [
+        {
+            "name": "customerNote",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticket.index": [],
+    "ticket.store": [],
+    "ticket.update": [
+        {
+            "name": "ticket",
+            "required": true
+        }
+    ],
+    "ticket.destroy": [
+        {
+            "name": "ticket",
             "required": true
         }
     ],

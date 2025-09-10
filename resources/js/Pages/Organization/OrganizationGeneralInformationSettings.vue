@@ -48,6 +48,8 @@ function submit() {
                         <v-file-input
                             :label="$page.props.organization.logo ? 'Firmenlogo ändern' : 'Firmenlogo (optional)'"
                             v-model="organizationForm.logo"
+                            accept="image/*"
+                            :error-messages="organizationForm.errors.logo"
                         ></v-file-input>
                     </v-col>
 

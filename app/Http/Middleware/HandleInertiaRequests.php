@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Customer;
 use App\Models\Group;
 use App\Models\OperatingSite;
 use App\Models\Organization;
@@ -44,7 +45,11 @@ class HandleInertiaRequests extends Middleware
     public function shareTimesheets(Request $request): array
     {
         return [
-            'appGlobalCan' => []
+            'appGlobalCan' => [
+                'customer' => [
+                    'viewIndex' => Gate::allows('viewIndex', Customer::class),
+                ],
+            ]
         ];
     }
 
