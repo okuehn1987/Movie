@@ -298,6 +298,13 @@ export type AbsenceType = DBObject<'absenceType'> &
     };
 
 export const TRUNCATION_CYCLES = [null, '1', '3', '6', '12'] as const;
+export const PRIORITIES = {
+    lowest: 'Niedrigste',
+    low: 'Niedrig',
+    medium: 'Mittel',
+    high: 'Hoch',
+    highest: 'Höchste',
+} as const;
 
 export type TimeAccountSetting = DBObject<'timeAccountSetting'> &
     SoftDelete & {
@@ -408,7 +415,7 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
 export type Ticket = DBObject<'ticket'> & {
     title: string;
     description: string | null;
-    priority: string | null;
+    priority: keyof typeof PRIORITIES;
     status: 'created' | 'declined' | 'accepted';
     customer_id: Customer['id'];
     user_id: User['id'];
@@ -496,8 +503,8 @@ export type RelationMap = {
     customer: {
         organization: Organization;
         tickets: Ticket[];
-        addresses: (Omit<Address, 'country' | 'federal_state'> & { country: Country; federal_state: FederalState })[];
-        current_address: Omit<Address, 'country' | 'federal_state'> & { country: Country; federal_state: FederalState };
+        addresses: Address[];
+        current_address: Address;
     };
     group: {
         organization: Organization;
@@ -524,6 +531,7 @@ export type RelationMap = {
         operating_site: OperatingSite;
     };
     organization: {
+        customers: Customer[];
         operating_sites: OperatingSite[];
         operating_site_users: OperatingSiteUser[];
         users: User[];

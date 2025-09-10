@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('description')->nullable();
-            $table->string('priority')->nullable();
+            $table->enum('priority', ['lowest', 'low', 'medium', 'high', 'highest'])->default('medium');
             $table->enum('status', ["created", "declined", "accepted"]);
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
@@ -27,6 +27,7 @@ return new class extends Migration
         Schema::create('ticket_records', function (Blueprint $table) {
             $table->id();
             $table->foreignId("ticket_id")->constrained()->onDelete("cascade");
+            $table->foreignId("user_id")->constrained()->onDelete("cascade");
             $table->dateTime("start");
             $table->integer("duration");
             $table->text("description")->nullable();

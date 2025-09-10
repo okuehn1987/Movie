@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\AbsenceType;
 use App\Models\Address;
+use App\Models\Customer;
 use App\Models\Group;
 use App\Models\OperatingSite;
 use App\Models\OperatingSiteUser;
@@ -53,7 +54,9 @@ class DatabaseSeeder extends Seeder
                             'sunday',
                         ][$sequence->index % 7]]))
             )
-            ->has(Group::factory(3))->create();
+            ->has(Group::factory(3))
+            ->has(Customer::factory(5)->has(Address::factory(1)))
+            ->create();
 
         OrganizationModule::create([
             'organization_id' => $org->id,
@@ -138,7 +141,9 @@ class DatabaseSeeder extends Seeder
                             'sunday',
                         ][$sequence->index % 7]]))
             )
-            ->has(Group::factory(3))->create();
+            ->has(Group::factory(3))
+            ->has(Customer::factory(5)->has(Address::factory(1)))
+            ->create();
 
         foreach (array_keys(AppModuleService::$APP_MODULES) as $module) {
             OrganizationModule::create([
@@ -165,6 +170,7 @@ class DatabaseSeeder extends Seeder
             'role' => 'super-admin',
             'organization_id' => $org->id,
         ])
+            ->has(Address::factory(1))
             ->has(UserWorkingHour::factory(1, ['weekly_working_hours' => 40, 'active_since' => now()->startOfYear()]))
             ->has(UserWorkingWeek::factory(1))
             ->create();

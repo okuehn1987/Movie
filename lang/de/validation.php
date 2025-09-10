@@ -198,7 +198,8 @@ return [
         'user_working_hours.*.weekly_working_hours' => 'Stunden pro Woche',
         'year' => 'Jahr',
         'month' => 'Monat',
-        'description' => 'Beschreibung'
+        'description' => 'Beschreibung',
+        'title' => 'Betreff'
     ],
 
 ];

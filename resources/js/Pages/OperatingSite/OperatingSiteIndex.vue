@@ -86,7 +86,7 @@ function submit() {
                                                 <v-text-field
                                                     label="Name"
                                                     required
-                                                    :error-messages="operatingSiteForm.errors.street"
+                                                    :error-messages="operatingSiteForm.errors.name"
                                                     v-model="operatingSiteForm.name"
                                                 ></v-text-field>
                                             </v-col>

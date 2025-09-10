@@ -369,6 +369,20 @@ declare module 'ziggy-js' {
     ],
     "timeAccountTransaction.store": [],
     "timeAccountSetting.store": [],
+    "ticket.index": [],
+    "ticket.store": [],
+    "ticket.update": [
+        {
+            "name": "ticket",
+            "required": true
+        }
+    ],
+    "ticket.destroy": [
+        {
+            "name": "ticket",
+            "required": true
+        }
+    ],
     "login": [],
     "password.request": [],
     "password.email": [],
