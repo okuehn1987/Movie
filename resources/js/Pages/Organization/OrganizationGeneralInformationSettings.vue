@@ -65,6 +65,7 @@ function submit() {
                             :label="$page.props.organization.logo ? 'Firmenlogo ändern' : 'Firmenlogo (optional)'"
                             v-model="organizationForm.logo"
                             :error-messages="organizationForm.errors.logo"
+                            accept="image/*"
                         ></v-file-input>
                     </v-col>
 
