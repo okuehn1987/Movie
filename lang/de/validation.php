@@ -102,6 +102,7 @@ return [
     'multiple_of' => ':attribute muss ein Vielfaches von :value sein.',
     'not_in' => 'Das ausgewählte :attribute ist ungültig.',
     'not_regex' => 'Das Format von :attribute ist ungültig.',
+    'numeric' => ':attribute muss eine Zahl sein.',
     'password' => [
         'letters' => ':attribute muss mindestens einen Buchstaben enthalten.',
         'mixed' => ':attribute muss mindestens einen Großbuchstaben und einen Kleinbuchstaben enthalten.',
@@ -200,7 +201,9 @@ return [
         'year' => 'Jahr',
         'month' => 'Monat',
         'description' => 'Beschreibung',
-        'resignation_date' => 'Kündigungsdatum'
+        'resignation_date' => 'Kündigungsdatum',
+        'set_name' => 'Filtername',
+        'extra_charge' => 'Faktor Zuschlag',
     ],
 
 ];
