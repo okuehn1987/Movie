@@ -101,7 +101,7 @@ return [
     'multiple_of' => ':attribute muss ein Vielfaches von :value sein.',
     'not_in' => 'Das ausgewählte :attribute ist ungültig.',
     'not_regex' => 'Das Format von :attribute ist ungültig.',
-    'numeric' => ':attribute muss ein Zahlenformat besitzen.',
+    'numeric' => ':attribute muss eine Zahl sein.',
     'password' => [
         'letters' => ':attribute muss mindestens einen Buchstaben enthalten.',
         'mixed' => ':attribute muss mindestens einen Großbuchstaben und einen Kleinbuchstaben enthalten.',
