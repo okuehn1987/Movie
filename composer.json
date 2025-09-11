@@ -14,6 +14,7 @@
         "inertiajs/inertia-laravel": "^2.0",
         "innoge/laravel-msgraph-mail": "^1.4",
         "laravel/framework": "^11.9",
+        "laravel/nightwatch": "^1.13",
         "laravel/pail": "^1.2",
         "laravel/pennant": "^1.15",
         "laravel/sanctum": "^4.0",
