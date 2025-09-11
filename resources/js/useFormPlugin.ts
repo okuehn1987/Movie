@@ -1,4 +1,4 @@
-import { useForm as inertiaUseForm } from '@inertiajs/vue3';
+import { InertiaForm, useForm as inertiaUseForm } from '@inertiajs/vue3';
 
 export default {
     install: () => {
@@ -7,7 +7,7 @@ export default {
 };
 
 export type FormReturnType<TForm extends object> = Prettify<
-    Omit<ReturnType<typeof inertiaUseForm<TForm>>, 'errors'> & {
+    Omit<InertiaForm<TForm>, 'errors'> & {
         errors: Prettify<Partial<Record<keyof TForm, string>> & Partial<Record<PossibleErrorKeys<TForm>, string>>>;
     }
 >;
