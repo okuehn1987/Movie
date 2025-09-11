@@ -2,6 +2,7 @@
 import {
     Country,
     CountryProp,
+    DateString,
     Group,
     GroupUser,
     OperatingSite,
@@ -61,6 +62,7 @@ const userForm = useForm({
     operating_site_id: null as null | OperatingSite['id'],
     supervisor_id: null as null | User['id'],
     is_supervisor: false,
+    resignation_date: null as null | DateString,
     home_office: false,
     home_office_hours_per_week: null as null | number, //TODO: check if we need active_since
 
@@ -124,6 +126,7 @@ if (props.user) {
     userForm.group_id = props.user.group_id;
     userForm.operating_site_id = props.user.operating_site_id;
     userForm.supervisor_id = props.user.supervisor_id;
+    userForm.resignation_date = props.user.resignation_date;
     userForm.home_office = props.user.home_office;
     userForm.home_office_hours_per_week = props.user.home_office_hours_per_week;
     userForm.overtime_calculations_start = props.user.overtime_calculations_start;
@@ -206,7 +209,8 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
 </script>
 <template>
     <v-form id="userForm" @submit.prevent="submit" :disabled="user && !can('user', 'update')">
-        <v-card class="mb-4" title="Persönliche Daten">
+        <v-card class="mb-4">
+            <v-card-title>Persönliche Daten</v-card-title>
             <v-card-text>
                 <v-row>
                     <v-col cols="12" md="6">
@@ -369,7 +373,8 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" title="Arbeitswoche">
+        <v-card class="mb-4">
+            <v-card-title>Arbeitswoche</v-card-title>
             <v-card-text>
                 <v-row>
                     <v-col cols="12" v-if="userForm.errors.user_working_weeks">
@@ -454,8 +459,8 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-
-        <v-card class="mb-4" title="Urlaubstage">
+        <v-card class="mb-4">
+            <v-card-title>Urlaubstage</v-card-title>
             <v-card-text>
                 <v-row>
                     <v-col cols="12" v-if="userForm.errors.user_leave_days">
@@ -536,7 +541,8 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" title="Homeoffice">
+        <v-card class="mb-4">
+            <v-card-title>Homeoffice</v-card-title>
             <v-card-text>
                 <v-row>
                     <v-col cols="12" md="6">
@@ -563,7 +569,8 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" title="Organisation">
+        <v-card class="mb-4">
+            <v-card-title>Organisation</v-card-title>
             <v-card-text>
                 <v-row>
                     <PermissionSelector
@@ -576,7 +583,8 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" title="Betriebsstätte">
+        <v-card class="mb-4">
+            <v-card-title>Betriebsstätte</v-card-title>
             <v-card-text>
                 <v-row>
                     <v-col cols="12" class="mb-4">
@@ -599,7 +607,8 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" title="Abteilung">
+        <v-card class="mb-4">
+            <v-card-title>Abteilung</v-card-title>
             <v-card-text>
                 <v-row>
                     <v-col cols="12" class="mb-4">
@@ -623,7 +632,8 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" title="Vorgesetzter">
+        <v-card class="mb-4">
+            <v-card-title>Vorgesetzter</v-card-title>
             <v-card-text>
                 <v-row>
                     <v-col cols="12" md="6">
@@ -637,6 +647,24 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-checkbox v-model="userForm.is_supervisor" label="Ist ein Vorgesetzter"></v-checkbox>
+                    </v-col>
+                </v-row>
+            </v-card-text>
+        </v-card>
+        <v-card class="mb-4" v-if="user?.organization_id || user?.supervisor">
+            <v-card-title>Kündigungseinstellungen</v-card-title>
+            <v-card-text>
+                <v-row>
+                    <v-col cols="12" md="3">
+                        <v-text-field
+                            type="date"
+                            label="Kündigungsdatum"
+                            :min="DateTime.now().plus({ day: 1 }).toFormat('yyyy-MM-dd')"
+                            v-model="userForm.resignation_date"
+                            :disabled="!!userForm.resignation_date && DateTime.now().toFormat('yyyy-MM-dd') >= userForm.resignation_date"
+                            :error-messages="userForm.errors.resignation_date"
+                            clearable
+                        ></v-text-field>
                     </v-col>
                 </v-row>
             </v-card-text>

@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\DB;
 class UserController extends Controller
 {
 
-    private function validateUser(Request $request, array $additionalRules = [], string $mode = 'create')
+    private function validateUser(Request $request, array $additionalRules = [], string $mode = 'create', User | null $user = null)
     {
         return $request->validate([
             "first_name" => "required|string",
@@ -68,6 +68,22 @@ class UserController extends Controller
             ],
 
             'is_supervisor' => 'required|boolean',
+
+            'resignation_date' => ['nullable', 'date', function ($attribute, $value, $fail) use ($request, $mode, $user) {
+                if ($mode == 'create') return;
+                if ($user->resignation_date == $value) return;
+                if ($user->resignation_date && $user->resignation_date <= now()->format('Y-m-d')) {
+                    $fail('validation.immutable')->translate([
+                        'attribute' => __('validation.attributes.resignation_date'),
+                    ]);
+                }
+                if ($value <= now()->format('Y-m-d')) {
+                    $fail('validation.after')->translate([
+                        'attribute' => __('validation.attributes.resignation_date'),
+                        'date' => Carbon::now()->format('d.m.Y')
+                    ]);
+                }
+            }],
 
             'home_office' => 'required|boolean',
             'home_office_hours_per_week' => 'nullable|min:0|numeric',
@@ -348,6 +364,7 @@ class UserController extends Controller
             'is_supervisor' => $validated['is_supervisor'],
             'supervisor_id' => $validated['supervisor_id'],
             'operating_site_id' => $validated['operating_site_id'],
+            'resignation_date' => $validated['resignation_date'],
             'date_of_birth' => Carbon::parse($validated['date_of_birth']),
             'home_office' => $validated['home_office'],
             'home_office_hours_per_week' => $validated['home_office'] ? $validated['home_office_hours_per_week'] ?? 0 : null,
@@ -443,7 +460,7 @@ class UserController extends Controller
 
         $validated = self::validateUser($request, [
             "email" => ['required', 'email', Rule::unique('users')->ignore($user->id)],
-        ], 'update');
+        ], 'update', $user);
 
         $user->update([
             'first_name' => $validated['first_name'],
@@ -463,6 +480,7 @@ class UserController extends Controller
             'operating_site_id' => $validated['operating_site_id'],
             'supervisor_id' => $validated['supervisor_id'],
             'is_supervisor' => $validated['is_supervisor'],
+            'resignation_date' => $validated['resignation_date'],
             'date_of_birth' => Carbon::parse(Carbon::parse($validated['date_of_birth'])->format('d-m-Y')),
             'home_office' => $validated['home_office'],
             'home_office_hours_per_week' => $validated['home_office'] ? $validated['home_office_hours_per_week'] ?? 0 : null,
