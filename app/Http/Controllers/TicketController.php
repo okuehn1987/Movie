@@ -18,7 +18,7 @@ class TicketController extends Controller
         Gate::authorize('viewIndex', Ticket::class);
 
         return Inertia::render('Ticket/TicketIndex', [
-            'tickets' => Ticket::inOrganization()->with(['customer:id,name', 'user:id,first_name,last_name', 'assignee:id,first_name,last_name', 'records'])->get(),
+            'tickets' => Ticket::inOrganization()->with(['customer:id,name', 'user:id,first_name,last_name', 'assignee:id,first_name,last_name', 'records.user'])->get(),
             'customers' => Customer::inOrganization()->get(['id', 'name']),
             'users' => User::inOrganization()->get(['id', 'first_name', 'last_name', 'job_role']),
         ]);
@@ -60,7 +60,22 @@ class TicketController extends Controller
         return back()->with('success', 'Ticket erfolgreich erstellt.');
     }
 
-    public function update() {}
+    public function update(Request $request, Ticket $ticket)
+    {
+
+        Gate::authorize('create', Ticket::class);
+
+        $validated = $request->validate([
+            'priority' => 'required|in:lowest,low,medium,high,highest',
+            'assignee_id' => 'nullable|exists:users,id',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $ticket->update($validated);
+
+        return back()->with('success', 'Änderungen erfolgreich gespeichert.');
+    }
 
     public function delete(Ticket $ticket)
     {
