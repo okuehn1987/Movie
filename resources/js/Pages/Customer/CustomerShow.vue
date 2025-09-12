@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Customer, CustomerNote, CustomerOperatingSite, Relations, Tree } from '@/types/types';
-import { computed, ref, shallowRef } from 'vue';
+import { Customer, CustomerOperatingSite, Relations } from '@/types/types';
+import { ref } from 'vue';
 import CustomerForm from './partial/CustomerForm.vue';
-import { filterTree, formatAddress, mapTree } from '@/utils';
+import { formatAddress } from '@/utils';
 import CustomerNotes from './partial/CustomerNotes.vue';
 
-const props = defineProps<{
+defineProps<{
     customer: Customer;
     operatingSites: (CustomerOperatingSite & Pick<Relations<'customerOperatingSite'>, 'current_address'>)[];
     customerNotes: Relations<'customer'>['customer_notes'];

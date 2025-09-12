@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 import { Customer, CustomerNote, Tree } from '@/types/types';
 import { filterTree } from '@/utils';
 import { computed, ref } from 'vue';
@@ -31,10 +32,6 @@ const noteTree = computed(() => {
     return filterTree(tree, 'children', () => true);
 });
 
-const deleteNoteForm = useForm({
-    noteId: null as CustomerNote['id'] | null,
-});
-
 const editNoteForm = useForm({
     noteId: null as CustomerNote['id'] | null,
     key: null as string | null,
@@ -59,7 +56,7 @@ function editNote(note: CustomerNote) {
         <template #append>
             <v-dialog max-width="1000" v-model="openDialog">
                 <template v-slot:activator="{ props: activatorProps }">
-                    <v-btn v-bind="activatorProps" @click="openDialog === true" icon="mdi-plus" color="primary" variant="text"></v-btn>
+                    <v-btn v-bind="activatorProps" icon="mdi-plus" color="primary" variant="text"></v-btn>
                 </template>
 
                 <template v-slot:default="{ isActive }">
@@ -187,10 +184,10 @@ function editNote(note: CustomerNote) {
                 </template>
             </template>
             <template v-slot:append="{ item }">
-                <div v-if="mode == 'edit' && !editNoteForm.noteId" class="d-flex ga-2">
+                <div v-if="mode == 'edit' && !editNoteForm.noteId" class="d-flex ga-2 mt-n2">
                     <v-btn
                         v-if="item.type == 'complex'"
-                        @click="
+                        @click.stop="
                             {
                                 openDialog = true;
                                 createNoteForm.parent_id = item.id;
@@ -200,20 +197,12 @@ function editNote(note: CustomerNote) {
                         color="primary"
                         variant="text"
                     ></v-btn>
-                    <v-btn icon="mdi-pencil" @click.stop="editNote(item)" style="height: 40px" variant="text" color="primary"></v-btn>
-                    <v-btn
-                        icon="mdi-delete"
-                        @click.stop="
-                            () => {
-                                deleteNoteForm.noteId = item.id;
-                                deleteNoteForm.delete(route('customerNote.destroy', { customerNote: item.id }));
-                            }
-                        "
-                        style="height: 40px"
-                        variant="text"
-                        color="error"
-                        :loading="deleteNoteForm.processing && item.id == deleteNoteForm.noteId"
-                    ></v-btn>
+                    <v-btn icon="mdi-pencil" @click.stop="editNote(item)" variant="text" color="primary"></v-btn>
+                    <ConfirmDelete
+                        title="Notiz löschen"
+                        :route="route('customerNote.destroy', { customerNote: item.id })"
+                        content="test"
+                    ></ConfirmDelete>
                 </div>
             </template>
         </v-treeview>

@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
 import { defineProps } from 'vue';
 defineProps<{
     title: string;
     content: string;
     route: string;
 }>();
+
+const form = useForm({});
 </script>
 
 <template>
@@ -25,7 +26,13 @@ defineProps<{
                     <v-row>
                         <v-col cols="12">{{ content }}</v-col>
                         <v-col cols="12" class="text-end">
-                            <v-btn @click.stop="router.delete(route, { onSuccess: () => (isActive.value = false) })" color="error">Löschen</v-btn>
+                            <v-btn
+                                @click.stop="form.delete(route, { onSuccess: () => (isActive.value = false) })"
+                                :loading="form.processing"
+                                color="error"
+                            >
+                                Löschen
+                            </v-btn>
                         </v-col>
                     </v-row>
                 </v-card-text>
