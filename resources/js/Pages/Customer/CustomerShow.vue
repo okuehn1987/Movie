@@ -36,7 +36,7 @@ const currentTab = ref('customerData');
                 ></v-data-table-virtual>
             </v-tabs-window-item>
             <v-tabs-window-item value="customerNotes">
-                <CustomerNotes :customerNotes="customerNotes"></CustomerNotes>
+                <CustomerNotes :customer :customerNotes="customerNotes"></CustomerNotes>
             </v-tabs-window-item>
         </v-tabs-window>
     </AdminLayout>

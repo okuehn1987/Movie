@@ -17,8 +17,8 @@ return new class extends Migration
             $table->foreignId('modified_by')->constrained('users')->onDelete('cascade');
             $table->foreignId('parent_id')->nullable()->constrained('customer_notes')->onDelete('cascade');
             $table->string('type');
-            $table->string('key')->nullable();
-            $table->json('value');
+            $table->string('key');
+            $table->string('value');
             $table->timestamps();
         });
     }
