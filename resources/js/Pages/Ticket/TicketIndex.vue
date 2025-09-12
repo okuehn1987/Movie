@@ -22,6 +22,9 @@ const tab = ref('newTickets');
             <v-tabs-window-item value="newTickets">
                 <TicketTable :tickets="tickets" :customers="customers" :users="users" />
             </v-tabs-window-item>
+            <v-tabs-window-item value="archive">
+                <TicketTable :tickets="tickets.filter(t => t.status == 'accepted')" :customers="customers" :users="users" />
+            </v-tabs-window-item>
         </v-tabs-window>
     </AdminLayout>
 </template>

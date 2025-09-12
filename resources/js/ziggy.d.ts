@@ -383,6 +383,25 @@ declare module 'ziggy-js' {
             "required": true
         }
     ],
+    "ticket.record.store": [
+        {
+            "name": "ticket",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "record.update": [
+        {
+            "name": "record",
+            "required": true
+        }
+    ],
+    "record.destroy": [
+        {
+            "name": "record",
+            "required": true
+        }
+    ],
     "login": [],
     "password.request": [],
     "password.email": [],

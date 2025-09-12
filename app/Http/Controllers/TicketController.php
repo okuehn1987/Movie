@@ -54,6 +54,7 @@ class TicketController extends Controller
                 ...collect($validated)->only($RECORD_KEYS),
                 'start' => Carbon::parse($validated['start']),
                 'duration' => $validated['duration'] * 3600,
+                'user_id' => Auth::id(),
             ]);
 
         return back()->with('success', 'Ticket erfolgreich erstellt.');
