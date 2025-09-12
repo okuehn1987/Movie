@@ -36,28 +36,6 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Support\Facades\URL::forceScheme('https');
         Model::shouldBeStrict($this->app->environment('local'));
 
-        DB::listen(function (QueryExecuted $event) {
-            if ($event->time > 50) {
-                Log::warning('Slow query', ['sql' => Str::replaceArray('?', $event->bindings, $event->sql), 'time' => $event->time]);
-            }
-
-            if (env('QUERY_LOG') && !str_contains($event->sql, 'querylogs')) {
-                $bindings = $event->bindings;
-                $sql = $event->sql;
-                dispatch(function () use ($sql, $bindings) {
-                    try {
-                        DB::table('querylogs')->insert([
-                            'user_id' => Auth::id(),
-                            'query' => Str::replaceArray('?', $bindings, $sql),
-                            'executed_at' => now(),
-                        ]);
-                    } catch (Exception $e) {
-                        Log::warning($e);
-                    }
-                })->afterResponse();
-            }
-        });
-
         Vite::prefetch(concurrency: 3);
 
         Gate::defaultDenialResponse(app()->environment('local') ? Response::denyWithStatus(403) : Response::denyAsNotFound());

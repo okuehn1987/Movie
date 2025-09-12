@@ -111,6 +111,7 @@ export type User = DBObject<'user'> &
         weekly_working_hours: number;
         overtime_calculations_start: DateString;
         is_supervisor: boolean;
+        resignation_date: DateString | null;
         job_role: string | null;
         notification_channels: ('database' | 'mail')[];
     } & (
@@ -321,6 +322,17 @@ export type TimeAccountTransaction = DBObject<'timeAccountTransaction'> &
         amount: Seconds;
         description: string;
     };
+
+export type UserAbsenceFilter = DBObject<'userAbcenceFilter'> & {
+    user_id: User['id'];
+    name: string;
+    data: {
+        version: 'v1';
+        absence_type_ids: AbsenceType['id'][];
+        user_ids: User['id'][];
+        statuses: Status[];
+    };
+};
 
 export type UserWorkingWeek = DBObject<'userWorkingWeek'> &
     SoftDelete &
@@ -574,6 +586,10 @@ export type RelationMap = {
         notifications: Notification[];
         read_notifications: Notification[];
         unread_notifications: Notification[];
+        user_absence_filters: UserAbsenceFilter[];
+    };
+    userAbsenceFilter: {
+        user: User;
     };
     userLeaveDays: {
         user: User;

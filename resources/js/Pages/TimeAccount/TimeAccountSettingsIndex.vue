@@ -49,17 +49,22 @@ const timeAccountSettingForm = useForm({
                                 >
                                     <v-row>
                                         <v-col cols="12" md="6">
-                                            <v-text-field label="Bezeichnung" v-model="timeAccountSettingForm.type"></v-text-field>
+                                            <v-text-field
+                                                label="Bezeichnung"
+                                                v-model="timeAccountSettingForm.type"
+                                                :error-messages="timeAccountSettingForm.errors.type"
+                                            ></v-text-field>
                                         </v-col>
                                         <v-col cols="12" md="6">
                                             <v-select
                                                 :items="TRUNCATION_CYCLES.map(e => ({ title: getTruncationCycleDisplayName(e), value: e }))"
                                                 label="Berechnungszeitraum (optional)"
                                                 v-model="timeAccountSettingForm.truncation_cycle_length_in_months"
+                                                :error-messages="timeAccountSettingForm.errors.truncation_cycle_length_in_months"
                                             ></v-select>
                                         </v-col>
                                         <v-col cols="12" class="text-end">
-                                            <v-btn type="submit" color="primary" :loading="timeAccountSettingForm.processing"> Speichern </v-btn>
+                                            <v-btn type="submit" color="primary" :loading="timeAccountSettingForm.processing">Speichern</v-btn>
                                         </v-col>
                                     </v-row>
                                 </v-form>

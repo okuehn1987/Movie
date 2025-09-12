@@ -23,6 +23,10 @@ class WorkLogController extends Controller
             'users' => [
                 ...User::inOrganization()
                     ->whereHas('workLogs')->with(['defaultTimeAccount:id,balance,user_id', 'latestWorkLog'])
+                    ->where(function ($query) {
+                        $query->whereNull('resignation_date')
+                            ->orWhere('resignation_date', '>=', Carbon::today());
+                    })
                     ->select(['id', 'first_name', 'last_name', 'supervisor_id'])
                     ->get()
                     ->filter(fn($u) => $authUser->can('viewShow', [WorkLog::class, $u]))

@@ -6,6 +6,7 @@ use App\Models\Absence;
 use App\Models\AbsencePatch;
 use App\Models\AbsenceType;
 use App\Models\User;
+use App\Models\UserAbsenceFilter;
 use App\Notifications\AbsenceDeleteNotification;
 use App\Notifications\AbsenceNotification;
 use App\Notifications\AbsencePatchNotification;
@@ -32,8 +33,17 @@ class AbsenceController extends Controller
 
         $date = array_key_exists('date', $validated) ? Carbon::parse($validated['date']) : Carbon::now();
 
+        $visibleUsers = User::inOrganization()
+            ->where(function ($query) {
+                $query->whereNull('resignation_date')
+                    ->orWhere('resignation_date', '>=', now()->startOfYear());
+            })
+            ->get()
+            ->filter(fn($u) =>  $authUser->can('viewShow', [Absence::class, $u]));
+
         $absences = Absence::inOrganization()
             ->doesntHave('currentAcceptedPatch')
+            ->whereIn('user_id', $visibleUsers->pluck('id'))
             ->where(fn($q) => $q->whereDate('start', '<=', $date->copy()->endOfMonth())->whereDate('end', '>=', $date->copy()->startOfMonth()))
             ->with([
                 'absenceType' => fn($q) => $q->select(['id', 'abbreviation'])->withTrashed(),
@@ -43,6 +53,7 @@ class AbsenceController extends Controller
             ->get(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status']);
 
         $absencePatches = AbsencePatch::inOrganization()
+            ->whereIn('user_id', $visibleUsers->pluck('id'))
             ->where(fn($q) => $q->whereDate('start', '<=', $date->copy()->endOfMonth())->whereDate('end', '>=', $date->copy()->startOfMonth()))
             ->whereHas('log')
             ->with([
@@ -56,13 +67,12 @@ class AbsenceController extends Controller
 
         $absenceFilter =
             fn($a) => (
-                $authUser->can('viewShow', [Absence::class, $authUser->usersInOrganization->find($a->user_id)]) &&
                 ($a->status === 'accepted' ||
                     ($a->status === 'created' &&
                         $a->user_id === $authUser->id ||
                         $authUser->can(
                             'update',
-                            [Absence::class, $authUser->usersInOrganization->find($a->user_id)]
+                            [Absence::class, $visibleUsers->find($a->user_id)]
                         )
                     ) ||
                     ($a->status === 'declined' && $a->user_id === $authUser->id)
@@ -93,7 +103,8 @@ class AbsenceController extends Controller
             );
 
         return Inertia::render('Absence/AbsenceIndex', [
-            'users' => fn() => [...User::inOrganization()
+            'users' => fn() =>
+            User::whereIn('id', $visibleUsers->pluck('id'))
                 ->with([
                     'userWorkingWeeks:id,user_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,active_since',
                     'operatingSite:id,country,federal_state',
@@ -112,7 +123,6 @@ class AbsenceController extends Controller
                         ->whereDate('end', '>=', $date->copy()->startOfYear())
                 ])
                 ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'group_id', 'operating_site_id'])
-                ->filter(fn($u) => $authUser->can('viewShow', [Absence::class, $u]))
                 ->map(fn(User $u) => [
                     ...$u->toArray(),
                     'leaveDaysForYear' => $u->leaveDaysForYear($date, $u->userLeaveDays),
@@ -127,11 +137,12 @@ class AbsenceController extends Controller
                             'update' => $authUser->can('update', [Absence::class, $u]),
                         ]
                     ]
-                ])->toArray()],
+                ])->values(),
             'absence_types' => fn() => AbsenceType::inOrganization()->get(['id', 'name', 'abbreviation', 'requires_approval']),
             'absences' =>  Inertia::merge(fn() => $absences),
             'absencePatches' =>  Inertia::merge(fn() => $absencePatches),
             'holidays' =>  Inertia::merge(fn() => $holidays->isEmpty() ? (object)[] : $holidays),
+            'user_absence_filters' => $authUser->userAbsenceFilters,
             'can' => [
                 'user' => [
                     'viewDisputes' => $authUser->can('viewDisputes', User::class),
