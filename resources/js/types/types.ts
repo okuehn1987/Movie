@@ -416,11 +416,12 @@ export type Ticket = DBObject<'ticket'> & {
     title: string;
     description: string | null;
     priority: keyof typeof PRIORITIES;
-    status: 'created' | 'declined' | 'accepted';
     customer_id: Customer['id'];
     user_id: User['id'];
     assignee_id: User['id'] | null;
     assigned_at: DateTimeString | null;
+    accounted_at: DateTimeString | null;
+    finished_at: DateTimeString | null;
 };
 
 export type TicketRecord = DBObject<'record'> & {
@@ -429,6 +430,7 @@ export type TicketRecord = DBObject<'record'> & {
     duration: number;
     description: string | null;
     resources: string | null;
+    accounted_at: DateTimeString | null;
 };
 
 export type PermissionValue = 'read' | 'write' | null;
