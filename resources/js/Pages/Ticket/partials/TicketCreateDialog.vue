@@ -19,7 +19,7 @@ const ticketForm = useForm({
     start: null as string | null,
     // start: DateTime.now().toISODate(),
     // start_time: '09:00',
-    duration: 0,
+    duration: null,
     resources: '',
     tab: 'ticket' as 'ticket' | 'expressTicket',
 });

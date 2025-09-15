@@ -29,31 +29,29 @@ class TicketController extends Controller
     public function store(Request $request)
     {
         Gate::authorize('create', Ticket::class);
-
         $validated = $request->validate([
+            'tab' => 'required|in:expressTicket,ticket',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'priority' => 'required|in:lowest,low,medium,high,highest',
             'customer_id' => ['required', Rule::exists('customers', 'id')->whereIn('id', Organization::getCurrent()->customers()->pluck('customers.id'))],
             'assignee_id' => ['required_if:tab,ticket', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->pluck('users.id'))],
-            'start' => 'required_if:tab,expressTicket|date',
-            'duration' => 'required_if:tab,expressTicket|date_format:H:i',
+            'start' => 'nullable|required_if:tab,expressTicket|date',
+            'duration' => 'nullable|required_if:tab,expressTicket|date_format:H:i',
             'resources' => 'nullable|string',
         ]);
 
-        $RECORD_KEYS = ['start', 'duration', 'resources'];
-
         $ticket = Ticket::create(
             [
-                ...collect($validated)->except($RECORD_KEYS),
+                ...collect($validated)->only(['title', 'description', 'priority', 'customer_id', 'assignee_id']),
                 'user_id' => Auth::id(),
                 'assigned_at' => now(),
             ]
         );
 
-        if ($request["tab"] === "expressTicket")
+        if ($validated["tab"] === "expressTicket")
             $ticket->records()->create([
-                ...collect($validated)->only($RECORD_KEYS),
+                'resources' => $validated['resources'],
                 'start' => Carbon::parse($validated['start']),
                 'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
                 'user_id' => Auth::id(),
