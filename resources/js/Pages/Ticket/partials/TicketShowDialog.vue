@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import { PRIORITIES, TicketRecord } from '@/types/types';
+import { formatDuration } from '@/utils';
+import { DateTime } from 'luxon';
 import { computed } from 'vue';
 import { TicketProp } from './ticketTypes';
-import { PRIORITIES } from '@/types/types';
-import { DateTime } from 'luxon';
-import { formatDuration } from '@/utils';
 
 const props = defineProps<{
     ticket: TicketProp;
@@ -14,12 +14,19 @@ const form = useForm({
     assigneeName: props.ticket.assignee?.first_name + ' ' + props.ticket.assignee?.last_name,
     title: props.ticket.title,
     description: props.ticket.description,
+    selected: [] as TicketRecord['id'][],
 });
 
 const hasRecords = computed(() => props.ticket.records.length > 0);
+
+const durationSum = computed(() => props.ticket.records.reduce((a, c) => a + c.duration, 0));
+
+const selectedDurationSum = computed(() =>
+    props.ticket.records.filter(tr => form.selected.find(s => s === tr.id)).reduce((a, c) => a + c.duration, 0),
+);
 </script>
 <template>
-    <v-dialog max-width="800px">
+    <v-dialog max-width="1000px" height="800px">
         <template #activator="{ props: activatorProps }">
             <v-btn v-bind="activatorProps" icon variant="text">
                 <v-icon icon="mdi-eye"></v-icon>
@@ -56,7 +63,8 @@ const hasRecords = computed(() => props.ticket.records.length > 0);
                             <v-col cols="12"><v-text-field label="Betreff" v-model="form.title"></v-text-field></v-col>
                             <v-col cols="12"><v-text-field label="Beschreibung" v-model="form.description"></v-text-field></v-col>
                             <template v-if="hasRecords">
-                                <v-data-table
+                                <v-data-table-virtual
+                                    v-model="form.selected"
                                     :headers="[
                                         { title: 'Start', key: 'start' },
                                         { title: 'Auftragsdauer', key: 'duration' },
@@ -70,59 +78,49 @@ const hasRecords = computed(() => props.ticket.records.length > 0);
                                             userName: r.user.first_name + ' ' + r.user.last_name,
                                         }))
                                     "
-                                    hide-default-footer
                                     show-expand
+                                    show-select
                                 >
                                     <template v-slot:item.data-table-expand="{ internalItem, isExpanded, toggleExpand }">
-                                        <v-btn
-                                            :append-icon="isExpanded(internalItem) ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-                                            :text="isExpanded(internalItem) ? 'Collapse' : 'More info'"
-                                            class="text-none"
-                                            color="medium-emphasis"
-                                            size="small"
-                                            variant="text"
-                                            width="105"
-                                            border
-                                            slim
-                                            @click="toggleExpand(internalItem)"
-                                        ></v-btn>
+                                        <v-btn size="small" variant="text" border @click="toggleExpand(internalItem)">
+                                            <v-icon :icon="isExpanded(internalItem) ? 'mdi-chevron-up' : 'mdi-chevron-down'"></v-icon>
+                                        </v-btn>
                                     </template>
                                     <template v-slot:expanded-row="{ columns, item }">
                                         <tr>
                                             <td :colspan="columns.length" class="py-2">
                                                 <v-table density="compact">
-                                                    <tbody class="bg-surface-light">
+                                                    <thead class="bg-surface-light">
                                                         <tr>
-                                                            <th>Rating</th>
-                                                            <th>Synopsis</th>
-                                                            <th>Cast</th>
-                                                        </tr>
-                                                    </tbody>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td class="py-2">
-                                                                <v-rating
-                                                                    :model-value="item.start"
-                                                                    color="orange-darken-2"
-                                                                    density="comfortable"
-                                                                    size="small"
-                                                                    half-increments
-                                                                    readonly
-                                                                ></v-rating>
-                                                            </td>
-                                                            <td class="py-2">{{ item.duration }}</td>
-                                                            <td class="py-2">{{ item.description }}</td>
+                                                            <th>Ressourcen</th>
                                                             <td class="py-2">{{ item.resources }}</td>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="bg-surface-medium">
+                                                        <tr>
+                                                            <th>Beschreibung</th>
+                                                            <td class="py-2">{{ item.description }}</td>
                                                         </tr>
                                                     </tbody>
                                                 </v-table>
                                             </td>
                                         </tr>
                                     </template>
-                                </v-data-table>
+                                    <template v-slot:bottom>
+                                        <v-row class="text-end" no-gutters>
+                                            <!-- TODO: if Aufträge ausgewählt -->
+                                            <template v-if="true">
+                                                <v-col cols="12" md="11">Ausgewählte Auftragsdauer</v-col>
+                                                <v-col cols="12" md="1">{{ formatDuration(selectedDurationSum, 'minutes', 'duration') }}</v-col>
+                                            </template>
+                                            <v-col cols="12" md="11">Gesamte Auftragsdauer</v-col>
+                                            <v-col cols="12" md="1">{{ formatDuration(durationSum, 'minutes', 'duration') }}</v-col>
+                                        </v-row>
+                                    </template>
+                                </v-data-table-virtual>
                             </template>
                             <v-col cols="12" class="text-end">
-                                <v-btn color="primary" type="submit" :loading="form.processing">Speichern</v-btn>
+                                <v-btn color="primary" type="submit" :loading="form.processing">Änderungen und Abrechnungen speichern</v-btn>
                             </v-col>
                         </v-row>
                     </v-card-text>

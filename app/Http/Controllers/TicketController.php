@@ -35,7 +35,7 @@ class TicketController extends Controller
             'customer_id' => 'required|exists:customers,id',
             'assignee_id' => 'required_if:tab,ticket|exists:users,id',
             'start' => 'required_if:tab,expressTicket|date',
-            'duration' => 'required_if:tab,expressTicket|integer|min:0',
+            'duration' => 'required_if:tab,expressTicket|date_format:H:i',
             'resources' => 'nullable|string',
         ]);
 
@@ -53,7 +53,7 @@ class TicketController extends Controller
             $ticket->records()->create([
                 ...collect($validated)->only($RECORD_KEYS),
                 'start' => Carbon::parse($validated['start']),
-                'duration' => $validated['duration'] * 3600,
+                'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
                 'user_id' => Auth::id(),
             ]);
 
@@ -63,7 +63,7 @@ class TicketController extends Controller
     public function update(Request $request, Ticket $ticket)
     {
 
-        Gate::authorize('create', Ticket::class);
+        Gate::authorize('update', [Ticket::class, $ticket->user]);
 
         $validated = $request->validate([
             'priority' => 'required|in:lowest,low,medium,high,highest',

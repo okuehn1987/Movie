@@ -16,28 +16,21 @@ const ticketForm = useForm({
     priority: 'medium',
     customer_id: null,
     assignee_id: usePage().props.auth.user.id,
-    start: DateTime.now().toISODate(),
-    start_time: '09:00',
+    start: null as string | null,
+    // start: DateTime.now().toISODate(),
+    // start_time: '09:00',
     duration: 0,
     resources: '',
     tab: 'ticket' as 'ticket' | 'expressTicket',
 });
 
 function submit(isActive: Ref<boolean>) {
-    ticketForm
-        .transform(data => {
-            const start_time = DateTime.fromFormat(data.start_time, 'HH:mm');
-            return {
-                ...data,
-                start: DateTime.fromISO(data.start).set({ hour: start_time.hour, minute: start_time.minute, second: start_time.second }),
-            };
-        })
-        .post(route('ticket.store'), {
-            onSuccess: () => {
-                ticketForm.reset();
-                isActive.value = false;
-            },
-        });
+    ticketForm.post(route('ticket.store'), {
+        onSuccess: () => {
+            ticketForm.reset();
+            isActive.value = false;
+        },
+    });
 }
 </script>
 <template>
@@ -129,23 +122,17 @@ function submit(isActive: Ref<boolean>) {
                                     </v-col>
                                     <v-col cols="12" md="6">
                                         <v-text-field
-                                            type="date"
                                             label="Start"
-                                            v-model="ticketForm.start"
+                                            type="datetime-local"
+                                            :model-value="ticketForm.start"
+                                            @update:model-value="val => (ticketForm.start = val)"
                                             :error-messages="ticketForm.errors.start"
+                                            required
                                         ></v-text-field>
                                     </v-col>
                                     <v-col cols="12" md="6">
                                         <v-text-field
                                             type="time"
-                                            label="Startzeit"
-                                            v-model="ticketForm.start_time"
-                                            :error-messages="ticketForm.errors.start_time"
-                                        ></v-text-field>
-                                    </v-col>
-                                    <v-col cols="12">
-                                        <v-text-field
-                                            type="number"
                                             label="Auftragsdauer (in Stunden)"
                                             min="0"
                                             v-model="ticketForm.duration"

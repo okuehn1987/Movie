@@ -15,7 +15,7 @@ class TicketRecordController extends Controller
             'start' => 'required|date',
             'duration' => 'required|date_format:H:i',
             'description' => 'required|string',
-            'resources' => 'required|string',
+            'resources' => 'nullable|string',
         ]);
 
         $ticket->records()->create([
