@@ -8,7 +8,6 @@ class TicketPolicy
 {
     use _AllowSuperAdminAndOrganizationOwner;
 
-    //FIXME: Permissions
     public function viewIndex(User $authUser): bool
     {
         return true;
@@ -16,16 +15,16 @@ class TicketPolicy
 
     public function create(User $authUser, User $user): bool
     {
-        return $authUser->id == $user->id || true;
+        return $authUser->id == $user->id || $authUser->hasPermissionOrDelegation($user, 'ticket_permission', 'write');
     }
 
     public function update(User $authUser, User $user): bool
     {
-        return $authUser->id == $user->id || true;
+        return $authUser->hasPermissionOrDelegation($user, 'ticket_permission', 'write');
     }
 
     public function delete(User $authUser, User $user): bool
     {
-        return true;
+        return $authUser->hasPermissionOrDelegation($user, 'ticket_permission', 'write');
     }
 }

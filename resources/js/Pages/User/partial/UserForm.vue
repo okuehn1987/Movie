@@ -64,8 +64,11 @@ const userForm = useForm<FormData>({
         user_permission: null,
         specialWorkingHoursFactor_permission: null,
         workLogPatch_permission: null,
+        workLog_permission: null,
+        ticket_permission: null,
     },
     groupUser: {
+        absenceType_permission: null,
         group_permission: null,
         absence_permission: null,
         timeAccount_permission: null,
@@ -73,15 +76,20 @@ const userForm = useForm<FormData>({
         timeAccountTransaction_permission: null,
         user_permission: null,
         workLogPatch_permission: null,
+        workLog_permission: null,
+        ticket_permission: null,
     },
     operatingSiteUser: {
+        absenceType_permission: null,
         operatingSite_permission: null,
         absence_permission: null,
         timeAccount_permission: null,
         timeAccountSetting_permission: null,
         timeAccountTransaction_permission: null,
         user_permission: null,
+        workLog_permission: null,
         workLogPatch_permission: null,
+        ticket_permission: null,
     },
 });
 
@@ -387,6 +395,22 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                         :permissions
                         :errors="userForm.errors"
                         label="Organisationsrechte"
+                        :items="[
+                            {
+                                label: 'Zeiterfassung',
+                                keys: [
+                                    'workLog_permission',
+                                    'workLogPatch_permission',
+                                    'timeAccount_permission',
+                                    'timeAccountSetting_permission',
+                                    'timeAccountTransaction_permission',
+                                ],
+                            },
+                            { label: 'Abwesenheiten', keys: ['absence_permission', 'absenceType_permission'] },
+                            { label: 'Mitarbeiter', keys: ['user_permission'] },
+                            { label: 'Organisation', keys: ['organization_permission'] },
+                            { label: 'Ticket', keys: ['ticket_permission'] },
+                        ]"
                     />
                 </v-row>
             </v-card-text>
@@ -410,6 +434,22 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                         :errors="userForm.errors"
                         label="Wähle die Rechte des Mitarbeitenden für die ausgewählte Betriebsstätte aus"
                         data-testid="userOperatingSitePermissions"
+                        :items="[
+                            {
+                                label: 'Zeiterfassung',
+                                keys: [
+                                    'workLog_permission',
+                                    'workLogPatch_permission',
+                                    'timeAccount_permission',
+                                    'timeAccountSetting_permission',
+                                    'timeAccountTransaction_permission',
+                                ],
+                            },
+                            { label: 'Abwesenheiten', keys: ['absence_permission', 'absenceType_permission'] },
+                            { label: 'Mitarbeiter', keys: ['user_permission'] },
+                            { label: 'Betriebsstätte', keys: ['operatingSite_permission'] },
+                            { label: 'Ticket', keys: ['ticket_permission'] },
+                        ]"
                     />
                 </v-row>
             </v-card-text>
@@ -434,6 +474,22 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                         :errors="userForm.errors"
                         label="Abteilungsrechte"
                         data-testid="userGroupPermissions"
+                        :items="[
+                            {
+                                label: 'Zeiterfassung',
+                                keys: [
+                                    'workLog_permission',
+                                    'workLogPatch_permission',
+                                    'timeAccount_permission',
+                                    'timeAccountSetting_permission',
+                                    'timeAccountTransaction_permission',
+                                ],
+                            },
+                            { label: 'Abwesenheiten', keys: ['absence_permission', 'absenceType_permission'] },
+                            { label: 'Mitarbeiter', keys: ['user_permission'] },
+                            { label: 'Abteilung', keys: ['group_permission'] },
+                            { label: 'Ticket', keys: ['ticket_permission'] },
+                        ]"
                     />
                 </v-row>
             </v-card-text>
