@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { PRIORITIES, TicketRecord } from '@/types/types';
+import { PRIORITIES } from '@/types/types';
 import { formatDuration } from '@/utils';
 import { DateTime } from 'luxon';
-import { computed } from 'vue';
+import { computed, watchEffect } from 'vue';
 import { TicketProp } from './ticketTypes';
 
 const props = defineProps<{
@@ -14,7 +14,18 @@ const form = useForm({
     assigneeName: props.ticket.assignee?.first_name + ' ' + props.ticket.assignee?.last_name,
     title: props.ticket.title,
     description: props.ticket.description,
-    selected: [] as TicketRecord['id'][],
+    selected: props.ticket.records.filter(tr => tr.accounted_at).map(r => r.id),
+});
+
+watchEffect(() => {
+    form.defaults({
+        priority: props.ticket.priority,
+        assigneeName: props.ticket.assignee?.first_name + ' ' + props.ticket.assignee?.last_name,
+        title: props.ticket.title,
+        description: props.ticket.description,
+        selected: props.ticket.records.filter(tr => tr.accounted_at).map(r => r.id),
+    });
+    form.reset();
 });
 
 const hasRecords = computed(() => props.ticket.records.length > 0);
@@ -120,7 +131,9 @@ const selectedDurationSum = computed(() =>
                                 </v-data-table-virtual>
                             </template>
                             <v-col cols="12" class="text-end">
-                                <v-btn color="primary" type="submit" :loading="form.processing">Änderungen und Abrechnungen speichern</v-btn>
+                                <v-btn color="primary" type="submit" :loading="form.processing" :disabled="!form.isDirty">
+                                    Änderungen und Abrechnungen speichern
+                                </v-btn>
                             </v-col>
                         </v-row>
                     </v-card-text>
