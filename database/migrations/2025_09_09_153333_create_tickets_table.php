@@ -21,6 +21,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('assignee_id')->nullable()->constrained('users')->onDelete('set null');
             $table->dateTime('assigned_at')->nullable();
+            $table->dateTime('finished_at')->nullable();
             $table->timestamps();
         });
 
@@ -32,6 +33,7 @@ return new class extends Migration
             $table->integer("duration");
             $table->text("description")->nullable();
             $table->string('resources')->nullable();
+            $table->dateTime("accounted_at")->nullable();
             $table->timestamps();
         });
     }
