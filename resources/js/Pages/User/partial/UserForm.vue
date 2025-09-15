@@ -270,6 +270,95 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
 
         <HertaUserFormSections v-if="can('app', 'herta')" :mode :user v-model:user-form="userForm"></HertaUserFormSections>
 
+        <v-card class="mb-4">
+            <v-card-item>
+                <v-card-title class="mb-2">Arbeitswoche</v-card-title>
+            </v-card-item>
+            <v-card-text>
+                <v-row>
+                    <v-col cols="12" v-if="userForm.errors.user_working_weeks">
+                        <v-alert type="error">{{ userForm.errors.user_working_weeks }}</v-alert>
+                    </v-col>
+                    <v-col cols="12">
+                        <v-data-table-virtual
+                            :items="userForm.user_working_weeks"
+                            :headers="[
+                                {
+                                    title: 'Beschäftigungstage',
+                                    key: 'weekdays',
+                                    width: '50%',
+                                    sortable: false,
+                                },
+                                {
+                                    title: 'Aktiv seit',
+                                    key: 'active_since',
+                                    sortable: false,
+                                },
+                                {
+                                    title: '',
+                                    key: 'actions',
+                                    align: 'end',
+                                    sortable: false,
+                                },
+                            ]"
+                        >
+                            <template v-slot:header.actions>
+                                <v-btn
+                                    v-if="!user || can('user', 'update')"
+                                    color="primary"
+                                    @click.stop="userForm.user_working_weeks.push({ active_since: '', id: null, weekdays: [] })"
+                                >
+                                    <v-icon icon="mdi-plus"></v-icon>
+                                </v-btn>
+                            </template>
+                            <template v-slot:item.weekdays="{ item, index }">
+                                <v-select
+                                    data-testid="userWorkingDays"
+                                    chips
+                                    :disabled="
+                                        (user && !can('user', 'update')) ||
+                                        (!!item.active_since && item.active_since < DateTime.now().toFormat('yyyy-MM-dd'))
+                                    "
+                                    v-model="item.weekdays"
+                                    multiple
+                                    :items="
+                                        Info.weekdays().map((e, i) => ({
+                                            title: e,
+                                            value: Info.weekdays('long', { locale: 'en' })[i]?.toLowerCase(),
+                                        }))
+                                    "
+                                    :error-messages="userForm.errors[`user_working_weeks.${index}.weekdays`]"
+                                />
+                            </template>
+                            <template v-slot:item.active_since="{ item, index }">
+                                <v-text-field
+                                    data-testid="userWorkingDays-since"
+                                    type="date"
+                                    variant="underlined"
+                                    :min="mode == 'edit' ? DateTime.now().plus({ days: 1 }).toFormat('yyyy-MM-dd') : undefined"
+                                    v-model="item.active_since"
+                                    :disabled="
+                                        (user && !can('user', 'update')) ||
+                                        (!!item.active_since && item.active_since < DateTime.now().toFormat('yyyy-MM-dd'))
+                                    "
+                                    :error-messages="userForm.errors[`user_working_weeks.${index}.active_since`]"
+                                ></v-text-field>
+                            </template>
+                            <template v-slot:item.actions="{ item, index }">
+                                <v-btn
+                                    color="error"
+                                    @click.stop="userForm.user_working_weeks.splice(index, 1)"
+                                    v-if="(!user || can('user', 'update')) && (!item.id || item.active_since > DateTime.now().toFormat('yyyy-MM-dd'))"
+                                >
+                                    <v-icon icon="mdi-delete"></v-icon>
+                                </v-btn>
+                            </template>
+                        </v-data-table-virtual>
+                    </v-col>
+                </v-row>
+            </v-card-text>
+        </v-card>
+
         <v-card class="mb-4" title="Urlaubstage">
             <v-card-text>
                 <v-row>
