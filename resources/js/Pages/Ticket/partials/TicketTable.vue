@@ -3,7 +3,7 @@ import { DateTimeString, PRIORITIES } from '@/types/types';
 import TicketCreateDialog from './TicketCreateDialog.vue';
 import { CustomerProp, TicketProp, UserProp } from './ticketTypes';
 import TicketShowDialog from './TicketShowDialog.vue';
-import CreateRecordDialog from './CreateRecordDialog.vue';
+import RecordCreateDialog from './RecordCreateDialog.vue';
 
 defineProps<{
     tickets: TicketProp[];
@@ -41,7 +41,7 @@ defineProps<{
                 {{ PRIORITIES[item.priority] }}
             </template>
             <template v-slot:item.actions="{ item }">
-                <CreateRecordDialog :ticket="item" :users="users" />
+                <RecordCreateDialog :ticket="item" :users="users" />
                 <TicketShowDialog :ticket="item" />
             </template>
         </v-data-table-virtual>
