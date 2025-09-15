@@ -175,10 +175,11 @@ export function throttle<T extends (...args: unknown[]) => void>(func: T, delayL
     };
 }
 
-export function formatDuration(seconds: number, accuracy: 'seconds' | 'minutes' = 'seconds') {
+export function formatDuration(seconds: number, accuracy: 'seconds' | 'minutes' = 'seconds', formatType: 'time' | 'duration' = 'time') {
     const format = {
-        seconds: 'h:mm:ss',
-        minutes: 'h:mm',
+        seconds: formatType == 'time' ? 'h:mm:ss' : `h'h 'mm'm 'ss's'`,
+        minutes: formatType == 'time' ? 'h:mm' : `h'h 'mm'm'`,
     };
+
     return (seconds < 0 ? '-' : '') + Duration.fromObject({ seconds: Math.abs(seconds) }).toFormat(format[accuracy]);
 }

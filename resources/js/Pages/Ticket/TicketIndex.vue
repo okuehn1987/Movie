@@ -9,7 +9,10 @@ defineProps<{
     customers: CustomerProp[];
     users: UserProp[];
 }>();
-
+// FIXME: resourcen nullable machen im BE ticketrecord erstellen
+// FIXME: show hübsch machen + abrechnen können
+// FIXME: statt status -> accounted_at (datetime|null) && finished_at (datetime|null)
+// Expressaufträge sind instantly finished
 const tab = ref('newTickets');
 </script>
 <template>

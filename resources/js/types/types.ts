@@ -570,6 +570,7 @@ export type RelationMap = {
     };
     ticketRecord: {
         ticket: Ticket;
+        user: User;
     };
     timeAccount: {
         user: User;
