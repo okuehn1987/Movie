@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\Organization;
 use App\Models\Ticket;
+use App\Models\TicketRecord;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class TicketController extends Controller
@@ -16,7 +19,6 @@ class TicketController extends Controller
     public function index()
     {
         Gate::authorize('viewIndex', Ticket::class);
-
         return Inertia::render('Ticket/TicketIndex', [
             'tickets' => Ticket::inOrganization()->with(['customer:id,name', 'user:id,first_name,last_name', 'assignee:id,first_name,last_name', 'records.user'])->get(),
             'customers' => Customer::inOrganization()->get(['id', 'name']),
@@ -32,8 +34,8 @@ class TicketController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'priority' => 'required|in:lowest,low,medium,high,highest',
-            'customer_id' => 'required|exists:customers,id',
-            'assignee_id' => 'required_if:tab,ticket|exists:users,id',
+            'customer_id' => ['required', Rule::exists('customers', 'id')->whereIn('id', Organization::getCurrent()->customers()->pluck('customers.id'))],
+            'assignee_id' => ['required_if:tab,ticket', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->pluck('users.id'))],
             'start' => 'required_if:tab,expressTicket|date',
             'duration' => 'required_if:tab,expressTicket|date_format:H:i',
             'resources' => 'nullable|string',
@@ -64,15 +66,22 @@ class TicketController extends Controller
     {
 
         Gate::authorize('update', [Ticket::class, $ticket->user]);
-
+        // Organization::getCurrent()->tickets()->whereHas(records())
         $validated = $request->validate([
             'priority' => 'required|in:lowest,low,medium,high,highest',
-            'assignee_id' => 'nullable|exists:users,id',
+            'assignee_id' => ['nullable', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->pluck('users.id'))],
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'selected' => 'present|array',
+            'selected.*' => [
+                'required',
+                Rule::exists('ticket_records', 'id')
+                    ->whereIn('id', TicketRecord::whereHas('ticket', fn($q) => $q->whereIn('id', Organization::getCurrent()->tickets()->pluck('tickets.id')))->pluck('id'))
+            ]
         ]);
-
-        $ticket->update($validated);
+        $ticket->records()->whereNotIn('id', $validated['selected'])->update(['accounted_at' => null]);
+        $ticket->records()->whereIn('id', $validated['selected'])->update(['accounted_at' => now()]);
+        $ticket->update(collect($validated)->except('selected')->toArray());
 
         return back()->with('success', 'Änderungen erfolgreich gespeichert.');
     }
