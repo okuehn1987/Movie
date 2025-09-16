@@ -18,8 +18,6 @@ return new class extends Migration
             $table->enum('priority', ['lowest', 'low', 'medium', 'high', 'highest'])->default('medium');
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('assignee_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->dateTime('assigned_at')->nullable();
             $table->dateTime('finished_at')->nullable();
             $table->timestamps();
         });
