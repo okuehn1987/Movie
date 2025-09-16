@@ -28,10 +28,12 @@ function submit() {
                 start: DateTime.fromISO(d.start.toISOString()).set({
                     hour: start_time.hour,
                     minute: start_time.minute,
+                    second: 0,
                 }),
                 end: DateTime.fromISO(d.end.toISOString()).set({
                     hour: end_time.hour,
                     minute: end_time.minute,
+                    second: 0,
                 }),
             };
         })

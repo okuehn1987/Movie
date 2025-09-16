@@ -3,6 +3,7 @@ import { Notification } from '@/types/types';
 import { useNow } from '@/utils';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
+import ReportBugDialog from './ReportBugDialog.vue';
 
 function readNotification(notification: Notification) {
     router.post(
@@ -13,40 +14,39 @@ function readNotification(notification: Notification) {
 }
 
 function openNotification(notification: Notification) {
-    readNotification(notification);
-    let data;
+    let url;
     if (notification.type == 'App\\Notifications\\WorkLogPatchNotification')
-        data = route('dispute.index', {
+        url = route('dispute.index', {
             openPatch: notification.data.work_log_patch_id,
         });
     else if (notification.type == 'App\\Notifications\\WorkLogNotification')
-        data = route('dispute.index', {
+        url = route('dispute.index', {
             openWorkLog: notification.data.work_log_id,
         });
     else if (notification.type == 'App\\Notifications\\AbsenceNotification')
-        data = route('dispute.index', {
+        url = route('dispute.index', {
             openAbsence: notification.data.absence_id,
         });
     else if (notification.type == 'App\\Notifications\\AbsencePatchNotification')
-        data = route('dispute.index', {
+        url = route('dispute.index', {
             openAbsencePatch: notification.data.absence_patch_id,
         });
     else if (notification.type == 'App\\Notifications\\AbsenceDeleteNotification')
-        data = route('dispute.index', {
+        url = route('dispute.index', {
             openAbsenceDelete: notification.data.absence_id,
         });
     else if (notification.type == 'App\\Notifications\\DisputeStatusNotification') {
         if (notification.data.type == 'delete') return;
-        if (notification.data.log_model == 'App\\Models\\Absence') data = route('absence.index', { openAbsence: notification.data.log_id });
+        if (notification.data.log_model == 'App\\Models\\Absence') url = route('absence.index', { openAbsence: notification.data.log_id });
         else if (notification.data.log_model == 'App\\Models\\AbsencePatch')
-            data = route('absence.index', { openAbsencePatch: notification.data.log_id });
+            url = route('absence.index', { openAbsencePatch: notification.data.log_id });
         else if (notification.data.log_model == 'App\\Models\\WorkLogPatch')
-            data = route('user.workLog.index', { user: usePage().props.auth.user.id, openWorkLogPatch: notification.data.log_id });
+            url = route('user.workLog.index', { user: usePage().props.auth.user.id, openWorkLogPatch: notification.data.log_id });
         else if (notification.data.log_model == 'App\\Models\\WorkLog')
-            data = route('user.workLog.index', { user: usePage().props.auth.user.id, workLog: notification.data.log_id });
+            url = route('user.workLog.index', { user: usePage().props.auth.user.id, workLog: notification.data.log_id });
     }
 
-    return data && router.get(data);
+    return url && router.get(url, {}, { onSuccess: () => readNotification(notification) });
 }
 const now = useNow();
 function convertTimeStamp(notification: Notification) {
@@ -66,19 +66,17 @@ function convertTimeStamp(notification: Notification) {
 </script>
 
 <template>
-    <v-menu v-if="$page.props.auth.user.unread_notifications.length > 0">
+    <v-menu v-if="$page.props.unreadNotifications.length > 0">
         <template v-slot:activator="{ props }">
             <v-btn color="primary" v-bind="props" stacked>
-                <v-badge :content="$page.props.auth.user.unread_notifications.length" color="error">
+                <v-badge :content="$page.props.unreadNotifications.length" color="error">
                     <v-icon icon="mdi-bell"></v-icon>
                 </v-badge>
             </v-btn>
         </template>
         <v-list @click.stop="() => {}">
             <template
-                v-for="(notification, index) in $page.props.auth.user.unread_notifications.toSorted((a, b) =>
-                    b.created_at.localeCompare(a.created_at),
-                )"
+                v-for="(notification, index) in $page.props.unreadNotifications.toSorted((a, b) => b.created_at.localeCompare(a.created_at))"
                 :key="notification.id"
             >
                 <v-divider v-if="index != 0"></v-divider>
@@ -94,10 +92,8 @@ function convertTimeStamp(notification: Notification) {
                             <v-divider vertical></v-divider>
                             <v-btn
                                 v-if="
-                                    (notification.type != 'App\\Notifications\\DisputeStatusNotification' ||
-                                        (notification.type == 'App\\Notifications\\DisputeStatusNotification' &&
-                                            notification.data.type != 'delete')) &&
-                                    notification.type !== 'App\\Notifications\\AbsenceDeleteNotification'
+                                    notification.type != 'App\\Notifications\\DisputeStatusNotification' ||
+                                    (notification.type == 'App\\Notifications\\DisputeStatusNotification' && notification.data.type != 'delete')
                                 "
                                 color="primary"
                                 icon="mdi-eye"
@@ -112,12 +108,24 @@ function convertTimeStamp(notification: Notification) {
             </template>
         </v-list>
     </v-menu>
-
-    <Link :href="route('user.profile', { user: $page.props.auth.user.id })">
-        <v-btn stacked color="black" prepend-icon="mdi-account" title="Profil" />
-    </Link>
-
-    <Link method="post" :href="route('logout')" as="button">
-        <v-btn stacked color="black" prepend-icon="mdi-logout" title="Abmelden" />
-    </Link>
+    <v-menu>
+        <template #activator="{ props: activatorProps }">
+            <v-btn stacked color="black" prepend-icon="mdi-menu" v-bind="activatorProps"></v-btn>
+        </template>
+        <v-list>
+            <v-list-item>
+                <Link class="text-black w-100" :href="route('user.profile', { user: $page.props.auth.user.id })">
+                    <v-btn variant="text" prepend-icon="mdi-account" title="Profil">Profil</v-btn>
+                </Link>
+            </v-list-item>
+            <v-list-item>
+                <ReportBugDialog></ReportBugDialog>
+            </v-list-item>
+            <v-list-item>
+                <Link method="post" :href="route('logout')" as="button">
+                    <v-btn variant="text" prepend-icon="mdi-logout" title="Abmelden">Abmelden</v-btn>
+                </Link>
+            </v-list-item>
+        </v-list>
+    </v-menu>
 </template>

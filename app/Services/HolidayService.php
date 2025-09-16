@@ -43,6 +43,11 @@ class HolidayService
         ];
     }
 
+    private static function generateHolidays($countryCode, $region = null)
+    {
+        return  Holidays::for(self::$COUNTRIES[$countryCode]['class']::make($countryCode . ($region ? '-' . $region : '')));
+    }
+
     public static function getCountries()
     {
         return collect(array_keys(self::$COUNTRIES))->map(fn($c) => ['title' => self::$COUNTRIES[$c]['name'], 'value' => $c, 'regions' => self::$COUNTRIES[$c]['regions']]);
@@ -50,15 +55,22 @@ class HolidayService
 
     public static function isHoliday($countryCode, $region = null, CarbonInterface $date)
     {
-        return Holidays::for(self::$COUNTRIES[$countryCode]['class']::make($countryCode . ($region ? '-' . $region : '')))->isHoliday($date) ||
+        return self::generateHolidays($countryCode, $region)->isHoliday($date) ||
             array_key_exists($date->copy()->format('m-d'), self::getCustomHolidays());
+    }
+
+    public static function getHolidayName($countryCode, $region = null, CarbonInterface $date)
+    {
+        if (array_key_exists($date->format('m-d'), self::getCustomHolidays())) return self::getCustomHolidays()[$date->format('m-d')];
+
+        return self::generateHolidays($countryCode, $region)->getName($date);
     }
 
     public static function getHolidaysForMonth($countryCode, $region = null, CarbonInterface $date)
     {
         if ($date->gte(Carbon::createFromFormat('Y-m-d', '2038-01-01'))) return collect([]);
         return collect(
-            Holidays::for(self::$COUNTRIES[$countryCode]['class']::make($countryCode . ($region ? '-' . $region : '')))
+            self::generateHolidays($countryCode, $region)
                 ->getInRange($date->copy()->startOfMonth(), $date->copy()->endOfMonth())
         )->merge(
             collect(self::getCustomHolidays())

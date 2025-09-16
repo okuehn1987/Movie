@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { Head, router, usePage, usePoll } from '@inertiajs/vue3';
+import { nextTick, ref, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 import AppbarActions from './partials/AppbarActions.vue';
 import DrawerMenu from './partials/DrawerMenu.vue';
@@ -10,9 +10,27 @@ defineProps<{
     backurl?: string;
 }>();
 
+const page = usePage();
 const isMobile = useDisplay().smAndDown;
 const showDrawer = ref(!isMobile.value);
 const appname = import.meta.env['VITE_APP_NAME'];
+
+usePoll(
+    1000 * 60 * 2,
+    {
+        only: ['unreadNotifications'],
+    },
+    { keepAlive: true },
+);
+
+const showOrgImg = ref(!!page.props.organization.logo);
+watch(
+    () => page.props.organization.logo,
+    () => {
+        showOrgImg.value = false;
+        nextTick(() => (showOrgImg.value = true));
+    },
+);
 </script>
 
 <template>
@@ -33,7 +51,7 @@ const appname = import.meta.env['VITE_APP_NAME'];
                         </div>
                     </v-list-item-title>
                     <template #append>
-                        <v-btn @click.stop="showDrawer = false" icon="mdi-close" variant="text"> </v-btn>
+                        <v-btn @click.stop="showDrawer = false" icon="mdi-close" variant="text" />
                     </template>
                 </v-list-item>
             </v-list>
@@ -50,7 +68,18 @@ const appname = import.meta.env['VITE_APP_NAME'];
                 @click.stop="router.visit(backurl, { preserveState: true })"
             ></v-app-bar-nav-icon>
 
-            <v-toolbar-title> {{ title }} </v-toolbar-title>
+            <div class="d-flex align-center mr-auto ga-2">
+                <span class="text-h6 pl-0 ml-5 mb-0" style="white-space: nowrap">{{ title }}</span>
+                <v-img
+                    v-if="showOrgImg"
+                    :src="route('organization.getLogo', { organization: $page.props.organization.id, key: $page.props.organization.logo })"
+                    max-height="48px"
+                    max-width="48px"
+                    width="100%"
+                    height="100%"
+                    class="rounded"
+                />
+            </div>
 
             <slot name="appbarActions" />
 

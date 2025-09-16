@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
 import vuetify from 'vite-plugin-vuetify';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
     plugins: [
@@ -18,6 +19,9 @@ export default defineConfig({
             },
         }),
         vuetify(),
+        VitePWA({
+            scope: '/',
+        }),
     ],
     server: {
         hmr: {

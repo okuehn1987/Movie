@@ -6,8 +6,6 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from 'ziggy-js';
 import { de } from 'vuetify/locale';
 
-const appName = import.meta.env['VITE_APP_NAME'];
-
 import { Settings } from 'luxon';
 Settings.defaultLocale = 'de';
 
@@ -16,8 +14,7 @@ import 'vuetify/styles';
 import { createVuetify } from 'vuetify';
 import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
-import { VCalendar } from 'vuetify/labs/VCalendar';
-import { VDateInput, VNumberInput, VTreeview } from 'vuetify/labs/components';
+import { VDateInput } from 'vuetify/labs/components';
 import colors from 'vuetify/util/colors';
 
 const vuetify = createVuetify({
@@ -56,7 +53,7 @@ const vuetify = createVuetify({
             de: 'de-DE',
         },
     },
-    components: { ...components, VCalendar, VDateInput, VNumberInput, VTreeview },
+    components: { ...components, VDateInput },
     directives,
 });
 
@@ -64,7 +61,7 @@ import canPlugin from './canPlugin';
 import useFormPlugin from './useFormPlugin';
 
 createInertiaApp({
-    title: title => `${title} - ${appName}`,
+    title: title => title,
     resolve: name => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob<DefineComponent>('./Pages/**/*.vue')),
     setup({ el, App, props, plugin }) {
         createApp({ render: () => h(App, props) })

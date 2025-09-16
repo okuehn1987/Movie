@@ -36,7 +36,7 @@ function shouldUserWork(day: DateTime) {
             <div
                 class="h-100 w-100 d-flex justify-center align-center"
                 :style="{
-                    backgroundColor: { accepted: '#f99', created: '#99f', hasOpenPatch: '#ff9' }[getEntryState(currentEntry)],
+                    backgroundColor: { accepted: '#f99', created: '#99f', declined: 'grey', hasOpenPatch: '#ff9' }[getEntryState(currentEntry)],
                 }"
             >
                 <span v-if="currentEntry.absence_type_id">{{ currentEntry.absence_type?.abbreviation }}</span>

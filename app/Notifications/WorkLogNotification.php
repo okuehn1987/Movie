@@ -4,8 +4,8 @@ namespace App\Notifications;
 
 use App\Models\User;
 use App\Models\WorkLog;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -31,7 +31,7 @@ class WorkLogNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return $notifiable->notification_channels;
     }
 
     /**
@@ -39,10 +39,14 @@ class WorkLogNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
+        $buttonText = 'Antrag einsehen';
         return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+            ->subject('Herta Buchungsantrag')
+            ->line('für den Nutzer "' . $this->user->name . '" liegt ein Antrag auf eine Buchung für den Zeitraum vom "' .
+                Carbon::parse($this->log->start)->format('d.m.Y') . '" bis zum "' .
+                Carbon::parse($this->log->end)->format('d.m.Y') . '" vor.')
+            ->line('Um fortzufahren, klicke bitte auf "' . $buttonText . '".')
+            ->action($buttonText,  $this->getNotificationURL());
     }
 
     /**
@@ -57,5 +61,17 @@ class WorkLogNotification extends Notification
             'work_log_id' => $this->log->id,
             'status' => 'created',
         ];
+    }
+
+    public function readNotification(array $notification)
+    {
+        \Illuminate\Notifications\DatabaseNotification::find($notification['id'])?->markAsRead();
+    }
+
+    public function getNotificationURL()
+    {
+        return  route('dispute.index', [
+            'openWorkLog' => $this->log->id,
+        ]);
     }
 }

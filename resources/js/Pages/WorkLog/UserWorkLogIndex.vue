@@ -22,7 +22,7 @@ const showDialog = ref(false);
 
 const patchMode = ref<'edit' | 'show' | null>(null);
 const patchLog = ref<Relation<'workLog', 'current_accepted_patch', patchkeys>>(null);
-const inputVariant = computed(() => (patchLog.value ? 'plain' : 'underlined'));
+const inputVariant = computed(() => (patchMode.value == 'show' ? 'plain' : 'underlined'));
 
 onMounted(() => {
     const workLogId = route().params['workLog'];
@@ -150,11 +150,11 @@ const tableHeight = useMaxScrollHeight(0);
                 fixed-header
                 :style="{ maxHeight: tableHeight }"
                 :headers="[
-                    { title: 'Start', key: 'start' },
-                    { title: 'Ende', key: 'end' },
-                    { title: 'Dauer', key: 'duration' },
-                    { title: 'Homeoffice', key: 'is_home_office' },
-                    { title: 'Stand', key: 'displayStatus' },
+                    { title: 'Start', key: 'start_text', width: '20%' },
+                    { title: 'Ende', key: 'end', width: '20%' },
+                    { title: 'Dauer', key: 'duration', width: '20%' },
+                    { title: 'Homeoffice', key: 'is_home_office', width: '20%' },
+                    { title: 'Stand', key: 'displayStatus', width: '20%' },
                     {
                         title: '',
                         key: 'actions',
@@ -169,7 +169,8 @@ const tableHeight = useMaxScrollHeight(0);
                             const data = workLog.current_accepted_patch ?? workLog;
 
                             return {
-                                start: DateTime.fromSQL(data.start).toFormat('dd.MM.yyyy HH:mm'),
+                                start: data.start,
+                                start_text: DateTime.fromSQL(data.start).toFormat('dd.MM.yyyy HH:mm'),
                                 end: data.end ? DateTime.fromSQL(data.end).toFormat('dd.MM.yyyy HH:mm') : 'Noch nicht beendet',
                                 duration: data.end ? DateTime.fromSQL(data.end).diff(DateTime.fromSQL(data.start)).toFormat('hh:mm') : '',
                                 is_home_office: data.is_home_office ? 'Ja' : 'Nein',
@@ -313,7 +314,7 @@ const tableHeight = useMaxScrollHeight(0);
                                             type="submit"
                                             color="primary"
                                         >
-                                            Korrektur beantragen
+                                            Korrektur {{ can('workLogPatch', 'update') ? 'speichern' : 'beantragen' }}
                                         </v-btn>
                                     </v-col>
                                 </v-row>

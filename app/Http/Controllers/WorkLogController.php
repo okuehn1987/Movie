@@ -23,6 +23,10 @@ class WorkLogController extends Controller
             'users' => [
                 ...User::inOrganization()
                     ->whereHas('workLogs')->with(['defaultTimeAccount:id,balance,user_id', 'latestWorkLog', 'currentWorkingHours:id,weekly_working_hours', 'currentWorkingWeek'])
+                    ->where(function ($query) {
+                        $query->whereNull('resignation_date')
+                            ->orWhere('resignation_date', '>=', Carbon::today());
+                    })
                     ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'time_balance_yellow_threshold', 'time_balance_red_threshold'])
                     ->filter(fn($u) => $authUser->can('viewShow', [WorkLog::class, $u]))
             ],
@@ -38,6 +42,7 @@ class WorkLogController extends Controller
         if ($last && $last->end == null) {
             WorkLog::find($last->id)->update([
                 'end' => now(),
+                'accepted_at' => now(),
             ]);
         } else {
             $validated = $request->validate([

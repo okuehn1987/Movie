@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\User;
 use App\Models\WorkLogPatch;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -29,9 +30,9 @@ class WorkLogPatchNotification extends Notification
      *
      * @return array<int, string>
      */
-    public function via(): array
+    public function via(object $notifiable): array
     {
-        return ['database'];
+        return $notifiable->notification_channels;
     }
 
     /**
@@ -39,7 +40,14 @@ class WorkLogPatchNotification extends Notification
      */
     public function toMail(object $notifiable)
     {
-        //
+        $buttonText = 'Antrag einsehen';
+        return (new MailMessage)
+            ->subject('Herta Zeitkorrekturantrag')
+            ->line('für den Nutzer "' . $this->user->name . '" liegt ein Antrag auf eine Zeitkorrektur für den Zeitraum vom "' .
+                Carbon::parse($this->patch->start)->format('d.m.Y') . '" bis zum "' .
+                Carbon::parse($this->patch->end)->format('d.m.Y') . '" vor.')
+            ->line('Um fortzufahren, klicke bitte auf "' . $buttonText . '".')
+            ->action($buttonText,  $this->getNotificationURL());
     }
 
     /**
@@ -54,5 +62,17 @@ class WorkLogPatchNotification extends Notification
             'work_log_patch_id' => $this->patch->id,
             'status' => 'created',
         ];
+    }
+
+    public function readNotification(array $notification)
+    {
+        \Illuminate\Notifications\DatabaseNotification::find($notification['id'])?->markAsRead();
+    }
+
+    public function getNotificationURL()
+    {
+        return  route('dispute.index', [
+            'openPatch' => $this->patch->id,
+        ]);
     }
 }

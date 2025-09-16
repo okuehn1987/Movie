@@ -15,22 +15,29 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     //super admin routes
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('reportBug', [BugReportController::class, 'store'])->name('reportBug.store');
 
     Route::resource('user', UserController::class)->only(['index', 'store', 'destroy', 'update']);
     Route::get('/user/{user}/generalInformation', [UserController::class, 'generalInformation'])->name('user.generalInformation');
     Route::get('/user/{user}/absences', [UserController::class, 'absences'])->name('user.absences');
     Route::get('/user/{user}/timeAccounts', [UserController::class, 'timeAccounts'])->name('user.timeAccounts');
     Route::get('/user/{user}/timeAccountTransactions', [UserController::class, 'timeAccountTransactions'])->name('user.timeAccountTransactions');
+    Route::get('/user/{user}/documents', [UserController::class, 'documents'])->name('user.documents');
+    Route::get('/user/{user}/timeStatementDoc', [UserController::class, 'timeStatementDoc'])->name('user.timeStatementDoc');
     Route::get('/user/{user}/userOrganigram', [UserController::class, 'userOrganigram'])->name('user.userOrganigram');
     Route::get('/user/profile', [UserController::class, 'profile'])->name('user.profile');
 
     Route::patch('organization/saveSettings', [OrganizationController::class, 'saveSettings'])->name('organization.saveSettings');
     Route::resource('organization', OrganizationController::class)->only(['show', 'update']);
+    Route::post('/organization/{organization}', [OrganizationController::class, 'update'])->name('organization.update.post');
+    Route::get('/organization/{organization}/getLogo', [OrganizationController::class, 'getLogo'])->name('organization.getLogo');
 
     Route::resource('absence', AbsenceController::class)->only(['index', 'store', 'destroy']);
     Route::delete('/absence/{absence}/denyDestroy', [AbsenceController::class, 'denyDestroy'])->name('absence.denyDestroy');
     Route::delete('/absence/{absence}/destroyDispute', [AbsenceController::class, 'destroyDispute'])->name('absence.destroyDispute');
     Route::patch('/absence/{absence}/updateStatus', [AbsenceController::class, 'updateStatus'])->name('absence.updateStatus');
+
+    Route::resource('userAbsenceFilter', UserAbsenceFilterController::class)->only(['store', 'update', 'destroy'])->shallow();
 
     Route::resource('absence.absencePatch', AbsencePatchController::class)->only(['store', 'update', 'destroy'])->shallow();
     Route::patch('/absencePatch/{absencePatch}/updateStatus', [AbsencePatchController::class, 'updateStatus'])->name('absencePatch.updateStatus');
@@ -58,7 +65,10 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::post('notifications/{notification}/update', [NotificationController::class, 'update'])->name('notification.update');
 
     Route::singleton('profile', ProfileController::class)->only(['update']);
+    Route::post('profile', [ProfileController::class, 'updateSettings'])->name('profile.updateSettings');
 });
 
+
+Route::get('/webmanifest', [ManifestController::class, 'getOrganizationManifest']);
 
 require __DIR__ . '/auth.php';

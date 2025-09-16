@@ -61,6 +61,7 @@ return [
     ],
     'hex_color' => ':attribute muss eine gültige hexadezimale Farbe sein.',
     'image' => ':attribute muss ein Bild sein.',
+    'immutable' => ':attribute darf nicht mehr verändert werden',
     'in' => 'Das ausgewählte :attribute ist ungültig.',
     'in_array' => ':attribute muss in :other existieren.',
     'integer' => ':attribute muss eine ganze Zahl sein.',
@@ -101,6 +102,7 @@ return [
     'multiple_of' => ':attribute muss ein Vielfaches von :value sein.',
     'not_in' => 'Das ausgewählte :attribute ist ungültig.',
     'not_regex' => 'Das Format von :attribute ist ungültig.',
+    'numeric' => ':attribute muss eine Zahl sein.',
     'password' => [
         'letters' => ':attribute muss mindestens einen Buchstaben enthalten.',
         'mixed' => ':attribute muss mindestens einen Großbuchstaben und einen Kleinbuchstaben enthalten.',
@@ -198,7 +200,10 @@ return [
         'user_working_hours.*.weekly_working_hours' => 'Stunden pro Woche',
         'year' => 'Jahr',
         'month' => 'Monat',
-        'description' => 'Beschreibung'
+        'description' => 'Beschreibung',
+        'resignation_date' => 'Kündigungsdatum',
+        'set_name' => 'Filtername',
+        'extra_charge' => 'Faktor Zuschlag',
     ],
 
 ];

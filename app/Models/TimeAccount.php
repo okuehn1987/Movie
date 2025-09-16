@@ -53,6 +53,11 @@ class TimeAccount extends Model
         return $this->hasMany(TimeAccountTransaction::class, 'to_id');
     }
 
+    public function allTimeAccountTransactions()
+    {
+        return TimeAccountTransaction::where('from_id', $this->id)->orWhere('to_id', $this->id);
+    }
+
     public function timeAccountSetting()
     {
         return $this->belongsTo(TimeAccountSetting::class);
@@ -64,10 +69,10 @@ class TimeAccount extends Model
      * To add balance to just one account use `null` as `$from` account.
      * To remove balance from just one account use `null` as `$to` account.
      */
-    public static function transferBalanceFromTo(float $amount, string $description, TimeAccount|null $from, TimeAccount|null $to)
+    public static function transferBalanceFromTo(float $amount, string $description, TimeAccount|null $from, TimeAccount|null $to): null | TimeAccountTransaction
     {
         if ($amount == 0)
-            return; // dont create a transction at all
+            return null; // dont create a transction at all
         if ($amount < 0)
             throw new Exception('Amount must be positive.');
         if (!$from && !$to)
@@ -75,10 +80,12 @@ class TimeAccount extends Model
         if ($from?->id === $to?->id)
             throw new Exception('Cannot transfer balance to the same account.');
 
-        DB::transaction(function () use ($amount, $description, $from, $to) {
+        $transaction = null;
+
+        DB::transaction(function () use ($amount, $description, $from, $to, &$transaction) {
             TimeAccount::whereIn('id', [$from?->id, $to?->id])->lockForUpdate()->get();
 
-            TimeAccountTransaction::create([
+            $transaction = TimeAccountTransaction::create([
                 'from_id' => $from?->id ?? null,
                 'from_previous_balance' => $from ? TimeAccount::find($from->id)->balance : null,
                 'to_id' => $to?->id ?? null,
@@ -96,14 +103,16 @@ class TimeAccount extends Model
                 'balance' => DB::raw("balance + ($amount)")
             ])->saveQuietly();
         });
+
+        return $transaction;
     }
 
     public function addBalance(float $balance, string $description)
     {
-        if ($balance > 0) {
-            self::transferBalanceFromTo(abs($balance), $description, null, $this);
-        } else {
-            self::transferBalanceFromTo(abs($balance), $description,  $this, null);
-        }
+        return match (true) {
+            $balance > 0 => self::transferBalanceFromTo(abs($balance), $description, null, $this),
+            $balance < 0 => self::transferBalanceFromTo(abs($balance), $description,  $this, null),
+            default => null
+        };
     }
 }

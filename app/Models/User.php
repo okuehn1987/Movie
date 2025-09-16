@@ -14,11 +14,24 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\PasswordResetNotification;
 
 class User extends Authenticatable
 {
     use \Znck\Eloquent\Traits\BelongsToThrough;
     use HasFactory, Notifiable, SoftDeletes, ScopeInOrganization;
+
+    /**
+     * Send a password reset notification to the user.
+     * Overrides native laravel Password Reset notification.
+     *
+     * @param  string  $token
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $url = route('password.reset', ['token' => $token]);
+        $this->notify(new PasswordResetNotification($url, $this));
+    }
 
     protected $guarded = ['password', 'role', 'email_verified_at'];
 
@@ -27,6 +40,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_supervisor' => 'boolean',
+        'notification_channels' => 'array',
     ];
 
     protected $hidden = [
@@ -114,10 +128,12 @@ class User extends Authenticatable
     {
         return $this->first_name . ' ' . $this->last_name;
     }
+
     public function shifts()
     {
         return $this->hasMany(Shift::class);
     }
+
     public function currentShift()
     {
         return $this->shifts()->one()->ofMany(
@@ -125,87 +141,118 @@ class User extends Authenticatable
             fn(Builder $q) => $q->where('end', '>=', now()->subHours(Shift::$MINIMUM_SHIFT_SEPARATION_TIME_IN_HOURS))
         );
     }
+
     public function workLogs()
     {
         return $this->hasMany(WorkLog::class);
     }
+
     public function latestWorkLog()
     {
         return $this->workLogs()->one()->ofMany(['start' => 'Max']);
     }
+
     public function workLogPatches()
     {
         return $this->hasMany(WorkLogPatch::class);
     }
+
     public function travelLogs()
     {
         return $this->hasMany(TravelLog::class);
     }
+
     public function travelLogPatches()
     {
         return $this->hasMany(TravelLogPatch::class);
     }
+
     public function absences()
     {
         return $this->hasMany(Absence::class);
     }
+
     public function absencePatches()
     {
         return $this->hasMany(AbsencePatch::class);
     }
+
     public function supervisor()
     {
         return $this->belongsTo(User::class);
     }
+
     public function supervisees()
     {
         return $this->hasMany(User::class, 'supervisor_id');
     }
+
     public function allSupervisees()
     {
         return $this->supervisees()->with('allSupervisees:id,supervisor_id,first_name,last_name,email,job_role');
     }
+
     public function allSuperviseesFlat(): Collection
     {
         return $this->allSupervisees()->get()->flatMap(fn($u) => $u->allSuperviseesFlat()->push($u))->push($this);
     }
+
     public function isSubstitutedBy()
     {
         return $this->belongsToMany(User::class, 'substitutes', 'user_id', 'substitute_id');
     }
+
     public function isSubstitutionFor()
     {
         return $this->belongsToMany(User::class, 'substitutes', 'substitute_id', 'user_id');
     }
+
     public function group()
     {
         return $this->belongsTo(Group::class);
     }
+
     public function operatingSite()
     {
         return $this->belongsTo(OperatingSite::class);
     }
+
     public function organization()
     {
         return $this->belongsToThrough(Organization::class, OperatingSite::class);
     }
+
     public function owns()
     {
         return $this->hasOne(Organization::class, 'owner_id', 'organization_id');
     }
+
+    public function userAbsenceFilters()
+    {
+        return $this->hasMany(UserAbsenceFilter::class);
+    }
+
     public function userWorkingHours()
     {
         return $this->hasMany(UserWorkingHour::class);
     }
+
     public function currentWorkingHours()
     {
         return $this->userWorkingHours()->one()->ofMany(['active_since' => 'Max'], fn($q) => $q->whereDate('active_since', '<=', now()));
     }
 
-    public function userWorkingHoursForDate(CarbonInterface $date): UserWorkingHour | null
+    public function workingHours(): Attribute
     {
-        return $this->userWorkingHours()->where('active_since', '<=', $date->format('Y-m-d'))
-            ->latest('active_since')
+        return Attribute::make(
+            get: fn() => $this->userWorkingHours()->get()
+        )->shouldCache();
+    }
+
+    public function userWorkingHoursForDate(CarbonInterface $date, $userWorkingHours = null): UserWorkingHour | null
+    {
+        return ($userWorkingHours ?? $this->workingHours)->where('active_since', '<=', $date->format('Y-m-d'))
+            ->sortByDesc('active_since')
             ->first();
     }
 
@@ -213,6 +260,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserLeaveDay::class);
     }
+
     public function currentLeaveDays()
     {
         return $this->userLeaveDays()->one()->ofMany(
@@ -225,6 +273,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserWorkingWeek::class);
     }
+
     public function currentWorkingWeek()
     {
         return $this->userWorkingWeeks()->one()->ofMany(
@@ -373,7 +422,7 @@ class User extends Authenticatable
         ));
 
         $absenceData = $relevantAbsences->flatMap(fn($a) => collect(
-            range(0, Carbon::parse(max($a->start, $startOfYear))->diffInDays(min($a->end, $endOfYear)))
+            range(0, Carbon::parse(max($a->start, $startOfYear))->startOfDay()->diffInDays(Carbon::parse(min($a->end, $endOfYear))->startOfDay()))
         )->map(
             fn($i) => Carbon::parse(max($a->start, $startOfYear))->addDays($i)->startOfDay()
         ))->unique()->sort();
@@ -391,6 +440,54 @@ class User extends Authenticatable
         return $usedDays;
     }
 
+    public function usedLeaveDaysForMonth(CarbonInterface $month, $userWorkingWeeks = null, $absences = null): int
+    {
+        $startOfMonth = $month->copy()->startOfMonth();
+        $endOfMonth = $month->copy()->endOfMonth();
+
+        $relevantAbsences = ($absences ?? collect(
+            $this->absences()->doesntHave('currentAcceptedPatch')
+                ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
+                ->whereDate('start', '<=', $endOfMonth)
+                ->whereDate('end', '>=', $startOfMonth)
+                ->get()
+        )->merge(
+            $this->absencePatches()
+                ->with('log.currentAcceptedPatch')
+                ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
+                ->where('status', 'accepted')
+                ->whereNot('type', 'delete')
+                ->whereDate('start', '<=', $endOfMonth)
+                ->whereDate('end', '>=', $startOfMonth)
+                ->get()
+                ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p))
+        ));
+
+        $absenceData = $relevantAbsences->filter(fn($a) => Carbon::parse($a->end)->gte($startOfMonth) && Carbon::parse($a->start)->lte($endOfMonth))
+            ->flatMap(fn($a) => collect(
+                range(0, Carbon::parse(max($a->start, $startOfMonth))->diffInDays(min($a->end, $endOfMonth)))
+            )->map(
+                fn($i) => Carbon::parse(max($a->start, $startOfMonth))->addDays($i)->startOfDay()
+            ))->unique()->sort();
+
+        $usedDays = 0;
+        foreach ($absenceData as $day) {
+            $currentWorkingWeek = $this->userWorkingWeekForDate($day, $userWorkingWeeks);
+            if (
+                $currentWorkingWeek?->hasWorkDay($day) &&
+                !$this->operatingSite->hasHoliday($day)
+            ) {
+                $usedDays++;
+            };
+        }
+        return $usedDays;
+    }
+
+    public function shouldWork(CarbonInterface $date)
+    {
+        return $this->userWorkingWeekForDate($date)?->hasWorkDay($date) && !$this->operatingSite->hasHoliday($date);
+    }
+
     public function leaveDays(): Attribute
     {
         return Attribute::make(
@@ -402,7 +499,7 @@ class User extends Authenticatable
     {
         $leaveDays = 0;
         for ($m = 1; $m <= 12; $m++) {
-            $month = $year->setMonth($m)->startOfMonth();
+            $month = $year->copy()->setMonth($m)->startOfMonth();
             $activeEntry = ($userLeaveDays ?? $this->leaveDays)
                 ->where('type', 'annual')
                 ->where('active_since', '<=', $month)
@@ -440,16 +537,14 @@ class User extends Authenticatable
 
     public function getSollsekundenForDate(CarbonInterface $date)
     {
+        if ($this->resignation_date && $date->gt(Carbon::parse($this->resignation_date))) {
+            return 0;
+        }
+
+        if (!$this->shouldWork($date)) return 0;
+
         $currentWorkingHours = $this->userWorkingHoursForDate($date);
         $currentWorkingWeek = $this->userWorkingWeekForDate($date);
-
-        if (!$currentWorkingHours || !$currentWorkingWeek) return 0;
-
-        $shouldWork =
-            $currentWorkingWeek->hasWorkDay($date) &&
-            !$this->operatingSite->hasHoliday($date);
-
-        if (!$shouldWork) return 0;
 
         return $currentWorkingHours['weekly_working_hours'] / $currentWorkingWeek->numberOfWorkingDays * 3600;
     }
@@ -465,7 +560,9 @@ class User extends Authenticatable
             fn($s) =>
             $s->entries->filter(
                 fn($e) =>
-                Carbon::parse($e->start)->between($date->copy()->startOfDay(), $date->copy()->endOfDay()) &&
+                $e->status == 'accepted' &&
+                    $e->accepted_at != null &&
+                    Carbon::parse($e->start)->between($date->copy()->startOfDay(), $date->copy()->endOfDay()) &&
                     Carbon::parse($e->end)->between($date->copy()->startOfDay(), $date->copy()->endOfDay())
             )
         );
@@ -482,10 +579,12 @@ class User extends Authenticatable
             ->contains(fn($a) => $a->absence_type_id !== AbsenceType::inOrganization()->where('type', 'Abbau Gleitzeitkonto')->first()->id)
         ) return;
 
-        $this->defaultTimeAccount->addBalance(
-            min(0, $this->getWorkDurationForDate($date) - $this->getSollsekundenForDate($date)),
+        $amount = min(0, $this->getWorkDurationForDate($date) - $this->getSollsekundenForDate($date));
+
+        TimeAccountTransactionChange::createFor($this->defaultTimeAccount->addBalance(
+            $amount,
             'Fehlende Stunden am ' . $date->format('d.m.Y')
-        );
+        ), $date);
     }
 
     public function usersInOrganization(): Attribute
@@ -535,23 +634,21 @@ class User extends Authenticatable
     {
         return Attribute::make(
             get: function () {
-                $futureAbsences = Absence::inOrganization()
+                $futureAbsences =
+                    $this->absences()
+                    ->with('currentAcceptedPatch')
                     ->where('status', 'accepted')
-                    ->whereDate('end', '>=', now())
-                    ->where('user_id', $this->id)
-                    ->get(['id', 'start', 'end', 'user_id', 'absence_type_id']);
+                    ->get()
+                    ->map(fn($a) => $a->currentAcceptedPatch ?? $a)
+                    ->where('end', '>=', now());
 
                 $lastDay = null;
                 $absenceTypes = collect();
 
                 for ($day = now()->startOfDay();; $day->addDay()) {
-                    $userWorkingWeek = $this->userWorkingWeekForDate($day);
-                    $shouldWork = $userWorkingWeek->hasWorkDay($day) &&
-                        !$this->operatingSite->hasHoliday($day);
-
                     $absencesForDay = $futureAbsences->filter(fn($a) => Carbon::parse($a['start'])->lte($day) && Carbon::parse($a['end'])->gte($day));
 
-                    if ($absencesForDay->count() > 0 || !$shouldWork) {
+                    if ($absencesForDay->count() > 0 || !$this->shouldWork($day)) {
                         $absenceTypes = $absenceTypes->merge($absencesForDay->pluck('absence_type_id'));
                         $lastDay = $day->copy();
                     } else {
