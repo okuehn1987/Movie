@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Notification } from '@/types/types';
 import { useNow } from '@/utils';
-import { Link, router, usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import ReportBugDialog from './ReportBugDialog.vue';
 
@@ -113,18 +113,16 @@ function convertTimeStamp(notification: Notification) {
             <v-btn stacked color="black" prepend-icon="mdi-menu" v-bind="activatorProps"></v-btn>
         </template>
         <v-list>
-            <v-list-item>
-                <Link class="text-black w-100" :href="route('user.profile', { user: $page.props.auth.user.id })">
-                    <v-btn variant="text" prepend-icon="mdi-account" title="Profil">Profil</v-btn>
-                </Link>
+            <v-list-item @click.stop="router.get(route('user.profile', { user: $page.props.auth.user.id }))">
+                <v-icon icon="mdi-account" class="me-2"></v-icon>
+                Profil
             </v-list-item>
-            <v-list-item>
+            <v-list-item @click.stop="() => {}">
                 <ReportBugDialog></ReportBugDialog>
             </v-list-item>
-            <v-list-item>
-                <Link method="post" :href="route('logout')" as="button">
-                    <v-btn variant="text" prepend-icon="mdi-logout" title="Abmelden">Abmelden</v-btn>
-                </Link>
+            <v-list-item @click.stop="router.post(route('logout'))">
+                <v-icon icon="mdi-logout" class="me-2"></v-icon>
+                Abmelden
             </v-list-item>
         </v-list>
     </v-menu>
