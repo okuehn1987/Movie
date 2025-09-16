@@ -15,6 +15,7 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     //super admin routes
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('reportBug', [BugReportController::class, 'store'])->name('reportBug.store');
 
     Route::resource('user', UserController::class)->only(['index', 'store', 'destroy', 'update']);
     Route::get('/user/{user}/generalInformation', [UserController::class, 'generalInformation'])->name('user.generalInformation');

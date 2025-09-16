@@ -10,6 +10,7 @@
         "test-ui": "playwright test --ui",
         "build": "vue-tsc && vite build",
         "reset": "php artisan migrate:fresh --seed",
+        "r": "php artisan migrate:fresh --seed",
         "typegen": "php artisan ziggy:generate --types",
         "lint": "npx eslint resources/js",
         "testCoverage": "XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-clover test-reports/cov.xml"
