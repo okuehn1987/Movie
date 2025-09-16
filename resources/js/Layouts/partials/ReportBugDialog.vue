@@ -7,7 +7,7 @@ const bugForm = useForm({
 });
 </script>
 <template>
-    <v-dialog>
+    <v-dialog max-width="1000">
         <template #activator="{ props: activatorProps }">
             <v-btn variant="text" prepend-icon="mdi-bug" title="Fehler melden" v-bind="activatorProps">Fehler melden</v-btn>
         </template>
