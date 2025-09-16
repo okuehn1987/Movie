@@ -17,8 +17,6 @@ const ticketForm = useForm({
     customer_id: null,
     assignee_id: usePage().props.auth.user.id,
     start: null as string | null,
-    // start: DateTime.now().toISODate(),
-    // start_time: '09:00',
     duration: null,
     resources: '',
     tab: 'ticket' as 'ticket' | 'expressTicket',

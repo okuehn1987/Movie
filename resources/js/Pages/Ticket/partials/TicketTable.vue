@@ -4,7 +4,6 @@ import TicketCreateDialog from './TicketCreateDialog.vue';
 import { CustomerProp, TicketProp, UserProp } from './ticketTypes';
 import TicketShowDialog from './TicketShowDialog.vue';
 import RecordCreateDialog from './RecordCreateDialog.vue';
-import { router } from '@inertiajs/vue3';
 
 const props = defineProps<{
     tickets: TicketProp[];

@@ -7,6 +7,7 @@ import { TicketProp } from './ticketTypes';
 
 const props = defineProps<{
     ticket: TicketProp;
+    tab: 'archive' | 'finishedTickets' | 'newTickets';
 }>();
 
 const form = useForm({
@@ -63,16 +64,22 @@ const selectedDurationSum = computed(() =>
                     <v-divider></v-divider>
                     <v-card-text>
                         <v-row>
-                            <v-col cols="12" md="6"><v-text-field label="Kunde" :model-value="ticket.customer.name" readonly></v-text-field></v-col>
                             <v-col cols="12" md="6">
-                                <v-text-field label="Priorität" v-model="PRIORITIES[form.priority]" readonly></v-text-field>
+                                <v-text-field label="Kunde" :model-value="ticket.customer.name" :disabled="tab !== 'newTickets'"></v-text-field>
+                            </v-col>
+                            <v-col cols="12" md="6">
+                                <v-text-field label="Priorität" v-model="PRIORITIES[form.priority]" :disabled="tab !== 'newTickets'"></v-text-field>
                             </v-col>
                             <v-col cols="12" md="6">
                                 <!-- TODO: Zuweisung wird multi select mit chips wenn die relation vorhanden ist -->
-                                <v-text-field label="Zuweisung" readonly v-model="form.assigneeName"></v-text-field>
+                                <v-text-field label="Zuweisung" :disabled="tab !== 'newTickets'" v-model="form.assigneeName"></v-text-field>
                             </v-col>
-                            <v-col cols="12"><v-text-field label="Betreff" v-model="form.title"></v-text-field></v-col>
-                            <v-col cols="12"><v-text-field label="Beschreibung" v-model="form.description"></v-text-field></v-col>
+                            <v-col cols="12">
+                                <v-text-field label="Betreff" v-model="form.title" :disabled="tab !== 'newTickets'"></v-text-field>
+                            </v-col>
+                            <v-col cols="12">
+                                <v-text-field label="Beschreibung" v-model="form.description" :disabled="tab !== 'newTickets'"></v-text-field>
+                            </v-col>
                             <template v-if="hasRecords">
                                 <v-data-table-virtual
                                     v-model="form.selected"
@@ -119,7 +126,6 @@ const selectedDurationSum = computed(() =>
                                     </template>
                                     <template v-slot:bottom>
                                         <v-row class="text-end" no-gutters>
-                                            <!-- TODO: if Aufträge ausgewählt -->
                                             <template v-if="true">
                                                 <v-col cols="12" md="11">Ausgewählte Auftragsdauer</v-col>
                                                 <v-col cols="12" md="1">{{ formatDuration(selectedDurationSum, 'minutes', 'duration') }}</v-col>
@@ -132,7 +138,7 @@ const selectedDurationSum = computed(() =>
                             </template>
                             <v-col cols="12" class="text-end">
                                 <v-btn color="primary" type="submit" :loading="form.processing" :disabled="!form.isDirty">
-                                    Änderungen und Abrechnungen speichern
+                                    {{ tab === 'newTickets' ? 'Änderungen und Abrechnungen speichern' : 'Abrechnungen speichern' }}
                                 </v-btn>
                             </v-col>
                         </v-row>
