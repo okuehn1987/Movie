@@ -209,6 +209,11 @@ class User extends Authenticatable
         return $this->belongsToMany(User::class, 'substitutes', 'substitute_id', 'user_id');
     }
 
+    public function tickets()
+    {
+        return $this->belongsToMany(Ticket::class)->withTimestamps();
+    }
+
     public function group()
     {
         return $this->belongsTo(Group::class);
