@@ -84,9 +84,11 @@ const timeAccountSettingsForm = useForm({
                                     type="number"
                                     label="Limit in Stunden"
                                     :hint="
-                                        'entspricht ' +
-                                        roundTo(timeAccountSettingsForm.balance_limit / (user.current_working_hours?.weekly_working_hours ?? 40), 2) +
-                                        'x wöchentliche Arbeitszeit'
+                                        user.current_working_hours?.weekly_working_hours
+                                            ? 'entspricht ' +
+                                              roundTo(timeAccountSettingsForm.balance_limit / user.current_working_hours.weekly_working_hours, 2) +
+                                              'x wöchentliche Arbeitszeit'
+                                            : ''
                                     "
                                     :error-messages="timeAccountSettingsForm.errors.balance_limit"
                                 ></v-text-field>
