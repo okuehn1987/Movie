@@ -81,7 +81,7 @@ const form = useForm({});
                     </template>
                 </v-dialog>
                 <RecordCreateDialog v-if="tab === 'newTickets'" :ticket="item" :users="users" />
-                <TicketShowDialog :ticket="item" :tab />
+                <TicketShowDialog :ticket="item" :customers="customers" :users="users" :tab />
             </template>
         </v-data-table-virtual>
     </v-card>

@@ -66,12 +66,24 @@ function submit(isActive: Ref<boolean>) {
                                     </v-col>
                                     <v-col cols="12" md="6">
                                         <v-select
-                                            :items="Object.entries(PRIORITIES).map(([key, value]) => ({ value: key, title: value }))"
+                                            :items="PRIORITIES"
                                             label="Priorität"
                                             required
                                             :error-messages="ticketForm.errors.priority"
                                             v-model="ticketForm.priority"
-                                        ></v-select>
+                                        >
+                                            <template v-slot:selection="{ item }">
+                                                {{ item.raw.title }}
+                                                <v-icon class="ms-2" :icon="item.raw.icon" :color="item.raw.color"></v-icon>
+                                            </template>
+                                            <template v-slot:item="{ props: itemProps, item }">
+                                                <v-list-item v-bind="itemProps">
+                                                    <template #append>
+                                                        <v-icon :icon="item.raw.icon" :color="item.raw.color"></v-icon>
+                                                    </template>
+                                                </v-list-item>
+                                            </template>
+                                        </v-select>
                                     </v-col>
                                     <v-col cols="12" md="6">
                                         <v-autocomplete

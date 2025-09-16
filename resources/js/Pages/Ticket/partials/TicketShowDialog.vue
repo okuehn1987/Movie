@@ -3,10 +3,12 @@ import { PRIORITIES } from '@/types/types';
 import { formatDuration } from '@/utils';
 import { DateTime } from 'luxon';
 import { computed, watchEffect } from 'vue';
-import { TicketProp } from './ticketTypes';
+import { CustomerProp, TicketProp, UserProp } from './ticketTypes';
 
 const props = defineProps<{
     ticket: TicketProp;
+    customers: CustomerProp[];
+    users: UserProp[];
     tab: 'archive' | 'finishedTickets' | 'newTickets';
 }>();
 
@@ -65,10 +67,29 @@ const selectedDurationSum = computed(() =>
                     <v-card-text>
                         <v-row>
                             <v-col cols="12" md="6">
-                                <v-text-field label="Kunde" :model-value="ticket.customer.name" :disabled="tab !== 'newTickets'"></v-text-field>
+                                <v-text-field label="Kunde" :model-value="ticket.customer.name" disabled></v-text-field>
                             </v-col>
                             <v-col cols="12" md="6">
-                                <v-text-field label="Priorität" v-model="PRIORITIES[form.priority]" :disabled="tab !== 'newTickets'"></v-text-field>
+                                <v-select
+                                    :items="PRIORITIES"
+                                    label="Priorität"
+                                    required
+                                    :error-messages="form.errors.priority"
+                                    v-model="form.priority"
+                                    :disabled="tab !== 'newTickets'"
+                                >
+                                    <template v-slot:selection="{ item }">
+                                        {{ item.raw.title }}
+                                        <v-icon class="ms-2" :icon="item.raw.icon" :color="item.raw.color"></v-icon>
+                                    </template>
+                                    <template v-slot:item="{ props: itemProps, item }">
+                                        <v-list-item v-bind="itemProps">
+                                            <template #append>
+                                                <v-icon :icon="item.raw.icon" :color="item.raw.color"></v-icon>
+                                            </template>
+                                        </v-list-item>
+                                    </template>
+                                </v-select>
                             </v-col>
                             <v-col cols="12" md="6">
                                 <!-- TODO: Zuweisung wird multi select mit chips wenn die relation vorhanden ist -->
