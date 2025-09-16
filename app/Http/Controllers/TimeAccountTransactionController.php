@@ -14,15 +14,17 @@ class TimeAccountTransactionController extends Controller
 {
     public function store(Request $request)
     {
-        Gate::authorize('create', [TimeAccountTransaction::class, (TimeAccount::find($request['from_id']) ?? TimeAccount::find($request['to_id']))?->user]);
+        $timeAccount = TimeAccount::find($request['from_id'] ?? $request['to_id']);
+
+        Gate::authorize('create', [TimeAccountTransaction::class, $timeAccount?->user]);
 
         $validated = $request->validate([
             'from_id' => [
-                Rule::in([null, ...TimeAccount::inOrganization()->get(['id'])->pluck('id')]),
+                Rule::in([null, ...$timeAccount->user->timeAccounts->pluck('id')]),
                 'required_if:to_id,null',
             ],
             'to_id' => [
-                Rule::in([null, ...TimeAccount::inOrganization()->get(['id'])->pluck('id')]),
+                Rule::in([null, ...$timeAccount->user->timeAccounts->pluck('id')]),
                 'required_if:from_id,null',
             ],
             'amount' => "required|numeric|min:0",
@@ -34,6 +36,10 @@ class TimeAccountTransactionController extends Controller
 
         if ($fromAccount && $toAccount && $fromAccount->user_id !== $toAccount->user_id) {
             return back()->with('error', 'Transaktionen zwischen zwei verschiedenen Benutzern sind nicht möglich.');
+        }
+
+        if ($toAccount->balance_limit !== null && ($toAccount->balance + ($validated["amount"] * 3600)) > $toAccount->balance_limit) {
+            return back()->with('error', 'Das Guthaben des Zielkontos würde das Limit überschreiten.');
         }
 
         TimeAccount::transferBalanceFromTo(

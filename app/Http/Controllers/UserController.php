@@ -69,6 +69,10 @@ class UserController extends Controller
 
             'is_supervisor' => 'required|boolean',
 
+            'use_time_balance_traffic_light' => 'required|boolean',
+            'time_balance_yellow_threshold' => 'nullable|required_if:use_time_balance_traffic_light,true|integer',
+            'time_balance_red_threshold' => 'nullable|required_if:use_time_balance_traffic_light,true|integer',
+
             'resignation_date' => ['nullable', 'date', function ($attribute, $value, $fail) use ($request, $mode, $user) {
                 if ($mode == 'create') return;
                 if ($user->resignation_date == $value) return;
@@ -369,7 +373,10 @@ class UserController extends Controller
             'home_office' => $validated['home_office'],
             'home_office_hours_per_week' => $validated['home_office'] ? $validated['home_office_hours_per_week'] ?? 0 : null,
             'job_role' => $validated['job_role'],
+            'time_balance_yellow_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_yellow_threshold'] : null,
+            'time_balance_red_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_red_threshold'] : null,
             'email_verified_at' => now(),
+            'notification_channels' => ['database', 'mail'],
         ]);
         $user->save();
 
@@ -486,6 +493,8 @@ class UserController extends Controller
             'home_office_hours_per_week' => $validated['home_office'] ? $validated['home_office_hours_per_week'] ?? 0 : null,
             "overtime_calculations_start" => $validated['overtime_calculations_start'],
             'job_role' => $validated['job_role'],
+            'time_balance_yellow_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_yellow_threshold']  : null,
+            'time_balance_red_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_red_threshold'] : null,
         ]);
         $user->organizationUser->update($validated['organizationUser']);
         $user->operatingSiteUser->update($validated['operatingSiteUser']);
@@ -591,9 +600,16 @@ class UserController extends Controller
                 ->limit(1))
             ->first();
 
-        $previousBalance = $lastTransactionBeforeStatement->from_id == $user->defaultTimeAccount->id ?
-            $lastTransactionBeforeStatement->from_previous_balance :
-            $lastTransactionBeforeStatement->to_previous_balance;
+        if ($lastTransactionBeforeStatement->changes()->whereDate('date', '>=', $start->format('Y-m-d'))->count() != 0) {
+            $lastTransactionBeforeStatement = null;
+        }
+
+        if ($lastTransactionBeforeStatement)
+            $previousBalance = $lastTransactionBeforeStatement->from_id == $user->defaultTimeAccount->id ?
+                $lastTransactionBeforeStatement->from_previous_balance :
+                $lastTransactionBeforeStatement->to_previous_balance;
+        else $previousBalance = 0;
+
 
         $allTransactionChanges = TimeAccountTransactionChange::whereIn(
             'time_account_transaction_id',
