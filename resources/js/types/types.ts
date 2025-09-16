@@ -438,12 +438,15 @@ export type PermissionValue = 'read' | 'write' | null;
 export type Permission = {
     all:
         | 'user_permission'
+        | 'workLog_permission'
         | 'workLogPatch_permission'
         | 'absence_permission'
         | 'timeAccount_permission'
         | 'timeAccountSetting_permission'
-        | 'timeAccountTransaction_permission';
-    organization: 'absenceType_permission' | 'specialWorkingHoursFactor_permission' | 'organization_permission';
+        | 'timeAccountTransaction_permission'
+        | 'ticket_permission'
+        | 'absenceType_permission';
+    organization: 'specialWorkingHoursFactor_permission' | 'organization_permission';
     operatingSite: 'operatingSite_permission';
     group: 'group_permission';
 };
