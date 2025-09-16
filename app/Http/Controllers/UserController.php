@@ -376,6 +376,7 @@ class UserController extends Controller
             'time_balance_yellow_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_yellow_threshold'] : null,
             'time_balance_red_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_red_threshold'] : null,
             'email_verified_at' => now(),
+            'notification_channels' => ['database', 'mail'],
         ]);
         $user->save();
 
@@ -599,9 +600,16 @@ class UserController extends Controller
                 ->limit(1))
             ->first();
 
-        $previousBalance = $lastTransactionBeforeStatement->from_id == $user->defaultTimeAccount->id ?
-            $lastTransactionBeforeStatement->from_previous_balance :
-            $lastTransactionBeforeStatement->to_previous_balance;
+        if ($lastTransactionBeforeStatement->changes()->whereDate('date', '>=', $start->format('Y-m-d'))->count() != 0) {
+            $lastTransactionBeforeStatement = null;
+        }
+
+        if ($lastTransactionBeforeStatement)
+            $previousBalance = $lastTransactionBeforeStatement->from_id == $user->defaultTimeAccount->id ?
+                $lastTransactionBeforeStatement->from_previous_balance :
+                $lastTransactionBeforeStatement->to_previous_balance;
+        else $previousBalance = 0;
+
 
         $allTransactionChanges = TimeAccountTransactionChange::whereIn(
             'time_account_transaction_id',
