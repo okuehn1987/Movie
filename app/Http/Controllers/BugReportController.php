@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
@@ -13,6 +14,8 @@ class BugReportController extends Controller
 {
     public function store(Request $request, #[CurrentUser()] User $authUser)
     {
+        Gate::authorize('publicAuth', User::class);
+
         $validated = $request->validate([
             'description' => 'required|string|max:2000',
             'location' => 'required|string|max:255',
