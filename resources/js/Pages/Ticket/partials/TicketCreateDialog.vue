@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { PRIORITIES } from '@/types/types';
-import { DateTime } from 'luxon';
 import { CustomerProp, UserProp } from './ticketTypes';
 import { usePage } from '@inertiajs/vue3';
 import { Ref } from 'vue';
@@ -17,7 +16,7 @@ const ticketForm = useForm({
     customer_id: null,
     assignee_id: usePage().props.auth.user.id,
     start: null as string | null,
-    duration: null,
+    duration: '00:00',
     resources: '',
     tab: 'ticket' as 'ticket' | 'expressTicket',
 });
@@ -34,7 +33,7 @@ function submit(isActive: Ref<boolean>) {
 <template>
     <v-dialog max-width="600px">
         <template v-slot:activator="{ props: activatorProps }">
-            <v-btn v-bind="activatorProps" color="primary">
+            <v-btn title="Auftrag erstellen" v-bind="activatorProps" color="primary">
                 <v-icon icon="mdi-plus"></v-icon>
             </v-btn>
         </template>

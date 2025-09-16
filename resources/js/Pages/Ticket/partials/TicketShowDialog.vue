@@ -40,7 +40,7 @@ const selectedDurationSum = computed(() =>
 <template>
     <v-dialog max-width="1000px" height="800px">
         <template #activator="{ props: activatorProps }">
-            <v-btn v-bind="activatorProps" icon variant="text">
+            <v-btn title="Auftrag anzeigen" v-bind="activatorProps" icon variant="text">
                 <v-icon icon="mdi-eye"></v-icon>
             </v-btn>
         </template>
@@ -97,7 +97,7 @@ const selectedDurationSum = computed(() =>
                                         }))
                                     "
                                     show-expand
-                                    show-select
+                                    :show-select="tab !== 'archive'"
                                 >
                                     <template v-slot:item.data-table-expand="{ internalItem, isExpanded, toggleExpand }">
                                         <v-btn size="small" variant="text" border @click="toggleExpand(internalItem)">
@@ -124,7 +124,7 @@ const selectedDurationSum = computed(() =>
                                             </td>
                                         </tr>
                                     </template>
-                                    <template v-slot:bottom>
+                                    <template v-slot:bottom v-if="tab !== 'archive'">
                                         <v-row class="text-end" no-gutters>
                                             <template v-if="true">
                                                 <v-col cols="12" md="11">Ausgewählte Auftragsdauer</v-col>
@@ -136,7 +136,7 @@ const selectedDurationSum = computed(() =>
                                     </template>
                                 </v-data-table-virtual>
                             </template>
-                            <v-col cols="12" class="text-end">
+                            <v-col v-if="tab !== 'archive'" cols="12" class="text-end">
                                 <v-btn color="primary" type="submit" :loading="form.processing" :disabled="!form.isDirty">
                                     {{ tab === 'newTickets' ? 'Änderungen und Abrechnungen speichern' : 'Abrechnungen speichern' }}
                                 </v-btn>

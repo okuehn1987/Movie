@@ -5,7 +5,7 @@ import { CustomerProp, TicketProp, UserProp } from './ticketTypes';
 import TicketShowDialog from './TicketShowDialog.vue';
 import RecordCreateDialog from './RecordCreateDialog.vue';
 
-const props = defineProps<{
+defineProps<{
     tickets: TicketProp[];
     customers: CustomerProp[];
     users: UserProp[];
@@ -46,9 +46,8 @@ const form = useForm({});
             <template v-slot:item.actions="{ item }">
                 <v-dialog v-if="tab === 'newTickets'" max-width="1000">
                     <template v-slot:activator="{ props: activatorProps }">
-                        <v-btn v-bind="activatorProps" variant="text" icon="mdi-check" />
+                        <v-btn title="Auftrag abschließen" v-bind="activatorProps" variant="text" icon="mdi-check" />
                     </template>
-
                     <template v-slot:default="{ isActive }">
                         <v-card :title="'Auftrag als abgeschlossen markieren'">
                             <template #append>
@@ -65,8 +64,7 @@ const form = useForm({});
                                     </v-col>
                                     <v-col cols="12" class="text-end">
                                         <v-btn
-                                            variant="text"
-                                            color="red"
+                                            color="primary"
                                             @click.stop="
                                                 form.patch(route('ticket.finish', { ticket: item.id }), {
                                                     onSuccess: () => (isActive.value = false),

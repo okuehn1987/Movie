@@ -20,8 +20,18 @@ class TicketController extends Controller
     public function index()
     {
         Gate::authorize('viewIndex', Ticket::class);
+
+        $ticketQuery = Ticket::inOrganization()->with(['customer:id,name', 'user:id,first_name,last_name', 'assignee:id,first_name,last_name', 'records.user']);
+
         return Inertia::render('Ticket/TicketIndex', [
-            'tickets' => Ticket::inOrganization()->with(['customer:id,name', 'user:id,first_name,last_name', 'assignee:id,first_name,last_name', 'records.user'])->get(),
+            'tickets' => $ticketQuery
+                ->whereNull('tickets.finished_at')
+                ->orWhereHas('records', fn($q) => $q->whereNull('accounted_at'))
+                ->get(),
+            'archiveTickets' => $ticketQuery
+                ->whereNotNull('tickets.finished_at')
+                ->whereDoesntHave('records', fn($q) => $q->whereNull('accounted_at'))
+                ->get(),
             'customers' => Customer::inOrganization()->get(['id', 'name']),
             'users' => User::inOrganization()->get(['id', 'first_name', 'last_name', 'job_role']),
         ]);
@@ -30,6 +40,7 @@ class TicketController extends Controller
     public function store(Request $request)
     {
         Gate::authorize('create', Ticket::class);
+
         $validated = $request->validate([
             'tab' => 'required|in:expressTicket,ticket',
             'title' => 'required|string|max:255',
@@ -50,21 +61,23 @@ class TicketController extends Controller
             ]
         );
 
-        if ($validated["tab"] === "expressTicket")
+        if ($validated["tab"] === "expressTicket") {
             $ticket->records()->create([
                 'resources' => $validated['resources'],
                 'start' => Carbon::parse($validated['start']),
                 'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
                 'user_id' => Auth::id(),
             ]);
+            $ticket->update(['finished_at' => now()]);
+        }
 
         return back()->with('success', 'Ticket erfolgreich erstellt.');
     }
 
     public function update(Request $request, Ticket $ticket)
     {
-
         Gate::authorize('update', [Ticket::class, $ticket->user]);
+
         $validated = $request->validate([
             'priority' => 'required|in:lowest,low,medium,high,highest',
             'assignee_id' => ['nullable', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->pluck('users.id'))],
@@ -87,6 +100,7 @@ class TicketController extends Controller
     public function finish(Ticket $ticket)
     {
         Gate::authorize('update', [Ticket::class, $ticket->user]);
+
         $ticket->update(['finished_at' => now()]);
 
         return back()->with('success', 'Ticket erfolgreich abgeschlossen.');
@@ -94,6 +108,8 @@ class TicketController extends Controller
 
     public function delete(Ticket $ticket)
     {
+        Gate::authorize('delete', [Ticket::class, $ticket->user]);
+
         $ticket->delete();
 
         return back()->with('success', 'Ticket erfolgreich gelöscht.');

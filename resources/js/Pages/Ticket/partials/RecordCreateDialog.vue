@@ -16,7 +16,7 @@ const recordForm = useForm({
 <template>
     <v-dialog max-width="600px">
         <template #activator="{ props: activatorProps }">
-            <v-btn v-bind="activatorProps" variant="text"><v-icon>mdi-plus</v-icon></v-btn>
+            <v-btn title="Eintrag hinzufügen" v-bind="activatorProps" variant="text"><v-icon>mdi-plus</v-icon></v-btn>
         </template>
         <template #default="{ isActive }">
             <v-card title="Eintrag erstellen">
