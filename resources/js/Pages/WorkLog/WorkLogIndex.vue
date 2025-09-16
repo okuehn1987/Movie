@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Relations, User, WorkLog } from '@/types/types';
+import { RelationPick, Relations, User, WorkLog } from '@/types/types';
 import { formatDuration, getMaxScrollHeight } from '@/utils';
 import { Link } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 
 type PropUser = Pick<User, 'id' | 'first_name' | 'last_name' | 'time_balance_yellow_threshold' | 'time_balance_red_threshold'> &
-    Pick<Relations<'user'>, 'default_time_account'> & { latest_work_log: WorkLog } & Pick<Relations<'user'>, 'current_working_hours'> &
+    Pick<Relations<'user'>, 'default_time_account'> & { latest_work_log: WorkLog } & RelationPick<
+        'user',
+        'current_working_hours',
+        'id' | 'weekly_working_hours'
+    > &
     Pick<Relations<'user'>, 'current_working_week'>;
 
 defineProps<{
@@ -16,7 +20,10 @@ defineProps<{
 function getPT(user: PropUser & { userWorkingWeekCount: number }) {
     if (!user.current_working_hours) return null;
 
-    return Math.round(user.default_time_account.balance / 3600 / (user.current_working_hours?.weekly_working_hours / user.userWorkingWeekCount) * 10) / 10;
+    return (
+        Math.round((user.default_time_account.balance / 3600 / (user.current_working_hours?.weekly_working_hours / user.userWorkingWeekCount)) * 10) /
+        10
+    );
 }
 </script>
 <template>
