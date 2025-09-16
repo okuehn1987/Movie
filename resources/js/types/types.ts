@@ -299,11 +299,11 @@ export type AbsenceType = DBObject<'absenceType'> &
 
 export const TRUNCATION_CYCLES = [null, '1', '3', '6', '12'] as const;
 export const PRIORITIES = [
-    { value: 'highest', title: 'Höchste', icon: 'mdi-chevron-double-up', color: 'orange-darken-3' },
-    { value: 'high', title: 'Hoch', icon: 'mdi-chevron-up', color: 'orange-darken-2' },
+    { value: 'highest', title: 'Höchste', icon: 'mdi-chevron-double-up', color: 'red-darken-4' },
+    { value: 'high', title: 'Hoch', icon: 'mdi-chevron-up', color: 'orange-darken-4' },
     { value: 'medium', title: 'Mittel', icon: 'mdi-equal', color: 'orange-lighten-1' },
     { value: 'low', title: 'Niedrig', icon: 'mdi-chevron-down', color: 'blue-lighten-2' },
-    { value: 'lowest', title: 'Niedrigste', icon: 'mdi-chevron-double-down', color: 'blue-lighten-1' },
+    { value: 'lowest', title: 'Niedrigste', icon: 'mdi-chevron-double-down', color: 'blue-darken-2' },
 ] as const;
 
 export type TimeAccountSetting = DBObject<'timeAccountSetting'> &
@@ -418,8 +418,6 @@ export type Ticket = DBObject<'ticket'> & {
     priority: (typeof PRIORITIES)[number]['value'];
     customer_id: Customer['id'];
     user_id: User['id'];
-    assignee_id: User['id'] | null;
-    assigned_at: DateTimeString | null;
     accounted_at: DateTimeString | null;
     finished_at: DateTimeString | null;
 };
@@ -477,6 +475,10 @@ export type AppModule = DBObject<'appModule'> & {
     organization_id: Organization['id'];
     module: 'herta' | 'timesheets';
     activated_at: DateTimeString | null;
+};
+export type TicketUser = DBObject<'ticket_user'> & {
+    ticket_id: Ticket['id'];
+    user_id: User['id'];
 };
 
 export type RelationMap = {
@@ -567,7 +569,9 @@ export type RelationMap = {
     ticket: {
         customer: Customer;
         user: User;
-        assignee: User | null;
+        assignees: (User & {
+            pivot: TicketUser;
+        })[];
         records: TicketRecord[];
     };
     ticketRecord: {
@@ -641,6 +645,7 @@ export type RelationMap = {
         unread_notifications: Notification[];
         addresses: Address[];
         current_address: Address;
+        tickets: (Ticket & { pivot: TicketUser })[];
     };
     userLeaveDays: {
         user: User;
