@@ -15,9 +15,13 @@ const isMobile = useDisplay().smAndDown;
 const showDrawer = ref(!isMobile.value);
 const appname = import.meta.env['VITE_APP_NAME'];
 
-usePoll(10000, {
-    only: ['unreadNotifications'],
-});
+usePoll(
+    1000 * 60 * 2,
+    {
+        only: ['unreadNotifications'],
+    },
+    { keepAlive: true },
+);
 
 const showOrgImg = ref(!!page.props.organization.logo);
 watch(
