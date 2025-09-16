@@ -113,6 +113,8 @@ export type User = DBObject<'user'> &
         is_supervisor: boolean;
         resignation_date: DateString | null;
         job_role: string | null;
+        time_balance_yellow_threshold: number | null;
+        time_balance_red_threshold: number | null;
         notification_channels: ('database' | 'mail')[];
     } & (
         | {
