@@ -8,6 +8,7 @@ use App\Models\Ticket;
 use App\Models\TicketRecord;
 use App\Models\User;
 use Carbon\Carbon;
+use GMP;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -64,7 +65,6 @@ class TicketController extends Controller
     {
 
         Gate::authorize('update', [Ticket::class, $ticket->user]);
-        // Organization::getCurrent()->tickets()->whereHas(records())
         $validated = $request->validate([
             'priority' => 'required|in:lowest,low,medium,high,highest',
             'assignee_id' => ['nullable', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->pluck('users.id'))],
@@ -82,6 +82,14 @@ class TicketController extends Controller
         $ticket->update(collect($validated)->except('selected')->toArray());
 
         return back()->with('success', 'Änderungen erfolgreich gespeichert.');
+    }
+
+    public function finish(Ticket $ticket)
+    {
+        Gate::authorize('update', [Ticket::class, $ticket->user]);
+        $ticket->update(['finished_at' => now()]);
+
+        return back()->with('success', 'Ticket erfolgreich abgeschlossen.');
     }
 
     public function delete(Ticket $ticket)
