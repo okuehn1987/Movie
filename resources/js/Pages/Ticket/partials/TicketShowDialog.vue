@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PRIORITIES } from '@/types/types';
+import { PRIORITIES, User } from '@/types/types';
 import { formatDuration } from '@/utils';
 import { DateTime } from 'luxon';
 import { computed, watchEffect } from 'vue';
@@ -14,7 +14,7 @@ const props = defineProps<{
 
 const form = useForm({
     priority: props.ticket.priority,
-    assigneeName: props.ticket.assignee?.first_name + ' ' + props.ticket.assignee?.last_name,
+    assignees: [] as User['id'][],
     title: props.ticket.title,
     description: props.ticket.description,
     selected: props.ticket.records.filter(tr => tr.accounted_at).map(r => r.id),
@@ -23,7 +23,7 @@ const form = useForm({
 watchEffect(() => {
     form.defaults({
         priority: props.ticket.priority,
-        assigneeName: props.ticket.assignee?.first_name + ' ' + props.ticket.assignee?.last_name,
+        assignees: props.ticket.assignees.map(a => a.id) ?? [],
         title: props.ticket.title,
         description: props.ticket.description,
         selected: props.ticket.records.filter(tr => tr.accounted_at).map(r => r.id),
@@ -66,10 +66,10 @@ const selectedDurationSum = computed(() =>
                     <v-divider></v-divider>
                     <v-card-text>
                         <v-row>
-                            <v-col cols="12" md="6">
+                            <v-col cols="12" md="8">
                                 <v-text-field label="Kunde" :model-value="ticket.customer.name" disabled></v-text-field>
                             </v-col>
-                            <v-col cols="12" md="6">
+                            <v-col cols="12" md="4">
                                 <v-select
                                     :items="PRIORITIES"
                                     label="Priorität"
@@ -91,9 +91,23 @@ const selectedDurationSum = computed(() =>
                                     </template>
                                 </v-select>
                             </v-col>
-                            <v-col cols="12" md="6">
-                                <!-- TODO: Zuweisung wird multi select mit chips wenn die relation vorhanden ist -->
-                                <v-text-field label="Zuweisung" :disabled="tab !== 'newTickets'" v-model="form.assigneeName"></v-text-field>
+                            <v-col cols="12">
+                                <v-autocomplete
+                                    label="Zuweisung"
+                                    :disabled="tab !== 'newTickets'"
+                                    required
+                                    multiple
+                                    chips
+                                    :items="
+                                        users.map(u => ({
+                                            value: u.id,
+                                            title: `${u.first_name} ${u.last_name}`,
+                                            props: { subtitle: u.job_role ?? '' },
+                                        }))
+                                    "
+                                    :error-messages="form.errors.assignees"
+                                    v-model="form.assignees"
+                                ></v-autocomplete>
                             </v-col>
                             <v-col cols="12">
                                 <v-text-field label="Betreff" v-model="form.title" :disabled="tab !== 'newTickets'"></v-text-field>

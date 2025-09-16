@@ -8,7 +8,6 @@ use App\Models\Ticket;
 use App\Models\TicketRecord;
 use App\Models\User;
 use Carbon\Carbon;
-use GMP;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -21,14 +20,14 @@ class TicketController extends Controller
     {
         Gate::authorize('viewIndex', Ticket::class);
 
-        $ticketQuery = Ticket::inOrganization()->with(['customer:id,name', 'user:id,first_name,last_name', 'assignee:id,first_name,last_name', 'records.user']);
+        $ticketQuery = Ticket::inOrganization()->with(['customer:id,name', 'user:id,first_name,last_name', 'assignees:id,first_name,last_name', 'records.user']);
 
         return Inertia::render('Ticket/TicketIndex', [
-            'tickets' => $ticketQuery
+            'tickets' => (clone $ticketQuery)
                 ->whereNull('tickets.finished_at')
                 ->orWhereHas('records', fn($q) => $q->whereNull('accounted_at'))
                 ->get(),
-            'archiveTickets' => $ticketQuery
+            'archiveTickets' => (clone $ticketQuery)
                 ->whereNotNull('tickets.finished_at')
                 ->whereDoesntHave('records', fn($q) => $q->whereNull('accounted_at'))
                 ->get(),
@@ -46,8 +45,9 @@ class TicketController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'priority' => 'required|in:lowest,low,medium,high,highest',
-            'customer_id' => ['required', Rule::exists('customers', 'id')->whereIn('id', Organization::getCurrent()->customers()->pluck('customers.id'))],
-            'assignee_id' => ['required_if:tab,ticket', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->pluck('users.id'))],
+            'customer_id' => ['required', Rule::exists('customers', 'id')->whereIn('id', Organization::getCurrent()->customers()->select('customers.id'))],
+            'assignees' => 'present|array',
+            'assignees.*' => ['required_if:tab,ticket', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))],
             'start' => 'nullable|required_if:tab,expressTicket|date',
             'duration' => 'nullable|required_if:tab,expressTicket|date_format:H:i',
             'resources' => 'nullable|string',
@@ -57,9 +57,9 @@ class TicketController extends Controller
             [
                 ...collect($validated)->only(['title', 'description', 'priority', 'customer_id', 'assignee_id']),
                 'user_id' => Auth::id(),
-                'assigned_at' => now(),
             ]
         );
+        $ticket->assignees()->attach($validated['assignees']);
 
         if ($validated["tab"] === "expressTicket") {
             $ticket->records()->create([
@@ -80,7 +80,8 @@ class TicketController extends Controller
 
         $validated = $request->validate([
             'priority' => 'required|in:lowest,low,medium,high,highest',
-            'assignee_id' => ['nullable', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->pluck('users.id'))],
+            'assignees' => 'present|array',
+            'assignees.*' => ['required_if:tab,ticket', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))],
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'selected' => 'present|array',
@@ -92,7 +93,8 @@ class TicketController extends Controller
         ]);
         $ticket->records()->whereNotIn('id', $validated['selected'])->update(['accounted_at' => null]);
         $ticket->records()->whereIn('id', $validated['selected'])->update(['accounted_at' => now()]);
-        $ticket->update(collect($validated)->except('selected')->toArray());
+        $ticket->update(collect($validated)->except(['selected', 'assignees'])->toArray());
+        $ticket->assignees()->sync($validated['assignees']);
 
         return back()->with('success', 'Änderungen erfolgreich gespeichert.');
     }
@@ -106,7 +108,7 @@ class TicketController extends Controller
         return back()->with('success', 'Ticket erfolgreich abgeschlossen.');
     }
 
-    public function delete(Ticket $ticket)
+    public function destroy(Ticket $ticket)
     {
         Gate::authorize('delete', [Ticket::class, $ticket->user]);
 

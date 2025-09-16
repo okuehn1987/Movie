@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { DateTimeString, PRIORITIES } from '@/types/types';
 import TicketCreateDialog from './TicketCreateDialog.vue';
 import { CustomerProp, TicketProp, UserProp } from './ticketTypes';
 import TicketShowDialog from './TicketShowDialog.vue';
 import RecordCreateDialog from './RecordCreateDialog.vue';
+import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 
 defineProps<{
     tickets: TicketProp[];
@@ -23,25 +23,34 @@ const form = useForm({});
                 { title: 'Kunde', key: 'customer.name' },
                 { title: 'Priorität', key: 'priority' },
                 { title: 'Erstellt von', key: 'user.name' },
-                { title: 'Zugewiesen an', key: 'assignee.name' },
-                { title: 'Zugewiesen am', key: 'assigned_at' },
+                { title: 'Zugewiesen an', key: 'assigneeName' },
                 { title: '', key: 'actions', align: 'end' },
             ]"
             :items="
-                tickets.map(t => ({
-                    ...t,
-                    assigned_at: (t.assigned_at ? new Date(t.assigned_at).toLocaleDateString('de-DE') : '') as DateTimeString,
-                    user: { ...t.user, name: t.user.first_name + ' ' + t.user.last_name },
-                    assignee: t.assignee ? { ...t.assignee, name: t.assignee.first_name + ' ' + t.assignee.last_name } : null,
-                }))
-                "
+                tickets.map(t => {
+                    const assignee = (()=>{
+                        if(t.assignees.length == 0) return null;
+                        const a = t.assignees[0]!
+                        if(t.assignees.length == 1) return a.first_name + ' ' + a.last_name
+                        return `${a.first_name} ${a.last_name} (+${t.assignees.length -1} weitere)`
+                    })()
+                    return {
+                        ...t,
+                        user: { ...t.user, name: t.user.first_name + ' ' + t.user.last_name },
+                        assigneeName: assignee
+                    };
+                })
+            "
             hover
         >
             <template v-slot:header.actions>
                 <TicketCreateDialog v-if="tab === 'newTickets'" :customers="customers" :users="users" />
             </template>
             <template v-slot:item.priority="{ item }">
-                {{ PRIORITIES[item.priority] }}
+                {{ item.priority }}
+            </template>
+            <template v-slot:item.assigneeName="{ item }">
+                {{ item.assigneeName }}
             </template>
             <template v-slot:item.actions="{ item }">
                 <v-dialog v-if="tab === 'newTickets'" max-width="1000">
@@ -82,6 +91,11 @@ const form = useForm({});
                 </v-dialog>
                 <RecordCreateDialog v-if="tab === 'newTickets'" :ticket="item" :users="users" />
                 <TicketShowDialog :ticket="item" :customers="customers" :users="users" :tab />
+                <ConfirmDelete
+                    content="Möchtest du dieses Ticket löschen?"
+                    title="Löschen"
+                    :route="route('ticket.destroy', { ticket: item.id })"
+                ></ConfirmDelete>
             </template>
         </v-data-table-virtual>
     </v-card>

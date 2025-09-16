@@ -14,7 +14,7 @@ const ticketForm = useForm({
     description: '',
     priority: 'medium',
     customer_id: null,
-    assignee_id: usePage().props.auth.user.id,
+    assignees: [usePage().props.auth.user.id],
     start: null as string | null,
     duration: '00:00',
     resources: '',
@@ -48,14 +48,15 @@ function submit(isActive: Ref<boolean>) {
                 <v-divider></v-divider>
                 <v-tabs v-model="ticketForm.tab">
                     <v-tab class="w-50" value="ticket">Auftrag</v-tab>
-                    <v-tab class="w-50" value="expressTicket">Expressauftrag</v-tab>
+                    <v-tab class="w-50" value="expressTicket">Einzelauftrag</v-tab>
                 </v-tabs>
                 <v-card-text>
+                    {{ ticketForm.errors }}
                     <v-form @submit.prevent="submit(isActive)">
                         <v-tabs-window v-model="ticketForm.tab">
                             <v-tabs-window-item value="ticket">
                                 <v-row>
-                                    <v-col cols="12">
+                                    <v-col cols="12" md="8">
                                         <v-autocomplete
                                             label="Kunde wählen"
                                             required
@@ -64,7 +65,7 @@ function submit(isActive: Ref<boolean>) {
                                             :error-messages="ticketForm.errors.customer_id"
                                         ></v-autocomplete>
                                     </v-col>
-                                    <v-col cols="12" md="6">
+                                    <v-col cols="12" md="4">
                                         <v-select
                                             :items="PRIORITIES"
                                             label="Priorität"
@@ -85,18 +86,21 @@ function submit(isActive: Ref<boolean>) {
                                             </template>
                                         </v-select>
                                     </v-col>
-                                    <v-col cols="12" md="6">
+                                    <v-col cols="12">
                                         <v-autocomplete
                                             label="Zuweisung"
                                             required
+                                            multiple
+                                            chips
                                             :items="
                                                 users.map(u => ({
                                                     value: u.id,
-                                                    title: `${u.first_name} ${u.last_name}` + (u.job_role ? ` - (${u.job_role})` : ''),
+                                                    title: `${u.first_name} ${u.last_name}`,
+                                                    props: { subtitle: u.job_role ?? '' },
                                                 }))
                                             "
-                                            :error-messages="ticketForm.errors.assignee_id"
-                                            v-model="ticketForm.assignee_id"
+                                            :error-messages="ticketForm.errors.assignees"
+                                            v-model="ticketForm.assignees"
                                         ></v-autocomplete>
                                     </v-col>
                                     <v-col cols="12">

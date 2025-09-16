@@ -8,7 +8,7 @@ defineProps<{
 
 const recordForm = useForm({
     start: null as string | null,
-    duration: null as number | null,
+    duration: '00:00',
     description: '',
     resources: '',
 });

@@ -1,7 +1,7 @@
 import { Customer, Relations, Ticket, TicketRecord, User } from '@/types/types';
 
 export type TicketProp = Ticket &
-    Pick<Relations<'ticket'>, 'user' | 'assignee' | 'customer'> & {
+    Pick<Relations<'ticket'>, 'user' | 'assignees' | 'customer'> & {
         records: (TicketRecord & {
             user: Relations<'ticketRecord'>['user'];
         })[];
