@@ -42,6 +42,7 @@ class UserFactory extends Factory
             'country' => 'DE',
             'operating_site_id' => OperatingSite::first(),
             'job_role' => fake()->jobTitle(),
+            'notification_channels' => ['database', 'mail'],
         ];
     }
 
