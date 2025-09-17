@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { Notification } from '@/types/types';
 import { useNow } from '@/utils';
-import { Link, router, usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import ReportBugDialog from './ReportBugDialog.vue';
+import { useDisplay } from 'vuetify';
+
+const display = useDisplay();
 
 function readNotification(notification: Notification) {
     router.post(
@@ -63,10 +66,19 @@ function convertTimeStamp(notification: Notification) {
     }
     return endTime.toFormat('HH:mm') + ' Uhr';
 }
+
+const disputes = {
+    'App\\Notifications\\AbsenceNotification': 'neuer Antrag ',
+    'App\\Notifications\\AbsencePatchNotification': 'neue Korrektur',
+    'App\\Notifications\\WorkLogPatchNotification': 'neue Korrektur',
+    'App\\Notifications\\DisputeStatusNotification': 'Antrag bearbeitet',
+    'App\\Notifications\\AbsenceDeleteNotification': 'neuer Antrag',
+    'App\\Notifications\\WorkLogNotification': 'neue Buchung',
+} satisfies Record<Notification['type'], string>;
 </script>
 
 <template>
-    <v-menu v-if="$page.props.unreadNotifications.length > 0">
+    <v-menu v-if="$page.props.unreadNotifications.length > 0" id="notification-menu">
         <template v-slot:activator="{ props }">
             <v-btn color="primary" v-bind="props" stacked>
                 <v-badge :content="$page.props.unreadNotifications.length" color="error">
@@ -74,7 +86,7 @@ function convertTimeStamp(notification: Notification) {
                 </v-badge>
             </v-btn>
         </template>
-        <v-list @click.stop="() => {}">
+        <v-list min-width="200px" @click.stop="() => {}">
             <template
                 v-for="(notification, index) in $page.props.unreadNotifications.toSorted((a, b) => b.created_at.localeCompare(a.created_at))"
                 :key="notification.id"
@@ -82,15 +94,17 @@ function convertTimeStamp(notification: Notification) {
                 <v-divider v-if="index != 0"></v-divider>
                 <v-list-item>
                     <v-list-item-title>
-                        <div>{{ notification.data.title }}</div>
+                        <div v-if="display.smAndDown.value">{{ disputes[notification.type] }}</div>
+                        <div v-else>{{ notification.data.title }}</div>
                         <div>
                             <sub>{{ convertTimeStamp(notification) }}</sub>
                         </div>
                     </v-list-item-title>
                     <template #append>
-                        <div class="ms-4 ga-4 d-flex">
+                        <div class="ms-md-4 ms-2 ga-md-4 ga-2 d-flex">
                             <v-divider vertical></v-divider>
                             <v-btn
+                                :size="display.smAndDown.value ? 'small' : undefined"
                                 v-if="
                                     notification.type != 'App\\Notifications\\DisputeStatusNotification' ||
                                     (notification.type == 'App\\Notifications\\DisputeStatusNotification' && notification.data.type != 'delete')
@@ -101,31 +115,41 @@ function convertTimeStamp(notification: Notification) {
                                 @click.stop="openNotification(notification)"
                             ></v-btn>
                             <div v-else style="width: 48px"></div>
-                            <v-btn color="error" icon="mdi-delete" variant="tonal" @click.stop="readNotification(notification)"></v-btn>
+                            <v-btn
+                                :size="display.smAndDown.value ? 'small' : undefined"
+                                color="error"
+                                icon="mdi-delete"
+                                variant="tonal"
+                                @click.stop="readNotification(notification)"
+                            ></v-btn>
                         </div>
                     </template>
                 </v-list-item>
             </template>
         </v-list>
     </v-menu>
-    <v-menu>
+    <v-menu :location="display.smAndDown.value ? 'bottom left' : 'bottom'">
         <template #activator="{ props: activatorProps }">
-            <v-btn stacked color="black" prepend-icon="mdi-menu" v-bind="activatorProps"></v-btn>
+            <v-btn stacked color="black" prepend-icon="mdi-account-details" v-bind="activatorProps"></v-btn>
         </template>
-        <v-list>
-            <v-list-item>
-                <Link class="text-black w-100" :href="route('user.profile', { user: $page.props.auth.user.id })">
-                    <v-btn variant="text" prepend-icon="mdi-account" title="Profil">Profil</v-btn>
-                </Link>
+        <v-list min-width="200px">
+            <v-list-item @click.stop="router.get(route('user.profile', { user: $page.props.auth.user.id }))">
+                <v-icon icon="mdi-account" class="me-2"></v-icon>
+                Profil
             </v-list-item>
-            <v-list-item>
+            <v-list-item @click.stop="() => {}">
                 <ReportBugDialog></ReportBugDialog>
             </v-list-item>
-            <v-list-item>
-                <Link method="post" :href="route('logout')" as="button">
-                    <v-btn variant="text" prepend-icon="mdi-logout" title="Abmelden">Abmelden</v-btn>
-                </Link>
+            <v-list-item @click.stop="router.post(route('logout'))">
+                <v-icon icon="mdi-logout" class="me-2"></v-icon>
+                Abmelden
             </v-list-item>
         </v-list>
     </v-menu>
 </template>
+<style scoped>
+#notification-menu :deep(.v-overlay__content) {
+    left: unset !important;
+    right: 0 !important;
+}
+</style>

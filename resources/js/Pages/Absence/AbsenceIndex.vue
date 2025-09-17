@@ -9,6 +9,7 @@ import AbsenceTableCell from './partials/AbsenceTableCell.vue';
 import EditCreateAbsence from './partials/EditCreateAbsence.vue';
 import { AbsencePatchProp, AbsenceProp, getEntryState, UserProp } from './utils';
 import ShowAbsenceModal from './partials/ShowAbsenceModal.vue';
+import AbsenceFilter from './partials/AbsenceFilter.vue';
 
 const props = defineProps<{
     users: UserProp[];
@@ -21,6 +22,13 @@ const props = defineProps<{
 
 const dateParam = route().params['date'];
 const date = ref(dateParam ? (DateTime.fromFormat(dateParam, 'yyyy-MM') as DateTime<true>) : DateTime.now());
+
+const filterForm = useForm({
+    set: null as null | string | { value: UserAbsenceFilter['id']; title: string },
+    selected_users: [] as User['id'][],
+    selected_absence_types: [] as AbsenceType['id'][],
+    selected_statuses: ['created', 'accepted'] as Status[],
+});
 
 const currentEntries = computed(() => {
     const entries = [] as typeof props.absences | typeof props.absencePatches;
@@ -66,33 +74,6 @@ if (openAbsenceFromRoute) {
     openEditCreateAbsenceModal.value = true;
 }
 
-const filterForm = useForm({
-    set: null as null | string | { value: UserAbsenceFilter['id']; title: string },
-    selected_users: [] as User['id'][],
-    selected_absence_types: [] as AbsenceType['id'][],
-    selected_statuses: ['created', 'accepted'] as Status[],
-});
-
-watch(
-    () => filterForm.set,
-    newValue => {
-        if (newValue == null) return;
-        let selectedFilter;
-        if (typeof newValue == 'object' && filterForm.isDirty) selectedFilter = props.user_absence_filters.find(f => f.id == newValue.value);
-        else if (typeof newValue == 'string') selectedFilter = props.user_absence_filters.find(f => f.name == newValue);
-        if (!selectedFilter) return;
-
-        const data = {
-            set: typeof newValue == 'string' ? { title: newValue, value: selectedFilter.id } : newValue,
-            selected_users: selectedFilter.data.user_ids,
-            selected_absence_types: selectedFilter.data.absence_type_ids,
-            selected_statuses: selectedFilter.data.statuses,
-        };
-        filterForm.defaults(data);
-        filterForm.reset();
-    },
-);
-
 function createAbsenceModal(user_id: User['id'], start?: DateTime) {
     selectedUser.value = user_id;
     const absenceToEdit = currentEntries.value
@@ -134,25 +115,6 @@ const reload = throttle(() => {
 watch(date, reload);
 
 const absenceTableHeight = useMaxScrollHeight(80 + 1);
-
-function submit() {
-    if (typeof filterForm.set != 'string' && filterForm.set?.value) {
-        filterForm.patch(route('userAbsenceFilter.update', { userAbsenceFilter: filterForm.set.value }));
-    } else {
-        filterForm.post(route('userAbsenceFilter.store'));
-    }
-}
-
-function resetFilterForm() {
-    const data = {
-        set: '',
-        selected_users: [],
-        selected_absence_types: [],
-        selected_statuses: ['created', 'accepted'] as Status[],
-    };
-    filterForm.defaults(data);
-    filterForm.reset();
-}
 </script>
 <template>
     <AdminLayout title="Abwesenheiten">
@@ -176,91 +138,7 @@ function resetFilterForm() {
         <v-card>
             <v-card-text>
                 <div class="d-flex flex-wrap justify-space-between align-center">
-                    <v-dialog max-width="1000">
-                        <template #activator="{ props: activatorProps }">
-                            <v-btn v-bind="activatorProps" variant="flat" color="primary"><v-icon>mdi-filter</v-icon></v-btn>
-                        </template>
-                        <template #default="{ isActive }">
-                            <v-card>
-                                <template #title>
-                                    <div class="d-flex justify-space-between align-center w-100">
-                                        <span>Abwesenheiten filtern</span>
-                                    </div>
-                                </template>
-                                <template #append>
-                                    <v-btn icon variant="text" @click="isActive.value = false">
-                                        <v-icon>mdi-close</v-icon>
-                                    </v-btn>
-                                </template>
-                                <v-card-text>
-                                    <!-- TODO: Error-messages missing -->
-                                    <v-form @submit.prevent="submit()">
-                                        <v-combobox
-                                            label="Auswahl Filtergruppe"
-                                            auto-select-first="exact"
-                                            variant="underlined"
-                                            :items="user_absence_filters.map(u => ({ value: u.id, title: u.name }))"
-                                            v-model="filterForm.set"
-                                            :error-messages="filterForm.errors.set"
-                                            required
-                                            clearable
-                                        ></v-combobox>
-                                        <v-autocomplete
-                                            label="Nutzer"
-                                            :items="users.map(u => ({ title: u.first_name + ' ' + u.last_name, value: u.id }))"
-                                            v-model="filterForm.selected_users"
-                                            clearable
-                                            chips
-                                            multiple
-                                            variant="underlined"
-                                        ></v-autocomplete>
-                                        <v-select
-                                            label="Abwesenheitsgrund"
-                                            :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
-                                            v-model="filterForm.selected_absence_types"
-                                            clearable
-                                            chips
-                                            multiple
-                                        ></v-select>
-                                        <v-select
-                                            label="Abwesenheitsstatus"
-                                            :items="[
-                                                { title: 'Erstellt', value: 'created' },
-                                                { title: 'Akzeptiert', value: 'accepted' },
-                                                { title: 'Abgelehnt', value: 'declined' },
-                                            ]"
-                                            v-model="filterForm.selected_statuses"
-                                            clearable
-                                            chips
-                                            multiple
-                                        ></v-select>
-                                        <div class="d-flex justify-space-between">
-                                            <v-btn
-                                                v-if="typeof filterForm.set == 'object' && filterForm.set != null"
-                                                color="error"
-                                                @click="
-                                                    filterForm.delete(
-                                                        route('userAbsenceFilter.destroy', { userAbsenceFilter: filterForm.set.value }),
-                                                        {
-                                                            onSuccess: () => {
-                                                                resetFilterForm();
-                                                            },
-                                                        },
-                                                    )
-                                                "
-                                            >
-                                                Filter löschen
-                                            </v-btn>
-                                            <div v-else></div>
-                                            <v-btn :disabled="!filterForm.isDirty" color="primary" type="submit">
-                                                {{ typeof filterForm.set == 'string' ? 'Filter anlegen' : 'Filter bearbeiten' }}
-                                            </v-btn>
-                                        </div>
-                                    </v-form>
-                                </v-card-text>
-                            </v-card>
-                        </template>
-                    </v-dialog>
+                    <AbsenceFilter :absence_types :users :user_absence_filters v-model:filterForm="filterForm"></AbsenceFilter>
                     <div class="d-flex flex-wrap align-center">
                         <div class="d-flex">
                             <v-btn @click.stop="date = date.minus({ year: 1 })" variant="text" icon color="primary">
@@ -296,6 +174,7 @@ function resetFilterForm() {
                     users
                         .filter(u => filterForm.selected_users.length == 0 || filterForm.selected_users.includes(u.id))
                         .map(u => ({ ...u, name: u.last_name + ', ' + u.first_name }))
+                        .toSorted((a, b) => a.name.localeCompare(b.name))
                 "
                 :headers="[
                 {
@@ -321,7 +200,7 @@ function resetFilterForm() {
                 <template v-slot:item="{ item, columns }">
                     <tr>
                         <template v-for="header in columns" :key="header.key">
-                            <td v-if="header.key === 'name'">{{ item.first_name }} {{ item.last_name }}</td>
+                            <td v-if="header.key === 'name'">{{ item.name }}</td>
                             <template v-else-if="header.key === 'action'">
                                 <td v-if="can('absence', 'create', item)">
                                     <v-btn
