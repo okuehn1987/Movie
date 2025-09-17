@@ -689,6 +689,9 @@ export type RelationMap = {
         read_notifications: Notification[];
         unread_notifications: Notification[];
         user_absence_filters: UserAbsenceFilter[];
+        current_address: Address;
+        addresses: Address[];
+        tickets: (Ticket & { pivot: TicketUser })[];
     };
     userAbsenceFilter: {
         user: User;

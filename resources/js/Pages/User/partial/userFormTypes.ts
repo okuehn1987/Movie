@@ -54,6 +54,11 @@ export type FormData = {
 
     user_working_weeks: { id: UserWorkingWeek['id'] | null; active_since: string; weekdays: Weekday[] }[];
     initialRemainingLeaveDays: 0;
+    resignation_date: null | DateString;
+
+    use_time_balance_traffic_light: boolean;
+    time_balance_yellow_threshold: null | number;
+    time_balance_red_threshold: null | number;
 
     overtime_calculations_start: DateString;
     organizationUser: Pick<OrganizationUser, Permission[keyof Permission]>;
