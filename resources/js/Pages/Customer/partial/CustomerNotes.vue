@@ -36,19 +36,22 @@ const editNoteForm = useForm({
     noteId: null as CustomerNote['id'] | null,
     key: null as string | null,
     value: '',
+    file: null as File | null,
 });
 
 const createNoteForm = useForm({
-    type: '',
+    type: null as string | null,
     key: null,
     value: '',
     parent_id: null as CustomerNote['id'] | null,
+    file: null as File | null,
 });
 
 function editNote(note: CustomerNote) {
     editNoteForm.noteId = note.id;
     editNoteForm.key = note.key;
     editNoteForm.value = note.value;
+    editNoteForm.file = note.file;
 }
 </script>
 <template>
@@ -56,9 +59,8 @@ function editNote(note: CustomerNote) {
         <template #append>
             <v-dialog max-width="1000" v-model="openDialog">
                 <template v-slot:activator="{ props: activatorProps }">
-                    <v-btn v-bind="activatorProps" icon="mdi-plus" color="primary" variant="text"></v-btn>
+                    <v-btn v-bind="activatorProps" append-icon="mdi-plus" color="primary" variant="flat" class="mr-2">Notiz anlegen</v-btn>
                 </template>
-
                 <template v-slot:default="{ isActive }">
                     <v-form
                         @submit.prevent="
@@ -90,7 +92,14 @@ function editNote(note: CustomerNote) {
                                     <v-col cols="12">
                                         <v-select
                                             label="Anlegungstyp"
-                                            v-model="createNoteForm.type"
+                                            :model-value="createNoteForm.type"
+                                            @update:model-value="
+                                                value => {
+                                                    createNoteForm.type = value;
+                                                    createNoteForm.value = '';
+                                                    createNoteForm.file = null;
+                                                }
+                                            "
                                             :items="[
                                                 { title: 'Einzelnotiz', value: 'primitive' },
                                                 { title: 'Ordnerstruktur', value: 'complex' },
@@ -99,9 +108,27 @@ function editNote(note: CustomerNote) {
                                             clearable
                                         ></v-select>
                                     </v-col>
-                                    <v-col cols="12"><v-text-field label="Bezeichnung" v-model="createNoteForm.key"></v-text-field></v-col>
-                                    <v-col cols="12"><v-text-field label="Inhalt" v-model="createNoteForm.value"></v-text-field></v-col>
-
+                                    <v-col cols="12">
+                                        <v-text-field
+                                            label="Bezeichnung"
+                                            v-model="createNoteForm.key"
+                                            :error-messages="createNoteForm.errors.key"
+                                        ></v-text-field>
+                                    </v-col>
+                                    <v-col cols="12" v-if="createNoteForm.type != 'file'">
+                                        <v-text-field
+                                            label="Inhalt"
+                                            v-model="createNoteForm.value"
+                                            :error-messages="createNoteForm.errors.value"
+                                        ></v-text-field>
+                                    </v-col>
+                                    <v-col cols="12" v-if="createNoteForm.type == 'file'">
+                                        <v-file-input
+                                            label="Dateiupload"
+                                            v-model="createNoteForm.file"
+                                            :error-messages="createNoteForm.errors.file"
+                                        ></v-file-input>
+                                    </v-col>
                                     <v-col cols="12" class="text-end">
                                         <v-btn color="primary" variant="flat" type="submit">Speichern</v-btn>
                                     </v-col>
@@ -112,9 +139,9 @@ function editNote(note: CustomerNote) {
                 </template>
             </v-dialog>
             <v-btn
-                icon="mdi-menu"
+                append-icon="mdi-swap-horizontal"
                 color="primary"
-                variant="text"
+                variant="flat"
                 @click.stop="
                     () => {
                         if (mode == 'show') {
@@ -126,7 +153,9 @@ function editNote(note: CustomerNote) {
                         }
                     }
                 "
-            ></v-btn>
+            >
+                {{ mode == 'show' ? 'Ansichtsmodus' : 'Bearbeitungsmodus' }}
+            </v-btn>
         </template>
         <v-divider></v-divider>
         <v-treeview :items="noteTree" item-value="id" activatable open-on-click separateRoots :indent-lines="true">
@@ -137,17 +166,27 @@ function editNote(note: CustomerNote) {
                 <template v-if="editNoteForm.noteId == item.id && mode == 'edit'">
                     <v-form
                         @submit.prevent="
-                            editNoteForm.patch(route('customerNote.update', { customerNote: editNoteForm.noteId }), {
-                                onSuccess: () => {
-                                    editNoteForm.reset();
-                                    mode = 'show';
-                                },
-                            })
+                            editNoteForm
+                                .transform(data => ({ ...data, _method: 'patch' }))
+                                .post(route('customerNote.update', { customerNote: editNoteForm.noteId }), {
+                                    onSuccess: () => {
+                                        editNoteForm.reset();
+                                        mode = 'show';
+                                    },
+                                })
                         "
                     >
-                        <div class="d-flex ga-2 align-center">
+                        <div class="d-flex ga-2 align-center" @click.stop="() => {}">
                             <template v-if="item.type == 'complex'">
-                                <v-text-field variant="outlined" hide-details v-model="editNoteForm.key"></v-text-field>
+                                <v-row>
+                                    <v-col cols="12">
+                                        <v-text-field variant="outlined" hide-details v-model="editNoteForm.key"></v-text-field>
+                                    </v-col>
+                                    <v-col cols="12" class="text-end">
+                                        <v-btn type="submit" color="primary" class="me-2"><v-icon>mdi-close</v-icon></v-btn>
+                                        <v-btn type="submit" color="primary"><v-icon>mdi-content-save</v-icon></v-btn>
+                                    </v-col>
+                                </v-row>
                             </template>
                             <template v-else-if="item.type == 'primitive'">
                                 <v-row>
@@ -163,9 +202,21 @@ function editNote(note: CustomerNote) {
                                 </v-row>
                             </template>
                             <template v-else-if="item.type == 'file'">
-                                <v-text-field variant="outlined" hide-details v-model="editNoteForm.key"></v-text-field>
-
-                                <v-text-field type="file" variant="outlined" hide-details v-model="editNoteForm.key"></v-text-field>
+                                <v-row>
+                                    <v-col cols="12" md="2">
+                                        <v-text-field variant="outlined" hide-details v-model="editNoteForm.key"></v-text-field>
+                                    </v-col>
+                                    <v-col cols="12" md="10">
+                                        <v-file-input
+                                            label="Datei ersetzen"
+                                            v-model="editNoteForm.file"
+                                            :error-messages="createNoteForm.errors.file"
+                                        ></v-file-input>
+                                    </v-col>
+                                    <v-col cols="12" class="justify-end d-flex">
+                                        <v-btn type="submit" color="primary">Speichern</v-btn>
+                                    </v-col>
+                                </v-row>
                             </template>
                         </div>
                     </v-form>
@@ -180,11 +231,24 @@ function editNote(note: CustomerNote) {
                             </v-col>
                         </v-row>
                     </span>
-                    <span v-else-if="item.type == 'file'">{{ item.key }}</span>
+                    <span v-else-if="item.type == 'file'">
+                        <v-row>
+                            <v-col cols="12" md="2">{{ item.key }}:</v-col>
+                            <v-col cols="12" md="10">
+                                <v-btn
+                                    color="primary"
+                                    :href="route('customerNote.getFile', { customerNote: item.id, file: item.value })"
+                                    target="_blank"
+                                >
+                                    Öffnen
+                                </v-btn>
+                            </v-col>
+                        </v-row>
+                    </span>
                 </template>
             </template>
             <template v-slot:append="{ item }">
-                <div v-if="mode == 'edit' && !editNoteForm.noteId" class="d-flex ga-2 mt-n2">
+                <div v-if="mode == 'edit' && !editNoteForm.noteId" class="d-flex ga-2">
                     <v-btn
                         v-if="item.type == 'complex'"
                         @click.stop="
