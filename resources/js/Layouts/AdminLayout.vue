@@ -35,7 +35,7 @@ function setCurrentApp(module: AppModule['module']) {
     });
 }
 
-const currentApp = computed(() => page.props.appModules.find(m => m.value === page.props.currentAppModule)!);
+const currentApp = computed(() => page.props.appModules.find(m => m.value === page.props.currentAppModule));
 </script>
 
 <template>
@@ -43,7 +43,7 @@ const currentApp = computed(() => page.props.appModules.find(m => m.value === pa
         <Head :title="title"></Head>
 
         <v-navigation-drawer color="background" style="border: none" v-model="showDrawer" image="/img/loggedin-background.png">
-            <v-list>
+            <v-list v-if="currentApp">
                 <v-list-item @click.stop="setCurrentApp($page.props.currentAppModule == 'herta' ? 'timesheets' : 'herta')" class="pe-2">
                     <template v-slot:prepend>
                         <div class="posiion-relative" v-if="page.props.appModules.length == 2" style="width: 56px">
@@ -58,7 +58,7 @@ const currentApp = computed(() => page.props.appModules.find(m => m.value === pa
                     </template>
                     <v-list-item-title>
                         <div class="d-flex align-center">
-                            <h1 class="text-center font-weight-medium">
+                            <h1 class="text-center text-h5 font-weight-medium">
                                 <span style="user-select: none">{{ currentApp.title }}</span>
                             </h1>
                         </div>

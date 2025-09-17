@@ -393,13 +393,15 @@ declare module 'ziggy-js' {
     "customer.customerNote.store": [
         {
             "name": "customer",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "customerNote.update": [
         {
             "name": "customerNote",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "customerNote.destroy": [
@@ -414,12 +416,40 @@ declare module 'ziggy-js' {
     "ticket.update": [
         {
             "name": "ticket",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "ticket.destroy": [
         {
             "name": "ticket",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticket.finish": [
+        {
+            "name": "ticket",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticket.record.store": [
+        {
+            "name": "ticket",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "record.update": [
+        {
+            "name": "record",
+            "required": true
+        }
+    ],
+    "record.destroy": [
+        {
+            "name": "record",
             "required": true
         }
     ],

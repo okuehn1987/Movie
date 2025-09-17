@@ -31,6 +31,11 @@ class Organization extends Model
         return $this->hasMany(Customer::class);
     }
 
+    public function tickets()
+    {
+        return $this->hasManyThrough(Ticket::class, Customer::class);
+    }
+
     public function operatingSites()
     {
         return $this->hasMany(OperatingSite::class);

@@ -25,16 +25,8 @@ class Ticket extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function assignee()
+    public function assignees()
     {
-        return $this->belongsTo(User::class, 'assignee_id');
-    }
-
-    public function assign(User $user)
-    {
-        $this->update([
-            "assignee_id" => $user->id,
-            "assigned_at" => now(),
-        ]);
+        return $this->belongsToMany(User::class)->withTimestamps();
     }
 }

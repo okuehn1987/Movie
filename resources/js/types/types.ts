@@ -302,6 +302,13 @@ export type AbsenceType = DBObject<'absenceType'> &
     };
 
 export const TRUNCATION_CYCLES = [null, '1', '3', '6', '12'] as const;
+export const PRIORITIES = [
+    { value: 'highest', title: 'Höchste', icon: 'mdi-chevron-double-up', color: 'red-darken-4' },
+    { value: 'high', title: 'Hoch', icon: 'mdi-chevron-up', color: 'orange-darken-4' },
+    { value: 'medium', title: 'Mittel', icon: 'mdi-equal', color: 'orange-lighten-1' },
+    { value: 'low', title: 'Niedrig', icon: 'mdi-chevron-down', color: 'blue-lighten-2' },
+    { value: 'lowest', title: 'Niedrigste', icon: 'mdi-chevron-double-down', color: 'blue-darken-2' },
+] as const;
 
 export type TimeAccountSetting = DBObject<'timeAccountSetting'> &
     SoftDelete & {
@@ -412,12 +419,11 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
 export type Ticket = DBObject<'ticket'> & {
     title: string;
     description: string | null;
-    priority: string | null;
-    status: 'created' | 'declined' | 'accepted';
+    priority: (typeof PRIORITIES)[number]['value'];
     customer_id: Customer['id'];
     user_id: User['id'];
-    assignee_id: User['id'] | null;
-    assigned_at: DateTimeString | null;
+    accounted_at: DateTimeString | null;
+    finished_at: DateTimeString | null;
 };
 
 export type TicketRecord = DBObject<'record'> & {
@@ -426,6 +432,7 @@ export type TicketRecord = DBObject<'record'> & {
     duration: number;
     description: string | null;
     resources: string | null;
+    accounted_at: DateTimeString | null;
 };
 
 export type PermissionValue = 'read' | 'write' | null;
@@ -433,12 +440,15 @@ export type PermissionValue = 'read' | 'write' | null;
 export type Permission = {
     all:
         | 'user_permission'
+        | 'workLog_permission'
         | 'workLogPatch_permission'
         | 'absence_permission'
         | 'timeAccount_permission'
         | 'timeAccountSetting_permission'
-        | 'timeAccountTransaction_permission';
-    organization: 'absenceType_permission' | 'specialWorkingHoursFactor_permission' | 'organization_permission';
+        | 'timeAccountTransaction_permission'
+        | 'ticket_permission'
+        | 'absenceType_permission';
+    organization: 'specialWorkingHoursFactor_permission' | 'organization_permission';
     operatingSite: 'operatingSite_permission';
     group: 'group_permission';
 };
@@ -485,6 +495,10 @@ export type CustomerNote = DBObject<'customerNote'> & {
     type: 'complex' | 'primitive' | 'file';
     key: string | null;
     value: string;
+};
+export type TicketUser = DBObject<'ticket_user'> & {
+    ticket_id: Ticket['id'];
+    user_id: User['id'];
 };
 
 export type RelationMap = {
@@ -585,11 +599,14 @@ export type RelationMap = {
     ticket: {
         customer: Customer;
         user: User;
-        assignee: User | null;
+        assignees: (User & {
+            pivot: TicketUser;
+        })[];
         records: TicketRecord[];
     };
     ticketRecord: {
         ticket: Ticket;
+        user: User;
     };
     timeAccount: {
         user: User;
@@ -658,6 +675,7 @@ export type RelationMap = {
         unread_notifications: Notification[];
         addresses: Address[];
         current_address: Address;
+        tickets: (Ticket & { pivot: TicketUser })[];
     };
     userLeaveDays: {
         user: User;
