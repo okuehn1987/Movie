@@ -110,7 +110,7 @@ function convertTimeStamp(notification: Notification) {
     </v-menu>
     <v-menu>
         <template #activator="{ props: activatorProps }">
-            <v-btn stacked color="black" prepend-icon="mdi-menu" v-bind="activatorProps"></v-btn>
+            <v-btn stacked color="black" prepend-icon="mdi-account-details" v-bind="activatorProps"></v-btn>
         </template>
         <v-list>
             <v-list-item @click.stop="router.get(route('user.profile', { user: $page.props.auth.user.id }))">
