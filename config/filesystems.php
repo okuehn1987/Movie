@@ -36,6 +36,12 @@ return [
             'throw' => false,
         ],
 
+        'customer_note_files' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/customer_note_files'),
+            'throw' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

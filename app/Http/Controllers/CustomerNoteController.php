@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 class CustomerNoteController extends Controller
 {
@@ -18,17 +19,30 @@ class CustomerNoteController extends Controller
         $validated = $request->validate([
             'type' => 'required|in:primitive,complex,file',
             'key' => 'required|string',
-            'value' => 'required|string',
-            'parent_id' => 'nullable|required_if:type,complex|exists:customer_notes,id'
+            'value' => 'nullable|required_if:type,primitive,complex|string',
+            'parent_id' => 'nullable|exists:customer_notes,id',
+            'file' => 'nullable|required_if:type,file|file',
         ]);
 
-        $customer->customerNotes()->create([
-            'modified_by' => $authUser->id,
-            'parent_id' => $validated['parent_id'],
-            'type' => $validated['type'],
-            'key' => $validated['key'],
-            'value' => $validated['value'],
-        ]);
+        if ($validated['type'] == 'file') {
+            $path = $validated['file'] ? Storage::disk('customer_note_files')->putFile($validated['file']) : null;
+
+            $customer->customerNotes()->create([
+                'modified_by' => $authUser->id,
+                'parent_id' => $validated['parent_id'],
+                'type' => $validated['type'],
+                'key' => $validated['key'],
+                'value' => $path,
+            ]);
+        } else {
+            $customer->customerNotes()->create([
+                'modified_by' => $authUser->id,
+                'parent_id' => $validated['parent_id'],
+                'type' => $validated['type'],
+                'key' => $validated['key'],
+                'value' => $validated['value'],
+            ]);
+        }
 
         return back()->with('success', 'Notiz erfolgreich erstellt.');
     }
@@ -40,12 +54,27 @@ class CustomerNoteController extends Controller
         $validated = $request->validate([
             'key' => 'required|string|max:65535',
             'value' => 'nullable|string|max:65535',
+            'file' => 'nullable|file',
         ]);
 
-        $customerNote->update([
-            'key' => $validated['key'],
-            'value' => $validated['value'],
-        ]);
+        if ($customerNote->type == 'file') {
+            $path = $validated['file'] ? Storage::disk('customer_note_files')->putFile($validated['file']) : null;
+
+            if ($customerNote->value && $path)
+                Storage::disk('customer_note_files')->delete($customerNote->value);
+            else
+                $path = $path ?? null;
+
+            $customerNote->update([
+                'key' => $validated['key'],
+                'value' => $path,
+            ]);
+        } else {
+            $customerNote->update([
+                'key' => $validated['key'],
+                'value' => $validated['value'],
+            ]);
+        }
 
         return back()->with('success', 'Notiz erfolgreich aktualisiert');
     }
@@ -57,5 +86,14 @@ class CustomerNoteController extends Controller
         $customerNote->delete();
 
         return back()->with('success', 'Notiz erfolgreich gelöscht');
+    }
+
+    public function getFile(CustomerNote $customerNote)
+    {
+        Gate::authorize('publicAuth', User::class);
+
+        if ($customerNote->type != 'file') abort(404);
+
+        return response()->file(Storage::disk('customer_note_files')->path($customerNote->value));
     }
 }

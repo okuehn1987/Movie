@@ -77,6 +77,7 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::middleware(isApp::class . ':timesheets')->group(function () {
         Route::resource('customer', CustomerController::class)->only(['index', 'store', 'update', 'show', 'destroy']);
         Route::resource('customer.customerNote', CustomerNoteController::class)->only(['store', 'update', 'destroy'])->shallow();
+        Route::get('/customerNote/{customerNote}/getFile', [CustomerNoteController::class, 'getFile'])->name('customerNote.getFile');
 
         Route::resource('ticket', TicketController::class)->only(['index', 'store', 'update', 'destroy']);
     });

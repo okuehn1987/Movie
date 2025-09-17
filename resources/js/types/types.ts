@@ -485,6 +485,7 @@ export type CustomerNote = DBObject<'customerNote'> & {
     type: 'complex' | 'primitive' | 'file';
     key: string | null;
     value: string;
+    file: File | null;
 };
 
 export type RelationMap = {
