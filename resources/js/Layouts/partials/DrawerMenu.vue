@@ -16,6 +16,16 @@ import { router } from '@inertiajs/vue3';
                               value: route('workLog.index'),
                               title: 'Arbeitszeiten',
                           },
+                          can('dispute', 'viewIndex') && {
+                              props: { active: route().current('dispute.index'), prependIcon: 'mdi-bookmark-outline' },
+                              value: route('dispute.index'),
+                              title: 'Anträge',
+                          },
+                          can('absence', 'viewIndex') && {
+                              props: { active: route().current('absence.index'), prependIcon: 'mdi-timer-cancel-outline' },
+                              value: route('absence.index'),
+                              title: 'Abwesenheiten',
+                          },
                       ]
                     : []),
                 ...($page.props.currentAppModule == 'timesheets'
@@ -32,19 +42,8 @@ import { router } from '@inertiajs/vue3';
                           },
                       ]
                     : []),
-                can('dispute', 'viewIndex') && {
-                    props: { active: route().current('dispute.index'), prependIcon: 'mdi-bookmark-outline' },
-                    value: route('dispute.index'),
-                    title: 'Anträge',
-                },
-                can('absence', 'viewIndex') && {
-                    props: { active: route().current('absence.index'), prependIcon: 'mdi-timer-cancel-outline' },
-                    value: route('absence.index'),
-                    title: 'Abwesenheiten',
-                },
                 can('organization', 'viewShow') && {
                     title: 'Organisation',
-                    subtitle: 'test',
                     value: route('organization.show', { organization: $page.props.organization.id }),
                     props: { prependIcon: 'mdi-domain', active: route().current('organization.show') },
                 },
