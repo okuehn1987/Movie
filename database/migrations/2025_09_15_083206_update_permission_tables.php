@@ -13,15 +13,18 @@ return new class extends Migration
     {
         Schema::table('organization_users', function (Blueprint $table) {
             $table->enum('ticket_permission', ['read', 'write'])->nullable();
+            $table->enum('customer_permission', ['read', 'write'])->nullable();
         });
 
         Schema::table('operating_site_users', function (Blueprint $table) {
             $table->enum('ticket_permission', ['read', 'write'])->nullable();
+            $table->enum('customer_permission', ['read', 'write'])->nullable();
             $table->enum('absenceType_permission', ['read', 'write'])->nullable();
         });
 
         Schema::table('group_users', function (Blueprint $table) {
             $table->enum('ticket_permission', ['read', 'write'])->nullable();
+            $table->enum('customer_permission', ['read', 'write'])->nullable();
             $table->enum('absenceType_permission', ['read', 'write'])->nullable();
         });
     }

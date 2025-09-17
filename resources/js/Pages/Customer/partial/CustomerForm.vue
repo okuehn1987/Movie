@@ -30,13 +30,19 @@ const customerForm = useForm({
             <v-card-text>
                 <v-row>
                     <v-col cols="12" md="6">
-                        <v-text-field label="Name" v-model="customerForm.name" :error-messages="customerForm.errors.name"></v-text-field>
+                        <v-text-field
+                            label="Name"
+                            v-model="customerForm.name"
+                            :error-messages="customerForm.errors.name"
+                            :disabled="!can('customer', 'update')"
+                        ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-text-field
                             label="E-Mail (optional)"
                             v-model="customerForm.email"
                             :error-messages="customerForm.errors.email"
+                            :disabled="!can('customer', 'update')"
                         ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
@@ -44,6 +50,7 @@ const customerForm = useForm({
                             label="Telefonnummer (optional)"
                             v-model="customerForm.phone"
                             :error-messages="customerForm.errors.phone"
+                            :disabled="!can('customer', 'update')"
                         ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
@@ -51,11 +58,12 @@ const customerForm = useForm({
                             label="Kundennummer (optional)"
                             v-model="customerForm.reference_number"
                             :error-messages="customerForm.errors.reference_number"
+                            :disabled="!can('customer', 'update')"
                         ></v-text-field>
                     </v-col>
                     <v-col cols="12">
                         <div class="d-flex justify-space-between">
-                            <v-dialog max-width="1000" v-if="customer">
+                            <v-dialog max-width="1000" v-if="customer && can('customer', 'delete')">
                                 <template v-slot:activator="{ props: activatorProps }">
                                     <v-btn v-bind="activatorProps" color="error">Löschen</v-btn>
                                 </template>
@@ -90,7 +98,7 @@ const customerForm = useForm({
                                 </template>
                             </v-dialog>
                             <div v-else></div>
-                            <v-btn color="primary" type="submit">speichern</v-btn>
+                            <v-btn color="primary" type="submit" v-if="can('customer', 'update')">speichern</v-btn>
                         </div>
                     </v-col>
                 </v-row>

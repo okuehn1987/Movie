@@ -52,6 +52,7 @@ const search = ref('');
                 </template>
                 <template #item.actions="{ item }">
                     <v-btn
+                        v-if="can('customer', 'viewShow')"
                         @click.stop="router.get(route('customer.show', { customer: item.id }))"
                         icon="mdi-eye"
                         variant="text"

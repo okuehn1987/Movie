@@ -59,7 +59,16 @@ function editNote(note: CustomerNote) {
         <template #append>
             <v-dialog max-width="1000" v-model="openDialog">
                 <template v-slot:activator="{ props: activatorProps }">
-                    <v-btn v-bind="activatorProps" append-icon="mdi-plus" color="primary" variant="flat" class="mr-2">Notiz anlegen</v-btn>
+                    <v-btn
+                        v-bind="activatorProps"
+                        append-icon="mdi-plus"
+                        color="primary"
+                        variant="flat"
+                        class="mr-2"
+                        v-if="can('customer', 'update')"
+                    >
+                        Notiz anlegen
+                    </v-btn>
                 </template>
                 <template v-slot:default="{ isActive }">
                     <v-form
@@ -153,6 +162,7 @@ function editNote(note: CustomerNote) {
                         }
                     }
                 "
+                :disabled="!can('customer', 'update')"
             >
                 {{ mode == 'show' ? 'Ansichtsmodus' : 'Bearbeitungsmodus' }}
             </v-btn>
