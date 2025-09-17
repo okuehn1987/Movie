@@ -69,7 +69,12 @@ watch(
             ></v-app-bar-nav-icon>
 
             <div class="d-flex align-center mr-auto ga-2">
-                <span class="text-h6 pl-0 ml-5 mb-0" style="white-space: nowrap">{{ title }}</span>
+                <span
+                    class="text-h6 ps-0 mx-md-5 px-2 mb-0"
+                    style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: calc(100vw - 72px - 72px - 52px)"
+                >
+                    {{ title }}
+                </span>
                 <v-img
                     v-if="showOrgImg"
                     :src="route('organization.getLogo', { organization: $page.props.organization.id, key: $page.props.organization.logo })"
