@@ -24,7 +24,7 @@ const currentPage = ref(1);
 </script>
 
 <template>
-    <AdminLayout :title="'Dashboard von ' + $page.props.auth.user.first_name + ' ' + $page.props.auth.user.last_name">
+    <AdminLayout title="Dashboard">
         <v-row>
             <v-col cols="12" lg="6">
                 <v-row>

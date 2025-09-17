@@ -37,7 +37,7 @@ use Illuminate\Support\Facades\DB;
 class UserController extends Controller
 {
 
-    private function validateUser(Request $request, array $additionalRules = [], string $mode = 'create')
+    private function validateUser(Request $request, array $additionalRules = [], string $mode = 'create', User | null $user = null)
     {
         return $request->validate([
             "first_name" => "required|string",
@@ -70,6 +70,26 @@ class UserController extends Controller
             ],
 
             'is_supervisor' => 'required|boolean',
+
+            'use_time_balance_traffic_light' => 'required|boolean',
+            'time_balance_yellow_threshold' => 'nullable|required_if:use_time_balance_traffic_light,true|integer',
+            'time_balance_red_threshold' => 'nullable|required_if:use_time_balance_traffic_light,true|integer',
+
+            'resignation_date' => ['nullable', 'date', function ($attribute, $value, $fail) use ($request, $mode, $user) {
+                if ($mode == 'create') return;
+                if ($user->resignation_date == $value) return;
+                if ($user->resignation_date && $user->resignation_date <= now()->format('Y-m-d')) {
+                    $fail('validation.immutable')->translate([
+                        'attribute' => __('validation.attributes.resignation_date'),
+                    ]);
+                }
+                if ($value <= now()->format('Y-m-d')) {
+                    $fail('validation.after')->translate([
+                        'attribute' => __('validation.attributes.resignation_date'),
+                        'date' => Carbon::now()->format('d.m.Y')
+                    ]);
+                }
+            }],
 
             'home_office' => 'required|boolean',
             'home_office_hours_per_week' => 'nullable|min:0|numeric',
@@ -251,13 +271,14 @@ class UserController extends Controller
         $user['usedLeaveDaysForYear'] = $user->usedLeaveDaysForYear(Carbon::now());
         $user['absences'] = $user->absences()
             ->whereYear('start', '<=', Carbon::now()->year)
-            ->whereYear('end', '>=', Carbon::now()->year)
+            ->whereYear('end', '>=', Carbon::now()->year - 3)
             ->with(['absenceType:id,name', 'user:id,operating_site_id'])
             ->get(['id', 'start', 'end', 'absence_type_id', 'status', 'user_id'])->append('usedDays');
 
         return Inertia::render('User/UserShow/Absences', [
             'user' => $user,
             'can' => self::getUserShowCans($user),
+            'absenceTypes' => AbsenceType::inOrganization()->get(['id', 'name'])
         ]);
     }
 
@@ -343,11 +364,15 @@ class UserController extends Controller
             'is_supervisor' => $validated['is_supervisor'],
             'supervisor_id' => $validated['supervisor_id'],
             'operating_site_id' => $validated['operating_site_id'],
+            'resignation_date' => $validated['resignation_date'],
             'date_of_birth' => Carbon::parse($validated['date_of_birth']),
             'home_office' => $validated['home_office'],
             'home_office_hours_per_week' => $validated['home_office'] ? $validated['home_office_hours_per_week'] ?? 0 : null,
             'job_role' => $validated['job_role'],
+            'time_balance_yellow_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_yellow_threshold'] : null,
+            'time_balance_red_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_red_threshold'] : null,
             'email_verified_at' => now(),
+            'notification_channels' => ['database', 'mail'],
         ]);
         $user->save();
 
@@ -440,7 +465,7 @@ class UserController extends Controller
 
         $validated = self::validateUser($request, [
             "email" => ['required', 'email', Rule::unique('users')->ignore($user->id)],
-        ], 'update');
+        ], 'update', $user);
 
         $user->update([
             'first_name' => $validated['first_name'],
@@ -453,11 +478,14 @@ class UserController extends Controller
             'operating_site_id' => $validated['operating_site_id'],
             'supervisor_id' => $validated['supervisor_id'],
             'is_supervisor' => $validated['is_supervisor'],
+            'resignation_date' => $validated['resignation_date'],
             'date_of_birth' => Carbon::parse(Carbon::parse($validated['date_of_birth'])->format('d-m-Y')),
             'home_office' => $validated['home_office'],
             'home_office_hours_per_week' => $validated['home_office'] ? $validated['home_office_hours_per_week'] ?? 0 : null,
             "overtime_calculations_start" => $validated['overtime_calculations_start'],
             'job_role' => $validated['job_role'],
+            'time_balance_yellow_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_yellow_threshold']  : null,
+            'time_balance_red_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_red_threshold'] : null,
         ]);
         $user->addresses()->create(collect($validated)->only(Address::$ADDRESS_KEYS)->toArray());
 
@@ -565,9 +593,16 @@ class UserController extends Controller
                 ->limit(1))
             ->first();
 
-        $previousBalance = $lastTransactionBeforeStatement->from_id == $user->defaultTimeAccount->id ?
-            $lastTransactionBeforeStatement->from_previous_balance :
-            $lastTransactionBeforeStatement->to_previous_balance;
+        if ($lastTransactionBeforeStatement->changes()->whereDate('date', '>=', $start->format('Y-m-d'))->count() != 0) {
+            $lastTransactionBeforeStatement = null;
+        }
+
+        if ($lastTransactionBeforeStatement)
+            $previousBalance = $lastTransactionBeforeStatement->from_id == $user->defaultTimeAccount->id ?
+                $lastTransactionBeforeStatement->from_previous_balance :
+                $lastTransactionBeforeStatement->to_previous_balance;
+        else $previousBalance = 0;
+
 
         $allTransactionChanges = TimeAccountTransactionChange::whereIn(
             'time_account_transaction_id',

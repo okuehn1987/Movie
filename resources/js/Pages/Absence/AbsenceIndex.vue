@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { AbsenceType, Status, User } from '@/types/types';
+import { AbsenceType, Status, User, UserAbsenceFilter } from '@/types/types';
 import { throttle, useMaxScrollHeight } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import AbsenceTableCell from './partials/AbsenceTableCell.vue';
 import EditCreateAbsence from './partials/EditCreateAbsence.vue';
 import { AbsencePatchProp, AbsenceProp, getEntryState, UserProp } from './utils';
 import ShowAbsenceModal from './partials/ShowAbsenceModal.vue';
+import AbsenceFilter from './partials/AbsenceFilter.vue';
 
 const props = defineProps<{
     users: UserProp[];
@@ -16,10 +17,18 @@ const props = defineProps<{
     absencePatches: AbsencePatchProp[];
     absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval' | 'type'>[];
     holidays: Record<string, string> | null;
+    user_absence_filters: UserAbsenceFilter[];
 }>();
 
 const dateParam = route().params['date'];
 const date = ref(dateParam ? (DateTime.fromFormat(dateParam, 'yyyy-MM') as DateTime<true>) : DateTime.now());
+
+const filterForm = useForm({
+    set: null as null | string | { value: UserAbsenceFilter['id']; title: string },
+    selected_users: [] as User['id'][],
+    selected_absence_types: [] as AbsenceType['id'][],
+    selected_statuses: ['created', 'accepted'] as Status[],
+});
 
 const currentEntries = computed(() => {
     const entries = [] as typeof props.absences | typeof props.absencePatches;
@@ -64,12 +73,6 @@ if (openAbsenceFromRoute) {
     selectedUser.value = openAbsenceFromRoute.user_id;
     openEditCreateAbsenceModal.value = true;
 }
-
-const filterForm = reactive({
-    selected_users: [] as User['id'][],
-    selected_absence_types: [] as AbsenceType['id'][],
-    selected_statuses: ['created', 'accepted'] as Status[],
-});
 
 function createAbsenceModal(user_id: User['id'], start?: DateTime) {
     selectedUser.value = user_id;
@@ -135,51 +138,7 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
         <v-card>
             <v-card-text>
                 <div class="d-flex flex-wrap justify-space-between align-center">
-                    <v-dialog max-width="1000">
-                        <template #activator="{ props: activatorProps }">
-                            <v-btn v-bind="activatorProps" variant="flat" color="primary"><v-icon>mdi-filter</v-icon></v-btn>
-                        </template>
-                        <template #default="{ isActive }">
-                            <v-card :title="'Abwesenheiten filtern'">
-                                <template #append>
-                                    <v-btn icon variant="text" @click="isActive.value = false">
-                                        <v-icon>mdi-close</v-icon>
-                                    </v-btn>
-                                </template>
-                                <v-card-text>
-                                    <v-autocomplete
-                                        label="Nutzer"
-                                        :items="users.map(u => ({ title: u.first_name + ' ' + u.last_name, value: u.id }))"
-                                        v-model="filterForm.selected_users"
-                                        clearable
-                                        chips
-                                        multiple
-                                        variant="underlined"
-                                    ></v-autocomplete>
-                                    <v-select
-                                        label="Abwesenheitsgrund"
-                                        :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
-                                        v-model="filterForm.selected_absence_types"
-                                        clearable
-                                        chips
-                                        multiple
-                                    ></v-select>
-                                    <v-select
-                                        label="Abwesenheitsstatus"
-                                        :items="[
-                                            { title: 'Erstellt', value: 'created' },
-                                            { title: 'Akzeptiert', value: 'accepted' },
-                                            { title: 'Abgelehnt', value: 'declined' },
-                                        ]"
-                                        v-model="filterForm.selected_statuses"
-                                        clearable
-                                        chips
-                                        multiple
-                                    ></v-select>
-                                </v-card-text>
-                            </v-card>
-                        </template>
-                    </v-dialog>
+                    <AbsenceFilter :absence_types :users :user_absence_filters v-model:filterForm="filterForm"></AbsenceFilter>
                     <div class="d-flex flex-wrap align-center">
                         <div class="d-flex">
                             <v-btn @click.stop="date = date.minus({ year: 1 })" variant="text" icon color="primary">
@@ -215,6 +174,7 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
                     users
                         .filter(u => filterForm.selected_users.length == 0 || filterForm.selected_users.includes(u.id))
                         .map(u => ({ ...u, name: u.last_name + ', ' + u.first_name }))
+                        .toSorted((a, b) => a.name.localeCompare(b.name))
                 "
                 :headers="[
                 {
@@ -232,6 +192,7 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
                     key: e.day.toString(),
                     sortable: false,
                     align: 'center',
+                    width: '44px' ,
                     headerProps:{ class: {'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate() }}
                 } as const)),
             ]"
@@ -239,7 +200,7 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
                 <template v-slot:item="{ item, columns }">
                     <tr>
                         <template v-for="header in columns" :key="header.key">
-                            <td v-if="header.key === 'name'">{{ item.first_name }} {{ item.last_name }}</td>
+                            <td v-if="header.key === 'name'">{{ item.name }}</td>
                             <template v-else-if="header.key === 'action'">
                                 <td v-if="can('absence', 'create', item)">
                                     <v-btn

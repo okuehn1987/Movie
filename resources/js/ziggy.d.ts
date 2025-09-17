@@ -111,6 +111,19 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "userAbsenceFilter.store": [],
+    "userAbsenceFilter.update": [
+        {
+            "name": "userAbsenceFilter",
+            "required": true
+        }
+    ],
+    "userAbsenceFilter.destroy": [
+        {
+            "name": "userAbsenceFilter",
+            "required": true
+        }
+    ],
     "absence.absencePatch.store": [
         {
             "name": "absence",

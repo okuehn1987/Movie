@@ -25,8 +25,26 @@ class TimeAccountSetting extends Model
     public static function getDefaultSettings()
     {
         return [
-            'type' => null,
-            'truncation_cycle_length_in_months' => 1,
+            [
+                'type' => null,
+                'truncation_cycle_length_in_months' => 1,
+            ],
+            [
+                'type' => null,
+                'truncation_cycle_length_in_months' => 3,
+            ],
+            [
+                'type' => null,
+                'truncation_cycle_length_in_months' => 6,
+            ],
+            [
+                'type' => null,
+                'truncation_cycle_length_in_months' => 12,
+            ],
+            [
+                'type' => null,
+                'truncation_cycle_length_in_months' => null,
+            ]
         ];
     }
 }

@@ -84,7 +84,8 @@ class OrganizationController extends Controller
             'password' => Hash::make($validated['password']),
             'date_of_birth' => $validated['date_of_birth'],
             'organization_id' => $org->id,
-            'operating_site_id' => $operating_site->id
+            'operating_site_id' => $operating_site->id,
+            'notification_channels' => ['database', 'mail'],
         ]);
         $user->save();
         $org->owner_id = $user->id;
@@ -107,7 +108,7 @@ class OrganizationController extends Controller
                 ->toArray()
         ]);
 
-        $defaultTimeAccountSetting = $org->timeAccountSettings()->create(TimeAccountSetting::getDefaultSettings());
+        $defaultTimeAccountSetting = $org->timeAccountSettings()->createMany(TimeAccountSetting::getDefaultSettings());
 
         $user->timeAccounts()->create([
             'name' => 'Gleitzeitkonto',

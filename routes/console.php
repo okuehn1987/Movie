@@ -16,10 +16,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote')->hourly();
-
+// Artisan::command('inspire', function () {
+//     $this->comment(Inspiring::quote());
+// })->purpose('Display an inspiring quote')->hourly();
 
 Schedule::call(function () {
     $organizations = Organization::where('balance_truncation_day', Carbon::now()->day)->with('users')->get();
@@ -39,7 +38,6 @@ Schedule::call(function () {
             TimeAccountTransactionChange::createFor($timeAccount->addBalance(- ($timeAccount->balance - $timeAccount->balance_limit), 'Monatsabrechnung'), now());
     }
 })->name('monthlyBalanceTruncation')->dailyAt("01:00");
-
 
 Schedule::call(function () {
     $users = User::with(['operatingSite', 'defaultTimeAccount', 'latestWorkLog'])->get();

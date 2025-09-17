@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Absence, RelationPick, User } from '@/types/types';
+import { Absence, AbsenceType, RelationPick, User } from '@/types/types';
 import { DateTime } from 'luxon';
 import UserShowNavBar from './partial/UserShowNavBar.vue';
+import { useMaxScrollHeight } from '@/utils';
+import { ref } from 'vue';
 
-defineProps<{
+const props = defineProps<{
     user: User & {
         leaveDaysForYear: number;
         usedLeaveDaysForYear: number;
@@ -13,51 +15,80 @@ defineProps<{
                 usedDays: number;
             })[];
     };
+    absenceTypes: Pick<AbsenceType, 'id' | 'name'>[];
 }>();
+
+const open = ref(props.absenceTypes.map((_, i) => i));
 </script>
 <template>
     <AdminLayout :title="user.first_name + ' ' + user.last_name">
         <UserShowNavBar :user tab="absences"></UserShowNavBar>
-        <v-card>
+        <v-card :max-height="useMaxScrollHeight(48).value" class="overflow-auto">
             <v-card-text>
                 <v-row>
                     <v-col cols="12">
-                        <v-data-table-virtual
-                            id="userAbsenceTable"
-                            :items="
-                                user.absences.map(e => ({
-                                    ...e,
-                                    start: DateTime.fromSQL(e.start).toFormat('dd.MM.yyyy'),
-                                    end: DateTime.fromSQL(e.end).toFormat('dd.MM.yyyy'),
-                                    absence_type: e.absence_type?.name,
-                                    usedDays: e.usedDays.toString(),
-                                }))
-                            "
-                            :headers="[
-                                { title: 'Start', key: 'start' },
-                                { title: 'Ende', key: 'end' },
-                                { title: 'Status', key: 'status' },
-                                { title: 'Art', key: 'absence_type' },
-                                { title: 'Genutzte Tage', key: 'usedDays' },
-                            ]"
-                        >
-                            <template v-slot:item.status="{ item }">
-                                <v-chip :color="{ accepted: 'success', created: 'warning', declined: 'error' }[item.status]">
-                                    {{ { accepted: 'Genehmigt', created: 'Offen', declined: 'Abgelehnt' }[item.status] }}
-                                </v-chip>
+                        <v-expansion-panels elevation="1" multiple v-model="open">
+                            <template v-for="absenceType in absenceTypes" :key="absenceType.id">
+                                <v-expansion-panel
+                                    v-if="user.absences.filter(a => a.absence_type_id == absenceType.id).reduce((a, c) => a + c.usedDays, 0) > 0"
+                                >
+                                    <v-expansion-panel-title>
+                                        <v-row>
+                                            <v-col cols="12" md="11">
+                                                <h2 class="text-h6">{{ absenceType.name }}</h2>
+                                            </v-col>
+                                            <v-col cols="12" md="1" style="place-self: center">
+                                                {{
+                                                    user.absences.filter(a => a.absence_type_id == absenceType.id).reduce((a, c) => a + c.usedDays, 0)
+                                                }}
+                                                Tage
+                                            </v-col>
+                                        </v-row>
+                                    </v-expansion-panel-title>
+                                    <v-expansion-panel-text>
+                                        <v-data-table-virtual
+                                            id="userAbsenceTable"
+                                            :items="
+                                                user.absences
+                                                    .filter(a => a.absence_type_id == absenceType.id)
+                                                    .toSorted((a, b) => b.start.localeCompare(a.start))
+                                                    .map(e => ({
+                                                        ...e,
+                                                        start: DateTime.fromSQL(e.start).toFormat('dd.MM.yyyy'),
+                                                        end: DateTime.fromSQL(e.end).toFormat('dd.MM.yyyy'),
+                                                        absence_type: e.absence_type?.name,
+                                                        usedDays: e.usedDays.toString(),
+                                                    }))
+                                            "
+                                            :headers="[
+                                                { title: 'Start', key: 'start' },
+                                                { title: 'Ende', key: 'end' },
+                                                { title: 'Status', key: 'status' },
+                                                { title: 'Art', key: 'absence_type' },
+                                                { title: 'Genutzte Tage', key: 'usedDays' },
+                                            ]"
+                                        >
+                                            <template v-slot:item.status="{ item }">
+                                                <v-chip :color="{ accepted: 'success', created: 'warning', declined: 'error' }[item.status]">
+                                                    {{ { accepted: 'Genehmigt', created: 'Offen', declined: 'Abgelehnt' }[item.status] }}
+                                                </v-chip>
+                                            </template>
+                                            <template v-slot:body.append v-if="absenceType.name == 'Urlaub'">
+                                                <tr class="font-weight-bold">
+                                                    <td colspan="4">
+                                                        Genutzte Urlaubstage für das Jahr
+                                                        {{ DateTime.now().year }}:
+                                                    </td>
+                                                    <td>
+                                                        {{ user.usedLeaveDaysForYear + ' von ' + user.leaveDaysForYear }}
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </v-data-table-virtual>
+                                    </v-expansion-panel-text>
+                                </v-expansion-panel>
                             </template>
-                            <template v-slot:body.append>
-                                <tr class="font-weight-bold">
-                                    <td colspan="4">
-                                        Genutzte Urlaubstage für das Jahr
-                                        {{ DateTime.now().year }}:
-                                    </td>
-                                    <td>
-                                        {{ user.usedLeaveDaysForYear + ' von ' + user.leaveDaysForYear }}
-                                    </td>
-                                </tr>
-                            </template>
-                        </v-data-table-virtual>
+                        </v-expansion-panels>
                     </v-col>
                 </v-row>
             </v-card-text>

@@ -234,6 +234,11 @@ class User extends Authenticatable
         return $this->hasOne(Organization::class, 'owner_id', 'organization_id');
     }
 
+    public function userAbsenceFilters()
+    {
+        return $this->hasMany(UserAbsenceFilter::class);
+    }
+
     public function userWorkingHours()
     {
         return $this->hasMany(UserWorkingHour::class);
@@ -638,11 +643,13 @@ class User extends Authenticatable
     {
         return Attribute::make(
             get: function () {
-                $futureAbsences = Absence::inOrganization()
+                $futureAbsences =
+                    $this->absences()
+                    ->with('currentAcceptedPatch')
                     ->where('status', 'accepted')
-                    ->whereDate('end', '>=', now())
-                    ->where('user_id', $this->id)
-                    ->get(['id', 'start', 'end', 'user_id', 'absence_type_id']);
+                    ->get()
+                    ->map(fn($a) => $a->currentAcceptedPatch ?? $a)
+                    ->where('end', '>=', now());
 
                 $lastDay = null;
                 $absenceTypes = collect();

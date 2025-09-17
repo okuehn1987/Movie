@@ -43,8 +43,12 @@ const userForm = useForm<FormData>({
     operating_site_id: null,
     supervisor_id: null,
     is_supervisor: false,
+    resignation_date: null as null | DateString,
     home_office: false,
     home_office_hours_per_week: null, //TODO: check if we need active_since
+    use_time_balance_traffic_light: false,
+    time_balance_yellow_threshold: null as null | number,
+    time_balance_red_threshold: null as null | number,
 
     user_working_hours: [],
     user_leave_days: [],
@@ -112,9 +116,13 @@ if (props.user) {
     userForm.group_id = props.user.group_id;
     userForm.operating_site_id = props.user.operating_site_id;
     userForm.supervisor_id = props.user.supervisor_id;
+    userForm.resignation_date = props.user.resignation_date;
     userForm.home_office = props.user.home_office;
     userForm.home_office_hours_per_week = props.user.home_office_hours_per_week;
     userForm.overtime_calculations_start = props.user.overtime_calculations_start;
+    userForm.use_time_balance_traffic_light = props.user.time_balance_red_threshold !== null && props.user.time_balance_yellow_threshold !== null;
+    userForm.time_balance_yellow_threshold = props.user.time_balance_yellow_threshold;
+    userForm.time_balance_red_threshold = props.user.time_balance_red_threshold;
 
     userForm.user_leave_days = props.user.user_leave_days
         .filter(e => e !== null)
@@ -194,7 +202,8 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
 </script>
 <template>
     <v-form id="userForm" @submit.prevent="submit" :disabled="user && !can('user', 'update')">
-        <v-card class="mb-4" title="Persönliche Daten">
+        <v-card class="mb-4">
+            <v-card-title>Persönliche Daten</v-card-title>
             <v-card-text>
                 <v-row>
                     <v-col cols="12" md="6">
@@ -284,6 +293,86 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
             </v-card-item>
             <v-card-text>
                 <v-row>
+                    <v-col cols="12" v-if="userForm.errors.user_working_hours">
+                        <v-alert type="error">{{ userForm.errors.user_working_hours }}</v-alert>
+                    </v-col>
+                    <v-col cols="12">
+                        <v-data-table-virtual
+                            :items="userForm.user_working_hours"
+                            :headers="[
+                                {
+                                    title: 'Stunden pro Woche',
+                                    key: 'weekly_working_hours',
+                                    width: '50%',
+                                    sortable: false,
+                                },
+                                {
+                                    title: 'Aktiv seit',
+                                    key: 'active_since',
+                                    sortable: false,
+                                },
+                                {
+                                    title: '',
+                                    key: 'actions',
+                                    align: 'end',
+                                    sortable: false,
+                                },
+                            ]"
+                        >
+                            <template v-slot:header.actions>
+                                <v-btn
+                                    v-if="!user || can('user', 'update')"
+                                    color="primary"
+                                    @click.stop="userForm.user_working_hours.push({ active_since: '', id: null, weekly_working_hours: 0 })"
+                                >
+                                    <v-icon icon="mdi-plus"></v-icon>
+                                </v-btn>
+                            </template>
+                            <template v-slot:item.weekly_working_hours="{ item, index }">
+                                <v-text-field
+                                    data-testid="userWorkingHours-hours"
+                                    type="number"
+                                    variant="underlined"
+                                    v-model="item.weekly_working_hours"
+                                    :error-messages="userForm.errors[`user_working_hours.${index}.weekly_working_hours`]"
+                                    :disabled="
+                                        (user && !can('user', 'update')) ||
+                                        (!!item.active_since && item.active_since < DateTime.now().toFormat('yyyy-MM-dd'))
+                                    "
+                                ></v-text-field>
+                            </template>
+                            <template v-slot:item.active_since="{ item, index }">
+                                <v-text-field
+                                    data-testid="userWorkingHours-since"
+                                    type="date"
+                                    variant="underlined"
+                                    :min="mode == 'edit' ? DateTime.now().plus({ days: 1 }).toFormat('yyyy-MM-dd') : undefined"
+                                    v-model="item.active_since"
+                                    :error-messages="userForm.errors[`user_working_hours.${index}.active_since`]"
+                                    :disabled="
+                                        (user && !can('user', 'update')) ||
+                                        (!!item.active_since && item.active_since < DateTime.now().toFormat('yyyy-MM-dd'))
+                                    "
+                                ></v-text-field>
+                            </template>
+                            <template v-slot:item.actions="{ item, index }">
+                                <v-btn
+                                    color="error"
+                                    @click.stop="userForm.user_working_hours.splice(index, 1)"
+                                    v-if="(!user || can('user', 'update')) && (!item.id || item.active_since > DateTime.now().toFormat('yyyy-MM-dd'))"
+                                >
+                                    <v-icon icon="mdi-delete"></v-icon>
+                                </v-btn>
+                            </template>
+                        </v-data-table-virtual>
+                    </v-col>
+                </v-row>
+            </v-card-text>
+        </v-card>
+        <v-card class="mb-4">
+            <v-card-title>Arbeitswoche</v-card-title>
+            <v-card-text>
+                <v-row>
                     <v-col cols="12" v-if="userForm.errors.user_working_weeks">
                         <v-alert type="error">{{ userForm.errors.user_working_weeks }}</v-alert>
                     </v-col>
@@ -366,8 +455,8 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-
-        <v-card class="mb-4" title="Urlaubstage">
+        <v-card class="mb-4">
+            <v-card-title>Urlaubstage</v-card-title>
             <v-card-text>
                 <v-row>
                     <v-col cols="12" v-if="userForm.errors.user_leave_days">
@@ -448,7 +537,39 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" title="Homeoffice">
+        <v-card class="mb-4" title="Gleitzeitkonto">
+            <v-card-text>
+                <v-row>
+                    <v-col cols="12">
+                        <v-checkbox
+                            v-model="userForm.use_time_balance_traffic_light"
+                            label="Gleitzeitampelsystem verwenden"
+                            :error-messages="userForm.errors.use_time_balance_traffic_light"
+                        ></v-checkbox>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field
+                            type="number"
+                            v-model="userForm.time_balance_yellow_threshold"
+                            label="Gelbe Grenze für Überstunden im Gleitzeitkonto"
+                            :error-messages="userForm.errors.time_balance_yellow_threshold"
+                            :disabled="!userForm.use_time_balance_traffic_light"
+                        ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="6">
+                        <v-text-field
+                            type="number"
+                            v-model="userForm.time_balance_red_threshold"
+                            label="Rote Grenze für Überstunden im Gleitzeitkonto"
+                            :error-messages="userForm.errors.time_balance_red_threshold"
+                            :disabled="!userForm.use_time_balance_traffic_light"
+                        ></v-text-field>
+                    </v-col>
+                </v-row>
+            </v-card-text>
+        </v-card>
+        <v-card class="mb-4">
+            <v-card-title>Homeoffice</v-card-title>
             <v-card-text>
                 <v-row>
                     <v-col cols="12" md="6">
@@ -475,7 +596,8 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" title="Organisation">
+        <v-card class="mb-4">
+            <v-card-title>Organisation</v-card-title>
             <v-card-text>
                 <v-row>
                     <PermissionSelector
@@ -504,7 +626,8 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" title="Betriebsstätte">
+        <v-card class="mb-4">
+            <v-card-title>Betriebsstätte</v-card-title>
             <v-card-text>
                 <v-row>
                     <v-col cols="12" class="mb-4">
@@ -543,7 +666,8 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" title="Abteilung">
+        <v-card class="mb-4">
+            <v-card-title>Abteilung</v-card-title>
             <v-card-text>
                 <v-row>
                     <v-col cols="12" class="mb-4">
@@ -583,7 +707,8 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" title="Vorgesetzter">
+        <v-card class="mb-4">
+            <v-card-title>Vorgesetzter</v-card-title>
             <v-card-text>
                 <v-row>
                     <v-col cols="12" md="6">
@@ -597,6 +722,24 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-checkbox v-model="userForm.is_supervisor" label="Ist ein Vorgesetzter"></v-checkbox>
+                    </v-col>
+                </v-row>
+            </v-card-text>
+        </v-card>
+        <v-card class="mb-4" v-if="user?.organization_id || user?.supervisor">
+            <v-card-title>Kündigungseinstellungen</v-card-title>
+            <v-card-text>
+                <v-row>
+                    <v-col cols="12" md="3">
+                        <v-text-field
+                            type="date"
+                            label="Kündigungsdatum"
+                            :min="DateTime.now().plus({ day: 1 }).toFormat('yyyy-MM-dd')"
+                            v-model="userForm.resignation_date"
+                            :disabled="!!userForm.resignation_date && DateTime.now().toFormat('yyyy-MM-dd') >= userForm.resignation_date"
+                            :error-messages="userForm.errors.resignation_date"
+                            clearable
+                        ></v-text-field>
                     </v-col>
                 </v-row>
             </v-card-text>

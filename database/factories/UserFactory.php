@@ -36,7 +36,7 @@ class UserFactory extends Factory
             "date_of_birth" => Carbon::now()->subYears(random_int(18, 65)),
             'operating_site_id' => OperatingSite::first(),
             'job_role' => fake()->jobTitle(),
-            'notification_channels' => ['database'],
+            'notification_channels' => ['database', 'mail'],
         ];
     }
 

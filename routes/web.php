@@ -3,20 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Http\Middleware\CheckIfGateWasUsedToAuthorizeRequest;
-use App\Http\Middleware\CheckQueryCountForRequest;
 use App\Http\Middleware\HasOrganizationAccess;
 use App\Http\Middleware\isApp;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard')->name('home');
 
-Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAuthorizeRequest::class, CheckQueryCountForRequest::class])->group(function () {
+Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAuthorizeRequest::class])->group(function () {
     //super admin routes
     Route::resource('organization', OrganizationController::class)->only(['index', 'store', 'destroy']);
     Route::get('/organization/{organization}/tree', [OrganizationController::class, 'organigram'])->name('organization.tree');
     //super admin routes
 
     Route::post('/switchAppModule', [AppModuleController::class, 'switchAppModule'])->name('switchAppModule');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('reportBug', [BugReportController::class, 'store'])->name('reportBug.store');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -29,6 +30,8 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::delete('/absence/{absence}/denyDestroy', [AbsenceController::class, 'denyDestroy'])->name('absence.denyDestroy');
     Route::delete('/absence/{absence}/destroyDispute', [AbsenceController::class, 'destroyDispute'])->name('absence.destroyDispute');
     Route::patch('/absence/{absence}/updateStatus', [AbsenceController::class, 'updateStatus'])->name('absence.updateStatus');
+
+    Route::resource('userAbsenceFilter', UserAbsenceFilterController::class)->only(['store', 'update', 'destroy'])->shallow();
 
     Route::resource('absence.absencePatch', AbsencePatchController::class)->only(['store', 'update', 'destroy'])->shallow();
     Route::patch('/absencePatch/{absencePatch}/updateStatus', [AbsencePatchController::class, 'updateStatus'])->name('absencePatch.updateStatus');
@@ -85,5 +88,7 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     });
 });
 
+
+Route::get('/webmanifest', [ManifestController::class, 'getOrganizationManifest']);
 
 require __DIR__ . '/auth.php';
