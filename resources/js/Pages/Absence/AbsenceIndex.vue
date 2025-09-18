@@ -10,6 +10,7 @@ import EditCreateAbsence from './partials/EditCreateAbsence.vue';
 import { AbsencePatchProp, AbsenceProp, getEntryState, UserProp } from './utils';
 import ShowAbsenceModal from './partials/ShowAbsenceModal.vue';
 import AbsenceFilter from './partials/AbsenceFilter.vue';
+import { useDisplay } from 'vuetify';
 
 const props = defineProps<{
     users: UserProp[];
@@ -97,6 +98,14 @@ function getDaysInMonth() {
     return daysInMonth;
 }
 
+function getDaysInWeek() {
+    const daysInWeek = [];
+    for (let i = 1; i <= 7; i++) {
+        daysInWeek.push(date.value.startOf('week').plus({ day: i - 1 }));
+    }
+    return daysInWeek;
+}
+
 const loadedMonths = ref([date.value.toFormat('yyyy-MM')]);
 const loading = ref(false);
 const reload = throttle(() => {
@@ -115,6 +124,8 @@ const reload = throttle(() => {
 watch(date, reload);
 
 const absenceTableHeight = useMaxScrollHeight(80 + 1);
+
+const display = useDisplay();
 </script>
 <template>
     <AdminLayout title="Abwesenheiten">
@@ -137,96 +148,170 @@ const absenceTableHeight = useMaxScrollHeight(80 + 1);
         ></ShowAbsenceModal>
         <v-card>
             <v-card-text>
-                <div class="d-flex flex-wrap justify-space-between align-center">
-                    <AbsenceFilter :absence_types :users :user_absence_filters v-model:filterForm="filterForm"></AbsenceFilter>
-                    <div class="d-flex flex-wrap align-center">
+                <div class="d-flex justify-space-between align-center w-100">
+                    <AbsenceFilter
+                        v-if="display.mdAndUp.value"
+                        :absence_types
+                        :users
+                        :user_absence_filters
+                        v-model:filterForm="filterForm"
+                    ></AbsenceFilter>
+                    <div class="d-flex justify-center align-center w-100">
                         <div class="d-flex">
-                            <v-btn @click.stop="date = date.minus({ year: 1 })" variant="text" icon color="primary">
-                                <v-icon icon="mdi-chevron-double-left"></v-icon>
-                            </v-btn>
-                            <v-btn @click.stop="date = date.minus({ month: 1 })" variant="text" icon color="primary">
+                            <template v-if="display.mdAndUp.value">
+                                <v-btn @click.stop="date = date.minus({ year: 1 })" variant="text" icon color="primary">
+                                    <v-icon icon="mdi-chevron-double-left"></v-icon>
+                                </v-btn>
+                                <v-btn @click.stop="date = date.minus({ month: 1 })" variant="text" icon color="primary">
+                                    <v-icon icon="mdi-chevron-left"></v-icon>
+                                </v-btn>
+                            </template>
+                            <v-btn v-else @click.stop="date = date.minus({ week: 1 })" variant="text" icon color="primary">
                                 <v-icon icon="mdi-chevron-left"></v-icon>
                             </v-btn>
                         </div>
-                        <h2 class="mx-4 text-center" style="min-width: 170px">
-                            {{ date.toFormat('MMMM yyyy') }}
+                        <h2 class="mx-md-4 text-center" :style="{ minWidth: display.mdAndUp.value ? '170px' : '110px' }">
+                            {{ date.toFormat('MMM' + (display.smAndUp.value ? 'M' : '') + ' yyyy') }} {{ date }}
                             <v-progress-linear v-if="loading" indeterminate></v-progress-linear>
                         </h2>
                         <div class="d-flex">
-                            <v-btn @click.stop="date = date.plus({ month: 1 })" variant="text" icon color="primary">
+                            <template v-if="display.mdAndUp.value">
+                                <v-btn @click.stop="date = date.plus({ month: 1 })" variant="text" icon color="primary">
+                                    <v-icon icon="mdi-chevron-right"></v-icon>
+                                </v-btn>
+                                <v-btn @click.stop="date = date.plus({ year: 1 })" variant="text" icon color="primary">
+                                    <v-icon icon="mdi-chevron-double-right"></v-icon>
+                                </v-btn>
+                            </template>
+                            <v-btn v-else @click.stop="date = date.plus({ week: 1 })" variant="text" icon color="primary">
                                 <v-icon icon="mdi-chevron-right"></v-icon>
-                            </v-btn>
-                            <v-btn @click.stop="date = date.plus({ year: 1 })" variant="text" icon color="primary">
-                                <v-icon icon="mdi-chevron-double-right"></v-icon>
                             </v-btn>
                         </div>
                     </div>
-                    <div style="width: 64px"></div>
+                    <div style="width: 64px" v-if="display.mdAndUp.value"></div>
                 </div>
             </v-card-text>
             <v-divider></v-divider>
-            <v-data-table-virtual
-                fixed-header
-                style="white-space: pre"
-                :style="{ maxHeight: absenceTableHeight }"
-                id="absence-table"
-                :items="
-                    users
-                        .filter(u => filterForm.selected_users.length == 0 || filterForm.selected_users.includes(u.id))
-                        .map(u => ({ ...u, name: u.last_name + ', ' + u.first_name }))
-                        .toSorted((a, b) => a.name.localeCompare(b.name))
-                "
-                :headers="[
-                {
-                    title: 'Name',
-                    key: 'name',
-                },
+            <template v-if="display.mdAndUp.value">
+                <v-data-table-virtual
+                    fixed-header
+                    style="white-space: pre"
+                    :style="{ maxHeight: absenceTableHeight }"
+                    id="absence-table"
+                    :items="
+                        users
+                            .filter(u => filterForm.selected_users.length == 0 || filterForm.selected_users.includes(u.id))
+                            .map(u => ({ ...u, name: u.last_name + ', ' + u.first_name }))
+                            .toSorted((a, b) => a.name.localeCompare(b.name))
+                    "
+                    :headers="[
                     {
-                        title: '',
-                        key: 'action',
-                        width: '48px',
-                        sortable:false
-                    }, 
-                ...getDaysInMonth().map(e => ({
-                    title: e.weekdayShort + '\n' + e.day.toString(),
-                    key: e.day.toString(),
-                    sortable: false,
-                    align: 'center',
-                    width: '44px' ,
-                    headerProps:{ class: {'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate() }}
-                } as const)),
-            ]"
-            >
-                <template v-slot:item="{ item, columns }">
-                    <tr>
-                        <template v-for="header in columns" :key="header.key">
-                            <td v-if="header.key === 'name'">{{ item.name }}</td>
-                            <template v-else-if="header.key === 'action'">
-                                <td v-if="can('absence', 'create', item)">
-                                    <v-btn
-                                        icon="mdi-plus"
-                                        variant="text"
-                                        @click="can('absence', 'create', item) && createAbsenceModal(item.id)"
-                                    ></v-btn>
-                                </td>
-                                <td v-else></td>
+                        title: 'Name',
+                        key: 'name',
+                    },
+                        {
+                            title: '',
+                            key: 'action',
+                            width: '48px',
+                            sortable:false
+                        },
+                    ...getDaysInMonth().map(e => ({
+                        title: e.weekdayShort + '\n' + e.day.toString(),
+                        key: e.day.toString(),
+                        sortable: false,
+                        align: 'center',
+                        width: '44px' ,
+                        headerProps:{ class: {'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate() }}
+                    } as const)),
+                ]"
+                >
+                    <template v-slot:item="{ item, columns }">
+                        <tr>
+                            <template v-for="header in columns" :key="header.key">
+                                <td v-if="header.key === 'name'">{{ item.name }}</td>
+                                <template v-else-if="header.key === 'action'">
+                                    <td v-if="can('absence', 'create', item)">
+                                        <v-btn
+                                            icon="mdi-plus"
+                                            variant="text"
+                                            @click="can('absence', 'create', item) && createAbsenceModal(item.id)"
+                                        ></v-btn>
+                                    </td>
+                                    <td v-else></td>
+                                </template>
+                                <AbsenceTableCell
+                                    v-else
+                                    @click="
+                                        can('absence', 'create', item) &&
+                                            createAbsenceModal(item.id, date.startOf('month').plus({ day: +(header.key ?? 0) - 1 }))
+                                    "
+                                    :holidays="holidays"
+                                    :absenceTypes="absence_types"
+                                    :user="item"
+                                    :date="date.startOf('month').plus({ day: +(header.key ?? 0) - 1 })"
+                                    :entries="currentEntries.filter(a => a.user_id === item.id)"
+                                ></AbsenceTableCell>
                             </template>
-                            <AbsenceTableCell
-                                v-else
-                                @click="
-                                    can('absence', 'create', item) &&
-                                        createAbsenceModal(item.id, date.startOf('month').plus({ day: +(header.key ?? 0) - 1 }))
-                                "
-                                :holidays="holidays"
-                                :absenceTypes="absence_types"
-                                :user="item"
-                                :date="date.startOf('month').plus({ day: +(header.key ?? 0) - 1 })"
-                                :entries="currentEntries.filter(a => a.user_id === item.id)"
-                            ></AbsenceTableCell>
-                        </template>
-                    </tr>
-                </template>
-            </v-data-table-virtual>
+                        </tr>
+                    </template>
+                </v-data-table-virtual>
+            </template>
+            <template v-else>
+                <v-data-table-virtual
+                    fixed-header
+                    style="white-space: pre"
+                    :style="{ maxHeight: absenceTableHeight }"
+                    id="absence-table"
+                    :items="
+                        users
+                            .filter(u => filterForm.selected_users.length == 0 || filterForm.selected_users.includes(u.id))
+                            .map(u => ({ ...u, name: u.first_name.substring(0, 1) + '.' + u.last_name }))
+                            .toSorted((a, b) => a.name.localeCompare(b.name))
+                    "
+                    :headers="[
+                    {
+                        title: 'Name',
+                        key: 'name',
+                        headerProps: {class:'px-sm-4 px-1'}
+                    },
+                    
+                    ...getDaysInWeek().map(e => ({
+                        title: e.weekdayShort + '\n' + e.day.toString(),
+                        key: e.day.toString(),
+                        sortable: false,
+                        align: 'center',
+                        width: '14%' ,
+                        headerProps:{ class: {'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate() }}
+                    } as const)),
+                ]"
+                >
+                    <template v-slot:item="{ item, columns }">
+                        <tr>
+                            <template v-for="header in columns" :key="header.key">
+                                <td
+                                    style="max-width: calc(100vw - 28px * 7); text-overflow: ellipsis; overflow: hidden; white-space: nowrap"
+                                    class="px-sm-4 px-1"
+                                    v-if="header.key === 'name'"
+                                >
+                                    {{ item.name }}
+                                </td>
+                                <AbsenceTableCell
+                                    v-else
+                                    @click="
+                                        can('absence', 'create', item) &&
+                                            createAbsenceModal(item.id, date.startOf('week').plus({ day: +(header.key ?? 0) - 1 }))
+                                    "
+                                    :holidays="holidays"
+                                    :absenceTypes="absence_types"
+                                    :user="item"
+                                    :date="date.startOf('week').plus({ day: +(header.key ?? 0) - 1 })"
+                                    :entries="currentEntries.filter(a => a.user_id === item.id)"
+                                ></AbsenceTableCell>
+                            </template>
+                        </tr>
+                    </template>
+                </v-data-table-virtual>
+            </template>
         </v-card>
     </AdminLayout>
 </template>
