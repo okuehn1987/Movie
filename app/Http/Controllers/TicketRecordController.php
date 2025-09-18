@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
+use App\Models\User;
+use App\Notifications\TicketRecordCreationNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Container\Attributes\CurrentUser;
 
 class TicketRecordController extends Controller
 {
-    public function store(Request $request, Ticket $ticket)
+    public function store(Request $request, Ticket $ticket, #[CurrentUser] User $authUser)
     {
         $validated = $request->validate([
             'start' => 'required|date',
@@ -24,6 +27,11 @@ class TicketRecordController extends Controller
             'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
             'user_id' => Auth::id(),
         ]);
+
+        // TODO: die richtigen Leute notifyen (Britta aka abrechnende Person)
+        $authUser->supervisor->notify(new TicketRecordCreationNotification($authUser, $ticket));
+
+        return back()->with('success', 'Änderungen erfolgreich gespeichert.');
 
         return back()->with('success', 'Eintrag erfolgreich erstellt.');
     }

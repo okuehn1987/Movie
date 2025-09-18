@@ -7,12 +7,17 @@ use App\Models\Organization;
 use App\Models\Ticket;
 use App\Models\TicketRecord;
 use App\Models\User;
+use App\Notifications\TicketCreationNotification;
+use App\Notifications\TicketDeletionNotification;
+use App\Notifications\TicketFinishNotification;
+use App\Notifications\TicketUpdateNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Illuminate\Container\Attributes\CurrentUser;
 
 class TicketController extends Controller
 {
@@ -36,7 +41,7 @@ class TicketController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, #[CurrentUser] User $authUser)
     {
         Gate::authorize('create', Ticket::class);
 
@@ -59,6 +64,7 @@ class TicketController extends Controller
                 'user_id' => Auth::id(),
             ]
         );
+
         $ticket->assignees()->attach($validated['assignees']);
 
         if ($validated["tab"] === "expressTicket") {
@@ -70,11 +76,13 @@ class TicketController extends Controller
             ]);
             $ticket->update(['finished_at' => now()]);
         }
+        // TODO: auch die erstellende Person benachrichtigen?
+        $ticket->assignees->each->notify(new TicketCreationNotification($authUser, $ticket));
 
         return back()->with('success', 'Ticket erfolgreich erstellt.');
     }
 
-    public function update(Request $request, Ticket $ticket)
+    public function update(Request $request, Ticket $ticket, #[CurrentUser] User $authUser)
     {
         Gate::authorize('update', [Ticket::class, $ticket->user]);
 
@@ -95,22 +103,29 @@ class TicketController extends Controller
         $ticket->records()->whereIn('id', $validated['selected'])->update(['accounted_at' => now()]);
         $ticket->update(collect($validated)->except(['selected', 'assignees'])->toArray());
         $ticket->assignees()->sync($validated['assignees']);
+        // TODO: auch die erstellende Person benachrichtigen?
+        $ticket->assignees->each->notify(new TicketCreationNotification($authUser, $ticket));
 
         return back()->with('success', 'Änderungen erfolgreich gespeichert.');
     }
 
-    public function finish(Ticket $ticket)
+    public function finish(Ticket $ticket, #[CurrentUser] User $authUser)
     {
         Gate::authorize('update', [Ticket::class, $ticket->user]);
 
         $ticket->update(['finished_at' => now()]);
 
+        // TODO: die richtigen Leute notifyen (Britta aka abrechnende Person)
+        $authUser->supervisor->notify(new TicketFinishNotification($authUser, $ticket));
+
         return back()->with('success', 'Ticket erfolgreich abgeschlossen.');
     }
 
-    public function destroy(Ticket $ticket)
+    public function destroy(Ticket $ticket, #[CurrentUser] User $authUser)
     {
         Gate::authorize('delete', [Ticket::class, $ticket->user]);
+        // TODO: auch die löschende Person benachrichtigen?
+        $ticket->assignees->each->notify(new TicketCreationNotification($authUser, $ticket));
 
         $ticket->delete();
 
