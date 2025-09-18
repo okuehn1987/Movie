@@ -3,6 +3,8 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
+use App\Models\User;
+use App\Models\Ticket;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -10,13 +12,15 @@ use Illuminate\Notifications\Notification;
 class TicketDeletionNotification extends Notification
 {
     use Queueable;
+    protected $user, $ticket;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    public function __construct(User $user, Ticket $ticket)
     {
-        //
+        $this->user = $user;
+        $this->ticket = $ticket;
     }
 
     /**
@@ -45,10 +49,19 @@ class TicketDeletionNotification extends Notification
      *
      * @return array<string, mixed>
      */
-    public function toArray(object $notifiable): array
+    public function toArray($notifiable): array
     {
         return [
-            //
+            'title' => $this->user->name . ' hat ein Ticket gelöscht.',
+            'ticket_id' => $this->ticket->id,
+            'status' => 'created',
         ];
+    }
+
+    public function getNotificationURL()
+    {
+        return  route('dispute.index', [
+            'openTicket' => $this->ticket->id,
+        ]);
     }
 }

@@ -38,6 +38,27 @@ function openNotification(notification: Notification) {
         url = route('dispute.index', {
             openAbsenceDelete: notification.data.absence_id,
         });
+    else if (notification.type == 'App\\Notifications\\TicketCreationNotification')
+        url = route('ticket.index', {
+            openTicket: notification.data.ticket_id,
+        });
+    else if (notification.type == 'App\\Notifications\\TicketUpdateNotification')
+        url = route('ticket.index', {
+            openTicket: notification.data.ticket_id,
+        });
+    else if (notification.type == 'App\\Notifications\\TicketFinishNotification')
+        url = route('ticket.index', {
+            openTicket: notification.data.ticket_id,
+        });
+    // Was muss hier rein wenn ich nur benachrichtigen möchte aber das Auge nicht angezeigt werden soll?
+    else if (notification.type == 'App\\Notifications\\TicketDeletionNotification')
+        url = route('ticket.index', {
+            openTicket: notification.data.ticket_id,
+        });
+    else if (notification.type == 'App\\Notifications\\TicketRecordCreationNotification')
+        url = route('ticket.index', {
+            openTicket: notification.data.ticket_id,
+        });
     else if (notification.type == 'App\\Notifications\\DisputeStatusNotification') {
         if (notification.data.type == 'delete') return;
         if (notification.data.log_model == 'App\\Models\\Absence') url = route('absence.index', { openAbsence: notification.data.log_id });

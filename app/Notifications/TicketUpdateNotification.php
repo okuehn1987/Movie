@@ -3,6 +3,8 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
+use App\Models\User;
+use App\Models\Ticket;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -10,13 +12,15 @@ use Illuminate\Notifications\Notification;
 class TicketUpdateNotification extends Notification
 {
     use Queueable;
+    protected $user, $ticket;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    public function __construct(User $user, Ticket $ticket)
     {
-        //
+        $this->user = $user;
+        $this->ticket = $ticket;
     }
 
     /**
@@ -45,10 +49,18 @@ class TicketUpdateNotification extends Notification
      *
      * @return array<string, mixed>
      */
-    public function toArray(object $notifiable): array
+    public function toArray($notifiable): array
     {
         return [
-            //
+            'title' => $this->user->name . ' hat ein Ticket Update ausgeführt',
+            'ticket_id' => $this->ticket->id,
         ];
+    }
+
+    public function getNotificationURL()
+    {
+        return  route('ticket.index', [
+            'openTicket' => $this->ticket->id,
+        ]);
     }
 }

@@ -405,6 +405,41 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
               };
           }
         | {
+              type: 'App\\Notifications\\TicketCreationNotification';
+              data: {
+                  title: string;
+                  ticket_id: Ticket['id'];
+              };
+          }
+        | {
+              type: 'App\\Notifications\\TicketUpdateNotification';
+              data: {
+                  title: string;
+                  ticket_id: Ticket['id'];
+              };
+          }
+        | {
+              type: 'App\\Notifications\\TicketDeletionNotification';
+              data: {
+                  title: string;
+                  ticket_id: Ticket['id'];
+              };
+          }
+        | {
+              type: 'App\\Notifications\\TicketFinishNotification';
+              data: {
+                  title: string;
+                  ticket_id: Ticket['id'];
+              };
+          }
+        | {
+              type: 'App\\Notifications\\TicketRecordCreationNotification';
+              data: {
+                  title: string;
+                  ticket_id: Ticket['id'];
+              };
+          }
+        | {
               type: 'App\\Notifications\\DisputeStatusNotification';
               data: {
                   title: string;

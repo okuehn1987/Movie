@@ -103,6 +103,7 @@ class TicketController extends Controller
         $ticket->records()->whereIn('id', $validated['selected'])->update(['accounted_at' => now()]);
         $ticket->update(collect($validated)->except(['selected', 'assignees'])->toArray());
         $ticket->assignees()->sync($validated['assignees']);
+
         // TODO: auch die erstellende Person benachrichtigen?
         $ticket->assignees->each->notify(new TicketCreationNotification($authUser, $ticket));
 
