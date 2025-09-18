@@ -51,7 +51,6 @@ function submit(isActive: Ref<boolean>) {
                     <v-tab class="w-50" value="expressTicket">Einzelauftrag</v-tab>
                 </v-tabs>
                 <v-card-text>
-                    {{ ticketForm.errors }}
                     <v-form @submit.prevent="submit(isActive)">
                         <v-tabs-window v-model="ticketForm.tab">
                             <v-tabs-window-item value="ticket">

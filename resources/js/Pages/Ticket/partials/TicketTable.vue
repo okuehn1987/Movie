@@ -4,6 +4,8 @@ import { CustomerProp, TicketProp, UserProp } from './ticketTypes';
 import TicketShowDialog from './TicketShowDialog.vue';
 import RecordCreateDialog from './RecordCreateDialog.vue';
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
+import { PRIORITIES } from '@/types/types';
+import { ref } from 'vue';
 
 defineProps<{
     tickets: TicketProp[];
@@ -13,6 +15,8 @@ defineProps<{
 }>();
 
 const form = useForm({});
+
+const search = ref('');
 </script>
 <template>
     <v-card>
@@ -21,10 +25,10 @@ const form = useForm({});
             :headers="[
                 { title: 'Titel', key: 'title' },
                 { title: 'Kunde', key: 'customer.name' },
-                { title: 'Priorität', key: 'priority' },
+                { title: 'Priorität', key: 'priorityText' },
                 { title: 'Erstellt von', key: 'user.name' },
                 { title: 'Zugewiesen an', key: 'assigneeName' },
-                { title: '', key: 'actions', align: 'end' },
+                { title: '', key: 'actions', align: 'end', sortable: false },
             ]"
             :items="
                 tickets.map(t => {
@@ -37,17 +41,30 @@ const form = useForm({});
                     return {
                         ...t,
                         user: { ...t.user, name: t.user.first_name + ' ' + t.user.last_name },
-                        assigneeName: assignee
+                        assigneeName: assignee,
+                        priorityText:  PRIORITIES.find(p => p.value === t.priority)?.title,
+                        priorityValue: PRIORITIES.find(p=>p.value === t.priority)?.priorityValue,
                     };
+                }).filter(t => {
+                    const searchString = search.replace(/\W/gi,'').toLowerCase();
+                    const ticketValue = (t.title+t.customer.name+t.user.name+t.assigneeName+t.priorityText).toLowerCase().replace(/\W/gi,'')
+                    return ticketValue.includes(searchString)
                 })
             "
             hover
         >
             <template v-slot:header.actions>
-                <TicketCreateDialog v-if="tab === 'newTickets'" :customers="customers" :users="users" />
+                <div class="d-flex ga-2 align-center">
+                    <v-text-field v-model="search" placeholder="Suche" variant="outlined" density="compact" hide-details></v-text-field>
+                    <TicketCreateDialog v-if="tab === 'newTickets'" :customers="customers" :users="users" />
+                </div>
             </template>
-            <template v-slot:item.priority="{ item }">
-                {{ item.priority }}
+            <template v-slot:item.priorityText="{ item }">
+                {{ PRIORITIES.find(p => p.value === item.priority)?.title }}
+                <v-icon
+                    :icon="PRIORITIES.find(p => p.value === item.priority)?.icon"
+                    :color="PRIORITIES.find(p => p.value === item.priority)?.color"
+                ></v-icon>
             </template>
             <template v-slot:item.assigneeName="{ item }">
                 {{ item.assigneeName }}
