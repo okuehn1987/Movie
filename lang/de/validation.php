@@ -206,6 +206,13 @@ return [
         'set_name' => 'Filtername',
         'extra_charge' => 'Faktor Zuschlag',
         'customer_id' => 'Kunde',
+        'tab' => 'Auswahl'
     ],
+
+    'values' => [
+        'tab' => [
+            'expressTicket' => 'Einzelauftrag'
+        ]
+    ]
 
 ];

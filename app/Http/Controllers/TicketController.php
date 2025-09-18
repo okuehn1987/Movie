@@ -51,10 +51,7 @@ class TicketController extends Controller
             'start' => 'nullable|required_if:tab,expressTicket|date',
             'duration' => 'nullable|required_if:tab,expressTicket|date_format:H:i',
             'resources' => 'nullable|string',
-        ], [
-            'start' => 'Startzeit ist erforderlich, wenn es ein Einzelauftrag ist',
-            'duration' => 'Auftragsdauer ist erforderlich, wenn es ein Einzelauftrag ist'
-        ]);
+        ],);
 
         $ticket = Ticket::create(
             [
