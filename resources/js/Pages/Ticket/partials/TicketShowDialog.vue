@@ -110,10 +110,20 @@ const selectedDurationSum = computed(() =>
                                 ></v-autocomplete>
                             </v-col>
                             <v-col cols="12">
-                                <v-text-field label="Betreff" v-model="form.title" :disabled="tab !== 'newTickets'"></v-text-field>
+                                <v-text-field
+                                    label="Betreff"
+                                    v-model="form.title"
+                                    :disabled="tab !== 'newTickets'"
+                                    :error-messages="form.errors.title"
+                                ></v-text-field>
                             </v-col>
                             <v-col cols="12">
-                                <v-text-field label="Beschreibung" v-model="form.description" :disabled="tab !== 'newTickets'"></v-text-field>
+                                <v-text-field
+                                    label="Beschreibung"
+                                    v-model="form.description"
+                                    :disabled="tab !== 'newTickets'"
+                                    :error-messages="form.errors.description"
+                                ></v-text-field>
                             </v-col>
                             <template v-if="hasRecords">
                                 <v-data-table-virtual
