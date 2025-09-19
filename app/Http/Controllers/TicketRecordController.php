@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
+use App\Models\TicketRecord;
 use App\Models\User;
 use App\Notifications\TicketRecordCreationNotification;
 use Carbon\Carbon;
@@ -34,8 +35,29 @@ class TicketRecordController extends Controller
         // TODO: die richtigen Leute notifyen  (Britta aka abrechnende Person)
         $authUser->supervisor?->notify(new TicketRecordCreationNotification($authUser, $ticket->records));
 
-        return back()->with('success', 'Änderungen erfolgreich gespeichert.');
-
         return back()->with('success', 'Eintrag erfolgreich erstellt.');
+    }
+
+    public function update(Request $request, TicketRecord $record, #[CurrentUser] User $authUser)
+    {
+        Gate::authorize('update', $record);
+
+        $validated = $request->validate([
+            'start' => 'required|date',
+            'duration' => 'required|date_format:H:i',
+            'description' => 'required|string',
+            'resources' => 'nullable|string',
+        ]);
+
+        $record->update([
+            ...$validated,
+            'start' => Carbon::parse($validated['start']),
+            'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
+        ]);
+
+        // TODO: die richtigen Leute notifyen  (Britta aka abrechnende Person)
+        $authUser->supervisor?->notify(new TicketRecordCreationNotification($authUser, $record));
+
+        return back()->with('success', 'Eintrag erfolgreich bearbeitet.');
     }
 }

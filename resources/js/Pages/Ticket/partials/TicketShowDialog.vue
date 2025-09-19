@@ -4,6 +4,7 @@ import { formatDuration } from '@/utils';
 import { DateTime } from 'luxon';
 import { computed, ref, watchEffect } from 'vue';
 import { CustomerProp, TicketProp, UserProp } from './ticketTypes';
+import RecordCreateDialog from './RecordCreateDialog.vue';
 
 const props = defineProps<{
     ticket: TicketProp;
@@ -134,18 +135,28 @@ const selectedDurationSum = computed(() =>
                                         { title: 'Start', key: 'start' },
                                         { title: 'Auftragsdauer', key: 'duration' },
                                         { title: 'Erstellt von', key: 'userName' },
+                                        { title: '', key: 'actions', width: '1px', sortable: false },
                                     ]"
                                     :items="
                                         ticket.records.map(r => ({
                                             ...r,
-                                            duration: formatDuration(r.duration, 'minutes', 'duration'),
-                                            start: DateTime.fromSQL(r.start).toFormat('dd.MM.yyyy HH:mm'),
                                             userName: r.user.first_name + ' ' + r.user.last_name,
                                         }))
                                     "
                                     show-expand
                                     :show-select="tab !== 'archive'"
                                 >
+                                    <template v-slot:item.start="{ item }">
+                                        {{ DateTime.fromSQL(item.start).toFormat('dd.MM.yyyy HH:mm') }}
+                                    </template>
+
+                                    <template v-slot:item.duration="{ item }">
+                                        {{ formatDuration(item.duration, 'minutes', 'duration') }}
+                                    </template>
+
+                                    <template v-slot:item.actions="{ item }">
+                                        <RecordCreateDialog :ticket="ticket" :users="users" :record="item" mode="update"></RecordCreateDialog>
+                                    </template>
                                     <template v-slot:item.data-table-expand="{ internalItem, isExpanded, toggleExpand }">
                                         <v-btn size="small" variant="text" border @click="toggleExpand(internalItem)">
                                             <v-icon :icon="isExpanded(internalItem) ? 'mdi-chevron-up' : 'mdi-chevron-down'"></v-icon>
