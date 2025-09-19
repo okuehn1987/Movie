@@ -171,7 +171,7 @@ const display = useDisplay();
                             </v-btn>
                         </div>
                         <h2 class="mx-md-4 text-center" :style="{ minWidth: display.mdAndUp.value ? '170px' : '110px' }">
-                            {{ date.toFormat('MMM' + (display.smAndUp.value ? 'M' : '') + ' yyyy') }} {{ date }}
+                            {{ date.toFormat('MMM' + (display.smAndUp.value ? 'M' : '') + ' yyyy') }}
                             <v-progress-linear v-if="loading" indeterminate></v-progress-linear>
                         </h2>
                         <div class="d-flex">
@@ -192,126 +192,75 @@ const display = useDisplay();
                 </div>
             </v-card-text>
             <v-divider></v-divider>
-            <template v-if="display.mdAndUp.value">
-                <v-data-table-virtual
-                    fixed-header
-                    style="white-space: pre"
-                    :style="{ maxHeight: absenceTableHeight }"
-                    id="absence-table"
-                    :items="
-                        users
-                            .filter(u => filterForm.selected_users.length == 0 || filterForm.selected_users.includes(u.id))
-                            .map(u => ({ ...u, name: u.last_name + ', ' + u.first_name }))
-                            .toSorted((a, b) => a.name.localeCompare(b.name))
-                    "
-                    :headers="[
-                    {
-                        title: 'Name',
-                        key: 'name',
-                    },
-                        {
-                            title: '',
-                            key: 'action',
-                            width: '48px',
-                            sortable:false
-                        },
-                    ...getDaysInMonth().map(e => ({
-                        title: e.weekdayShort + '\n' + e.day.toString(),
-                        key: e.day.toString(),
-                        sortable: false,
-                        align: 'center',
-                        width: '44px' ,
-                        headerProps:{ class: {'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate() }}
-                    } as const)),
-                ]"
-                >
-                    <template v-slot:item="{ item, columns }">
-                        <tr>
-                            <template v-for="header in columns" :key="header.key">
-                                <td v-if="header.key === 'name'">{{ item.name }}</td>
-                                <template v-else-if="header.key === 'action'">
-                                    <td v-if="can('absence', 'create', item)">
-                                        <v-btn
-                                            icon="mdi-plus"
-                                            variant="text"
-                                            @click="can('absence', 'create', item) && createAbsenceModal(item.id)"
-                                        ></v-btn>
-                                    </td>
-                                    <td v-else></td>
-                                </template>
-                                <AbsenceTableCell
-                                    v-else
-                                    @click="
-                                        can('absence', 'create', item) &&
-                                            createAbsenceModal(item.id, date.startOf('month').plus({ day: +(header.key ?? 0) - 1 }))
-                                    "
-                                    :holidays="holidays"
-                                    :absenceTypes="absence_types"
-                                    :user="item"
-                                    :date="date.startOf('month').plus({ day: +(header.key ?? 0) - 1 })"
-                                    :entries="currentEntries.filter(a => a.user_id === item.id)"
-                                ></AbsenceTableCell>
-                            </template>
-                        </tr>
-                    </template>
-                </v-data-table-virtual>
-            </template>
-            <template v-else>
-                <v-data-table-virtual
-                    fixed-header
-                    style="white-space: pre"
-                    :style="{ maxHeight: absenceTableHeight }"
-                    id="absence-table"
-                    :items="
-                        users
-                            .filter(u => filterForm.selected_users.length == 0 || filterForm.selected_users.includes(u.id))
-                            .map(u => ({ ...u, name: u.first_name.substring(0, 1) + '.' + u.last_name }))
-                            .toSorted((a, b) => a.name.localeCompare(b.name))
-                    "
-                    :headers="[
+            <v-data-table-virtual
+                fixed-header
+                style="white-space: pre"
+                :style="{ maxHeight: absenceTableHeight }"
+                id="absence-table"
+                :items="
+                    users
+                        .filter(u => filterForm.selected_users.length == 0 || filterForm.selected_users.includes(u.id))
+                        .map(u => ({
+                            ...u,
+                            name: display.mdAndUp.value ? u.last_name + ', ' + u.first_name : u.first_name.substring(0, 1) + '.' + u.last_name,
+                        }))
+                        .toSorted((a, b) => a.last_name.localeCompare(b.last_name))
+                "
+                :headers="[
                     {
                         title: 'Name',
                         key: 'name',
                         headerProps: {class:'px-sm-4 px-1'}
                     },
-                    
-                    ...getDaysInWeek().map(e => ({
+                  ...( display.mdAndUp.value?  [  {
+                            title: '',
+                            key: 'action',
+                            width: '48px',
+                            sortable:false
+                        }]: []),
+                    ...(display.mdAndUp.value ? getDaysInMonth() :getDaysInWeek()).map(e => ({
                         title: e.weekdayShort + '\n' + e.day.toString(),
-                        key: e.day.toString(),
+                        key: e.toString(),
                         sortable: false,
                         align: 'center',
-                        width: '14%' ,
+                        width: display.mdAndUp.value?'44px': '14%' ,
                         headerProps:{ class: {'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate() }}
                     } as const)),
                 ]"
-                >
-                    <template v-slot:item="{ item, columns }">
-                        <tr>
-                            <template v-for="header in columns" :key="header.key">
-                                <td
-                                    style="max-width: calc(100vw - 28px * 7); text-overflow: ellipsis; overflow: hidden; white-space: nowrap"
-                                    class="px-sm-4 px-1"
-                                    v-if="header.key === 'name'"
-                                >
-                                    {{ item.name }}
+            >
+                <template v-slot:item="{ item, columns }">
+                    <tr>
+                        <template v-for="header in columns" :key="header.key">
+                            <td
+                                style="max-width: calc(100vw - 28px * 7); text-overflow: ellipsis; overflow: hidden; white-space: nowrap"
+                                class="px-sm-4 px-1"
+                                v-if="header.key === 'name'"
+                            >
+                                {{ item.name }}
+                            </td>
+                            <template v-else-if="header.key === 'action'">
+                                <td v-if="can('absence', 'create', item)">
+                                    <v-btn
+                                        icon="mdi-plus"
+                                        variant="text"
+                                        @click="can('absence', 'create', item) && createAbsenceModal(item.id)"
+                                    ></v-btn>
                                 </td>
-                                <AbsenceTableCell
-                                    v-else
-                                    @click="
-                                        can('absence', 'create', item) &&
-                                            createAbsenceModal(item.id, date.startOf('week').plus({ day: +(header.key ?? 0) - 1 }))
-                                    "
-                                    :holidays="holidays"
-                                    :absenceTypes="absence_types"
-                                    :user="item"
-                                    :date="date.startOf('week').plus({ day: +(header.key ?? 0) - 1 })"
-                                    :entries="currentEntries.filter(a => a.user_id === item.id)"
-                                ></AbsenceTableCell>
+                                <td v-else></td>
                             </template>
-                        </tr>
-                    </template>
-                </v-data-table-virtual>
-            </template>
+                            <AbsenceTableCell
+                                v-else
+                                @click="can('absence', 'create', item) && createAbsenceModal(item.id, DateTime.fromISO(header.key!))"
+                                :holidays="holidays"
+                                :absenceTypes="absence_types"
+                                :user="item"
+                                :date="DateTime.fromISO(header.key!)"
+                                :entries="currentEntries.filter(a => a.user_id === item.id)"
+                            ></AbsenceTableCell>
+                        </template>
+                    </tr>
+                </template>
+            </v-data-table-virtual>
         </v-card>
     </AdminLayout>
 </template>
