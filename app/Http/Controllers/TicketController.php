@@ -76,7 +76,6 @@ class TicketController extends Controller
             ]);
             $ticket->update(['finished_at' => now()]);
         }
-        // TODO: auch die erstellende Person benachrichtigen?
         $ticket->assignees->each->notify(new TicketCreationNotification($authUser, $ticket));
 
         return back()->with('success', 'Ticket erfolgreich erstellt.');
@@ -104,8 +103,7 @@ class TicketController extends Controller
         $ticket->update(collect($validated)->except(['selected', 'assignees'])->toArray());
         $ticket->assignees()->sync($validated['assignees']);
 
-        // TODO: auch die erstellende Person benachrichtigen?
-        $ticket->assignees->each->notify(new TicketCreationNotification($authUser, $ticket));
+        $ticket->assignees->each->notify(new TicketUpdateNotification($authUser, $ticket));
 
         return back()->with('success', 'Änderungen erfolgreich gespeichert.');
     }
@@ -117,7 +115,7 @@ class TicketController extends Controller
         $ticket->update(['finished_at' => now()]);
 
         // TODO: die richtigen Leute notifyen (Britta aka abrechnende Person)
-        $authUser->supervisor->notify(new TicketFinishNotification($authUser, $ticket));
+        $authUser->supervisor?->notify(new TicketFinishNotification($authUser, $ticket));
 
         return back()->with('success', 'Ticket erfolgreich abgeschlossen.');
     }
@@ -125,8 +123,8 @@ class TicketController extends Controller
     public function destroy(Ticket $ticket, #[CurrentUser] User $authUser)
     {
         Gate::authorize('delete', [Ticket::class, $ticket->user]);
-        // TODO: auch die löschende Person benachrichtigen?
-        $ticket->assignees->each->notify(new TicketCreationNotification($authUser, $ticket));
+
+        $ticket->assignees->each->notify(new TicketDeletionNotification($authUser, $ticket));
 
         $ticket->delete();
 

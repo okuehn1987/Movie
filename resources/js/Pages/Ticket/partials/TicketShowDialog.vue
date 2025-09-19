@@ -2,7 +2,7 @@
 import { PRIORITIES, User } from '@/types/types';
 import { formatDuration } from '@/utils';
 import { DateTime } from 'luxon';
-import { computed, watchEffect } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 import { CustomerProp, TicketProp, UserProp } from './ticketTypes';
 
 const props = defineProps<{
@@ -31,6 +31,8 @@ watchEffect(() => {
     form.reset();
 });
 
+const showDialog = ref(Number(route().params['openTicket']) == props.ticket.id);
+
 const hasRecords = computed(() => props.ticket.records.length > 0);
 
 const durationSum = computed(() => props.ticket.records.reduce((a, c) => a + c.duration, 0));
@@ -40,7 +42,7 @@ const selectedDurationSum = computed(() =>
 );
 </script>
 <template>
-    <v-dialog max-width="1000px" height="800px">
+    <v-dialog max-width="1000px" height="800px" v-model="showDialog">
         <template #activator="{ props: activatorProps }">
             <v-btn title="Auftrag anzeigen" v-bind="activatorProps" icon variant="text">
                 <v-icon icon="mdi-eye"></v-icon>

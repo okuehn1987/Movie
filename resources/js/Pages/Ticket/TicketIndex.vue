@@ -4,7 +4,7 @@ import { ref } from 'vue';
 import TicketTable from './partials/TicketTable.vue';
 import { CustomerProp, TicketProp, UserProp } from './partials/ticketTypes';
 
-defineProps<{
+const props = defineProps<{
     tickets: TicketProp[];
     archiveTickets: TicketProp[];
     customers: CustomerProp[];
@@ -12,7 +12,13 @@ defineProps<{
     tab: 'archive' | 'finishedTickets' | 'newTickets';
 }>();
 
-const tab = ref('newTickets');
+const tab = ref(
+    props.archiveTickets.find(t => t.id === Number(route().params['openTicket']))
+        ? 'archive'
+        : props.tickets.find(t => t.finished_at !== null && t.id === Number(route().params['openTicket']))
+        ? 'finishedTickets'
+        : 'newTickets',
+);
 </script>
 <template>
     <AdminLayout title="Tickets">

@@ -29,7 +29,7 @@ class TicketRecordController extends Controller
         ]);
 
         // TODO: die richtigen Leute notifyen  (Britta aka abrechnende Person)
-        // $authUser->supervisor->notify(new TicketRecordCreationNotification($authUser, $ticket->records));
+        $authUser->supervisor?->notify(new TicketRecordCreationNotification($authUser, $ticket->records));
 
         return back()->with('success', 'Änderungen erfolgreich gespeichert.');
 
