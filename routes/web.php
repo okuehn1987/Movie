@@ -88,7 +88,6 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     });
 });
 
-
 Route::get('/webmanifest', [ManifestController::class, 'getOrganizationManifest']);
 
 require __DIR__ . '/auth.php';
