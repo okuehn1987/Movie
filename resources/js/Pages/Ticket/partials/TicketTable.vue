@@ -109,6 +109,7 @@ const search = ref('');
                 <RecordCreateDialog v-if="tab === 'newTickets'" :ticket="item" :users="users" mode="create" />
                 <TicketShowDialog :ticket="item" :customers="customers" :users="users" :tab />
                 <ConfirmDelete
+                    v-if="tab === 'newTickets'"
                     content="Möchtest du dieses Ticket löschen?"
                     title="Löschen"
                     :route="route('ticket.destroy', { ticket: item.id })"
