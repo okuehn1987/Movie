@@ -71,7 +71,7 @@ watch(
             <div class="d-flex align-center mr-auto ga-2">
                 <span
                     class="text-h6 ps-0 mx-md-5 px-2 mb-0"
-                    style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: calc(100vw - 72px - 72px - 52px)"
+                    style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap; "
                     :style="{
                         maxWidth: $page.props.unreadNotifications.length > 0 ? 'calc(100vw - 72px - 72px - 52px)' : 'calc(100vw -  72px - 52px)',
                     }"
