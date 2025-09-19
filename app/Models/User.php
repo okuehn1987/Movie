@@ -640,7 +640,8 @@ class User extends Authenticatable
                     ->where('status', 'accepted')
                     ->get()
                     ->map(fn($a) => $a->currentAcceptedPatch ?? $a)
-                    ->where('end', '>=', now());
+                    ->filter(fn($a) => Carbon::parse($a->start) <= now()->startOfDay() && Carbon::parse($a->end) >= now()->startOfDay())
+                    ->values();
 
                 $lastDay = null;
                 $absenceTypes = collect();
