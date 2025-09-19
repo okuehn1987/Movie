@@ -9,11 +9,14 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Container\Attributes\CurrentUser;
+use Illuminate\Support\Facades\Gate;
 
 class TicketRecordController extends Controller
 {
     public function store(Request $request, Ticket $ticket, #[CurrentUser] User $authUser)
     {
+        Gate::authorize('publicAuth', User::class);
+
         $validated = $request->validate([
             'start' => 'required|date',
             'duration' => 'required|date_format:H:i',
