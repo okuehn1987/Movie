@@ -4,8 +4,9 @@ import { CustomerProp, TicketProp, UserProp } from './ticketTypes';
 import TicketShowDialog from './TicketShowDialog.vue';
 import RecordCreateDialog from './RecordCreateDialog.vue';
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
-import { PRIORITIES } from '@/types/types';
+import { PRIORITIES, TicketRecord } from '@/types/types';
 import { ref } from 'vue';
+import { DateTime } from 'luxon';
 
 defineProps<{
     tickets: TicketProp[];
@@ -17,6 +18,20 @@ defineProps<{
 const form = useForm({});
 
 const search = ref('');
+
+function getAccountedAt(records: TicketRecord[]) {
+    const sortedRecords = records.sort((a, b) => {
+        if (!a.accounted_at) return 1;
+        if (!b.accounted_at) return -1;
+        return b.accounted_at.localeCompare(a.accounted_at);
+    });
+    if (!sortedRecords[0]) return '-';
+
+    const date = DateTime.fromSQL(sortedRecords[0].accounted_at ?? '');
+
+    if (date.isValid) return date.toFormat('dd.MM.yyyy HH:mm');
+    return '-';
+}
 </script>
 <template>
     <v-card>
@@ -28,6 +43,7 @@ const search = ref('');
                 { title: 'Priorität', key: 'priorityText' },
                 { title: 'Erstellt von', key: 'user.name' },
                 { title: 'Zugewiesen an', key: 'assigneeName' },
+                ...(tab === 'archive' ? [{ title: 'Abgerechnet am', key: 'accounted_at' }] : []),
                 { title: '', key: 'actions', align: 'end', sortable: false },
             ]"
             :items="
@@ -68,6 +84,9 @@ const search = ref('');
             </template>
             <template v-slot:item.assigneeName="{ item }">
                 {{ item.assigneeName }}
+            </template>
+            <template v-slot:item.accounted_at="{ item }">
+                {{ getAccountedAt(item.records) }}
             </template>
             <template v-slot:item.actions="{ item }">
                 <v-dialog v-if="tab === 'newTickets'" max-width="1000">

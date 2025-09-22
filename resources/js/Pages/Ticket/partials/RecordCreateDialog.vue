@@ -54,7 +54,6 @@ function submit() {
                 </template>
                 <v-divider></v-divider>
                 <v-card-text>
-                    <!-- , (isActive.value = false), recordForm.reset() -->
                     <v-form @submit.prevent="submit">
                         <v-row>
                             <v-col cols="12" md="6">
