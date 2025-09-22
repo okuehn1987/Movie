@@ -51,7 +51,7 @@ class TicketController extends Controller
             'start' => 'nullable|required_if:tab,expressTicket|date',
             'duration' => 'nullable|required_if:tab,expressTicket|date_format:H:i',
             'resources' => 'nullable|string',
-        ],);
+        ]);
 
         $ticket = Ticket::create(
             [
