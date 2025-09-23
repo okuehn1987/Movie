@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('parent_id')->nullable()->constrained('customer_notes')->onDelete('cascade');
             $table->string('type');
             $table->string('key');
-            $table->string('value');
+            $table->string('value')->nullable();
             $table->timestamps();
         });
     }

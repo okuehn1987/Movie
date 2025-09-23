@@ -19,7 +19,7 @@ class CustomerNoteController extends Controller
         $validated = $request->validate([
             'type' => 'required|in:primitive,complex,file',
             'key' => 'required|string',
-            'value' => 'nullable|required_if:type,primitive,complex|string',
+            'value' => 'nullable|required_if:type,primitive|string',
             'parent_id' => 'nullable|exists:customer_notes,id',
             'file' => 'nullable|required_if:type,file|file',
         ]);
@@ -58,16 +58,14 @@ class CustomerNoteController extends Controller
         ]);
 
         if ($customerNote->type == 'file') {
-            $path = $validated['file'] ? Storage::disk('customer_note_files')->putFile($validated['file']) : null;
+            $path = array_key_exists('file', $validated) && $validated['file'] ? Storage::disk('customer_note_files')->putFile($validated['file']) : null;
 
             if ($customerNote->value && $path)
                 Storage::disk('customer_note_files')->delete($customerNote->value);
-            else
-                $path = $path ?? null;
 
             $customerNote->update([
                 'key' => $validated['key'],
-                'value' => $path,
+                ...(array_key_exists('file', $validated) && $validated['file'] ? ['value' =>  $path] : []),
             ]);
         } else {
             $customerNote->update([
@@ -83,6 +81,7 @@ class CustomerNoteController extends Controller
     {
         Gate::authorize('publicAuth', User::class);
 
+        Storage::disk('customer_note_files')->delete($customerNote->value);
         $customerNote->delete();
 
         return back()->with('success', 'Notiz erfolgreich gelöscht');
