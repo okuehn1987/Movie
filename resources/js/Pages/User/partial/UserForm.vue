@@ -698,7 +698,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             label="Kündigungsdatum"
                             :min="DateTime.now().toFormat('yyyy-MM-dd')"
                             v-model="userForm.resignation_date"
-                            :disabled="!!userForm.resignation_date && DateTime.now().toFormat('yyyy-MM-dd') >= userForm.resignation_date"
+                            :disabled="!!userForm.resignation_date && DateTime.now().toFormat('yyyy-MM-dd') > userForm.resignation_date"
                             :error-messages="userForm.errors.resignation_date"
                             clearable
                         ></v-text-field>
