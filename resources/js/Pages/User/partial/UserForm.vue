@@ -46,7 +46,7 @@ const userForm = useForm({
     first_name: '',
     last_name: '',
     email: '',
-    date_of_birth: null as null | string,
+    date_of_birth: '' as null | string,
     city: '',
     zip: '',
     street: '',
@@ -62,7 +62,7 @@ const userForm = useForm({
     operating_site_id: null as null | OperatingSite['id'],
     supervisor_id: null as null | User['id'],
     is_supervisor: false,
-    resignation_date: null as null | DateString,
+    resignation_date: '' as null | DateString,
     home_office: false,
     home_office_hours_per_week: null as null | number, //TODO: check if we need active_since
     use_time_balance_traffic_light: false,
