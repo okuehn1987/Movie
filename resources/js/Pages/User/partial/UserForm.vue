@@ -46,7 +46,7 @@ const userForm = useForm({
     first_name: '',
     last_name: '',
     email: '',
-    date_of_birth: null as null | string,
+    date_of_birth: '' as null | string,
     city: '',
     zip: '',
     street: '',
@@ -62,7 +62,7 @@ const userForm = useForm({
     operating_site_id: null as null | OperatingSite['id'],
     supervisor_id: null as null | User['id'],
     is_supervisor: false,
-    resignation_date: null as null | DateString,
+    resignation_date: '' as null | DateString,
     home_office: false,
     home_office_hours_per_week: null as null | number, //TODO: check if we need active_since
     use_time_balance_traffic_light: false,
@@ -696,9 +696,9 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                         <v-text-field
                             type="date"
                             label="Kündigungsdatum"
-                            :min="DateTime.now().plus({ day: 1 }).toFormat('yyyy-MM-dd')"
+                            :min="DateTime.now().toFormat('yyyy-MM-dd')"
                             v-model="userForm.resignation_date"
-                            :disabled="!!userForm.resignation_date && DateTime.now().toFormat('yyyy-MM-dd') >= userForm.resignation_date"
+                            :disabled="!!userForm.resignation_date && DateTime.now().toFormat('yyyy-MM-dd') > userForm.resignation_date"
                             :error-messages="userForm.errors.resignation_date"
                             clearable
                         ></v-text-field>
