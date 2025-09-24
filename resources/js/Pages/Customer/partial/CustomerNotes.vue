@@ -35,14 +35,14 @@ const noteTree = computed(() => {
 const editNoteForm = useForm({
     noteId: null as CustomerNote['id'] | null,
     key: null as string | null,
-    value: '',
+    value: '' as string | null,
     file: null as File | null,
 });
 
 const createNoteForm = useForm({
     type: null as string | null,
     key: null,
-    value: '',
+    value: '' as string | null,
     parent_id: null as CustomerNote['id'] | null,
     file: null as File | null,
 });
@@ -124,7 +124,7 @@ function editNote(note: CustomerNote) {
                                             :error-messages="createNoteForm.errors.key"
                                         ></v-text-field>
                                     </v-col>
-                                    <v-col cols="12" v-if="createNoteForm.type != 'file'">
+                                    <v-col cols="12" v-if="createNoteForm.type == 'primitive'">
                                         <v-text-field
                                             label="Inhalt"
                                             v-model="createNoteForm.value"
@@ -193,7 +193,7 @@ function editNote(note: CustomerNote) {
                                         <v-text-field variant="outlined" hide-details v-model="editNoteForm.key"></v-text-field>
                                     </v-col>
                                     <v-col cols="12" class="text-end">
-                                        <v-btn type="submit" color="primary" class="me-2"><v-icon>mdi-close</v-icon></v-btn>
+                                        <v-btn @click="mode = 'show'" color="primary" class="me-2"><v-icon>mdi-close</v-icon></v-btn>
                                         <v-btn type="submit" color="primary"><v-icon>mdi-content-save</v-icon></v-btn>
                                     </v-col>
                                 </v-row>
@@ -206,8 +206,9 @@ function editNote(note: CustomerNote) {
                                     <v-col cols="12" md="10">
                                         <v-textarea rows="1" variant="outlined" hide-details v-model="editNoteForm.value" auto-grow></v-textarea>
                                     </v-col>
-                                    <v-col cols="12" class="justify-end d-flex">
-                                        <v-btn type="submit" color="primary">Speichern</v-btn>
+                                    <v-col cols="12" class="text-end">
+                                        <v-btn @click="mode = 'show'" color="primary" class="me-2"><v-icon>mdi-close</v-icon></v-btn>
+                                        <v-btn type="submit" color="primary"><v-icon>mdi-content-save</v-icon></v-btn>
                                     </v-col>
                                 </v-row>
                             </template>
@@ -223,8 +224,9 @@ function editNote(note: CustomerNote) {
                                             :error-messages="createNoteForm.errors.file"
                                         ></v-file-input>
                                     </v-col>
-                                    <v-col cols="12" class="justify-end d-flex">
-                                        <v-btn type="submit" color="primary">Speichern</v-btn>
+                                    <v-col cols="12" class="text-end">
+                                        <v-btn @click="mode = 'show'" color="primary" class="me-2"><v-icon>mdi-close</v-icon></v-btn>
+                                        <v-btn type="submit" color="primary"><v-icon>mdi-content-save</v-icon></v-btn>
                                     </v-col>
                                 </v-row>
                             </template>
@@ -275,7 +277,15 @@ function editNote(note: CustomerNote) {
                     <ConfirmDelete
                         title="Notiz löschen"
                         :route="route('customerNote.destroy', { customerNote: item.id })"
-                        content="test"
+                        :content="
+                            'Möchtest du ' +
+                            (item.type == 'primitive'
+                                ? `die Notiz '${item.key}'`
+                                : item.type == 'complex'
+                                ? `den Ordner '${item.key}' mit all seinen Inhalten`
+                                : `deine hochgeladene Datei '${item.key}'`) +
+                            ' wirklich löschen?'
+                        "
                     ></ConfirmDelete>
                 </div>
             </template>
