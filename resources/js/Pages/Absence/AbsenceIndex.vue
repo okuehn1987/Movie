@@ -171,7 +171,10 @@ const display = useDisplay();
                             </v-btn>
                         </div>
                         <h2 class="mx-md-4 text-center" :style="{ minWidth: display.mdAndUp.value ? '170px' : '110px' }">
-                            {{ date.toFormat('MMM' + (display.smAndUp.value ? 'M' : '') + ' yyyy') }}
+                            <template v-if="display.smAndUp.value">{{ date.toFormat('MMMM yyyy') }}</template>
+                            <template v-else>
+                                {{ date.startOf('week').toFormat('dd.MM.yyyy') }} - {{ date.endOf('week').toFormat('dd.MM.yyyy') }}
+                            </template>
                             <v-progress-linear v-if="loading" indeterminate></v-progress-linear>
                         </h2>
                         <div class="d-flex">
