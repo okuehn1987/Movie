@@ -121,7 +121,7 @@ const requiresApproval = computed(() => {
                                     </v-col>
                                     <v-col cols="12" md="6">
                                         <div>
-                                            {{ currentUser.usedLeaveDaysForYear ? currentUser.usedLeaveDaysForYear : '0' }} von
+                                            {{ currentUser.usedLeaveDaysForYear ?? '0' }} von
                                             {{ currentUser.leaveDaysForYear }}
                                         </div>
                                     </v-col>
