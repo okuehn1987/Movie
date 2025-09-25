@@ -149,13 +149,7 @@ const display = useDisplay();
         <v-card>
             <v-card-text>
                 <div class="d-flex justify-space-between align-center w-100">
-                    <AbsenceFilter
-                        v-if="display.mdAndUp.value"
-                        :absence_types
-                        :users
-                        :user_absence_filters
-                        v-model:filterForm="filterForm"
-                    ></AbsenceFilter>
+                    <AbsenceFilter :absence_types :users :user_absence_filters v-model:filterForm="filterForm"></AbsenceFilter>
                     <div class="d-flex justify-center align-center w-100">
                         <div class="d-flex">
                             <template v-if="display.mdAndUp.value">
