@@ -58,6 +58,7 @@ function withdrawRequest() {
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>
+                <v-divider></v-divider>
                 <v-card-text>
                     <v-form readonly>
                         <v-row>

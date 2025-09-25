@@ -64,17 +64,13 @@ function resetFilterForm() {
             <v-btn v-bind="activatorProps" variant="flat" color="primary"><v-icon>mdi-filter</v-icon></v-btn>
         </template>
         <template #default="{ isActive }">
-            <v-card>
-                <template #title>
-                    <div class="d-flex justify-space-between align-center w-100">
-                        <span>Abwesenheiten filtern</span>
-                    </div>
-                </template>
+            <v-card title="Abwesenheiten filtern">
                 <template #append>
                     <v-btn icon variant="text" @click="isActive.value = false">
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>
+                <v-divider></v-divider>
                 <v-card-text>
                     <v-form @submit.prevent="submit()">
                         <v-combobox
