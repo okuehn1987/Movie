@@ -38,9 +38,9 @@ class TicketRecordController extends Controller
         return back()->with('success', 'Eintrag erfolgreich erstellt.');
     }
 
-    public function update(Request $request, TicketRecord $record, #[CurrentUser] User $authUser)
+    public function update(Request $request, TicketRecord $ticketRecord, #[CurrentUser] User $authUser)
     {
-        Gate::authorize('update', $record);
+        Gate::authorize('update', $ticketRecord);
 
         $validated = $request->validate([
             'start' => 'required|date',
@@ -49,14 +49,14 @@ class TicketRecordController extends Controller
             'resources' => 'nullable|string',
         ]);
 
-        $record->update([
+        $ticketRecord->update([
             ...$validated,
             'start' => Carbon::parse($validated['start']),
             'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
         ]);
 
         // TODO: die richtigen Leute notifyen  (Britta aka abrechnende Person)
-        $authUser->supervisor?->notify(new TicketRecordCreationNotification($authUser, $record));
+        $authUser->supervisor?->notify(new TicketRecordCreationNotification($authUser, $ticketRecord));
 
         return back()->with('success', 'Eintrag erfolgreich bearbeitet.');
     }

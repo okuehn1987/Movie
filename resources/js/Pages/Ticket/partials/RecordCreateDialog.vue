@@ -21,16 +21,18 @@ const recordForm = useForm({
 
 const showDialog = ref(false);
 
+// FIXME: updated ticketrecord needs to show immediately after updating and reopening
+// TODO: Can and cannable, aber wo und wie nochmal?
 function submit() {
     if (props.record) {
-        recordForm.patch(route('record.update', { record: props.record.id }), {
+        recordForm.patch(route('ticketRecord.update', { ticketRecord: props.record.id }), {
             onSuccess: () => {
                 recordForm.reset();
                 showDialog.value = false;
             },
         });
     } else {
-        recordForm.post(route('ticket.record.store', { ticket: props.ticket.id }), {
+        recordForm.post(route('ticket.ticketRecord.store', { ticket: props.ticket.id }), {
             onSuccess: () => {
                 recordForm.reset();
                 showDialog.value = false;
