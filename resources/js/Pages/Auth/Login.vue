@@ -10,7 +10,7 @@ defineProps<{
 const adminForm = useForm({
     email: '',
     password: '',
-    remember: true,
+    remember: false,
     
 });
 
