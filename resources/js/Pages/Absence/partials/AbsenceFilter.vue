@@ -43,13 +43,40 @@ function submit() {
     if (typeof filterForm.value.set != 'string' && filterForm.value.set?.value) {
         filterForm.value.patch(route('userAbsenceFilter.update', { userAbsenceFilter: filterForm.value.set.value }));
     } else {
-        filterForm.value.post(route('userAbsenceFilter.store'));
+        filterForm.value.post(route('userAbsenceFilter.store'), {
+            onSuccess: response => {
+                const filters = response.props['user_absence_filters'] as UserAbsenceFilter[];
+
+                const newFilter = filters[filters.length - 1];
+
+                if (!newFilter) {
+                    console.error('Neuer Filter nicht gefunden');
+                    return;
+                }
+
+                let parsedData = { user_ids: [], absence_type_ids: [], statuses: [] };
+                try {
+                    parsedData = typeof newFilter.data === 'string' ? JSON.parse(newFilter.data) : newFilter.data;
+                } catch (e) {
+                    console.error('Fehler bei der Datenverarbeitung', e);
+                }
+
+                filterForm.value.set = { value: newFilter.id, title: newFilter.name };
+                filterForm.value.defaults({
+                    set: filterForm.value.set,
+                    selected_users: parsedData.user_ids ?? [],
+                    selected_absence_types: parsedData.absence_type_ids ?? [],
+                    selected_statuses: parsedData.statuses ?? [],
+                });
+                filterForm.value.reset();
+            },
+        });
     }
 }
 
 function resetFilterForm() {
     const data = {
-        set: '',
+        set: null,
         selected_users: [],
         selected_absence_types: [],
         selected_statuses: ['created', 'accepted'] as Status[],
@@ -132,6 +159,8 @@ const tab = ref<'Einzelfilter' | 'Filtergruppen'>('Einzelfilter');
                                     :items="user_absence_filters.map(u => ({ value: u.id, title: u.name }))"
                                     v-model="filterForm.set"
                                     :error-messages="filterForm.errors.set"
+                                    item-title="title"
+                                    item-value="value"
                                     required
                                     clearable
                                 ></v-combobox>
