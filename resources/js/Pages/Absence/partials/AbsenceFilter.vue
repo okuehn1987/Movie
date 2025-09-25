@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { AbsenceType, Status, User, UserAbsenceFilter } from '@/types/types';
-import { watch } from 'vue';
+import { ref, watch } from 'vue';
 import { UserProp } from '../utils';
 
 const props = defineProps<{
@@ -57,6 +57,8 @@ function resetFilterForm() {
     filterForm.value.defaults(data);
     filterForm.value.reset();
 }
+
+const tab = ref<'Einzelfilter' | 'Filtergruppen'>('Einzelfilter');
 </script>
 <template>
     <v-dialog max-width="1000">
@@ -76,69 +78,117 @@ function resetFilterForm() {
                     </v-btn>
                 </template>
                 <v-card-text>
-                    <v-form @submit.prevent="submit()">
-                        <v-combobox
-                            label="Filtergruppe auswählen oder neue erstellen"
-                            auto-select-first="exact"
-                            variant="underlined"
-                            :items="user_absence_filters.map(u => ({ value: u.id, title: u.name }))"
-                            v-model="filterForm.set"
-                            :error-messages="filterForm.errors.set"
-                            required
-                            clearable
-                        ></v-combobox>
-                        <v-autocomplete
-                            label="Nutzer"
-                            :items="users.map(u => ({ title: u.first_name + ' ' + u.last_name, value: u.id }))"
-                            v-model="filterForm.selected_users"
-                            :error-messages="filterForm.errors.selected_users"
-                            clearable
-                            chips
-                            multiple
-                            variant="underlined"
-                        ></v-autocomplete>
-                        <v-select
-                            label="Abwesenheitsgrund"
-                            :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
-                            v-model="filterForm.selected_absence_types"
-                            :error-messages="filterForm.errors.selected_absence_types"
-                            clearable
-                            chips
-                            multiple
-                        ></v-select>
-                        <v-select
-                            label="Abwesenheitsstatus"
-                            :items="[
-                                { title: 'Erstellt', value: 'created' },
-                                { title: 'Akzeptiert', value: 'accepted' },
-                                { title: 'Abgelehnt', value: 'declined' },
-                            ]"
-                            v-model="filterForm.selected_statuses"
-                            :error-messages="filterForm.errors.selected_statuses"
-                            clearable
-                            chips
-                            multiple
-                        ></v-select>
-                        <div class="d-flex justify-space-between">
-                            <v-btn
-                                v-if="typeof filterForm.set == 'object' && filterForm.set != null"
-                                color="error"
-                                @click="
-                                    filterForm.delete(route('userAbsenceFilter.destroy', { userAbsenceFilter: filterForm.set.value }), {
-                                        onSuccess: () => {
-                                            resetFilterForm();
-                                        },
-                                    })
-                                "
-                            >
-                                Filter löschen
-                            </v-btn>
-                            <div v-else></div>
-                            <v-btn :disabled="!filterForm.isDirty" color="primary" type="submit">
-                                {{ typeof filterForm.set == 'string' || filterForm.set == null ? 'Filter anlegen' : 'Filter bearbeiten' }}
-                            </v-btn>
-                        </div>
-                    </v-form>
+                    <v-tabs v-model="tab" color="primary">
+                        <v-tab text="Einzelfilter" value="Einzelfilter"></v-tab>
+                        <v-tab text="Filtergruppen" value="Filtergruppen"></v-tab>
+                    </v-tabs>
+                    <v-tabs-window v-model="tab" class="w-100">
+                        <v-tabs-window-item value="Einzelfilter">
+                            <v-form>
+                                <v-autocomplete
+                                    label="Nutzer"
+                                    :items="users.map(u => ({ title: u.first_name + ' ' + u.last_name, value: u.id }))"
+                                    v-model="filterForm.selected_users"
+                                    :error-messages="filterForm.errors.selected_users"
+                                    clearable
+                                    chips
+                                    multiple
+                                    variant="underlined"
+                                ></v-autocomplete>
+                                <v-select
+                                    label="Abwesenheitsgrund"
+                                    :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
+                                    v-model="filterForm.selected_absence_types"
+                                    :error-messages="filterForm.errors.selected_absence_types"
+                                    clearable
+                                    chips
+                                    multiple
+                                ></v-select>
+                                <v-select
+                                    label="Abwesenheitsstatus"
+                                    :items="[
+                                        { title: 'Erstellt', value: 'created' },
+                                        { title: 'Akzeptiert', value: 'accepted' },
+                                        { title: 'Abgelehnt', value: 'declined' },
+                                    ]"
+                                    v-model="filterForm.selected_statuses"
+                                    :error-messages="filterForm.errors.selected_statuses"
+                                    clearable
+                                    chips
+                                    multiple
+                                ></v-select>
+                                <div class="d-flex justify-end">
+                                    <v-btn class="me-2" color="primary" variant="flat" @click="resetFilterForm()">Filter zurücksetzen</v-btn>
+                                    <v-btn color="primary" variant="flat" @click="isActive.value = false">Filter anwenden</v-btn>
+                                </div>
+                            </v-form>
+                        </v-tabs-window-item>
+                        <v-tabs-window-item value="Filtergruppen">
+                            <v-form @submit.prevent="submit()">
+                                <v-combobox
+                                    label="Filtergruppe auswählen oder neue erstellen"
+                                    auto-select-first="exact"
+                                    variant="underlined"
+                                    :items="user_absence_filters.map(u => ({ value: u.id, title: u.name }))"
+                                    v-model="filterForm.set"
+                                    :error-messages="filterForm.errors.set"
+                                    required
+                                    clearable
+                                ></v-combobox>
+                                <v-autocomplete
+                                    label="Nutzer"
+                                    :items="users.map(u => ({ title: u.first_name + ' ' + u.last_name, value: u.id }))"
+                                    v-model="filterForm.selected_users"
+                                    :error-messages="filterForm.errors.selected_users"
+                                    clearable
+                                    chips
+                                    multiple
+                                    variant="underlined"
+                                ></v-autocomplete>
+                                <v-select
+                                    label="Abwesenheitsgrund"
+                                    :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
+                                    v-model="filterForm.selected_absence_types"
+                                    :error-messages="filterForm.errors.selected_absence_types"
+                                    clearable
+                                    chips
+                                    multiple
+                                ></v-select>
+                                <v-select
+                                    label="Abwesenheitsstatus"
+                                    :items="[
+                                        { title: 'Erstellt', value: 'created' },
+                                        { title: 'Akzeptiert', value: 'accepted' },
+                                        { title: 'Abgelehnt', value: 'declined' },
+                                    ]"
+                                    v-model="filterForm.selected_statuses"
+                                    :error-messages="filterForm.errors.selected_statuses"
+                                    clearable
+                                    chips
+                                    multiple
+                                ></v-select>
+                                <div class="d-flex justify-end">
+                                    <v-btn
+                                        v-if="typeof filterForm.set == 'object' && filterForm.set != null"
+                                        color="error"
+                                        @click="
+                                            filterForm.delete(route('userAbsenceFilter.destroy', { userAbsenceFilter: filterForm.set.value }), {
+                                                onSuccess: () => {
+                                                    resetFilterForm();
+                                                },
+                                            })
+                                        "
+                                    >
+                                        Filter löschen
+                                    </v-btn>
+                                    <v-btn class="ms-2 me-2" color="primary" variant="flat" @click="resetFilterForm()">Filter zurücksetzen</v-btn>
+                                    <v-btn :disabled="!filterForm.isDirty" color="primary" type="submit">
+                                        {{ typeof filterForm.set == 'string' || filterForm.set == null ? 'Filter anlegen' : 'Filter bearbeiten' }}
+                                    </v-btn>
+                                </div>
+                            </v-form>
+                        </v-tabs-window-item>
+                    </v-tabs-window>
                 </v-card-text>
             </v-card>
         </template>
