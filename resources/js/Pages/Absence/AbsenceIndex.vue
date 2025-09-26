@@ -31,6 +31,13 @@ const filterForm = useForm({
     selected_statuses: ['created', 'accepted'] as Status[],
 });
 
+const singleFilterForm = useForm({
+    set: null as null | UserAbsenceFilter['id'],
+    selected_users: [] as User['id'][],
+    selected_absence_types: [] as AbsenceType['id'][],
+    selected_statuses: ['created', 'accepted'] as Status[],
+});
+
 const currentEntries = computed(() => {
     const entries = [] as typeof props.absences | typeof props.absencePatches;
     return entries
@@ -149,7 +156,13 @@ const display = useDisplay();
         <v-card>
             <v-card-text>
                 <div class="d-flex justify-space-between align-center w-100">
-                    <AbsenceFilter :absence_types :users :user_absence_filters v-model:filterForm="filterForm"></AbsenceFilter>
+                    <AbsenceFilter
+                        :absence_types
+                        :users
+                        :user_absence_filters
+                        v-model:filterForm="filterForm"
+                        v-model:singleFilterForm="singleFilterForm"
+                    ></AbsenceFilter>
                     <div class="d-flex justify-center align-center w-100">
                         <div class="d-flex">
                             <template v-if="display.mdAndUp.value">
