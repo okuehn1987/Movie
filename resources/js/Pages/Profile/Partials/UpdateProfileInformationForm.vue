@@ -17,6 +17,7 @@ const form = useForm({
 
 <template>
     <v-card class="h-100" title="Profil-Informationen">
+        <v-divider></v-divider>
         <v-card-text>
             <form @submit.prevent="form.patch(route('profile.update'))">
                 <v-row>
