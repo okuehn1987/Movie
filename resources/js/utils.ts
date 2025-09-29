@@ -182,3 +182,21 @@ export function formatDuration(seconds: number, accuracy: 'seconds' | 'minutes' 
     };
     return (seconds < 0 ? '-' : '') + Duration.fromObject({ seconds: Math.abs(seconds) }).toFormat(format[accuracy]);
 }
+
+type Browser = 'Google Chrome' | 'Microsoft Edge' | 'Mozilla Firefox' | 'Apple Safari';
+export function getBrowser(): Browser {
+    const userAgent = navigator.userAgent;
+    let browser = 'Google Chrome' as Browser;
+
+    if (/Chrome/.test(userAgent) && !/Chromium/.test(userAgent)) {
+        browser = 'Google Chrome';
+    } else if (/Edg/.test(userAgent)) {
+        browser = 'Microsoft Edge';
+    } else if (/Firefox/.test(userAgent)) {
+        browser = 'Mozilla Firefox';
+    } else if (/Safari/.test(userAgent)) {
+        browser = 'Apple Safari';
+    }
+
+    return browser;
+}
