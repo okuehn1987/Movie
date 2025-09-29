@@ -23,7 +23,7 @@ const customerForm = useForm({
     <v-form
         @submit.prevent="
             props.customer?.id
-                ? customerForm.post(route('customer.update', { customer: props.customer?.id }))
+                ? customerForm.patch(route('customer.update', { customer: props.customer?.id }))
                 : customerForm.post(route('customer.store'))
         "
     >
