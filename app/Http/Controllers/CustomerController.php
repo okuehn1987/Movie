@@ -66,13 +66,27 @@ class CustomerController extends Controller
             'organization_id' => Organization::getCurrent()->id,
         ]);
 
-        return back()->with('success', 'Kunde wurde erfolgreich angelegt.');
+        return back()->with('success', 'Der Kunde wurde erfolgreich angelegt.');
     }
 
-    public function update()
+    public function update(Request $request, Customer $customer)
     {
         Gate::authorize('update', Customer::class);
-        // TODO: 
-        dd(5);
+
+        $validated = $request->validate([
+            'name' => 'required|string',
+            'email' => 'nullable|email',
+            'phone' => 'nullable|string',
+            'reference_number' => 'nullable|string',
+        ]);
+
+        $customer->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'reference_number' => $validated['reference_number'],
+        ]);
+
+        return back()->with('success', 'Der Kunde wurde erfolgreich aktualisiert.');
     }
 }
