@@ -19,7 +19,7 @@ const FORM_DEFAULT = {
 
 const display = useDisplay();
 
-const filterForm = defineModel<
+const groupFilterForm = defineModel<
     ReturnType<
         typeof useForm<{
             set: null | string | { value: UserAbsenceFilter['id']; title: string };
@@ -42,11 +42,12 @@ const singleFilterForm = defineModel<
 >('singleFilterForm', { required: true });
 
 watch(
-    () => filterForm.value.set,
+    () => groupFilterForm.value.set,
     newValue => {
         if (newValue == null) return;
         let selectedFilter;
-        if (typeof newValue == 'object' && filterForm.value.isDirty) selectedFilter = props.user_absence_filters.find(f => f.id == newValue.value);
+        if (typeof newValue == 'object' && groupFilterForm.value.isDirty)
+            selectedFilter = props.user_absence_filters.find(f => f.id == newValue.value);
         else if (typeof newValue == 'string') selectedFilter = props.user_absence_filters.find(f => f.name == newValue);
         if (!selectedFilter) return;
 
@@ -56,8 +57,7 @@ watch(
             selected_absence_types: selectedFilter.data.absence_type_ids,
             selected_statuses: selectedFilter.data.statuses,
         };
-        filterForm.value.defaults(data);
-        filterForm.value.reset();
+        groupFilterForm.value.defaults(data).reset();
     },
 );
 
@@ -67,23 +67,21 @@ watch(
         if (newValue == null) return;
         const selectedFilter = props.user_absence_filters.find(f => f.id == newValue);
         if (!selectedFilter) return;
-
-        const data = {
+        singleFilterForm.value.defaults({
             set: selectedFilter.id,
             selected_users: selectedFilter.data.user_ids,
             selected_absence_types: selectedFilter.data.absence_type_ids,
             selected_statuses: selectedFilter.data.statuses,
-        };
-        singleFilterForm.value.defaults(data);
+        });
         singleFilterForm.value.reset();
     },
 );
 
 function submit() {
-    if (typeof filterForm.value.set != 'string' && filterForm.value.set?.value) {
-        filterForm.value.patch(route('userAbsenceFilter.update', { userAbsenceFilter: filterForm.value.set.value }));
+    if (typeof groupFilterForm.value.set != 'string' && groupFilterForm.value.set?.value) {
+        groupFilterForm.value.patch(route('userAbsenceFilter.update', { userAbsenceFilter: groupFilterForm.value.set.value }));
     } else {
-        filterForm.value.post(route('userAbsenceFilter.store'), {
+        groupFilterForm.value.post(route('userAbsenceFilter.store'), {
             onSuccess: response => {
                 const filters = response.props['user_absence_filters'] as UserAbsenceFilter[];
 
@@ -101,14 +99,14 @@ function submit() {
                     console.error('Fehler bei der Datenverarbeitung', e);
                 }
 
-                filterForm.value.set = { value: newFilter.id, title: newFilter.name };
-                filterForm.value.defaults({
-                    set: filterForm.value.set,
+                groupFilterForm.value.set = { value: newFilter.id, title: newFilter.name };
+                groupFilterForm.value.defaults({
+                    set: groupFilterForm.value.set,
                     selected_users: parsedData.user_ids ?? [],
                     selected_absence_types: parsedData.absence_type_ids ?? [],
                     selected_statuses: parsedData.statuses ?? [],
                 });
-                filterForm.value.reset();
+                groupFilterForm.value.reset();
             },
         });
     }
@@ -116,17 +114,25 @@ function submit() {
 
 function editFilter(filter: UserAbsenceFilter) {
     const set = { value: filter.id, title: filter.name };
-    filterForm.value.defaults({
+    groupFilterForm.value.defaults({
         set,
         selected_users: filter.data.user_ids ?? [],
         selected_absence_types: filter.data.absence_type_ids ?? [],
         selected_statuses: filter.data.statuses ?? [],
     });
-    filterForm.value.set = set;
-    filterForm.value.reset();
+    groupFilterForm.value.set = set;
+    groupFilterForm.value.reset();
 }
 
-const tab = ref<'Einzelfilter' | 'Filtergruppen'>('Einzelfilter');
+const tab = ref<'singleFilter' | 'groupFilter'>('singleFilter');
+
+watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([newSingleFilter, newGroupFilter], [oldSingleFilter, oldGroupFilter]) => {
+    if (oldSingleFilter == null && newSingleFilter != null) {
+        groupFilterForm.value.defaults(FORM_DEFAULT).reset();
+    } else if (oldGroupFilter == null && newGroupFilter != null) {
+        singleFilterForm.value.defaults(FORM_DEFAULT).reset();
+    }
+});
 </script>
 <template>
     <v-dialog max-width="1000">
@@ -148,11 +154,11 @@ const tab = ref<'Einzelfilter' | 'Filtergruppen'>('Einzelfilter');
                 <v-divider></v-divider>
                 <v-card-text>
                     <v-tabs v-if="!display.smAndDown.value" v-model="tab" color="primary">
-                        <v-tab text="Einzelfilter" value="Einzelfilter"></v-tab>
-                        <v-tab text="Filtergruppen" value="Filtergruppen"></v-tab>
+                        <v-tab text="Einzelfilter" value="singleFilter"></v-tab>
+                        <v-tab text="Filtergruppen" value="groupFilter"></v-tab>
                     </v-tabs>
                     <v-tabs-window v-model="tab" class="w-100">
-                        <v-tabs-window-item value="Einzelfilter">
+                        <v-tabs-window-item value="singleFilter">
                             <v-form>
                                 <v-row class="mt-2">
                                     <v-col cols="12">
@@ -223,7 +229,7 @@ const tab = ref<'Einzelfilter' | 'Filtergruppen'>('Einzelfilter');
                                 </v-row>
                             </v-form>
                         </v-tabs-window-item>
-                        <v-tabs-window-item value="Filtergruppen">
+                        <v-tabs-window-item value="groupFilter">
                             <v-form @submit.prevent="submit()">
                                 <v-row class="mt-2">
                                     <v-col cols="12" md="6">
@@ -231,21 +237,25 @@ const tab = ref<'Einzelfilter' | 'Filtergruppen'>('Einzelfilter');
                                             <v-col cols="12">
                                                 <v-text-field
                                                     label="Gruppename"
-                                                    :value="
-                                                        typeof filterForm.set === 'object' && filterForm.set !== null
-                                                            ? filterForm.set.title
-                                                            : filterForm.set ?? ''
+                                                    :model-value="
+                                                        typeof groupFilterForm.set === 'object' && groupFilterForm.set !== null
+                                                            ? groupFilterForm.set.title
+                                                            : groupFilterForm.set ?? ''
                                                     "
-                                                    v-model="filterForm.set"
-                                                    :error-messages="filterForm.errors.set"
+                                                    @update:model-value="
+                                                        newValue => {
+                                                            groupFilterForm.set = newValue;
+                                                        }
+                                                    "
+                                                    :error-messages="groupFilterForm.errors.set"
                                                 ></v-text-field>
                                             </v-col>
                                             <v-col cols="12">
                                                 <v-autocomplete
                                                     label="Nutzer"
                                                     :items="users.map(u => ({ title: u.first_name + ' ' + u.last_name, value: u.id }))"
-                                                    v-model="filterForm.selected_users"
-                                                    :error-messages="filterForm.errors.selected_users"
+                                                    v-model="groupFilterForm.selected_users"
+                                                    :error-messages="groupFilterForm.errors.selected_users"
                                                     clearable
                                                     chips
                                                     multiple
@@ -256,8 +266,8 @@ const tab = ref<'Einzelfilter' | 'Filtergruppen'>('Einzelfilter');
                                                 <v-select
                                                     label="Abwesenheitsgrund"
                                                     :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
-                                                    v-model="filterForm.selected_absence_types"
-                                                    :error-messages="filterForm.errors.selected_absence_types"
+                                                    v-model="groupFilterForm.selected_absence_types"
+                                                    :error-messages="groupFilterForm.errors.selected_absence_types"
                                                     clearable
                                                     chips
                                                     multiple
@@ -271,8 +281,8 @@ const tab = ref<'Einzelfilter' | 'Filtergruppen'>('Einzelfilter');
                                                         { title: 'Akzeptiert', value: 'accepted' },
                                                         { title: 'Abgelehnt', value: 'declined' },
                                                     ]"
-                                                    v-model="filterForm.selected_statuses"
-                                                    :error-messages="filterForm.errors.selected_statuses"
+                                                    v-model="groupFilterForm.selected_statuses"
+                                                    :error-messages="groupFilterForm.errors.selected_statuses"
                                                     clearable
                                                     chips
                                                     multiple
@@ -310,11 +320,11 @@ const tab = ref<'Einzelfilter' | 'Filtergruppen'>('Einzelfilter');
                                                             variant="flat"
                                                             color="error"
                                                             @click="
-                                                                filterForm.delete(
+                                                                groupFilterForm.delete(
                                                                     route('userAbsenceFilter.destroy', { userAbsenceFilter: item.id }),
                                                                     {
                                                                         onSuccess: () => {
-                                                                            filterForm.defaults(FORM_DEFAULT).reset();
+                                                                            groupFilterForm.defaults(FORM_DEFAULT).reset();
                                                                         },
                                                                     },
                                                                 )
@@ -328,11 +338,11 @@ const tab = ref<'Einzelfilter' | 'Filtergruppen'>('Einzelfilter');
                                         </v-data-table-virtual>
                                     </v-col>
                                     <v-col cols="12" class="text-end">
-                                        <v-btn class="me-2" color="primary" variant="flat" @click="filterForm.defaults(FORM_DEFAULT).reset()">
+                                        <v-btn class="me-2" color="primary" variant="flat" @click="groupFilterForm.defaults(FORM_DEFAULT).reset()">
                                             Zurücksetzen
                                         </v-btn>
-                                        <v-btn :disabled="!filterForm.isDirty" color="primary" type="submit">
-                                            {{ typeof filterForm.set == 'string' || filterForm.set == null ? 'Anlegen' : 'Bearbeiten' }}
+                                        <v-btn :disabled="!groupFilterForm.isDirty" color="primary" type="submit">
+                                            {{ typeof groupFilterForm.set == 'string' || groupFilterForm.set == null ? 'Anlegen' : 'Bearbeiten' }}
                                         </v-btn>
                                     </v-col>
                                 </v-row>

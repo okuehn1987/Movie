@@ -24,7 +24,7 @@ const props = defineProps<{
 const dateParam = route().params['date'];
 const date = ref(dateParam ? (DateTime.fromFormat(dateParam, 'yyyy-MM') as DateTime<true>) : DateTime.now());
 
-const filterForm = useForm({
+const groupFilterForm = useForm({
     set: null as null | string | { value: UserAbsenceFilter['id']; title: string },
     selected_users: [] as User['id'][],
     selected_absence_types: [] as AbsenceType['id'][],
@@ -38,11 +38,11 @@ const singleFilterForm = useForm({
     selected_statuses: ['created', 'accepted'] as Status[],
 });
 
-const currentFilterForm = ref<null | typeof filterForm | typeof singleFilterForm>(null);
+const currentFilterForm = ref<null | typeof groupFilterForm | typeof singleFilterForm>(null);
 
-watch([() => singleFilterForm.set, () => filterForm.set], () => {
-    if (filterForm.set == null) currentFilterForm.value = singleFilterForm;
-    else currentFilterForm.value = filterForm;
+watch([() => singleFilterForm.set, () => groupFilterForm.set], () => {
+    if (groupFilterForm.set == null) currentFilterForm.value = singleFilterForm;
+    else currentFilterForm.value = groupFilterForm;
 });
 
 const currentEntries = computed(() => {
@@ -169,7 +169,7 @@ const display = useDisplay();
                         :absence_types
                         :users
                         :user_absence_filters
-                        v-model:filterForm="filterForm"
+                        v-model:filterForm="groupFilterForm"
                         v-model:singleFilterForm="singleFilterForm"
                     ></AbsenceFilter>
                     <div class="d-flex justify-center align-center w-100">
