@@ -10,6 +10,8 @@ defineProps<{
 const adminForm = useForm({
     email: '',
     password: '',
+    remember: false,
+    
 });
 
 const adminLogin = () => {
@@ -36,7 +38,6 @@ const adminLogin = () => {
                         prepend-inner-icon="mdi-email-outline"
                         label="Email"
                     ></v-text-field>
-
                     <v-text-field
                         v-model="adminForm.password"
                         :readonly="adminForm.processing"
@@ -46,8 +47,9 @@ const adminLogin = () => {
                         label="Passwort"
                         class="mt-2 mb-n3"
                     ></v-text-field>
+                    <v-checkbox label="Angemeldet bleiben" v-model="adminForm.remember">
+                    </v-checkbox>
                 </v-col>
-
                 <v-col cols="12">
                     <v-btn :loading="adminForm.processing" block color="primary" type="submit" size="large"> Login </v-btn>
                 </v-col>
