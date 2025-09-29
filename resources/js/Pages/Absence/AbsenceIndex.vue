@@ -5,12 +5,12 @@ import { throttle, useMaxScrollHeight } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { computed, ref, watch } from 'vue';
+import { useDisplay } from 'vuetify';
+import AbsenceFilter from './partials/AbsenceFilter.vue';
 import AbsenceTableCell from './partials/AbsenceTableCell.vue';
 import EditCreateAbsence from './partials/EditCreateAbsence.vue';
-import { AbsencePatchProp, AbsenceProp, getEntryState, UserProp } from './utils';
 import ShowAbsenceModal from './partials/ShowAbsenceModal.vue';
-import AbsenceFilter from './partials/AbsenceFilter.vue';
-import { useDisplay } from 'vuetify';
+import { AbsencePatchProp, AbsenceProp, getEntryState, UserProp } from './utils';
 
 const props = defineProps<{
     users: UserProp[];
@@ -38,6 +38,13 @@ const singleFilterForm = useForm({
     selected_statuses: ['created', 'accepted'] as Status[],
 });
 
+const currentFilterForm = ref<null | typeof filterForm | typeof singleFilterForm>(null);
+
+watch([() => singleFilterForm.set, () => filterForm.set], () => {
+    if (filterForm.set == null) currentFilterForm.value = singleFilterForm;
+    else currentFilterForm.value = filterForm;
+});
+
 const currentEntries = computed(() => {
     const entries = [] as typeof props.absences | typeof props.absencePatches;
     return entries
@@ -51,14 +58,16 @@ const currentEntries = computed(() => {
                 a => a.start <= date.value.endOf('month').toFormat('yyyy-MM-dd') && a.end >= date.value.startOf('month').toFormat('yyyy-MM-dd'),
             ),
         )
-        .filter(
-            entry =>
-                (filterForm.selected_users.length == 0 || filterForm.selected_users.includes(entry.user_id)) &&
-                (filterForm.selected_absence_types.length == 0 ||
-                    !entry.absence_type_id ||
-                    filterForm.selected_absence_types.includes(entry.absence_type_id)) &&
-                (filterForm.selected_statuses.length == 0 || filterForm.selected_statuses.includes(entry.status)),
-        );
+        .filter(entry => {
+            return (
+                !currentFilterForm.value ||
+                ((currentFilterForm.value.selected_users.length == 0 || currentFilterForm.value.selected_users.includes(entry.user_id)) &&
+                    (currentFilterForm.value.selected_absence_types.length == 0 ||
+                        !entry.absence_type_id ||
+                        currentFilterForm.value.selected_absence_types.includes(entry.absence_type_id)) &&
+                    (currentFilterForm.value.selected_statuses.length == 0 || currentFilterForm.value.selected_statuses.includes(entry.status)))
+            );
+        });
 });
 const openEditCreateAbsenceModal = ref(false);
 const openShowAbsenceModal = ref(false);
@@ -209,7 +218,10 @@ const display = useDisplay();
                 id="absence-table"
                 :items="
                     users
-                        .filter(u => filterForm.selected_users.length == 0 || filterForm.selected_users.includes(u.id))
+                        .filter(
+                            u =>
+                                !currentFilterForm || currentFilterForm.selected_users.length == 0 || currentFilterForm.selected_users.includes(u.id),
+                        )
                         .map(u => ({
                             ...u,
                             name: display.mdAndUp.value ? u.last_name + ', ' + u.first_name : u.first_name.substring(0, 1) + '.' + u.last_name,
