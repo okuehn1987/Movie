@@ -115,13 +115,16 @@ const requiresApproval = computed(() => {
                                     :error-messages="absenceForm.errors.end"
                                 ></v-text-field>
                             </v-col>
-                            <v-alert v-if="currentUser && currentUser.usedLeaveDaysForYear && currentUser.leaveDaysForYear" type="info" class="w-100">
+                            <v-alert v-if="currentUser && currentUser.leaveDaysForYear" type="info" class="w-100">
                                 <v-row>
                                     <v-col cols="12" md="6">
                                         <div>Bereits verwendete Urlaubstage für {{ DateTime.now().year }}</div>
                                     </v-col>
                                     <v-col cols="12" md="6">
-                                        <div>{{ currentUser.usedLeaveDaysForYear }} von {{ currentUser.leaveDaysForYear }}</div>
+                                        <div>
+                                            {{ currentUser.usedLeaveDaysForYear ?? '0' }} von
+                                            {{ currentUser.leaveDaysForYear }}
+                                        </div>
                                     </v-col>
                                 </v-row>
                             </v-alert>
