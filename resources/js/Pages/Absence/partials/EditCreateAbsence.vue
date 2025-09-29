@@ -84,6 +84,7 @@ const requiresApproval = computed(() => {
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>
+                <v-divider></v-divider>
                 <v-card-text v-if="absenceForm.errors.user_id">
                     <v-alert color="error" closable>{{ absenceForm.errors.user_id }}</v-alert>
                 </v-card-text>

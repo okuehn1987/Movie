@@ -13,7 +13,6 @@ defineProps<{
         <template v-slot:activator="{ props: activatorProps }">
             <v-btn v-bind="activatorProps" color="error" variant="text" icon="mdi-delete" />
         </template>
-
         <template v-slot:default="{ isActive }">
             <v-card :title="title">
                 <template #append>
@@ -21,11 +20,12 @@ defineProps<{
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>
+                <v-divider></v-divider>
                 <v-card-text>
                     <v-row>
-                        <v-col cols="12"> {{ content }}</v-col>
+                        <v-col cols="12">{{ content }}</v-col>
                         <v-col cols="12" class="text-end">
-                            <v-btn @click.stop="router.delete(route, { onSuccess: () => (isActive.value = false) })" color="error"> Löschen </v-btn>
+                            <v-btn @click.stop="router.delete(route, { onSuccess: () => (isActive.value = false) })" color="error">Löschen</v-btn>
                         </v-col>
                     </v-row>
                 </v-card-text>
