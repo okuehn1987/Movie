@@ -306,11 +306,11 @@ export type AbsenceType = DBObject<'absenceType'> &
 
 export const TRUNCATION_CYCLES = [null, '1', '3', '6', '12'] as const;
 export const PRIORITIES = [
-    { value: 'highest', title: 'Höchste', icon: 'mdi-chevron-double-up', color: 'red-darken-4' },
-    { value: 'high', title: 'Hoch', icon: 'mdi-chevron-up', color: 'orange-darken-4' },
-    { value: 'medium', title: 'Mittel', icon: 'mdi-equal', color: 'orange-lighten-1' },
-    { value: 'low', title: 'Niedrig', icon: 'mdi-chevron-down', color: 'blue-lighten-2' },
-    { value: 'lowest', title: 'Niedrigste', icon: 'mdi-chevron-double-down', color: 'blue-darken-2' },
+    { value: 'highest', title: 'Höchste', priorityValue: 1, icon: 'mdi-chevron-double-up', color: 'red-darken-4' },
+    { value: 'high', title: 'Hoch', priorityValue: 2, icon: 'mdi-chevron-up', color: 'orange-darken-4' },
+    { value: 'medium', title: 'Mittel', priorityValue: 3, icon: 'mdi-equal', color: 'orange-lighten-1' },
+    { value: 'low', title: 'Niedrig', priorityValue: 4, icon: 'mdi-chevron-down', color: 'blue-lighten-2' },
+    { value: 'lowest', title: 'Niedrigste', priorityValue: 5, icon: 'mdi-chevron-double-down', color: 'blue-darken-2' },
 ] as const;
 
 export type TimeAccountSetting = DBObject<'timeAccountSetting'> &
