@@ -82,7 +82,7 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
         Route::resource('customer.customerNote', CustomerNoteController::class)->only(['store', 'update', 'destroy'])->shallow();
         Route::get('/customerNote/{customerNote}/getFile', [CustomerNoteController::class, 'getFile'])->name('customerNote.getFile');
 
-        Route::resource('customer.customerOperatingSite', CustomerOperatingSiteController::class)->only(['store', 'update', 'destroy'])->shallow();
+        Route::resource('customerOperatingSite', CustomerOperatingSiteController::class)->only(['store', 'update', 'destroy'])->shallow();
 
         Route::resource('ticket', TicketController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::patch('/ticket/{ticket}/finish', [TicketController::class, 'finish'])->name('ticket.finish');

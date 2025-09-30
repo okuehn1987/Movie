@@ -9,14 +9,13 @@ use Illuminate\Http\Request;
 class CustomerOperatingSiteController extends Controller
 {
 
-
-    public function store(Request $request, Customer $customer )
+    public function store(Request $request, Customer $customer)
     {
         $validated = $request->validate([
             'name' => 'required|string',
             'street' => 'required|string',
             'house_number' => 'required|string',
-            'address_suffix' => 'required|string',
+            'address_suffix' => 'nullable|string',
             'country' => 'required|string',
             'city' => 'required|string',
             'zip' => 'required|string',
@@ -26,7 +25,7 @@ class CustomerOperatingSiteController extends Controller
         $customerOperatingSite = CustomerOperatingSite::create([
             'customer_id' => $customer->id,
             'name' => $validated['name'],
-            ]);
+        ]);
 
         $customerOperatingSite->addresses()->create([
             'street' => $validated['street'],
@@ -41,9 +40,37 @@ class CustomerOperatingSiteController extends Controller
         return back()->with('success', 'Der Standort wurde erfolgreich angelegt.');
     }
 
-    public function update()
+    public function update(Request $request, CustomerOperatingSite $customerOperatingSite)
     {
-        dd('update');
+        $validated = $request->validate([
+            'name' => 'required|string',
+            'street' => 'required|string',
+            'house_number' => 'required|string',
+            'address_suffix' => 'nullable|string',
+            'country' => 'required|string',
+            'city' => 'required|string',
+            'zip' => 'required|string',
+            'federal_state' => 'required|string',
+        ]);
+
+        if ($customerOperatingSite->name !== $validated['name']) {
+            $customerOperatingSite->update([
+                'name' => $validated['name'],
+            ]);
+        }
+
+        $newAddress = collect($validated)->except([
+            'name'
+        ])->toArray();
+
+        $oldAddress = $customerOperatingSite->currentAddress->only(array_keys($newAddress));
+
+        if ($newAddress !== $oldAddress) {
+            $newAddress['active_since'] = now();
+            $customerOperatingSite->addresses()->create($newAddress);
+        }
+
+        return back()->with('success', 'Der Standort wurde erfolgreich aktualisiert.');
     }
 
     public function destroy()
