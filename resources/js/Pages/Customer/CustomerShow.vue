@@ -6,6 +6,7 @@ import CustomerForm from './partial/CustomerForm.vue';
 import { formatAddress } from '@/utils';
 import CustomerNotes from './partial/CustomerNotes.vue';
 import CreateEditCustomerOperatingSite from './partial/CreateEditCustomerOperatingSite.vue';
+import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 
 defineProps<{
     customer: Customer;
@@ -44,6 +45,11 @@ const currentTab = ref('customerData');
                     <template #item.actions="{ item }">
                         <div class="d-flex justify-end ga-2 align-center">
                             <CreateEditCustomerOperatingSite :mode="'edit'" :customer="customer" :item></CreateEditCustomerOperatingSite>
+                            <ConfirmDelete
+                                :title="'Kundenstandort löschen'"
+                                :content="'Bist du dir sicher, dass du den Standort ' + item.name + ' löschen möchtest?'"
+                                :route="route('customerOperatingSite.destroy', { customerOperatingSite: item.id })"
+                            ></ConfirmDelete>
                         </div>
                     </template>
                 </v-data-table-virtual>

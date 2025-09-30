@@ -73,8 +73,10 @@ class CustomerOperatingSiteController extends Controller
         return back()->with('success', 'Der Standort wurde erfolgreich aktualisiert.');
     }
 
-    public function destroy()
+    public function destroy(Request $request, CustomerOperatingSite $customerOperatingSite)
     {
-        dd('destroy');
+        $customerOperatingSite->delete();
+
+        return back()->with('success', 'Der Standort wurde erfolgreich gelöscht.');
     }
 }
