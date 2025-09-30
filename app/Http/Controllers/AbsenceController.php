@@ -159,10 +159,11 @@ class AbsenceController extends Controller
 
         $validated = $request->validate([
             'start' => ['required', 'date', function ($attr, $val, $fail) use ($absenceUser, $request) {
-                if ($absenceUser->absences()->where('status', 'accepted')
+                if (
+                    AbsencePatch::getCurrentEntries($absenceUser)
                     ->where('start', '<=', $request['end'])
                     ->where('end', '>=', $request['start'])
-                    ->exists()
+                    ->count() > 0
                 )
                     $fail('In diesem Zeitraum besteht bereits eine Abwesenheit.');
             }],
@@ -202,6 +203,14 @@ class AbsenceController extends Controller
         $is_accepted = $request->validate([
             'accepted' => 'required|boolean'
         ])['accepted'];
+
+        if (
+            $is_accepted &&
+            AbsencePatch::getCurrentEntries($absence->user)
+            ->where('start', '<=', $absence->end)
+            ->where('end', '>=', $absence->start)
+            ->count() > 0
+        ) return back()->with('error', 'In diesem Zeitraum besteht bereits eine Abwesenheit.');
 
         $absenceNotification = $authUser->notifications()
             ->where('type', AbsenceNotification::class)
