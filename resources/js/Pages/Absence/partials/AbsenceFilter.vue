@@ -41,25 +41,27 @@ const singleFilterForm = defineModel<
     >
 >('singleFilterForm', { required: true });
 
-watch(
-    () => groupFilterForm.value.set,
-    newValue => {
-        if (newValue == null) return;
-        let selectedFilter;
-        if (typeof newValue == 'object' && groupFilterForm.value.isDirty)
-            selectedFilter = props.user_absence_filters.find(f => f.id == newValue.value);
-        else if (typeof newValue == 'string') selectedFilter = props.user_absence_filters.find(f => f.name == newValue);
-        if (!selectedFilter) return;
+const deleteFilterForm = useForm({
+    filter_id: null as null | UserAbsenceFilter['id'],
+});
 
-        const data = {
-            set: typeof newValue == 'string' ? { title: newValue, value: selectedFilter.id } : newValue,
-            selected_users: selectedFilter.data.user_ids,
-            selected_absence_types: selectedFilter.data.absence_type_ids,
-            selected_statuses: selectedFilter.data.statuses,
-        };
-        groupFilterForm.value.defaults(data).reset();
-    },
-);
+watch(() => groupFilterForm.value.set, selectExistingFilter);
+
+function selectExistingFilter(newValue: typeof groupFilterForm.value.set) {
+    if (newValue == null) return;
+    let selectedFilter;
+    if (typeof newValue == 'object' && groupFilterForm.value.isDirty) selectedFilter = props.user_absence_filters.find(f => f.id == newValue.value);
+    else if (typeof newValue == 'string') selectedFilter = props.user_absence_filters.find(f => f.name == newValue);
+    if (!selectedFilter) return;
+
+    const data = {
+        set: typeof newValue == 'string' ? { title: newValue, value: selectedFilter.id } : newValue,
+        selected_users: selectedFilter.data.user_ids,
+        selected_absence_types: selectedFilter.data.absence_type_ids,
+        selected_statuses: selectedFilter.data.statuses,
+    };
+    groupFilterForm.value.defaults(data).reset();
+}
 
 watch(
     () => singleFilterForm.value.set,
@@ -82,31 +84,8 @@ function submit() {
         groupFilterForm.value.patch(route('userAbsenceFilter.update', { userAbsenceFilter: groupFilterForm.value.set.value }));
     } else {
         groupFilterForm.value.post(route('userAbsenceFilter.store'), {
-            onSuccess: response => {
-                const filters = response.props['user_absence_filters'] as UserAbsenceFilter[];
-
-                const newFilter = filters[filters.length - 1];
-
-                if (!newFilter) {
-                    console.error('Neuer Filter nicht gefunden');
-                    return;
-                }
-
-                let parsedData = { user_ids: [], absence_type_ids: [], statuses: [] };
-                try {
-                    parsedData = typeof newFilter.data === 'string' ? JSON.parse(newFilter.data) : newFilter.data;
-                } catch (e) {
-                    console.error('Fehler bei der Datenverarbeitung', e);
-                }
-
-                groupFilterForm.value.set = { value: newFilter.id, title: newFilter.name };
-                groupFilterForm.value.defaults({
-                    set: groupFilterForm.value.set,
-                    selected_users: parsedData.user_ids ?? [],
-                    selected_absence_types: parsedData.absence_type_ids ?? [],
-                    selected_statuses: parsedData.statuses ?? [],
-                });
-                groupFilterForm.value.reset();
+            onSuccess: () => {
+                selectExistingFilter(groupFilterForm.value.set);
             },
         });
     }
@@ -147,7 +126,7 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                     </div>
                 </template>
                 <template #append>
-                    <v-btn icon variant="text" @click="isActive.value = false">
+                    <v-btn icon variant="text" @click.stop="isActive.value = false">
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>
@@ -219,11 +198,11 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                                 class="me-2"
                                                 color="primary"
                                                 variant="flat"
-                                                @click="singleFilterForm.defaults(FORM_DEFAULT).reset()"
+                                                @click.stop="singleFilterForm.defaults(FORM_DEFAULT).reset()"
                                             >
                                                 Zurücksetzen
                                             </v-btn>
-                                            <v-btn color="primary" variant="flat" @click="isActive.value = false">Anwenden</v-btn>
+                                            <v-btn color="primary" variant="flat" @click.stop="isActive.value = false">Anwenden</v-btn>
                                         </div>
                                     </v-col>
                                 </v-row>
@@ -311,7 +290,7 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                                             class="me-2"
                                                             variant="flat"
                                                             color="primary"
-                                                            @click="editFilter(item)"
+                                                            @click.stop="editFilter(item)"
                                                         >
                                                             <v-icon>mdi-pencil</v-icon>
                                                         </v-btn>
@@ -319,15 +298,17 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                                             :size="display.smAndDown.value ? 'small' : undefined"
                                                             variant="flat"
                                                             color="error"
-                                                            @click="
-                                                                groupFilterForm.delete(
+                                                            :loading="deleteFilterForm.processing && deleteFilterForm.filter_id == item.id"
+                                                            @click.stop="
+                                                                deleteFilterForm.filter_id = item.id;
+                                                                deleteFilterForm.delete(
                                                                     route('userAbsenceFilter.destroy', { userAbsenceFilter: item.id }),
                                                                     {
                                                                         onSuccess: () => {
                                                                             groupFilterForm.defaults(FORM_DEFAULT).reset();
                                                                         },
                                                                     },
-                                                                )
+                                                                );
                                                             "
                                                         >
                                                             <v-icon>mdi-delete</v-icon>
@@ -338,10 +319,20 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                         </v-data-table-virtual>
                                     </v-col>
                                     <v-col cols="12" class="text-end">
-                                        <v-btn class="me-2" color="primary" variant="flat" @click="groupFilterForm.defaults(FORM_DEFAULT).reset()">
+                                        <v-btn
+                                            class="me-2"
+                                            color="primary"
+                                            variant="flat"
+                                            @click.stop="groupFilterForm.defaults(FORM_DEFAULT).reset()"
+                                        >
                                             Zurücksetzen
                                         </v-btn>
-                                        <v-btn :disabled="!groupFilterForm.isDirty" color="primary" type="submit">
+                                        <v-btn
+                                            :disabled="!groupFilterForm.isDirty"
+                                            color="primary"
+                                            type="submit"
+                                            :loading="groupFilterForm.processing"
+                                        >
                                             {{ typeof groupFilterForm.set == 'string' || groupFilterForm.set == null ? 'Anlegen' : 'Bearbeiten' }}
                                         </v-btn>
                                     </v-col>
