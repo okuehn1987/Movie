@@ -32,7 +32,6 @@ const operatingSiteForm = useForm({
         </template>
         <template v-slot:default="{ isActive }">
             <v-card :title="mode == 'create' ? 'Neuen Standort anlegen' : 'Standort bearbeiten'">
-                {{ item }}
                 <template #append>
                     <v-btn icon variant="text" @click.stop="isActive.value = false">
                         <v-icon>mdi-close</v-icon>
@@ -43,8 +42,15 @@ const operatingSiteForm = useForm({
                     <v-form
                         @submit.prevent="
                             item
-                                ? operatingSiteForm.patch(route('customerOperatingSite.update', { customerOperatingSite: item.id }))
-                                : operatingSiteForm.post(route('customer.customerOperatingSite.store', { customer: customer.id }))
+                                ? operatingSiteForm.patch(route('customerOperatingSite.update', { customerOperatingSite: item.id }), {
+                                      onSuccess: () => (isActive.value = false),
+                                  })
+                                : operatingSiteForm.post(route('customer.customerOperatingSite.store', { customer: customer.id }), {
+                                      onSuccess: () => {
+                                          isActive.value = false;
+                                          operatingSiteForm.reset();
+                                      },
+                                  })
                         "
                     >
                         <v-row>
