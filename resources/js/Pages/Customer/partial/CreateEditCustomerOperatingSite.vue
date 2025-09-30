@@ -44,7 +44,7 @@ const operatingSiteForm = useForm({
                         @submit.prevent="
                             item
                                 ? operatingSiteForm.patch(route('customerOperatingSite.update', { customerOperatingSite: item.id }))
-                                : operatingSiteForm.post(route('customerOperatingSite.store', { customer: customer.id }))
+                                : operatingSiteForm.post(route('customer.customerOperatingSite.store', { customer: customer.id }))
                         "
                     >
                         <v-row>

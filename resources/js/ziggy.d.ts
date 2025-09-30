@@ -435,11 +435,18 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
-    "customerOperatingSite.store": [],
+    "customer.customerOperatingSite.store": [
+        {
+            "name": "customer",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "customerOperatingSite.update": [
         {
             "name": "customerOperatingSite",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "customerOperatingSite.destroy": [
