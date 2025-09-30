@@ -5,11 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Absence;
 use App\Models\AbsencePatch;
 use App\Models\AbsenceType;
+use App\Models\Organization;
 use App\Models\User;
-use App\Models\UserAbsenceFilter;
 use App\Notifications\AbsenceDeleteNotification;
 use App\Notifications\AbsenceNotification;
-use App\Notifications\AbsencePatchNotification;
 use App\Notifications\DisputeStatusNotification;
 use App\Services\HolidayService;
 use Carbon\Carbon;
@@ -29,9 +28,31 @@ class AbsenceController extends Controller
 
         $validated = $request->validate([
             'date' => 'nullable|date',
+            'openAbsence' => [
+                'nullable',
+                Rule::exists('absences', 'id')->whereIn(
+                    'absence_type_id',
+                    AbsenceType::where('organization_id', Organization::getCurrent()->id)
+                        ->select('id')
+                )
+            ],
+            'openAbsencePatch' => [
+                'nullable',
+                Rule::exists('absence_patches', 'id')->whereIn(
+                    'absence_type_id',
+                    AbsenceType::where('organization_id', Organization::getCurrent()->id)
+                        ->select('id')
+                )
+            ]
         ]);
 
-        $date = array_key_exists('date', $validated) ? Carbon::parse($validated['date']) : Carbon::now();
+        $date = Carbon::now();
+        if (array_key_exists('openAbsence', $validated) && $validated["openAbsence"] != null)
+            $date = Carbon::parse(Absence::find($validated['openAbsence'])->start);
+        else if (array_key_exists('openAbsencePatch', $validated) && $validated["openAbsencePatch"] != null)
+            $date = Carbon::parse(AbsencePatch::find($validated['openAbsencePatch'])->start);
+        else if (array_key_exists('date', $validated)) $date =  Carbon::parse($validated['date']);
+
 
         $visibleUsers = User::inOrganization()
             ->where(function ($query) {
@@ -143,6 +164,7 @@ class AbsenceController extends Controller
             'absencePatches' =>  Inertia::merge(fn() => $absencePatches),
             'holidays' =>  Inertia::merge(fn() => $holidays->isEmpty() ? (object)[] : $holidays),
             'user_absence_filters' => $authUser->userAbsenceFilters,
+            'date' => $date,
             'can' => [
                 'user' => [
                     'viewDisputes' => $authUser->can('viewDisputes', User::class),
@@ -188,7 +210,9 @@ class AbsenceController extends Controller
             'end' => Carbon::parse($validated['end']),
             'status' => 'created',
         ]);
-
+        if ($authUser->id !== $absence->user_id) {
+            $absence->user->notify(new DisputeStatusNotification($absence, $requires_approval ? 'created' : 'accepted'));
+        }
         if ($requires_approval) $authUser->supervisor->notify(new AbsenceNotification($authUser, $absence));
         else $absence->accept();
 

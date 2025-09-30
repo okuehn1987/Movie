@@ -688,7 +688,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" v-if="user?.organization_id || user?.supervisor">
+        <v-card class="mb-4" v-if="can('user', 'update')">
             <v-card-title>Kündigungseinstellungen</v-card-title>
             <v-card-text>
                 <v-row>

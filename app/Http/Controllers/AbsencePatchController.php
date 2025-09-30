@@ -37,6 +37,9 @@ class AbsencePatchController extends Controller
             'type' => 'patch'
         ]);
 
+        if ($authUser->id !== $absencePatch->user_id) {
+            $authUser->notify(new DisputeStatusNotification($absencePatch, 'created'));
+        }
         if ($requires_approval) $authUser->supervisor->notify(new AbsencePatchNotification($authUser, $absencePatch));
         else $absencePatch->accept();
 

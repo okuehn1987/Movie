@@ -20,14 +20,13 @@ class DisputeStatusNotification extends Notification
 {
     use Queueable;
 
-    protected $user, $log, $status, $type, $url;
+    protected  $log, $status, $type, $url;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(User $user, Model $log, string $status, string $type = 'create')
+    public function __construct(Model $log, string $status, string $type = 'create')
     {
-        $this->user = $user;
         $this->log = $log;
         $this->status = $status;
         $this->type = $type;
@@ -129,7 +128,7 @@ class DisputeStatusNotification extends Notification
         };
 
         return [
-            'title' => $text . ' ' . ($this->status === 'accepted' ? 'akzeptiert.' : 'abgelehnt.'),
+            'title' => $text . ' ' . ($this->status === 'accepted' ? 'akzeptiert.' : ($this->status == 'created' ? 'beantragt.' : 'abgelehnt.')),
             'log_id' => $this->log->id,
             'log_model' => $modelClass,
             'type' => $this->type

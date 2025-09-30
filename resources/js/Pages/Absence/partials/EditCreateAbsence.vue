@@ -5,6 +5,9 @@ import { AbsencePatchProp, AbsenceProp, UserProp } from '../utils';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
+const emit = defineEmits<{
+    absenceReload: [];
+}>();
 const props = defineProps<{
     users: UserProp[];
     absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval'>[];
@@ -30,6 +33,7 @@ function saveAbsence() {
             onSuccess: () => {
                 absenceForm.reset();
                 openModal.value = false;
+                emit('absenceReload');
             },
         });
     } else {
@@ -37,6 +41,7 @@ function saveAbsence() {
             onSuccess: () => {
                 absenceForm.reset();
                 openModal.value = false;
+                emit('absenceReload');
             },
         });
     }
@@ -51,6 +56,7 @@ function deleteAbsence() {
         {
             onSuccess: () => {
                 openModal.value = false;
+                emit('absenceReload');
             },
         },
     );
