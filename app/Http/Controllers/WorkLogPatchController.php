@@ -66,7 +66,7 @@ class WorkLogPatchController extends Controller
         if ($patchNotification) {
             $patchNotification->markAsRead();
             $patchNotification->update(['data->status' => 'accepted']);
-            $workLogPatch->user->notify(new DisputeStatusNotification($workLogPatch->user, $workLogPatch, $is_accepted ? 'accepted' : 'declined'));
+            $workLogPatch->user->notify(new DisputeStatusNotification($workLogPatch, $is_accepted ? 'accepted' : 'declined'));
         }
 
         if ($is_accepted) $workLogPatch->accept();

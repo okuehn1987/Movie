@@ -236,7 +236,7 @@ class AbsenceController extends Controller
         if ($absenceNotification) {
             $absenceNotification->markAsRead();
             $absenceNotification->update(['data->status' => $is_accepted ? 'accepted' : 'declined']);
-            $absence->user->notify(new DisputeStatusNotification($absence->user, $absence, $is_accepted ? 'accepted' : 'declined'));
+            $absence->user->notify(new DisputeStatusNotification($absence, $is_accepted ? 'accepted' : 'declined'));
         };
 
         if ($is_accepted) $absence->accept();
@@ -276,7 +276,7 @@ class AbsenceController extends Controller
             if ($openDeleteNotification) {
                 $openDeleteNotification->markAsRead();
                 $openDeleteNotification->update(['data->status' => 'accepted']);
-                $absence->user->notify(new DisputeStatusNotification($absence->user, $absence, 'accepted', 'delete'));
+                $absence->user->notify(new DisputeStatusNotification($absence, 'accepted', 'delete'));
             }
             return back()->with('success', 'Die Abwesenheit wurde erfolgreich gelöscht.');
         } else {
@@ -298,7 +298,7 @@ class AbsenceController extends Controller
         if ($openDeleteNotification) {
             $openDeleteNotification->markAsRead();
             $openDeleteNotification->update(['data->status' => 'declined']);
-            $absence->user->notify(new DisputeStatusNotification($absence->user, $absence, 'declined', 'delete'));
+            $absence->user->notify(new DisputeStatusNotification($absence, 'declined', 'delete'));
         }
 
         return back()->with('success', 'Der Antrag auf Löschung wurde abgelehnt.');
