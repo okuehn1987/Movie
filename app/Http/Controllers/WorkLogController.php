@@ -113,7 +113,7 @@ class WorkLogController extends Controller
         if ($workLogNotification) {
             $workLogNotification->markAsRead();
             $workLogNotification->update(['data->status' => 'accepted']);
-            $workLog->user->notify(new DisputeStatusNotification($workLog->user, $workLog, $is_accepted ? 'accepted' : 'declined'));
+            $workLog->user->notify(new DisputeStatusNotification($workLog, $is_accepted ? 'accepted' : 'declined'));
         }
 
         if ($is_accepted) $workLog->accept();
