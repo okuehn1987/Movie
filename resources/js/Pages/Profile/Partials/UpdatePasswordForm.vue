@@ -32,10 +32,11 @@ const updatePassword = () => {
 
 <template>
     <v-card class="h-100" title="Passwort ändern">
+        <v-divider></v-divider>
         <v-card-text>
             <form @submit.prevent="updatePassword">
                 <v-row>
-                    <v-col cols="12"> Stellen Sie sicher, dass Ihr Konto ein langes, zufälliges Passwort verwendet, um sicher zu bleiben. </v-col>
+                    <v-col cols="12">Stellen Sie sicher, dass Ihr Konto ein langes, zufälliges Passwort verwendet, um sicher zu bleiben.</v-col>
                     <v-col cols="12">
                         <v-text-field
                             type="password"

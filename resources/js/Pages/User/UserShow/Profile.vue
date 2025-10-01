@@ -25,6 +25,7 @@ const notificationForm = useForm({
                     <v-col cols="12">
                         <v-card>
                             <v-card-title>Benachrichtigungen</v-card-title>
+                            <v-divider></v-divider>
                             <v-card-text>
                                 <v-form @submit.prevent="notificationForm.post(route('profile.updateSettings'))">
                                     <v-row>

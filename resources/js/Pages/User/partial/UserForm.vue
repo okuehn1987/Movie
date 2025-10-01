@@ -17,7 +17,7 @@ import {
     UserWorkingWeek,
     Weekday,
 } from '@/types/types';
-import { getStates } from '@/utils';
+import { getBrowser, getStates } from '@/utils';
 import { DateTime, Info } from 'luxon';
 import PermissionSelector from './PermissionSelector.vue';
 import { nextTick } from 'vue';
@@ -688,7 +688,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" v-if="user?.organization_id || user?.supervisor">
+        <v-card class="mb-4" v-if="can('user', 'update')">
             <v-card-title>Kündigungseinstellungen</v-card-title>
             <v-card-text>
                 <v-row>
@@ -696,9 +696,13 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                         <v-text-field
                             type="date"
                             label="Kündigungsdatum"
-                            :min="DateTime.now().toFormat('yyyy-MM-dd')"
+                            :min="getBrowser() != 'Apple Safari' ? DateTime.now().plus({ day: 1 }).toFormat('yyyy-MM-dd') : undefined"
                             v-model="userForm.resignation_date"
-                            :disabled="!!userForm.resignation_date && DateTime.now().toFormat('yyyy-MM-dd') > userForm.resignation_date"
+                            :disabled="
+                                getBrowser() != 'Apple Safari'
+                                    ? !!userForm.resignation_date && DateTime.now().toFormat('yyyy-MM-dd') > userForm.resignation_date
+                                    : false
+                            "
                             :error-messages="userForm.errors.resignation_date"
                             clearable
                         ></v-text-field>

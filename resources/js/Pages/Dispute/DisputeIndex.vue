@@ -29,46 +29,65 @@ defineProps<{
 <template>
     <AdminLayout title="Anträge">
         <v-row>
-            <v-col cols="12" md="6">
-                <v-row>
-                    <v-col v-if="absenceRequests.length > 0" cols="12">
-                        <v-card title="Abwesenheiten">
-                            <AbsenceRequests :absenceRequests="absenceRequests" />
-                        </v-card>
-                    </v-col>
-                    <v-col v-if="workLogPatchRequests.length > 0" cols="12">
-                        <v-card title="Zeitkorrekturen"><WorkLogPatches :patches="workLogPatchRequests" /></v-card>
-                    </v-col>
-                    <v-col v-if="absenceDeleteRequests.length > 0" cols="12">
-                        <v-card title="Abwesenheitslöschungen">
-                            <AbsenceDeleteRequests :requestedDeletes="absenceDeleteRequests" />
-                        </v-card>
-                    </v-col>
-                    <!-- <v-col cols="12">
-                        <v-card title="Arbeitszeitrahmenüberschreitung">
-                            <v-card-text>TODO: to be implemented</v-card-text>
-                        </v-card>
-                    </v-col> -->
-                </v-row>
-            </v-col>
-            <v-col cols="12" md="6">
-                <v-row>
-                    <v-col v-if="absencePatchRequests.length > 0" cols="12">
-                        <v-card title="Abwesenheitskorrekturen">
-                            <AbsencePatchRequests :absencePatchRequests="absencePatchRequests" />
-                        </v-card>
-                    </v-col>
-                    <v-col v-if="workLogRequests.length > 0" cols="12">
-                        <v-card title="Manuelle Buchungsanträge"><WorkLogRequests :workLogs="workLogRequests" /></v-card>
-                    </v-col>
-                    <!-- 
-                    <v-col cols="12">
-                        <v-card title="Dienstreisen">
-                            <v-card-text>TODO: to be implemented</v-card-text>
-                        </v-card>
-                    </v-col> -->
-                </v-row>
-            </v-col>
+            <template
+                v-if="
+                    absenceRequests.length == 0 &&
+                    workLogPatchRequests.length == 0 &&
+                    absenceDeleteRequests.length == 0 &&
+                    absencePatchRequests.length == 0 &&
+                    workLogRequests.length == 0
+                "
+            >
+                <v-col cols="12">
+                    <v-alert type="info">Keine Anträge vorhanden</v-alert>
+                </v-col>
+            </template>
+            <template v-else>
+                <v-col cols="12" md="6">
+                    <v-row>
+                        <v-col cols="12" v-if="absenceRequests.length > 0">
+                            <v-card title="Abwesenheiten">
+                                <AbsenceRequests :absenceRequests="absenceRequests" />
+                            </v-card>
+                        </v-col>
+                        <v-col cols="12" v-if="workLogPatchRequests.length > 0">
+                            <v-card title="Zeitkorrekturen">
+                                <WorkLogPatches :patches="workLogPatchRequests" />
+                            </v-card>
+                        </v-col>
+                        <v-col cols="12" v-if="absenceDeleteRequests.length > 0">
+                            <v-card title="Abwesenheitslöschungen">
+                                <AbsenceDeleteRequests :requestedDeletes="absenceDeleteRequests" />
+                            </v-card>
+                        </v-col>
+                        <!-- <v-col cols="12">
+                                <v-card title="Arbeitszeitrahmenüberschreitung">
+                                    <v-card-text>TODO: to be implemented</v-card-text>
+                                </v-card>
+                            </v-col> -->
+                    </v-row>
+                </v-col>
+                <v-col cols="12" md="6">
+                    <v-row>
+                        <v-col cols="12" v-if="absencePatchRequests.length > 0">
+                            <v-card title="Abwesenheitskorrekturen">
+                                <AbsencePatchRequests :absencePatchRequests="absencePatchRequests" />
+                            </v-card>
+                        </v-col>
+                        <v-col cols="12" v-if="workLogRequests.length > 0">
+                            <v-card title="Manuelle Buchungsanträge">
+                                <WorkLogRequests :workLogs="workLogRequests" />
+                            </v-card>
+                        </v-col>
+                        <!--
+                            <v-col cols="12">
+                                <v-card title="Dienstreisen">
+                                    <v-card-text>TODO: to be implemented</v-card-text>
+                                </v-card>
+                            </v-col> -->
+                    </v-row>
+                </v-col>
+            </template>
         </v-row>
     </AdminLayout>
 </template>
