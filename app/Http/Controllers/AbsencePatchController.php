@@ -20,7 +20,14 @@ class AbsencePatchController extends Controller
         Gate::authorize('create', [AbsencePatch::class, $absence->user]);
 
         $validated = $request->validate([
-            'start' => 'required|date',
+            'start' => ['required', 'date', function ($attr, $val, $fail) use ($absence, $request) {
+                if (
+                    AbsencePatch::getCurrentEntries($absence->user)
+                    ->where('start', '<=', $request['end'])
+                    ->where('end', '>=', $request['start'])
+                    ->count() > 0
+                ) $fail('In diesem Zeitraum besteht bereits eine Abwesenheit.');
+            }],
             'end' => 'required|date|after_or_equal:start',
             'absence_type_id' => ['required', Rule::in(AbsenceType::inOrganization()->get()->pluck('id'))],
             'comment' => 'nullable|string'
@@ -50,6 +57,14 @@ class AbsencePatchController extends Controller
         $is_accepted = $request->validate([
             'accepted' => 'required|boolean'
         ])['accepted'];
+
+        if (
+            $is_accepted &&
+            AbsencePatch::getCurrentEntries($absencePatch->user)
+            ->where('start', '<=', $absencePatch->end)
+            ->where('end', '>=', $absencePatch->start)
+            ->count() > 0
+        ) return back()->with('error', 'In diesem Zeitraum besteht bereits eine Abwesenheit.');
 
         $absencePatchNotification = $authUser->notifications()
             ->where('type', AbsencePatchNotification::class)
