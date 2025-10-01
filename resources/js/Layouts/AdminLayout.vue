@@ -88,10 +88,7 @@ const currentApp = computed(() => page.props.appModules.find(m => m.value === pa
             <div class="d-flex align-center mr-auto ga-2">
                 <span
                     class="text-h6 ps-0 mx-md-5 px-2 mb-0"
-                    style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap; "
-                    :style="{
-                        maxWidth: $page.props.unreadNotifications.length > 0 ? 'calc(100vw - 72px - 72px - 52px)' : 'calc(100vw -  72px - 52px)',
-                    }"
+                    style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: calc(100vw - 72px - 72px - 52px)"
                 >
                     {{ title }}
                 </span>
@@ -111,7 +108,7 @@ const currentApp = computed(() => page.props.appModules.find(m => m.value === pa
             <AppbarActions />
         </v-app-bar>
         <v-main>
-            <v-container class="pt-0 px-sm-2 px-1" fluid>
+            <v-container class="pt-0" fluid>
                 <v-alert v-if="$page.props.flash.error" type="error" closable class="mb-6" :key="Math.random()">
                     {{ $page.props.flash.error }}
                 </v-alert>
