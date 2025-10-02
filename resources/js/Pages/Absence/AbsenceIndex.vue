@@ -166,7 +166,6 @@ const display = useDisplay();
         ></ShowAbsenceModal>
         <v-card>
             <v-card-text>
-                {{ absencePatches.length + absences.length }}
                 <div class="d-flex justify-space-between align-center w-100">
                     <AbsenceFilter
                         :absence_types
