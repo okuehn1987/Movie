@@ -45,7 +45,7 @@ watch([() => singleFilterForm.set, () => groupFilterForm.set], () => {
     else currentFilterForm.value = groupFilterForm;
 });
 
-const currentEntries = computed(() => {
+const currentMonthEntries = computed(() => {
     const entries = [] as typeof props.absences | typeof props.absencePatches;
     return entries
         .concat(
@@ -57,17 +57,19 @@ const currentEntries = computed(() => {
             props.absences.filter(
                 a => a.start <= date.value.endOf('month').toFormat('yyyy-MM-dd') && a.end >= date.value.startOf('month').toFormat('yyyy-MM-dd'),
             ),
-        )
-        .filter(entry => {
-            return (
-                !currentFilterForm.value ||
-                ((currentFilterForm.value.selected_users.length == 0 || currentFilterForm.value.selected_users.includes(entry.user_id)) &&
-                    (currentFilterForm.value.selected_absence_types.length == 0 ||
-                        !entry.absence_type_id ||
-                        currentFilterForm.value.selected_absence_types.includes(entry.absence_type_id)) &&
-                    (currentFilterForm.value.selected_statuses.length == 0 || currentFilterForm.value.selected_statuses.includes(entry.status)))
-            );
-        });
+        );
+});
+
+const currentEntries = computed(() => {
+    return currentMonthEntries.value.filter(
+        entry =>
+            !currentFilterForm.value ||
+            ((currentFilterForm.value.selected_users.length == 0 || currentFilterForm.value.selected_users.includes(entry.user_id)) &&
+                (currentFilterForm.value.selected_absence_types.length == 0 ||
+                    !entry.absence_type_id ||
+                    currentFilterForm.value.selected_absence_types.includes(entry.absence_type_id)) &&
+                (currentFilterForm.value.selected_statuses.length == 0 || currentFilterForm.value.selected_statuses.includes(entry.status))),
+    );
 });
 const openEditCreateAbsenceModal = ref(false);
 const openShowAbsenceModal = ref(false);
@@ -164,6 +166,7 @@ const display = useDisplay();
         ></ShowAbsenceModal>
         <v-card>
             <v-card-text>
+                {{ absencePatches.length + absences.length }}
                 <div class="d-flex justify-space-between align-center w-100">
                     <AbsenceFilter
                         :absence_types
