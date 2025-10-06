@@ -209,7 +209,7 @@ function submit() {
 function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since: string }) {
     if (props.user && !can('user', 'update')) return true;
     const original = props.user?.user_leave_days.find(e => e?.id === item.id);
-    if (original) return original.active_since < DateTime.now().startOf('month').toFormat('yyyy-MM-dd');
+    if (original) return original.active_since < DateTime.now().startOf('year').toFormat('yyyy-MM-dd');
     return false;
 }
 </script>

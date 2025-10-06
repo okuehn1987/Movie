@@ -497,25 +497,49 @@ class User extends Authenticatable
 
     public function leaveDaysForYear(CarbonInterface $year, $userLeaveDays = null): int
     {
-        $leaveDays = 0;
-        for ($m = 1; $m <= 12; $m++) {
-            $month = $year->copy()->setMonth($m)->startOfMonth();
-            $activeEntry = ($userLeaveDays ?? $this->leaveDays)
-                ->where('type', 'annual')
-                ->where('active_since', '<=', $month)
-                ->sortByDesc('active_since')
-                ->first();
-            if ($activeEntry) { //FIXME: should not be possible to be false
-                $leaveDays += $activeEntry->leave_days / 12;
+        $leaveDays = $userLeaveDays ?? $this->leaveDays;
+
+        $annual = $leaveDays->where('type', 'annual')
+            ->sortBy('active_since')
+            ->values();
+
+        $jan1 = $year->copy()->startOfYear();
+        $dec31 = $year->copy()->endOfYear();
+
+        $changePoints = $annual
+            ->map(fn($e) => Carbon::parse($e->active_since)->startOfMonth())
+            ->filter(fn($d) => $d->betweenIncluded($jan1, $dec31))
+            ->prepend($jan1)
+            ->unique(fn($d) => $d->format('Y-m'))
+            ->values();
+
+        $changePoints->push($dec31->copy()->addMonth()->startOfMonth());
+
+        $leaveDayCount = 0;
+
+        for ($i = 0; $i < $changePoints->count() - 1; $i++) {
+            $start = $changePoints[$i];
+            $end   = $changePoints[$i + 1]->copy()->subDay();
+
+            $entry = $annual
+                ->filter(fn($e) => Carbon::parse($e->active_since)->startOfMonth()->lte($start))
+                ->last();
+
+            if ($entry) {
+                $months = $start->diffInMonths($end) + 1;
+                $leaveDayCount += ($entry->leave_days / 12.0) * $months;
             }
         }
 
-        $leaveDays += ($userLeaveDays ?? $this->leaveDays)
+        $remaining = $leaveDays
             ->where('type', 'remaining')
-            ->filter(fn($ld) => Carbon::parse($ld->active_since)->year == $year->year)
-            ->first()?->leave_days ?? 0;
+            ->firstWhere(fn($ld) => Carbon::parse($ld->active_since)->year === $year->year);
 
-        return ceil($leaveDays);
+        if ($remaining) {
+            $leaveDayCount += $remaining->leave_days;
+        }
+
+        return (int)ceil($leaveDayCount);
     }
 
     public function getAbsencesForDate(CarbonInterface $date)
@@ -635,13 +659,20 @@ class User extends Authenticatable
         return Attribute::make(
             get: function () {
                 $futureAbsences =
-                    $this->absences()
-                    ->with('currentAcceptedPatch')
-                    ->where('status', 'accepted')
-                    ->get()
-                    ->map(fn($a) => $a->currentAcceptedPatch ?? $a)
-                    ->filter(fn($a) => Carbon::parse($a->start) <= now()->startOfDay() && Carbon::parse($a->end) >= now()->startOfDay())
-                    ->values();
+                    collect(
+                        $this->absences()
+                            ->doesntHave('currentAcceptedPatch')
+                            ->whereDate('end', '>=', now())
+                            ->get()
+                    )
+                    ->merge(
+                        $this->absencePatches()
+                            ->with('log.currentAcceptedPatch')
+                            ->where('status', 'accepted')
+                            ->whereDate('end', '>=', now())
+                            ->get()
+                            ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p))
+                    );
 
                 $lastDay = null;
                 $absenceTypes = collect();
