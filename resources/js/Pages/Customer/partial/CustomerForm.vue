@@ -20,7 +20,13 @@ const customerForm = useForm({
 });
 </script>
 <template>
-    <v-form>
+    <v-form
+        @submit.prevent="
+            props.customer?.id
+                ? customerForm.patch(route('customer.update', { customer: props.customer.id }))
+                : customerForm.post(route('customer.store'))
+        "
+    >
         <v-card :title="mode == 'create' ? 'Neuen Kunden anlegen' : ''">
             <template #append>
                 <v-btn icon variant="text" v-if="mode == 'create'" @click="emit('close')">

@@ -91,6 +91,11 @@ class Organization extends Model
         return Organization::where('name', self::getOrganizationNameByDomain())->first() ?? Organization::first();
     }
 
+    public static function id()
+    {
+        return self::getCurrent()->id;
+    }
+
 
     public static function getOrganizationNameByDomain(): string
     {

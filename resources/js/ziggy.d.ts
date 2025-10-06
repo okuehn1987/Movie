@@ -52,6 +52,7 @@ declare module 'ziggy-js' {
     ],
     "switchAppModule": [],
     "dashboard": [],
+    "reportBug.store": [],
     "organization.saveSettings": [],
     "organization.show": [
         {
@@ -115,13 +116,15 @@ declare module 'ziggy-js' {
     "userAbsenceFilter.update": [
         {
             "name": "userAbsenceFilter",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "userAbsenceFilter.destroy": [
         {
             "name": "userAbsenceFilter",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "absence.absencePatch.store": [
@@ -394,7 +397,8 @@ declare module 'ziggy-js' {
     "customer.update": [
         {
             "name": "customer",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "customer.destroy": [
@@ -422,6 +426,33 @@ declare module 'ziggy-js' {
             "name": "customerNote",
             "required": true,
             "binding": "id"
+        }
+    ],
+    "customerNote.getFile": [
+        {
+            "name": "customerNote",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customer.customerOperatingSite.store": [
+        {
+            "name": "customer",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customerOperatingSite.update": [
+        {
+            "name": "customerOperatingSite",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customerOperatingSite.destroy": [
+        {
+            "name": "customerOperatingSite",
+            "required": true
         }
     ],
     "ticket.index": [],

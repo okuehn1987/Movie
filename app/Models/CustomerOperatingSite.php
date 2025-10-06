@@ -5,10 +5,11 @@ namespace App\Models;
 use App\Addressable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CustomerOperatingSite extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
     use Addressable;
 
     protected $guarded = [];
