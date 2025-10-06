@@ -6,12 +6,15 @@ use App\Models\Address;
 use App\Models\Customer;
 use App\Models\CustomerOperatingSite;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class CustomerOperatingSiteController extends Controller
 {
 
     public function store(Request $request, Customer $customer)
     {
+        Gate::authorize('create', Customer::class);
+
         $validated = $request->validate([
             'name' => 'required|string',
             'street' => 'required|string',
@@ -43,6 +46,8 @@ class CustomerOperatingSiteController extends Controller
 
     public function update(Request $request, CustomerOperatingSite $customerOperatingSite)
     {
+        Gate::authorize('update', Customer::class);
+
         $validated = $request->validate([
             'name' => 'required|string',
             'street' => 'required|string',
@@ -71,6 +76,8 @@ class CustomerOperatingSiteController extends Controller
 
     public function destroy(CustomerOperatingSite $customerOperatingSite)
     {
+        Gate::authorize('delete', Customer::class);
+
         $customerOperatingSite->delete();
 
         return back()->with('success', 'Der Standort wurde erfolgreich gelöscht.');

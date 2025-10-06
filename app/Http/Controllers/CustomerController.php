@@ -63,7 +63,7 @@ class CustomerController extends Controller
             'email' => $validated['email'],
             'phone' => $validated['phone'],
             'reference_number' => $validated['reference_number'],
-            'organization_id' => Organization::getCurrent()->id,
+            'organization_id' => Organization::id(),
         ]);
 
         return back()->with('success', 'Der Kunde wurde erfolgreich angelegt.');
