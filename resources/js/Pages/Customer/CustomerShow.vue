@@ -33,24 +33,20 @@ const currentTab = ref('customerData');
                     :headers="[
                         { title: 'Name', key: 'name', sortable: false },
                         { title: 'Adresse', key: 'address', sortable: false },
-                        { title: '', key: 'actions' },
+                        { title: '', key: 'actions', align: 'end' },
                     ]"
                     :items="operatingSites.map(o => ({ ...o, address: formatAddress(o.current_address) }))"
                 >
                     <template #header.actions>
-                        <div class="d-flex justify-end ga-2 align-center">
-                            <CreateEditCustomerOperatingSite :mode="'create'" :customer="customer" :item="null"></CreateEditCustomerOperatingSite>
-                        </div>
+                        <CreateEditCustomerOperatingSite :customer="customer"></CreateEditCustomerOperatingSite>
                     </template>
                     <template #item.actions="{ item }">
-                        <div class="d-flex justify-end ga-2 align-center">
-                            <CreateEditCustomerOperatingSite :mode="'edit'" :customer="customer" :item></CreateEditCustomerOperatingSite>
-                            <ConfirmDelete
-                                :title="'Kundenstandort löschen'"
-                                :content="'Bist du dir sicher, dass du den Standort ' + item.name + ' löschen möchtest?'"
-                                :route="route('customerOperatingSite.destroy', { customerOperatingSite: item.id })"
-                            ></ConfirmDelete>
-                        </div>
+                        <CreateEditCustomerOperatingSite :customer="customer" :item></CreateEditCustomerOperatingSite>
+                        <ConfirmDelete
+                            :title="'Kundenstandort löschen'"
+                            :content="'Bist du dir sicher, dass du den Standort ' + item.name + ' löschen möchtest?'"
+                            :route="route('customerOperatingSite.destroy', { customerOperatingSite: item.id })"
+                        ></ConfirmDelete>
                     </template>
                 </v-data-table-virtual>
             </v-tabs-window-item>

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Customer, CustomerOperatingSite, Relations } from '@/types/types';
+import { computed } from 'vue';
 
 const props = defineProps<{
     customer: Customer;
-    mode: 'edit' | 'create';
-    item: (CustomerOperatingSite & Pick<Relations<'customerOperatingSite'>, 'current_address'>) | null;
+    item?: CustomerOperatingSite & Pick<Relations<'customerOperatingSite'>, 'current_address'>;
 }>();
 
 const operatingSiteForm = useForm({
@@ -17,6 +17,8 @@ const operatingSiteForm = useForm({
     zip: props.item?.current_address.zip ?? '',
     federal_state: props.item?.current_address.federal_state ?? '',
 });
+
+const mode = computed(() => (props.item ? 'edit' : 'create'));
 </script>
 <template>
     <v-dialog max-width="1000">
@@ -110,10 +112,8 @@ const operatingSiteForm = useForm({
                                     :error-messages="operatingSiteForm.errors.country"
                                 ></v-text-field>
                             </v-col>
-                            <v-col cols="12">
-                                <div class="text-end">
-                                    <v-btn type="submit" color="primary">Speichern</v-btn>
-                                </div>
+                            <v-col cols="12" class="text-end">
+                                <v-btn type="submit" color="primary">Speichern</v-btn>
                             </v-col>
                         </v-row>
                     </v-form>

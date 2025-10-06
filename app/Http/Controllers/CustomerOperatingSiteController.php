@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Address;
 use App\Models\Customer;
 use App\Models\CustomerOperatingSite;
 use Illuminate\Http\Request;
@@ -53,27 +54,22 @@ class CustomerOperatingSiteController extends Controller
             'federal_state' => 'required|string',
         ]);
 
-        if ($customerOperatingSite->name !== $validated['name']) {
-            $customerOperatingSite->update([
-                'name' => $validated['name'],
-            ]);
+        $customerOperatingSite->update([
+            'name' => $validated['name'],
+        ]);
+
+        foreach (Address::$ADDRESS_KEYS as $key) {
+            $customerOperatingSite->currentAddress->$key = $validated[$key];
         }
-
-        $newAddress = collect($validated)->except([
-            'name'
-        ])->toArray();
-
-        $oldAddress = $customerOperatingSite->currentAddress->only(array_keys($newAddress));
-
-        if ($newAddress !== $oldAddress) {
-            $newAddress['active_since'] = now();
-            $customerOperatingSite->addresses()->create($newAddress);
+        if ($customerOperatingSite->currentAddress->isDirty()) {
+            $customerOperatingSite->currentAddress->active_since = now();
+            $customerOperatingSite->currentAddress->replicate()->save();
         }
 
         return back()->with('success', 'Der Standort wurde erfolgreich aktualisiert.');
     }
 
-    public function destroy(Request $request, CustomerOperatingSite $customerOperatingSite)
+    public function destroy(CustomerOperatingSite $customerOperatingSite)
     {
         $customerOperatingSite->delete();
 
