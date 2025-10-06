@@ -462,7 +462,7 @@ export type Permission = {
         | 'timeAccountTransaction_permission'
         | 'ticket_permission'
         | 'absenceType_permission';
-    organization: 'specialWorkingHoursFactor_permission' | 'organization_permission';
+    organization: 'specialWorkingHoursFactor_permission' | 'organization_permission' | 'customer_permission';
     operatingSite: 'operatingSite_permission';
     group: 'group_permission';
 };

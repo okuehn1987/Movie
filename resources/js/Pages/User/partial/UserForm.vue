@@ -70,6 +70,7 @@ const userForm = useForm<FormData>({
         workLogPatch_permission: null,
         workLog_permission: null,
         ticket_permission: null,
+        customer_permission: null,
     },
     groupUser: {
         absenceType_permission: null,
@@ -621,6 +622,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             { label: 'Mitarbeiter', keys: ['user_permission'] },
                             { label: 'Organisation', keys: ['organization_permission'] },
                             { label: 'Ticket', keys: ['ticket_permission'] },
+                            { label: 'Kunden', keys: ['customer_permission'] },
                         ]"
                     />
                 </v-row>
