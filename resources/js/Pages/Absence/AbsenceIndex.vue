@@ -116,7 +116,7 @@ const loading = ref(false);
 const reload = throttle(() => {
     if (loadedMonths.value.includes(currentDate.value.toFormat('yyyy-MM'))) return;
     router.reload({
-        only: ['absences', 'holidays'],
+        only: ['absences', 'absencePatches', 'holidays'],
         data: { date: currentDate.value.toFormat('yyyy-MM'), openAbsence: null, openAbsencePatch: null },
         onStart: () => {
             loadedMonths.value.push(currentDate.value.toFormat('yyyy-MM'));
