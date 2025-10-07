@@ -498,35 +498,37 @@ class User extends Authenticatable
     public function leaveDaysForYear(CarbonInterface $year, $userLeaveDays = null): int
     {
         $leaveDays = $userLeaveDays ?? $this->leaveDays;
-
+        
         $annual = $leaveDays->where('type', 'annual')
-            ->sortBy('active_since')
-            ->values();
-
+        ->filter(fn($ld) => $ld->active_since <= $year->endOfYear()->format('Y-m-d'))
+        ->sortBy('active_since')
+        ->values();
+        
         $jan1 = $year->copy()->startOfYear();
         $dec31 = $year->copy()->endOfYear();
 
         $changePoints = $annual
-            ->map(fn($e) => Carbon::parse($e->active_since)->startOfMonth())
-            ->filter(fn($d) => $d->betweenIncluded($jan1, $dec31))
-            ->prepend($jan1)
-            ->unique(fn($d) => $d->format('Y-m'))
-            ->values();
-
+        ->map(fn($e) => Carbon::parse($e->active_since)->startOfMonth())
+        ->filter(fn($d) => $d->betweenIncluded($jan1, $dec31))
+        ->prepend($jan1)
+        ->unique(fn($d) => $d->format('Y-m'))
+        ->values();
+        
         $changePoints->push($dec31->copy()->addMonth()->startOfMonth());
+        
 
         $leaveDayCount = 0;
 
         for ($i = 0; $i < $changePoints->count() - 1; $i++) {
             $start = $changePoints[$i];
-            $end   = $changePoints[$i + 1]->copy()->subDay();
-
+            $end   = $changePoints[$i + 1]->copy();
+            
             $entry = $annual
-                ->filter(fn($e) => Carbon::parse($e->active_since)->startOfMonth()->lte($start))
-                ->last();
-
+            ->filter(fn($e) => Carbon::parse($e->active_since)->startOfMonth()->lte($start))
+            ->last();
+            
             if ($entry) {
-                $months = $start->diffInMonths($end) + 1;
+                $months = $start->diffInMonths($end);
                 $leaveDayCount += ($entry->leave_days / 12.0) * $months;
             }
         }
