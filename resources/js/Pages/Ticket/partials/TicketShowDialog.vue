@@ -2,8 +2,9 @@
 import { PRIORITIES, User } from '@/types/types';
 import { formatDuration } from '@/utils';
 import { DateTime } from 'luxon';
-import { computed, watchEffect } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 import { CustomerProp, TicketProp, UserProp } from './ticketTypes';
+import RecordCreateDialog from './RecordCreateDialog.vue';
 
 const props = defineProps<{
     ticket: TicketProp;
@@ -31,6 +32,8 @@ watchEffect(() => {
     form.reset();
 });
 
+const showDialog = ref(Number(route().params['openTicket']) == props.ticket.id);
+
 const hasRecords = computed(() => props.ticket.records.length > 0);
 
 const durationSum = computed(() => props.ticket.records.reduce((a, c) => a + c.duration, 0));
@@ -40,7 +43,7 @@ const selectedDurationSum = computed(() =>
 );
 </script>
 <template>
-    <v-dialog max-width="1000px" height="800px">
+    <v-dialog max-width="1000px" height="800px" v-model="showDialog">
         <template #activator="{ props: activatorProps }">
             <v-btn title="Auftrag anzeigen" v-bind="activatorProps" icon variant="text">
                 <v-icon icon="mdi-eye"></v-icon>
@@ -132,18 +135,28 @@ const selectedDurationSum = computed(() =>
                                         { title: 'Start', key: 'start' },
                                         { title: 'Auftragsdauer', key: 'duration' },
                                         { title: 'Erstellt von', key: 'userName' },
+                                        { title: '', key: 'actions', width: '1px', sortable: false },
                                     ]"
                                     :items="
                                         ticket.records.map(r => ({
                                             ...r,
-                                            duration: formatDuration(r.duration, 'minutes', 'duration'),
-                                            start: DateTime.fromSQL(r.start).toFormat('dd.MM.yyyy HH:mm'),
                                             userName: r.user.first_name + ' ' + r.user.last_name,
                                         }))
                                     "
                                     show-expand
                                     :show-select="tab !== 'archive'"
                                 >
+                                    <template v-slot:item.start="{ item }">
+                                        {{ DateTime.fromSQL(item.start).toFormat('dd.MM.yyyy HH:mm') }}
+                                    </template>
+
+                                    <template v-slot:item.duration="{ item }">
+                                        {{ formatDuration(item.duration, 'minutes', 'duration') }}
+                                    </template>
+
+                                    <template v-slot:item.actions="{ item }">
+                                        <RecordCreateDialog :ticket="ticket" :users="users" :record="item" mode="update"></RecordCreateDialog>
+                                    </template>
                                     <template v-slot:item.data-table-expand="{ internalItem, isExpanded, toggleExpand }">
                                         <v-btn size="small" variant="text" border @click="toggleExpand(internalItem)">
                                             <v-icon :icon="isExpanded(internalItem) ? 'mdi-chevron-up' : 'mdi-chevron-down'"></v-icon>

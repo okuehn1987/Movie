@@ -304,6 +304,7 @@ export type AbsenceType = DBObject<'absenceType'> &
         organization_id: Organization['id'];
     };
 
+export const DATETIME_LOCAL_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
 export const TRUNCATION_CYCLES = [null, '1', '3', '6', '12'] as const;
 export const PRIORITIES = [
     { value: 'highest', title: 'Höchste', priorityValue: 1, icon: 'mdi-chevron-double-up', color: 'red-darken-4' },
@@ -405,6 +406,41 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
               };
           }
         | {
+              type: 'App\\Notifications\\TicketCreationNotification';
+              data: {
+                  title: string;
+                  ticket_id: Ticket['id'];
+              };
+          }
+        | {
+              type: 'App\\Notifications\\TicketUpdateNotification';
+              data: {
+                  title: string;
+                  ticket_id: Ticket['id'];
+              };
+          }
+        | {
+              type: 'App\\Notifications\\TicketDeletionNotification';
+              data: {
+                  title: string;
+                  ticket_id: Ticket['id'];
+              };
+          }
+        | {
+              type: 'App\\Notifications\\TicketFinishNotification';
+              data: {
+                  title: string;
+                  ticket_id: Ticket['id'];
+              };
+          }
+        | {
+              type: 'App\\Notifications\\TicketRecordCreationNotification';
+              data: {
+                  title: string;
+                  ticket_id: Ticket['id'];
+              };
+          }
+        | {
               type: 'App\\Notifications\\DisputeStatusNotification';
               data: {
                   title: string;
@@ -438,6 +474,8 @@ export type Ticket = DBObject<'ticket'> & {
     user_id: User['id'];
     accounted_at: DateTimeString | null;
     finished_at: DateTimeString | null;
+    reference_prefix: string;
+    readonly reference_number: string;
 };
 
 export type TicketRecord = DBObject<'record'> & {

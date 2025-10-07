@@ -175,6 +175,12 @@ export function throttle<T extends (...args: unknown[]) => void>(func: T, delayL
     };
 }
 
+export function secondsToDuration(seconds: number): `${string}:${string}` {
+    return `${Math.floor(seconds / 3600)
+        .toString()
+        .padStart(2, '0')}:${((seconds % 3600) / 60).toString().padStart(2, '0')}`;
+}
+
 export function formatDuration(seconds: number, accuracy: 'seconds' | 'minutes' = 'seconds', formatType: 'time' | 'duration' = 'time') {
     const format = {
         seconds: formatType == 'time' ? 'h:mm:ss' : `h'h 'mm'm 'ss's'`,

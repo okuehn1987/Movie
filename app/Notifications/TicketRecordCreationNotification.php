@@ -2,26 +2,24 @@
 
 namespace App\Notifications;
 
-use App\Models\User;
-use App\Models\WorkLog;
-use Carbon\Carbon;
+use App\Models\Ticket;
 use Illuminate\Bus\Queueable;
+use App\Models\User;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class WorkLogNotification extends Notification
+class TicketRecordCreationNotification extends Notification
 {
     use Queueable;
-
-    protected $user, $log;
+    protected $user, $ticket;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(User $user, WorkLog $log)
+    public function __construct(User $user, Ticket $ticket)
     {
         $this->user = $user;
-        $this->log = $log;
+        $this->ticket = $ticket;
     }
 
     /**
@@ -39,14 +37,10 @@ class WorkLogNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $buttonText = 'Antrag einsehen';
         return (new MailMessage)
-            ->subject('Herta Buchungsantrag')
-            ->line('für den Nutzer "' . $this->user->name . '" liegt ein Antrag auf eine Buchung für den Zeitraum vom "' .
-                Carbon::parse($this->log->start)->format('d.m.Y') . '" bis zum "' .
-                Carbon::parse($this->log->end)->format('d.m.Y') . '" vor.')
-            ->line('Um fortzufahren, klicke bitte auf "' . $buttonText . '".')
-            ->action($buttonText,  $this->getNotificationURL());
+            ->subject("Timesheets - (" . $this->ticket->referenceNumber . ")")
+            ->line($this->user->name . ' hat einen neuen Eintrag zu einem Ticket erstellt.')
+            ->action('Zum Ticket', $this->getNotificationURL());
     }
 
     /**
@@ -57,16 +51,16 @@ class WorkLogNotification extends Notification
     public function toArray($notifiable): array
     {
         return [
-            'title' => $this->user->name . ' hat eine neue Buchung beantragt.',
-            'work_log_id' => $this->log->id,
+            'title' => $this->user->name . ' hat einen neuen Eintrag zu einem Ticket erstellt.',
+            'ticket_id' => $this->ticket->id,
             'status' => 'created',
         ];
     }
 
     public function getNotificationURL()
     {
-        return  route('dispute.index', [
-            'openWorkLog' => $this->log->id,
+        return  route('ticket.index', [
+            'openTicket' => $this->ticket->id,
         ]);
     }
 }

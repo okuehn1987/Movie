@@ -4,8 +4,9 @@ import { CustomerProp, TicketProp, UserProp } from './ticketTypes';
 import TicketShowDialog from './TicketShowDialog.vue';
 import RecordCreateDialog from './RecordCreateDialog.vue';
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
-import { PRIORITIES } from '@/types/types';
+import { PRIORITIES, TicketRecord } from '@/types/types';
 import { ref } from 'vue';
+import { DateTime } from 'luxon';
 
 defineProps<{
     tickets: TicketProp[];
@@ -17,17 +18,33 @@ defineProps<{
 const form = useForm({});
 
 const search = ref('');
+
+function getAccountedAt(records: TicketRecord[]) {
+    const sortedRecords = records.sort((a, b) => {
+        if (!a.accounted_at) return 1;
+        if (!b.accounted_at) return -1;
+        return b.accounted_at.localeCompare(a.accounted_at);
+    });
+    if (!sortedRecords[0]) return '-';
+
+    const date = DateTime.fromSQL(sortedRecords[0].accounted_at ?? '');
+
+    if (date.isValid) return date.toFormat('dd.MM.yyyy HH:mm');
+    return '-';
+}
 </script>
 <template>
     <v-card>
         <v-data-table-virtual
             fixed-header
             :headers="[
+                { title: 'Ticketnummer', key: 'reference_number' },
                 { title: 'Titel', key: 'title' },
                 { title: 'Kunde', key: 'customer.name' },
                 { title: 'Priorität', key: 'priorityText' },
                 { title: 'Erstellt von', key: 'user.name' },
                 { title: 'Zugewiesen an', key: 'assigneeName' },
+                ...(tab === 'archive' ? [{ title: 'Abgerechnet am', key: 'accounted_at' }] : []),
                 { title: '', key: 'actions', align: 'end', sortable: false },
             ]"
             :items="
@@ -69,6 +86,9 @@ const search = ref('');
             <template v-slot:item.assigneeName="{ item }">
                 {{ item.assigneeName }}
             </template>
+            <template v-slot:item.accounted_at="{ item }">
+                {{ getAccountedAt(item.records) }}
+            </template>
             <template v-slot:item.actions="{ item }">
                 <v-dialog v-if="tab === 'newTickets'" max-width="1000">
                     <template v-slot:activator="{ props: activatorProps }">
@@ -81,12 +101,15 @@ const search = ref('');
                                     <v-icon>mdi-close</v-icon>
                                 </v-btn>
                             </template>
+                            <v-divider></v-divider>
                             <v-card-text>
                                 <v-row>
                                     <v-col cols="12">
-                                        Bist du dir sicher, dass du diesen Auftrag als abgeschlossen markieren möchtest?
-                                        <br />
-                                        Du kannst danach keine weiteren Einträge für diesen Auftrag hinzufügen oder bearbeiten.
+                                        <v-alert type="warning">
+                                            Bist du dir sicher, dass du diesen Auftrag als abgeschlossen markieren möchtest?
+                                            <br />
+                                            Du kannst danach keine weiteren Einträge für diesen Auftrag hinzufügen oder bearbeiten.
+                                        </v-alert>
                                     </v-col>
                                     <v-col cols="12" class="text-end">
                                         <v-btn
@@ -106,9 +129,10 @@ const search = ref('');
                         </v-card>
                     </template>
                 </v-dialog>
-                <RecordCreateDialog v-if="tab === 'newTickets'" :ticket="item" :users="users" />
+                <RecordCreateDialog v-if="tab === 'newTickets'" :ticket="item" :users="users" mode="create" />
                 <TicketShowDialog :ticket="item" :customers="customers" :users="users" :tab />
                 <ConfirmDelete
+                    v-if="tab === 'newTickets'"
                     content="Möchtest du dieses Ticket löschen?"
                     title="Löschen"
                     :route="route('ticket.destroy', { ticket: item.id })"
