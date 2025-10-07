@@ -64,6 +64,7 @@ class User extends Authenticatable
             ['name' => 'absenceType_permission', 'label' => 'Abwesenheitsgründe verwalten'],
             ['name' => 'specialWorkingHoursFactor_permission', 'label' => 'Sonderarbeitszeitfaktoren verwalten'],
             ['name' => 'organization_permission', 'label' => 'Organisation verwalten'],
+            ['name' => 'customer_permission', 'label' => 'Kunden verwalten'],
         ],
         'operatingSite' => [['name' => 'operatingSite_permission', 'label' => 'Betriebsstätte verwalten']],
         'group' =>  [['name' => 'group_permission', 'label' => 'Abteilungen verwalten']],

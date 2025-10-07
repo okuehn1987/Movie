@@ -30,7 +30,7 @@ class CustomerController extends Controller
 
     public function show(Customer $customer)
     {
-        Gate::authorize('viewShow', User::class);
+        Gate::authorize('viewShow', Customer::class);
 
         return Inertia::render('Customer/CustomerShow', [
             'customer' => $customer,
@@ -47,17 +47,46 @@ class CustomerController extends Controller
         ]);
     }
 
-    public function store()
+    public function store(Request $request)
     {
-        Gate::authorize('create', User::class);
-        // TODO: 
-        dd(5);
+        Gate::authorize('create', Customer::class);
+
+        $validated = $request->validate([
+            'name' => 'required|string',
+            'email' => 'nullable|email',
+            'phone' => 'nullable|string',
+            'reference_number' => 'nullable|string',
+        ]);
+
+        Customer::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'reference_number' => $validated['reference_number'],
+            'organization_id' => Organization::id(),
+        ]);
+
+        return back()->with('success', 'Der Kunde wurde erfolgreich angelegt.');
     }
 
-    public function update()
+    public function update(Request $request, Customer $customer)
     {
-        Gate::authorize('update', User::class);
-        // TODO: 
-        dd(5);
+        Gate::authorize('update', Customer::class);
+
+        $validated = $request->validate([
+            'name' => 'required|string',
+            'email' => 'nullable|email',
+            'phone' => 'nullable|string',
+            'reference_number' => 'nullable|string',
+        ]);
+
+        $customer->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'reference_number' => $validated['reference_number'],
+        ]);
+
+        return back()->with('success', 'Der Kunde wurde erfolgreich aktualisiert.');
     }
 }
