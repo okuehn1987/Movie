@@ -39,9 +39,9 @@ class TicketDeletionNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+            ->subject("Timesheets - (" . $this->ticket->referenceNumber . ")")
+            ->line($this->user->name . ' hat das Ticket gelöscht.')
+            ->action('Zum Ticket', $this->getNotificationURL());
     }
 
     /**
@@ -52,7 +52,7 @@ class TicketDeletionNotification extends Notification
     public function toArray($notifiable): array
     {
         return [
-            'title' => $this->user->name . ' hat ein Ticket gelöscht.',
+            'title' => $this->user->name . ' hat das Ticket (' . $this->ticket->referenceNumber . ') gelöscht.',
             'ticket_id' => $this->ticket->id,
             'status' => 'created',
         ];
@@ -60,7 +60,7 @@ class TicketDeletionNotification extends Notification
 
     public function getNotificationURL()
     {
-        return  route('dispute.index', [
+        return  route('ticket.index', [
             'openTicket' => $this->ticket->id,
         ]);
     }

@@ -2,24 +2,25 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
-use App\Models\User;
 use App\Models\Ticket;
+use App\Models\User;
+use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class TicketCreationNotification extends Notification
+class RemovedFromTicketNotification extends Notification
 {
     use Queueable;
-    protected $user, $ticket;
+
+    private $authUser, $ticket;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(User $user, Ticket $ticket)
+    public function __construct(User $authUser, Ticket $ticket)
     {
-        $this->user = $user;
+        $this->authUser = $authUser;
         $this->ticket = $ticket;
     }
 
@@ -40,8 +41,7 @@ class TicketCreationNotification extends Notification
     {
         return (new MailMessage)
             ->subject("Timesheets - (" . $this->ticket->referenceNumber . ")")
-            ->line($this->user->name . ' hat ein neues Ticket erstellt.')
-            ->action('Zum Ticket', $this->getNotificationURL());
+            ->line('Du wurdest vom Ticket ' . $this->ticket->referenceNumber . ' entfernt.');
     }
 
     /**
@@ -49,19 +49,10 @@ class TicketCreationNotification extends Notification
      *
      * @return array<string, mixed>
      */
-
-    public function toArray($notifiable): array
+    public function toArray(object $notifiable): array
     {
         return [
-            'title' => $this->user->name . ' hat ein neues Ticket erstellt.',
-            'ticket_id' => $this->ticket->id,
+            'title' => 'Du wurdest vom Ticket ' . $this->ticket->referenceNumber . ' entfernt',
         ];
-    }
-
-    public function getNotificationURL()
-    {
-        return  route('ticket.index', [
-            'openTicket' => $this->ticket->id,
-        ]);
     }
 }

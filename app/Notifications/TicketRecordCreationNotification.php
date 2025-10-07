@@ -2,25 +2,24 @@
 
 namespace App\Notifications;
 
+use App\Models\Ticket;
 use Illuminate\Bus\Queueable;
 use App\Models\User;
-use App\Models\TicketRecord;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class TicketRecordCreationNotification extends Notification
 {
     use Queueable;
-    protected $user, $ticketRecord;
+    protected $user, $ticket;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(User $user, TicketRecord $ticketRecord)
+    public function __construct(User $user, Ticket $ticket)
     {
         $this->user = $user;
-        $this->ticketRecord = $ticketRecord;
+        $this->ticket = $ticket;
     }
 
     /**
@@ -39,9 +38,9 @@ class TicketRecordCreationNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+            ->subject("Timesheets - (" . $this->ticket->referenceNumber . ")")
+            ->line($this->user->name . ' hat einen neuen Eintrag zu einem Ticket erstellt.')
+            ->action('Zum Ticket', $this->getNotificationURL());
     }
 
     /**
@@ -53,15 +52,15 @@ class TicketRecordCreationNotification extends Notification
     {
         return [
             'title' => $this->user->name . ' hat einen neuen Eintrag zu einem Ticket erstellt.',
-            'ticket_id' => $this->ticketRecord->id,
+            'ticket_id' => $this->ticket->id,
             'status' => 'created',
         ];
     }
 
     public function getNotificationURL()
     {
-        return  route('dispute.index', [
-            'openTicket' => $this->ticketRecord->ticket->id,
+        return  route('ticket.index', [
+            'openTicket' => $this->ticket->id,
         ]);
     }
 }

@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Organization;
 use App\Models\Ticket;
 use App\Models\TicketRecord;
 use App\Models\User;
 use App\Notifications\TicketRecordCreationNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Support\Facades\Gate;
 
@@ -29,11 +29,13 @@ class TicketRecordController extends Controller
             ...$validated,
             'start' => Carbon::parse($validated['start']),
             'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
-            'user_id' => Auth::id(),
+            'user_id' => $authUser->id,
         ]);
 
-        // TODO: die richtigen Leute notifyen  (Britta aka abrechnende Person)
-        $authUser->supervisor?->notify(new TicketRecordCreationNotification($authUser, $ticket->records));
+        Organization::getCurrent()->users
+            ->filter(fn($u) => !$authUser->is($u) && $u->can('update', $ticket))
+            ->each
+            ->notify(new TicketRecordCreationNotification($authUser, $ticket));
 
         return back()->with('success', 'Eintrag erfolgreich erstellt.');
     }
@@ -55,8 +57,10 @@ class TicketRecordController extends Controller
             'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
         ]);
 
-        // TODO: die richtigen Leute notifyen  (Britta aka abrechnende Person)
-        $authUser->supervisor?->notify(new TicketRecordCreationNotification($authUser, $ticketRecord));
+        Organization::getCurrent()->users
+            ->filter(fn($u) => !$authUser->is($u) && $u->can('update', $ticketRecord->ticket))
+            ->each
+            ->notify(new TicketRecordCreationNotification($authUser, $ticketRecord->ticket));
 
         return back()->with('success', 'Eintrag erfolgreich bearbeitet.');
     }

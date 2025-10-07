@@ -14,7 +14,6 @@ const form = useForm({});
         <template v-slot:activator="{ props: activatorProps }">
             <v-btn v-bind="activatorProps" color="error" variant="text" icon="mdi-delete" />
         </template>
-
         <template v-slot:default="{ isActive }">
             <v-card :title="title">
                 <template #append>
@@ -22,6 +21,7 @@ const form = useForm({});
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>
+                <v-divider></v-divider>
                 <v-card-text>
                     <v-row>
                         <v-col cols="12">{{ content }}</v-col>

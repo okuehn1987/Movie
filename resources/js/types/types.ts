@@ -474,6 +474,8 @@ export type Ticket = DBObject<'ticket'> & {
     user_id: User['id'];
     accounted_at: DateTimeString | null;
     finished_at: DateTimeString | null;
+    reference_prefix: string;
+    readonly reference_number: string;
 };
 
 export type TicketRecord = DBObject<'record'> & {

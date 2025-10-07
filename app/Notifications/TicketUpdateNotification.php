@@ -39,9 +39,9 @@ class TicketUpdateNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+            ->subject("Timesheets - (" . $this->ticket->referenceNumber . ")")
+            ->line($this->user->name . ' hat ein Ticket aktualisiert.')
+            ->action('Zum Ticket', $this->getNotificationURL());
     }
 
     /**
@@ -52,7 +52,7 @@ class TicketUpdateNotification extends Notification
     public function toArray($notifiable): array
     {
         return [
-            'title' => $this->user->name . ' hat ein Ticket Update ausgeführt',
+            'title' => $this->user->name . ' hat ein Ticket aktualisiert.',
             'ticket_id' => $this->ticket->id,
         ];
     }

@@ -2,29 +2,25 @@
 
 namespace App\Policies;
 
+use App\Models\Ticket;
 use App\Models\User;
 
 class TicketPolicy
 {
     use _AllowSuperAdminAndOrganizationOwner;
 
-    public function viewIndex(User $authUser): bool
+    public function create(User $authUser): bool
     {
-        return true;
+        return $authUser->hasPermissionOrDelegation(null, 'ticket_permission', 'write');
     }
 
-    public function create(User $authUser, User $user): bool
+    public function update(User $authUser, Ticket $ticket): bool
     {
-        return $authUser->id == $user->id || $authUser->hasPermissionOrDelegation($user, 'ticket_permission', 'write');
+        return $authUser->id == $ticket->user_id || $authUser->hasPermissionOrDelegation(null, 'ticket_permission', 'write');
     }
 
-    public function update(User $authUser, User $user): bool
+    public function delete(User $authUser, Ticket $ticket): bool
     {
-        return $authUser->hasPermissionOrDelegation($user, 'ticket_permission', 'write');
-    }
-
-    public function delete(User $authUser, User $user): bool
-    {
-        return $authUser->hasPermissionOrDelegation($user, 'ticket_permission', 'write');
+        return $authUser->hasPermissionOrDelegation($ticket->user, 'ticket_permission', 'write');
     }
 }

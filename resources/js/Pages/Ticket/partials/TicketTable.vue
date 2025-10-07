@@ -38,6 +38,7 @@ function getAccountedAt(records: TicketRecord[]) {
         <v-data-table-virtual
             fixed-header
             :headers="[
+                { title: 'Ticketnummer', key: 'reference_number' },
                 { title: 'Titel', key: 'title' },
                 { title: 'Kunde', key: 'customer.name' },
                 { title: 'Priorität', key: 'priorityText' },
@@ -100,12 +101,15 @@ function getAccountedAt(records: TicketRecord[]) {
                                     <v-icon>mdi-close</v-icon>
                                 </v-btn>
                             </template>
+                            <v-divider></v-divider>
                             <v-card-text>
                                 <v-row>
                                     <v-col cols="12">
-                                        Bist du dir sicher, dass du diesen Auftrag als abgeschlossen markieren möchtest?
-                                        <br />
-                                        Du kannst danach keine weiteren Einträge für diesen Auftrag hinzufügen oder bearbeiten.
+                                        <v-alert type="warning">
+                                            Bist du dir sicher, dass du diesen Auftrag als abgeschlossen markieren möchtest?
+                                            <br />
+                                            Du kannst danach keine weiteren Einträge für diesen Auftrag hinzufügen oder bearbeiten.
+                                        </v-alert>
                                     </v-col>
                                     <v-col cols="12" class="text-end">
                                         <v-btn
