@@ -2,9 +2,10 @@
 import { PRIORITIES, User } from '@/types/types';
 import { formatDuration } from '@/utils';
 import { DateTime } from 'luxon';
-import { computed, ref, watchEffect } from 'vue';
-import { CustomerProp, TicketProp, UserProp } from './ticketTypes';
+import { computed, ref, watch } from 'vue';
 import RecordCreateDialog from './RecordCreateDialog.vue';
+import { CustomerProp, TicketProp, UserProp } from './ticketTypes';
+import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 
 const props = defineProps<{
     ticket: TicketProp;
@@ -21,16 +22,19 @@ const form = useForm({
     selected: props.ticket.records.filter(tr => tr.accounted_at).map(r => r.id),
 });
 
-watchEffect(() => {
-    form.defaults({
-        priority: props.ticket.priority,
-        assignees: props.ticket.assignees.map(a => a.id) ?? [],
-        title: props.ticket.title,
-        description: props.ticket.description,
-        selected: props.ticket.records.filter(tr => tr.accounted_at).map(r => r.id),
-    });
-    form.reset();
-});
+watch(
+    props.ticket,
+    () => {
+        form.defaults({
+            priority: props.ticket.priority,
+            assignees: props.ticket.assignees.map(a => a.id) ?? [],
+            title: props.ticket.title,
+            description: props.ticket.description,
+            selected: props.ticket.records.filter(tr => tr.accounted_at).map(r => r.id),
+        }).reset();
+    },
+    { deep: true },
+);
 
 const showDialog = ref(Number(route().params['openTicket']) == props.ticket.id);
 
@@ -160,7 +164,6 @@ const selectedDurationSum = computed(() =>
                                             :ticket="ticket"
                                             :users="users"
                                             :record="item"
-                                            mode="update"
                                         ></RecordCreateDialog>
                                     </template>
                                     <template v-slot:item.data-table-expand="{ internalItem, isExpanded, toggleExpand }">
@@ -176,12 +179,37 @@ const selectedDurationSum = computed(() =>
                                                         <tr>
                                                             <th>Ressourcen</th>
                                                             <td class="py-2">{{ item.resources }}</td>
+                                                            <td></td>
+                                                            <td></td>
                                                         </tr>
                                                     </thead>
                                                     <tbody class="bg-surface-medium">
                                                         <tr>
                                                             <th>Beschreibung</th>
                                                             <td class="py-2">{{ item.description }}</td>
+                                                            <td></td>
+                                                            <td></td>
+                                                        </tr>
+                                                        <tr v-for="(file, index) in item.files" :key="index">
+                                                            <th v-if="index == 0">Anhang</th>
+                                                            <th v-else></th>
+                                                            <td class="py-2">{{ file.original_name }}</td>
+                                                            <td style="width: 1px; padding: 0">
+                                                                <v-btn
+                                                                    variant="text"
+                                                                    :href="route('ticketRecordFile.download', { ticketRecordFile: file.id })"
+                                                                    target="_blank"
+                                                                    color="primary"
+                                                                    icon="mdi-download"
+                                                                ></v-btn>
+                                                            </td>
+                                                            <td style="width: 1px; padding: 0">
+                                                                <ConfirmDelete
+                                                                    title="Datei löschen"
+                                                                    content="Bist du dir sicher, dass du diese Datei löschen möchtest?"
+                                                                    :route="route('ticketRecordFile.deleteFile', { ticketRecordFile: file.id })"
+                                                                ></ConfirmDelete>
+                                                            </td>
                                                         </tr>
                                                     </tbody>
                                                 </v-table>

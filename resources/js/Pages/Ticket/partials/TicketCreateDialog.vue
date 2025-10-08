@@ -18,6 +18,8 @@ const ticketForm = useForm({
     start: null as string | null,
     duration: '00:00',
     resources: '',
+    appointment_at: null as string | null,
+    files: [] as File[],
     tab: 'ticket' as 'ticket' | 'expressTicket',
 });
 
@@ -50,7 +52,7 @@ function submit(isActive: Ref<boolean>) {
                     <v-tab class="w-50" value="ticket">Auftrag</v-tab>
                     <v-tab class="w-50" value="expressTicket">Einzelauftrag</v-tab>
                 </v-tabs>
-                <v-card-text>
+                <v-card-text style="max-height: 750px; overflow-y: auto">
                     <v-form @submit.prevent="submit(isActive)">
                         <v-tabs-window v-model="ticketForm.tab">
                             <v-tabs-window-item value="ticket">
@@ -102,7 +104,7 @@ function submit(isActive: Ref<boolean>) {
                                             v-model="ticketForm.assignees"
                                         ></v-autocomplete>
                                     </v-col>
-                                    <v-col cols="12">
+                                    <v-col cols="12" md="7">
                                         <v-text-field
                                             label="Betreff"
                                             required
@@ -110,7 +112,14 @@ function submit(isActive: Ref<boolean>) {
                                             v-model="ticketForm.title"
                                         ></v-text-field>
                                     </v-col>
-
+                                    <v-col cols="12" md="5">
+                                        <v-text-field
+                                            label="Termin"
+                                            type="datetime-local"
+                                            v-model="ticketForm.appointment_at"
+                                            :error-Messages="ticketForm.errors.appointment_at"
+                                        ></v-text-field>
+                                    </v-col>
                                     <v-col cols="12">
                                         <v-textarea
                                             label="Beschreibung"
@@ -175,7 +184,17 @@ function submit(isActive: Ref<boolean>) {
                                             label="Ressourcen"
                                             :error-messages="ticketForm.errors.resources"
                                             v-model="ticketForm.resources"
+                                            auto-grow
                                         ></v-textarea>
+                                    </v-col>
+                                    <v-col cols="12">
+                                        <v-file-input
+                                            label="Dateien anhängen"
+                                            multiple
+                                            v-model="ticketForm.files"
+                                            :error-messages="ticketForm.errors['files.0']"
+                                            accept="image/jpg, image/png, image/jpeg, image/avif, image/tiff, image/svg+xml, application/pdf"
+                                        ></v-file-input>
                                     </v-col>
                                 </v-row>
                             </v-tabs-window-item>

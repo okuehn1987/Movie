@@ -452,7 +452,8 @@ declare module 'ziggy-js' {
     "customerOperatingSite.destroy": [
         {
             "name": "customerOperatingSite",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "ticket.index": [],
@@ -478,22 +479,30 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
-    "ticket.record.store": [
+    "ticket.unfinish": [
         {
             "name": "ticket",
             "required": true,
             "binding": "id"
         }
     ],
-    "record.update": [
+    "ticket.ticketRecord.store": [
         {
-            "name": "record",
-            "required": true
+            "name": "ticket",
+            "required": true,
+            "binding": "id"
         }
     ],
-    "record.destroy": [
+    "ticketRecord.update": [
         {
-            "name": "record",
+            "name": "ticketRecord",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticketRecord.destroy": [
+        {
+            "name": "ticketRecord",
             "required": true
         }
     ],

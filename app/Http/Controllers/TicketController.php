@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\Organization;
 use App\Models\Ticket;
 use App\Models\TicketRecord;
+use App\Models\TicketRecordFile;
 use App\Models\User;
 use App\Notifications\RemovedFromTicketNotification;
 use App\Notifications\TicketCreationNotification;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Illuminate\Container\Attributes\CurrentUser;
+use Illuminate\Support\Facades\Storage;
 
 class TicketController extends Controller
 {
@@ -25,7 +27,7 @@ class TicketController extends Controller
     {
         Gate::authorize('publicAuth', User::class);
 
-        $ticketQuery = Ticket::inOrganization()->with(['customer:id,name', 'user:id,first_name,last_name', 'assignees:id,first_name,last_name', 'records.user']);
+        $ticketQuery = Ticket::inOrganization()->with(['customer:id,name', 'user:id,first_name,last_name', 'assignees:id,first_name,last_name', 'records.user', 'records.files']);
 
         return Inertia::render('Ticket/TicketIndex', [
             'tickets' => (clone $ticketQuery)
@@ -56,6 +58,11 @@ class TicketController extends Controller
             'start' => 'nullable|required_if:tab,expressTicket|date',
             'duration' => 'nullable|required_if:tab,expressTicket|date_format:H:i',
             'resources' => 'nullable|string',
+            'appointment_at' => 'nullable|date',
+            'files' => 'present|array',
+            'files.*' => 'required|file|mimes:jpg,png,jpeg,avif,tiff,svg+xml,pdf|max:5120',
+        ], [
+            'files.*' => 'Die Dateien müssen im Format JPG, PNG, JPEG, AVIF, TIFF, SVG oder PDF vorliegen.',
         ]);
 
         $customer = Customer::inOrganization()->find($validated['customer_id']);
@@ -65,19 +72,29 @@ class TicketController extends Controller
                 ...collect($validated)->only(['title', 'description', 'priority', 'customer_id', 'assignee_id']),
                 'user_id' => $authUser->id,
                 'reference_prefix' => strtoupper(substr($customer->name, 0, 3)),
+                'appointment_at' => Carbon::parse($validated['appointment_at']),
             ]
         );
 
         $ticket->assignees()->attach($validated['assignees']);
 
         if ($validated["tab"] === "expressTicket") {
-            $ticket->records()->create([
+
+            $record = $ticket->records()->create([
                 'resources' => $validated['resources'],
                 'start' => Carbon::parse($validated['start']),
                 'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
                 'user_id' => $authUser->id,
             ]);
             $ticket->update(['finished_at' => now()]);
+
+            foreach ($validated['files'] as $file) {
+                $path = $file ? Storage::disk('ticket_record_files')->putFile($file) : null;
+                $record->files()->create([
+                    'path' => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                ]);
+            }
         }
         $ticket->assignees->filter(fn($u) => !$authUser->is($u))->each->notify(new TicketCreationNotification($authUser, $ticket));
 
@@ -138,6 +155,20 @@ class TicketController extends Controller
             ->notify(new TicketFinishNotification($authUser, $ticket));
 
         return back()->with('success', 'Ticket erfolgreich abgeschlossen.');
+    }
+
+    public function unfinish(Ticket $ticket, #[CurrentUser] User $authUser)
+    {
+        Gate::authorize('update', $ticket);
+
+        $ticket->update(['finished_at' => null]);
+
+        Organization::getCurrent()->users
+            ->filter(fn($u) => !$authUser->is($u) && $u->can('update', $ticket))
+            ->each
+            ->notify(new TicketFinishNotification($authUser, $ticket));
+
+        return back()->with('success', 'Ticket erfolgreich als unbearbeitet markiert.');
     }
 
     public function destroy(Ticket $ticket, #[CurrentUser] User $authUser)

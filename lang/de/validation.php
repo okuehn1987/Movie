@@ -206,7 +206,15 @@ return [
         'set_name' => 'Filtername',
         'extra_charge' => 'Faktor Zuschlag',
         'customer_id' => 'Kunde',
-        'tab' => 'Auswahl'
+        'tab' => 'Auswahl',
+        'duration' => 'Dauer',
+        'priority' => 'Priorität',
+        'resources' => 'Ressourcen',
+        'assignees' => 'Zuständige',
+        'ticket' => 'Ticket',
+        'record' => 'Eintrag',
+        'files' => 'Dateien',
+        'file' => 'Datei',
     ],
 
     'values' => [

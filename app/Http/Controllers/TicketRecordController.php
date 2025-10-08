@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Organization;
 use App\Models\Ticket;
 use App\Models\TicketRecord;
+use App\Models\TicketRecordFile;
 use App\Models\User;
 use App\Notifications\TicketRecordCreationNotification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 class TicketRecordController extends Controller
 {
@@ -23,14 +25,26 @@ class TicketRecordController extends Controller
             'duration' => 'required|date_format:H:i',
             'description' => 'required|string',
             'resources' => 'nullable|string',
+            'files' => 'present|array',
+            'files.*' => 'required|file|mimes:jpg,png,jpeg,avif,tiff,svg+xml,pdf|max:5120',
+        ], [
+            'files.*' => 'Die Dateien müssen im Format JPG, PNG, JPEG, AVIF, TIFF, SVG oder PDF vorliegen.',
         ]);
 
-        $ticket->records()->create([
-            ...$validated,
+        $record = $ticket->records()->create([
+            ...collect($validated)->except('files'),
             'start' => Carbon::parse($validated['start']),
             'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
             'user_id' => $authUser->id,
         ]);
+
+        foreach ($validated['files'] as $file) {
+            $path = $file ? Storage::disk('ticket_record_files')->putFile($file) : null;
+            $record->files()->create([
+                'path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+            ]);
+        }
 
         Organization::getCurrent()->users
             ->filter(fn($u) => !$authUser->is($u) && $u->can('update', $ticket))
@@ -49,13 +63,25 @@ class TicketRecordController extends Controller
             'duration' => 'required|date_format:H:i',
             'description' => 'required|string',
             'resources' => 'nullable|string',
+            'files' => 'present|array',
+            'files.*' => 'required|file|mimes:jpg,png,jpeg,avif,tiff,svg+xml,pdf|max:5120',
+        ], [
+            'files.*' => 'Die Dateien müssen im Format JPG, PNG, JPEG, AVIF, TIFF, SVG oder PDF vorliegen.',
         ]);
 
         $ticketRecord->update([
-            ...$validated,
+            ...collect($validated)->except('files'),
             'start' => Carbon::parse($validated['start']),
             'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
         ]);
+
+        foreach ($validated['files'] as $file) {
+            $path = $file ? Storage::disk('ticket_record_files')->putFile($file) : null;
+            $ticketRecord->files()->create([
+                'path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+            ]);
+        }
 
         Organization::getCurrent()->users
             ->filter(fn($u) => !$authUser->is($u) && $u->can('update', $ticketRecord->ticket))
@@ -63,5 +89,25 @@ class TicketRecordController extends Controller
             ->notify(new TicketRecordCreationNotification($authUser, $ticketRecord->ticket));
 
         return back()->with('success', 'Eintrag erfolgreich bearbeitet.');
+    }
+
+    public function download(TicketRecordFile $ticketRecordFile)
+    {
+        Gate::authorize('publicAuth', User::class);
+
+        return response()->file(Storage::disk('ticket_record_files')->path($ticketRecordFile->path));
+    }
+
+    public function deleteFile(TicketRecordFile $ticketRecordFile)
+    {
+        Gate::authorize('publicAuth', User::class);
+
+        if (Storage::disk('ticket_record_files')->exists($ticketRecordFile->path)) {
+            Storage::disk('ticket_record_files')->delete($ticketRecordFile->path);
+        }
+
+        $ticketRecordFile->delete();
+
+        return back()->with('success', 'Datei erfolgreich gelöscht.');
     }
 }

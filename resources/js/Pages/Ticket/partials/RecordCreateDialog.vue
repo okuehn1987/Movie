@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { DATETIME_LOCAL_FORMAT, TicketRecord } from '@/types/types';
-import { TicketProp, UserProp } from './ticketTypes';
-import { DateTime } from 'luxon';
+import { DATETIME_LOCAL_FORMAT, TicketRecord, TicketRecordFile } from '@/types/types';
 import { secondsToDuration } from '@/utils';
-import { ref } from 'vue';
+import { DateTime } from 'luxon';
+import { computed, ref, watch } from 'vue';
+import { TicketProp, UserProp } from './ticketTypes';
 
 const props = defineProps<{
     users: UserProp[];
     ticket: TicketProp;
-    record?: TicketRecord;
-    mode: 'create' | 'update';
+    record?: TicketRecord & { files: TicketRecordFile[] };
 }>();
 
 const recordForm = useForm({
@@ -17,15 +16,33 @@ const recordForm = useForm({
     duration: secondsToDuration(props.record?.duration ?? 0),
     description: props.record?.description ?? '',
     resources: props.record?.resources ?? '',
+    files: [] as File[],
+    _method: 'patch',
 });
+
+const mode = computed(() => (props.record ? 'edit' : 'create'));
+
+watch(
+    () => props.record,
+    () => {
+        recordForm
+            .defaults({
+                start: props.record ? DateTime.fromSQL(props.record.start).toISO() : null,
+                duration: secondsToDuration(props.record?.duration ?? 0),
+                description: props.record?.description ?? '',
+                resources: props.record?.resources ?? '',
+                files: [],
+            })
+            .reset();
+    },
+);
 
 const showDialog = ref(false);
 
-// FIXME: updated ticketrecord needs to show immediately after updating and reopening
 // TODO: Can and cannable, aber wo und wie nochmal?
 function submit() {
     if (props.record) {
-        recordForm.patch(route('ticketRecord.update', { ticketRecord: props.record.id }), {
+        recordForm.post(route('ticketRecord.update', { ticketRecord: props.record.id }), {
             onSuccess: () => {
                 recordForm.reset();
                 showDialog.value = false;
@@ -55,7 +72,7 @@ function submit() {
                     </v-btn>
                 </template>
                 <v-divider></v-divider>
-                <v-card-text>
+                <v-card-text style="max-height: 600px; overflow-y: auto">
                     <v-form @submit.prevent="submit">
                         <v-row>
                             <v-col cols="12" md="6">
@@ -86,15 +103,26 @@ function submit() {
                                     label="Beschreibung"
                                     v-model="recordForm.description"
                                     :error-messages="recordForm.errors.description"
+                                    auto-grow
                                 ></v-textarea>
                             </v-col>
                             <v-col cols="12">
                                 <v-textarea
-                                    label="Verwendete Ressourcen"
+                                    label="Ressourcen"
                                     rows="1"
                                     v-model="recordForm.resources"
                                     :error-messages="recordForm.errors.resources"
+                                    auto-grow
                                 ></v-textarea>
+                            </v-col>
+                            <v-col cols="12">
+                                <v-file-input
+                                    label="Dateien anhängen"
+                                    multiple
+                                    v-model="recordForm.files"
+                                    :error-messages="recordForm.errors['files.0']"
+                                    accept="image/jpg, image/png, image/jpeg, image/avif, image/tiff, image/svg+xml, application/pdf"
+                                ></v-file-input>
                             </v-col>
                             <v-col class="text-end">
                                 <v-btn color="primary" type="submit" :loading="recordForm.processing" :disabled="!recordForm.isDirty">
