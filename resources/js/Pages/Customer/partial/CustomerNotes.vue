@@ -65,7 +65,7 @@ function editNote(note: CustomerNote) {
                         color="primary"
                         variant="flat"
                         class="mr-2"
-                        v-if="can('customer', 'update')"
+                        v-if="mode == 'edit' && can('customer', 'update')"
                     >
                         Notiz anlegen
                     </v-btn>
@@ -170,7 +170,9 @@ function editNote(note: CustomerNote) {
         <v-divider></v-divider>
         <v-treeview :items="noteTree" item-value="id" activatable open-on-click separateRoots :indent-lines="true">
             <template v-slot:prepend="{ item, isOpen }">
-                <v-icon v-if="item.type == 'complex'" :icon="isOpen ? 'mdi-folder-open' : 'mdi-folder'"></v-icon>
+                <v-icon v-if="item.type == 'complex'" :icon="isOpen ? 'mdi-folder-open' : 'mdi-folder'" color="primary"></v-icon>
+                <v-icon v-if="item.type == 'primitive'" icon="mdi-comment-text-outline" color="primary"></v-icon>
+                <v-icon v-if="item.type == 'file'" icon="mdi-file-document" color="primary"></v-icon>
             </template>
             <template v-slot:title="{ item }">
                 <template v-if="editNoteForm.noteId == item.id && mode == 'edit'">
@@ -243,24 +245,19 @@ function editNote(note: CustomerNote) {
                             </v-col>
                         </v-row>
                     </span>
-                    <span v-else-if="item.type == 'file'">
-                        <v-row>
-                            <v-col cols="12" md="2">{{ item.key }}:</v-col>
-                            <v-col cols="12" md="10">
-                                <v-btn
-                                    color="primary"
-                                    :href="route('customerNote.getFile', { customerNote: item.id, file: item.value })"
-                                    target="_blank"
-                                >
-                                    Öffnen
-                                </v-btn>
-                            </v-col>
-                        </v-row>
-                    </span>
+                    <span v-else-if="item.type == 'file'">{{ item.key }}</span>
                 </template>
             </template>
             <template v-slot:append="{ item }">
                 <div v-if="mode == 'edit' && !editNoteForm.noteId" class="d-flex ga-2">
+                    <v-btn
+                        v-if="item.type == 'file'"
+                        color="primary"
+                        :href="route('customerNote.getFile', { customerNote: item.id, file: item.value })"
+                        target="_blank"
+                        icon="mdi-eye"
+                        variant="text"
+                    ></v-btn>
                     <v-btn
                         v-if="item.type == 'complex'"
                         @click.stop="
