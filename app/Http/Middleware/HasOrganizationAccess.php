@@ -36,7 +36,7 @@ class HasOrganizationAccess
                 $instanceObject instanceof \App\Models\Absence, $instanceObject instanceof \App\Models\AbsencePatch
                 => $instanceObject->absenceType()->select('organization_id')->first()->organization_id,
 
-                $instanceObject instanceof \App\Models\CustomerOperatingSite
+                $instanceObject instanceof \App\Models\CustomerOperatingSite, $instanceObject instanceof \App\Models\CustomerNote
                 => $instanceObject->customer()->select('organization_id')->first()->organization_id,
 
                 $instanceObject instanceof \App\Models\TimeAccount

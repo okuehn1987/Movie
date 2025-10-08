@@ -21,8 +21,8 @@ class TicketRecordController extends Controller
         $validated = $request->validate([
             'start' => 'required|date',
             'duration' => 'required|date_format:H:i',
-            'description' => 'required|string',
-            'resources' => 'nullable|string',
+            'description' => 'required|string|max:400',
+            'resources' => 'nullable|string|max:400',
         ]);
 
         $ticket->records()->create([
@@ -47,8 +47,8 @@ class TicketRecordController extends Controller
         $validated = $request->validate([
             'start' => 'required|date',
             'duration' => 'required|date_format:H:i',
-            'description' => 'required|string',
-            'resources' => 'nullable|string',
+            'description' => 'required|string|max:400',
+            'resources' => 'nullable|string|max:400',
         ]);
 
         $ticketRecord->update([
