@@ -24,7 +24,10 @@ const tab = ref(
     <AdminLayout title="Tickets">
         <v-tabs v-model="tab">
             <v-tab value="newTickets">unbearbeitete Aufträge</v-tab>
-            <v-tab value="finishedTickets">abgeschlossene Aufträge</v-tab>
+            <v-tab value="finishedTickets">
+                abgeschlossene Aufträge
+                <v-chip>{{ tickets.filter(t => t.finished_at !== null).length }}</v-chip>
+            </v-tab>
             <v-tab value="archive">Archiv</v-tab>
         </v-tabs>
         <v-tabs-window v-model="tab">

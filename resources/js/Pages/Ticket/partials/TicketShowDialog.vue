@@ -155,7 +155,13 @@ const selectedDurationSum = computed(() =>
                                     </template>
 
                                     <template v-slot:item.actions="{ item }">
-                                        <RecordCreateDialog :ticket="ticket" :users="users" :record="item" mode="update"></RecordCreateDialog>
+                                        <RecordCreateDialog
+                                            v-if="tab != 'finishedTickets'"
+                                            :ticket="ticket"
+                                            :users="users"
+                                            :record="item"
+                                            mode="update"
+                                        ></RecordCreateDialog>
                                     </template>
                                     <template v-slot:item.data-table-expand="{ internalItem, isExpanded, toggleExpand }">
                                         <v-btn size="small" variant="text" border @click="toggleExpand(internalItem)">
