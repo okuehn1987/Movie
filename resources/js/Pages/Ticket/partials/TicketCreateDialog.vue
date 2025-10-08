@@ -4,7 +4,7 @@ import { CustomerProp, UserProp } from './ticketTypes';
 import { usePage } from '@inertiajs/vue3';
 import { Ref } from 'vue';
 
-defineProps<{
+const props = defineProps<{
     customers: CustomerProp[];
     users: UserProp[];
 }>();
@@ -13,7 +13,7 @@ const ticketForm = useForm({
     title: '',
     description: '',
     priority: 'medium',
-    customer_id: null,
+    customer_id: props.customers.length == 1 ? props.customers.map(c => ({ title: c.name, value: c.id }))[0] : null,
     assignees: [usePage().props.auth.user.id],
     start: null as string | null,
     duration: '00:00',

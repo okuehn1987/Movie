@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\Organization;
+use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -32,10 +33,22 @@ class CustomerController extends Controller
     {
         Gate::authorize('viewShow', Customer::class);
 
+        $ticketQuery = Ticket::inOrganization()->where('customer_id', $customer->id)
+            ->with(['customer:id,name', 'user:id,first_name,last_name', 'assignees:id,first_name,last_name', 'records.user', 'records.files']);
+
         return Inertia::render('Customer/CustomerShow', [
-            'customer' => $customer,
+            'customer' => $customer->load('tickets.assignees', 'tickets.user', 'tickets.customer', 'tickets.records.user', 'tickets.records.files'),
+            'tickets' => (clone $ticketQuery)
+                ->whereNull('tickets.finished_at')
+                ->orWhereHas('records', fn($q) => $q->whereNull('accounted_at'))
+                ->get(),
+            'archiveTickets' => (clone $ticketQuery)
+                ->whereNotNull('tickets.finished_at')
+                ->whereDoesntHave('records', fn($q) => $q->whereNull('accounted_at'))
+                ->get(),
             'operatingSites' => $customer->customerOperatingSites()->with('currentAddress')->get(),
             'customerNotes' => $customer->customerNotes,
+            'users' => User::inOrganization()->get(),
             'can' => [
                 'customer' => [
                     'viewShow' => Gate::allows('viewShow', Customer::class),

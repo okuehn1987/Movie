@@ -1,16 +1,21 @@
 <script setup lang="ts">
-import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Customer, CustomerOperatingSite, Relations } from '@/types/types';
-import { ref } from 'vue';
-import CustomerForm from './partial/CustomerForm.vue';
-import { formatAddress } from '@/utils';
-import CustomerNotes from './partial/CustomerNotes.vue';
-import CreateEditCustomerOperatingSite from './partial/CreateEditCustomerOperatingSite.vue';
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
+import AdminLayout from '@/Layouts/AdminLayout.vue';
+import { Customer, CustomerOperatingSite, Relations, User } from '@/types/types';
+import { formatAddress } from '@/utils';
+import { ref } from 'vue';
+import TicketOverview from '../Ticket/partials/TicketOverview.vue';
+import { TicketProp } from '../Ticket/partials/ticketTypes';
+import CreateEditCustomerOperatingSite from './partial/CreateEditCustomerOperatingSite.vue';
+import CustomerForm from './partial/CustomerForm.vue';
+import CustomerNotes from './partial/CustomerNotes.vue';
 
 defineProps<{
     customer: Customer;
+    users: User[];
     operatingSites: (CustomerOperatingSite & Pick<Relations<'customerOperatingSite'>, 'current_address'>)[];
+    tickets: TicketProp[];
+    archiveTickets: TicketProp[];
     customerNotes: Relations<'customer'>['customer_notes'];
 }>();
 
@@ -22,6 +27,7 @@ const currentTab = ref('customerData');
             <v-tab value="customerData">Stammdaten</v-tab>
             <v-tab value="operatingSites">Standorte</v-tab>
             <v-tab value="customerNotes">Notizen</v-tab>
+            <v-tab value="tickets">Tickets</v-tab>
         </v-tabs>
         <v-tabs-window :model-value="currentTab">
             <v-tabs-window-item value="customerData">
@@ -52,6 +58,9 @@ const currentTab = ref('customerData');
             </v-tabs-window-item>
             <v-tabs-window-item value="customerNotes">
                 <CustomerNotes :customer :customerNotes="customerNotes"></CustomerNotes>
+            </v-tabs-window-item>
+            <v-tabs-window-item value="tickets">
+                <TicketOverview :users :tickets tab="newTickets" :customers="[customer]" :archiveTickets></TicketOverview>
             </v-tabs-window-item>
         </v-tabs-window>
     </AdminLayout>
