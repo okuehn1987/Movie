@@ -62,11 +62,11 @@ class OrganizationController extends Controller
             ]);
         }
 
-        $operating_site = OperatingSite::create([
+        $operating_site = $org->operatingSites()->create([
             'name' => $validated['head_quarter_name'],
-            'organization_id' => $org->id,
             'is_headquarter' => 1
         ]);
+
         $operating_site->addresses()->create([
             'street' => $validated['organization_street'],
             'house_number' => $validated['organization_house_number'],

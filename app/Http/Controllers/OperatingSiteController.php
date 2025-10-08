@@ -76,9 +76,8 @@ class OperatingSiteController extends Controller
             'zip' => "required|string",
         ]);
 
-        $operatingSite = OperatingSite::create([
-            ...collect($validated)->except(Address::$ADDRESS_KEYS),
-            'organization_id' => Organization::getCurrent()->id
+        $operatingSite = Organization::getCurrent()->operatingSites()->create([
+            ...collect($validated)->except(Address::$ADDRESS_KEYS)
         ]);
         $operatingSite->addresses()->create(collect($validated)->only(Address::$ADDRESS_KEYS)->toArray());
 
@@ -107,7 +106,7 @@ class OperatingSiteController extends Controller
             OperatingSite::inOrganization()->where('is_headquarter', true)->update(['is_headquarter' => false]);
         }
 
-        // FIXME: wir brauchen active since und sync wie userworkinghours
+        // FIXME: wir brauchen active since und sync wie CustomerOperatingSiteController@update
         $operatingSite->update(collect($validated)->except(Address::$ADDRESS_KEYS)->toArray());
         $operatingSite->addresses()->create(collect($validated)->only(Address::$ADDRESS_KEYS)->toArray());
 

@@ -40,6 +40,4 @@ class OperatingTimeController extends Controller
 
         return back()->with('success', 'Betriebszeit erfolgreich gelöscht.');
     }
-
-    // TODO: function update
 }

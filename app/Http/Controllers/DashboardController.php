@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Absence;
-use App\Models\Organization;
 use App\Models\User;
 use App\Services\AppModuleService;
 use Illuminate\Container\Attributes\CurrentUser;
