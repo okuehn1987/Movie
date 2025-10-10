@@ -560,6 +560,7 @@ export type CustomerNote = DBObject<'customerNote'> & {
 export type TicketUser = DBObject<'ticket_user'> & {
     ticket_id: Ticket['id'];
     user_id: User['id'];
+    status: Status;
 };
 
 export type RelationMap = {

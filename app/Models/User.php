@@ -212,7 +212,7 @@ class User extends Authenticatable
 
     public function tickets()
     {
-        return $this->belongsToMany(Ticket::class)->withTimestamps();
+        return $this->belongsToMany(Ticket::class)->withTimestamps()->withPivot('status');
     }
 
     public function group()

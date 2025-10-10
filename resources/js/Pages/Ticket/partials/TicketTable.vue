@@ -13,10 +13,12 @@ defineProps<{
     tickets: TicketProp[];
     customers: CustomerProp[];
     users: UserProp[];
-    tab: 'archive' | 'finishedTickets' | 'newTickets';
+    tab: 'archive' | 'finishedTickets' | 'newTickets' | 'workingTickets';
 }>();
 
 const search = ref('');
+
+const acceptTicketForm = useForm({});
 
 function getAccountedAt(records: TicketRecord[]) {
     const sortedRecords = records.sort((a, b) => {
@@ -97,8 +99,16 @@ function getAccountedAt(records: TicketRecord[]) {
                 {{ getAccountedAt(item.records) }}
             </template>
             <template v-slot:item.actions="{ item }">
-                <TicketFinishDialog v-if="tab === 'newTickets'" :tab :item></TicketFinishDialog>
-                <RecordCreateDialog v-if="tab === 'newTickets'" :ticket="item" :users="users" />
+                <v-btn
+                    v-if="!item.assignees.find(a => a.pivot.status === 'accepted' && a.pivot.user_id === $page.props.auth.user.id)"
+                    icon="mdi-handshake"
+                    variant="text"
+                    color="primary"
+                    title="Ticket übernehmen"
+                    @click.stop="acceptTicketForm.patch(route('ticket.accept', { ticket: item.id }))"
+                ></v-btn>
+                <TicketFinishDialog v-if="tab === 'workingTickets' || tab === 'finishedTickets'" :tab :item></TicketFinishDialog>
+                <RecordCreateDialog v-if="tab === 'workingTickets'" :ticket="item" :users="users" />
                 <TicketShowDialog :ticket="item" :customers="customers" :users="users" :tab />
                 <ConfirmDelete
                     v-if="tab === 'newTickets' && can('ticket', 'delete', item)"

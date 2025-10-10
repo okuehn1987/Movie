@@ -5,18 +5,18 @@ import { formatDuration } from '@/utils';
 import { DateTime } from 'luxon';
 import { computed, ref, watch } from 'vue';
 import RecordCreateDialog from './RecordCreateDialog.vue';
-import { CustomerProp, TicketProp, UserProp } from './ticketTypes';
+import { CustomerProp, Tab, TicketProp, UserProp } from './ticketTypes';
 
 const props = defineProps<{
     ticket: TicketProp & Canable;
     customers: CustomerProp[];
     users: UserProp[];
-    tab: 'archive' | 'finishedTickets' | 'newTickets';
+    tab: Tab;
 }>();
 
 const form = useForm({
     priority: props.ticket.priority,
-    assignees: [] as User['id'][],
+    assignees: props.ticket.assignees.map(a => a.id),
     title: props.ticket.title,
     description: props.ticket.description,
     selected: props.ticket.records.filter(tr => tr.accounted_at).map(r => r.id),
@@ -46,6 +46,7 @@ const selectedDurationSum = computed(() =>
     props.ticket.records.filter(tr => form.selected.find(s => s === tr.id)).reduce((a, c) => a + c.duration, 0),
 );
 </script>
+<!-- TODO: bei anzeige einmal zuweisung, die ist bearbeitbar; einmal wer es bearbeitet, nicht bearbeitbar -->
 <template>
     <v-dialog max-width="1000px" height="800px" v-model="showDialog">
         <template #activator="{ props: activatorProps }">

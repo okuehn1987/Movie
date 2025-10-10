@@ -201,4 +201,14 @@ class TicketController extends Controller
 
         return back()->with('success', 'Ticket erfolgreich gelöscht.');
     }
+
+    public function accept(Ticket $ticket, #[CurrentUser] User $authUser)
+    {
+        Gate::authorize('publicAuth', User::class);
+
+        $authUser->tickets()->syncWithoutDetaching([$ticket->id]);
+        $authUser->tickets()->updateExistingPivot($ticket->id, ['status' => 'accepted']);
+
+        return back()->with('success', 'Ticket erfolgreich angenommen.');
+    }
 }

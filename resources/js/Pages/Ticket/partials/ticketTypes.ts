@@ -6,3 +6,5 @@ export type TicketProp = Ticket & Canable &
     };
 export type CustomerProp = Pick<Customer, 'id' | 'name'>;
 export type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'job_role'> & Canable;
+
+export type Tab = 'archive' | 'finishedTickets' | 'newTickets' | 'workingTickets' 

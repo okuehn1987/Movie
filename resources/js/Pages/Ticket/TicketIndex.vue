@@ -8,11 +8,10 @@ defineProps<{
     archiveTickets: TicketProp[];
     customers: CustomerProp[];
     users: UserProp[];
-    tab: 'archive' | 'finishedTickets' | 'newTickets';
 }>();
 </script>
 <template>
     <AdminLayout title="Tickets">
-        <TicketOverview :tickets :archiveTickets :customers :users :tab></TicketOverview>
+        <TicketOverview :tickets :archiveTickets :customers :users></TicketOverview>
     </AdminLayout>
 </template>

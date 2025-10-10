@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Ticket } from '@/types/types';
+import { Tab } from './ticketTypes';
 
 defineProps<{
-    tab: 'archive' | 'finishedTickets' | 'newTickets';
+    tab: Tab;
     item: Pick<Ticket, 'id'>;
 }>();
 
