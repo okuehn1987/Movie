@@ -92,7 +92,7 @@ class TicketController extends Controller
                 ...collect($validated)->only(['title', 'description', 'priority', 'customer_id', 'assignee_id']),
                 'user_id' => $authUser->id,
                 'reference_prefix' => strtoupper(substr($customer->name, 0, 3)),
-                'appointment_at' => Carbon::parse($validated['appointment_at']),
+                'appointment_at' => $validated['appointment_at'] ? Carbon::parse($validated['appointment_at']) : null,
             ]
         );
 
