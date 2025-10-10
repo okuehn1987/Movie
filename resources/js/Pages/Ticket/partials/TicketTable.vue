@@ -37,11 +37,12 @@ function getAccountedAt(records: TicketRecord[]) {
         <v-data-table-virtual
             fixed-header
             :headers="[
-                { title: 'Ticketnummer', key: 'reference_number' },
+                { title: 'Prio', key: 'priorityText', width: '1px' },
+                { title: 'Ticket', key: 'reference_number', width: '1px' },
+                { title: 'Datum', key: 'created_at', width: '1px' },
                 { title: 'Titel', key: 'title' },
                 { title: 'Kunde', key: 'customer.name' },
-                { title: 'Priorität', key: 'priorityText' },
-                { title: 'Datum', key: 'appointment_at' },
+                { title: 'Termin', key: 'appointment_at' },
                 { title: 'Zugewiesen an', key: 'assigneeName' },
                 ...(tab === 'archive' ? [{ title: 'Abgerechnet am', key: 'accounted_at' }] : []),
                 { title: '', key: 'actions', align: 'end', sortable: false },
@@ -60,7 +61,7 @@ function getAccountedAt(records: TicketRecord[]) {
                         assigneeName: assignee,
                         priorityText:  PRIORITIES.find(p => p.value === t.priority)?.title,
                         priorityValue: PRIORITIES.find(p=>p.value === t.priority)?.priorityValue,
-                        assigneesNames: t.assignees.map(a => a.first_name + ' ' + a.last_name).join(''),
+                        assigneesNames: t.assignees.map(a => a.first_name + a.last_name).join(''),
                     };
                 }).filter(t => {
                     const searchString = search.replace(/\W/gi,'').toLowerCase();
@@ -76,12 +77,15 @@ function getAccountedAt(records: TicketRecord[]) {
                     <TicketCreateDialog v-if="tab === 'newTickets'" :customers="customers" :users="users" />
                 </div>
             </template>
+            <template v-slot:item.created_at="{ item }">
+                {{ DateTime.fromISO(item.created_at).toFormat('dd.MM.yyyy') }}
+            </template>
             <template v-slot:item.appointment_at="{ item }">
-                {{ item.appointment_at ? DateTime.fromSQL(item.appointment_at).toFormat('dd.MM.yyyy HH:mm') : '-' }}
+                {{ item.appointment_at ? DateTime.fromSQL(item.appointment_at).toFormat("dd.MM. 'um' HH:mm 'Uhr'") : '-' }}
             </template>
             <template v-slot:item.priorityText="{ item }">
-                {{ PRIORITIES.find(p => p.value === item.priority)?.title }}
                 <v-icon
+                    :title="PRIORITIES.find(p => p.value === item.priority)?.title"
                     :icon="PRIORITIES.find(p => p.value === item.priority)?.icon"
                     :color="PRIORITIES.find(p => p.value === item.priority)?.color"
                 ></v-icon>
@@ -93,11 +97,11 @@ function getAccountedAt(records: TicketRecord[]) {
                 {{ getAccountedAt(item.records) }}
             </template>
             <template v-slot:item.actions="{ item }">
-                <TicketFinishDialog :tab :item></TicketFinishDialog>
+                <TicketFinishDialog v-if="tab === 'newTickets'" :tab :item></TicketFinishDialog>
                 <RecordCreateDialog v-if="tab === 'newTickets'" :ticket="item" :users="users" />
                 <TicketShowDialog :ticket="item" :customers="customers" :users="users" :tab />
                 <ConfirmDelete
-                    v-if="tab === 'newTickets'"
+                    v-if="tab === 'newTickets' && can('ticket', 'delete', item)"
                     content="Möchtest du dieses Ticket löschen?"
                     title="Löschen"
                     :route="route('ticket.destroy', { ticket: item.id })"

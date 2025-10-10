@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import { Ticket } from '@/types/types';
+
 defineProps<{
     tab: 'archive' | 'finishedTickets' | 'newTickets';
-    item: {
-        id: number;
-    };
+    item: Pick<Ticket, 'id'>;
 }>();
 
 const form = useForm({});

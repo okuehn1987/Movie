@@ -38,8 +38,9 @@ export type Model =
     | 'timeAccount'
     | 'timeAccountTransaction'
     | 'workLogPatch'
+    | 'ticketRecord'
     | (string & NonNullable<unknown>);
-export type CanMethod = 'viewIndex' | 'viewShow' | 'create' | 'update' | 'delete' | (string & NonNullable<unknown>);
+export type CanMethod = 'viewIndex' | 'viewShow' | 'create' | 'update' | 'delete' | 'account' | (string & NonNullable<unknown>);
 
 export type Canable = {
     /**can the auth user execute this action in the current scope */

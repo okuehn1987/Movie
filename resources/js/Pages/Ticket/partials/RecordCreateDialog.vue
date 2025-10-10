@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DATETIME_LOCAL_FORMAT, TicketRecord, TicketRecordFile } from '@/types/types';
+import { Canable, DATETIME_LOCAL_FORMAT, Relations, TicketRecord, TicketRecordFile } from '@/types/types';
 import { secondsToDuration } from '@/utils';
 import { DateTime } from 'luxon';
 import { computed, ref, watch } from 'vue';
@@ -8,7 +8,7 @@ import { TicketProp, UserProp } from './ticketTypes';
 const props = defineProps<{
     users: UserProp[];
     ticket: TicketProp;
-    record?: TicketRecord & { files: TicketRecordFile[] };
+    record?: TicketRecord & Canable & { files: TicketRecordFile[]; user: Relations<'ticketRecord'>['user'] };
 }>();
 
 const recordForm = useForm({
@@ -17,7 +17,6 @@ const recordForm = useForm({
     description: props.record?.description ?? '',
     resources: props.record?.resources ?? '',
     files: [] as File[],
-    _method: 'patch',
 });
 
 const mode = computed(() => (props.record ? 'edit' : 'create'));
@@ -39,15 +38,16 @@ watch(
 
 const showDialog = ref(false);
 
-// TODO: Can and cannable, aber wo und wie nochmal?
 function submit() {
     if (props.record) {
-        recordForm.post(route('ticketRecord.update', { ticketRecord: props.record.id }), {
-            onSuccess: () => {
-                recordForm.reset();
-                showDialog.value = false;
-            },
-        });
+        recordForm
+            .transform(data => ({ ...data, _method: 'patch' }))
+            .post(route('ticketRecord.update', { ticketRecord: props.record.id }), {
+                onSuccess: () => {
+                    recordForm.reset();
+                    showDialog.value = false;
+                },
+            });
     } else {
         recordForm.post(route('ticket.ticketRecord.store', { ticket: props.ticket.id }), {
             onSuccess: () => {
@@ -62,7 +62,9 @@ function submit() {
     <v-dialog max-width="600px" v-model="showDialog">
         <template #activator="{ props: activatorProps }">
             <v-btn v-if="mode === 'create'" title="Eintrag hinzufügen" v-bind="activatorProps" variant="text"><v-icon>mdi-plus</v-icon></v-btn>
-            <v-btn v-else title="Eintrag bearbeiten" v-bind="activatorProps" variant="text"><v-icon>mdi-pencil</v-icon></v-btn>
+            <v-btn v-if="record && can('ticketRecord', 'update', record)" title="Eintrag bearbeiten" v-bind="activatorProps" variant="text">
+                <v-icon>mdi-pencil</v-icon>
+            </v-btn>
         </template>
         <template #default="{ isActive }">
             <v-card :title="mode === 'create' ? 'Eintrag erstellen' : 'Eintrag bearbeiten'">

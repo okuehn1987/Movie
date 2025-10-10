@@ -33,7 +33,27 @@ class TicketController extends Controller
             'tickets' => (clone $ticketQuery)
                 ->whereNull('tickets.finished_at')
                 ->orWhereHas('records', fn($q) => $q->whereNull('accounted_at'))
-                ->get(),
+                ->get()
+                ->map(fn($t) => [
+                    ...$t->toArray(),
+                    'can' => [
+                        'ticket' => [
+                            'update' => Gate::allows('update', $t),
+                            'account' => Gate::allows('account', $t),
+                            'delete' => Gate::allows('update', $t),
+                        ],
+                    ],
+                    'records' => $t->records->map(
+                        fn($ticketRecord) => [
+                            ...$ticketRecord->toArray(),
+                            'can' => [
+                                'ticketRecord' => [
+                                    'update' => Gate::allows('update', $ticketRecord),
+                                ],
+                            ],
+                        ]
+                    )
+                ]),
             'archiveTickets' => (clone $ticketQuery)
                 ->whereNotNull('tickets.finished_at')
                 ->whereDoesntHave('records', fn($q) => $q->whereNull('accounted_at'))

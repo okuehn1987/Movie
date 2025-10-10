@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { PRIORITIES, User } from '@/types/types';
+import ConfirmDelete from '@/Components/ConfirmDelete.vue';
+import { Canable, PRIORITIES, User } from '@/types/types';
 import { formatDuration } from '@/utils';
 import { DateTime } from 'luxon';
 import { computed, ref, watch } from 'vue';
 import RecordCreateDialog from './RecordCreateDialog.vue';
 import { CustomerProp, TicketProp, UserProp } from './ticketTypes';
-import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 
 const props = defineProps<{
-    ticket: TicketProp;
+    ticket: TicketProp & Canable;
     customers: CustomerProp[];
     users: UserProp[];
     tab: 'archive' | 'finishedTickets' | 'newTickets';
@@ -148,7 +148,7 @@ const selectedDurationSum = computed(() =>
                                         }))
                                     "
                                     show-expand
-                                    :show-select="tab !== 'archive'"
+                                    :show-select="tab !== 'archive' && can('ticket', 'account', ticket)"
                                 >
                                     <template v-slot:item.start="{ item }">
                                         {{ DateTime.fromSQL(item.start).toFormat('dd.MM.yyyy HH:mm') }}
@@ -216,7 +216,7 @@ const selectedDurationSum = computed(() =>
                                             </td>
                                         </tr>
                                     </template>
-                                    <template v-slot:bottom v-if="tab !== 'archive'">
+                                    <template v-slot:bottom v-if="tab !== 'archive' && can('ticket', 'account', ticket)">
                                         <v-row class="text-end" no-gutters>
                                             <template v-if="true">
                                                 <v-col cols="12" md="11">Ausgewählte Auftragsdauer</v-col>
@@ -229,8 +229,23 @@ const selectedDurationSum = computed(() =>
                                 </v-data-table-virtual>
                             </template>
                             <v-col v-if="tab !== 'archive'" cols="12" class="text-end">
-                                <v-btn color="primary" type="submit" :loading="form.processing" :disabled="!form.isDirty">
+                                <v-btn
+                                    v-if="can('ticket', 'account', ticket)"
+                                    color="primary"
+                                    type="submit"
+                                    :loading="form.processing"
+                                    :disabled="!form.isDirty"
+                                >
                                     {{ tab === 'newTickets' ? 'Änderungen und Abrechnungen speichern' : 'Abrechnungen speichern' }}
+                                </v-btn>
+                                <v-btn
+                                    v-else-if="tab === 'newTickets'"
+                                    color="primary"
+                                    type="submit"
+                                    :loading="form.processing"
+                                    :disabled="!form.isDirty"
+                                >
+                                    Änderungen speichern
                                 </v-btn>
                             </v-col>
                         </v-row>

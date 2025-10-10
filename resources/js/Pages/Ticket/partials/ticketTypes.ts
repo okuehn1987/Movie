@@ -1,8 +1,8 @@
-import { Customer, Relations, Ticket, TicketRecord, User } from '@/types/types';
+import { Canable, Customer, Relations, Ticket, TicketRecord, User } from '@/types/types';
 
-export type TicketProp = Ticket &
+export type TicketProp = Ticket & Canable &
     Pick<Relations<'ticket'>, 'user' | 'assignees' | 'customer'> & {
-        records: (TicketRecord & Pick<Relations<'ticketRecord'>, 'user' | 'files'>)[];
+        records: (TicketRecord & Canable & Pick<Relations<'ticketRecord'>, 'files'> & {user:Relations<'ticketRecord'>['user'] })[];
     };
 export type CustomerProp = Pick<Customer, 'id' | 'name'>;
-export type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'job_role'>;
+export type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'job_role'> & Canable;
