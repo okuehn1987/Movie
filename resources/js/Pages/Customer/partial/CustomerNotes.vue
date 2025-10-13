@@ -1,36 +1,40 @@
 <script setup lang="ts">
-import ConfirmDelete from '@/Components/ConfirmDelete.vue';
-import { Customer, CustomerNote, Tree } from '@/types/types';
-import { filterTree } from '@/utils';
-import { computed, ref } from 'vue';
+import { Customer, CustomerNote, Relations } from '@/types/types';
+import { ref, watch } from 'vue';
+import { router } from '@inertiajs/vue3';
+import { throttle } from '@/utils';
+import { DateTime } from 'luxon';
 
 const props = defineProps<{
-    customerNotes: CustomerNote[];
+    customerNotes: Pick<CustomerNote, 'id' | 'key'>[];
+    childNotes: Record<CustomerNote['id'], (CustomerNote & Pick<Relations<'customerNote'>, 'modifier'>)[]>;
     customer: Customer;
 }>();
 
 const mode = ref<'show' | 'edit'>('show');
+const selectedNote = ref<CustomerNote['id'] | null>(props.customerNotes[0]?.id ?? null);
+
+const loadedNotes = ref<CustomerNote['id'][]>([]);
+const loading = ref(false);
+
+const reload = throttle(() => {
+    if (!selectedNote.value || loadedNotes.value.includes(selectedNote.value)) return;
+    router.reload({
+        only: ['childNotes'],
+        data: { selectedNote: selectedNote.value },
+        onStart: () => {
+            if (selectedNote.value) {
+                loadedNotes.value.push(selectedNote.value);
+                loading.value = true;
+            }
+        },
+        onError: () => (loadedNotes.value = loadedNotes.value.filter(e => e != selectedNote.value)),
+        onFinish: () => (loading.value = false),
+    });
+}, 500);
+watch(selectedNote, reload);
 
 const openDialog = ref(false);
-
-const noteTree = computed(() => {
-    const map = new Map<number, any>();
-    props.customerNotes.forEach(note => {
-        map.set(note.id, { ...note, children: [] });
-    });
-    const tree: Tree<CustomerNote, 'children'>[] = [];
-    map.forEach(note => {
-        if (note.parent_id) {
-            const parent = map.get(note.parent_id);
-            if (parent) {
-                parent.children.push(note);
-            }
-        } else {
-            tree.push(note);
-        }
-    });
-    return filterTree(tree, 'children', () => true);
-});
 
 const editNoteForm = useForm({
     noteId: null as CustomerNote['id'] | null,
@@ -168,125 +172,41 @@ function editNote(note: CustomerNote) {
             </v-btn>
         </template>
         <v-divider></v-divider>
-        <v-treeview :items="noteTree" item-value="id" activatable open-on-click separateRoots :indent-lines="true">
-            <template v-slot:prepend="{ item, isOpen }">
-                <v-icon v-if="item.type == 'complex'" :icon="isOpen ? 'mdi-folder-open' : 'mdi-folder'" color="primary"></v-icon>
-                <v-icon v-if="item.type == 'primitive'" icon="mdi-comment-text-outline" color="primary"></v-icon>
-                <v-icon v-if="item.type == 'file'" icon="mdi-file-document" color="primary"></v-icon>
-            </template>
-            <template v-slot:title="{ item }">
-                <template v-if="editNoteForm.noteId == item.id && mode == 'edit'">
-                    <v-form
-                        @submit.prevent="
-                            editNoteForm
-                                .transform(data => ({ ...data, _method: 'patch' }))
-                                .post(route('customerNote.update', { customerNote: editNoteForm.noteId }), {
-                                    onSuccess: () => {
-                                        editNoteForm.reset();
-                                        mode = 'show';
-                                    },
-                                })
-                        "
-                    >
-                        <div class="d-flex ga-2 align-center" @click.stop="() => {}">
-                            <template v-if="item.type == 'complex'">
-                                <v-row>
-                                    <v-col cols="12">
-                                        <v-text-field variant="outlined" hide-details v-model="editNoteForm.key"></v-text-field>
-                                    </v-col>
-                                    <v-col cols="12" class="text-end">
-                                        <v-btn @click="mode = 'show'" color="primary" class="me-2"><v-icon>mdi-close</v-icon></v-btn>
-                                        <v-btn type="submit" color="primary"><v-icon>mdi-content-save</v-icon></v-btn>
-                                    </v-col>
-                                </v-row>
-                            </template>
-                            <template v-else-if="item.type == 'primitive'">
-                                <v-row>
-                                    <v-col cols="12" md="2">
-                                        <v-text-field variant="outlined" hide-details v-model="editNoteForm.key"></v-text-field>
-                                    </v-col>
-                                    <v-col cols="12" md="10">
-                                        <v-textarea rows="1" variant="outlined" hide-details v-model="editNoteForm.value" auto-grow></v-textarea>
-                                    </v-col>
-                                    <v-col cols="12" class="text-end">
-                                        <v-btn @click="mode = 'show'" color="primary" class="me-2"><v-icon>mdi-close</v-icon></v-btn>
-                                        <v-btn type="submit" color="primary"><v-icon>mdi-content-save</v-icon></v-btn>
-                                    </v-col>
-                                </v-row>
-                            </template>
-                            <template v-else-if="item.type == 'file'">
-                                <v-row>
-                                    <v-col cols="12" md="2">
-                                        <v-text-field variant="outlined" hide-details v-model="editNoteForm.key"></v-text-field>
-                                    </v-col>
-                                    <v-col cols="12" md="10">
-                                        <v-file-input
-                                            label="Datei ersetzen"
-                                            v-model="editNoteForm.file"
-                                            :error-messages="createNoteForm.errors.file"
-                                        ></v-file-input>
-                                    </v-col>
-                                    <v-col cols="12" class="text-end">
-                                        <v-btn @click="mode = 'show'" color="primary" class="me-2"><v-icon>mdi-close</v-icon></v-btn>
-                                        <v-btn type="submit" color="primary"><v-icon>mdi-content-save</v-icon></v-btn>
-                                    </v-col>
-                                </v-row>
-                            </template>
-                        </div>
-                    </v-form>
-                </template>
-                <template v-else>
-                    <span v-if="item.type == 'complex'">{{ item.key }}</span>
-                    <span v-else-if="item.type == 'primitive'">
-                        <v-row>
-                            <v-col cols="12" md="2">{{ item.key }}:</v-col>
-                            <v-col cols="12" md="10">
-                                <pre>{{ item.value }}</pre>
-                            </v-col>
-                        </v-row>
-                    </span>
-                    <span v-else-if="item.type == 'file'">{{ item.key }}</span>
-                </template>
-            </template>
-            <template v-slot:append="{ item }">
-                <div v-if="mode == 'edit' && !editNoteForm.noteId" class="d-flex ga-2">
-                    <v-btn
-                        v-if="item.type == 'file'"
-                        color="primary"
-                        :href="route('customerNote.getFile', { customerNote: item.id, file: item.value })"
-                        target="_blank"
-                        icon="mdi-eye"
-                        variant="text"
-                    ></v-btn>
-                    <v-btn
-                        v-if="item.type == 'complex'"
-                        @click.stop="
-                            {
-                                openDialog = true;
-                                createNoteForm.parent_id = item.id;
-                            }
-                        "
-                        icon="mdi-plus"
-                        color="primary"
-                        variant="text"
-                    ></v-btn>
-                    <v-btn icon="mdi-pencil" @click.stop="editNote(item)" variant="text" color="primary"></v-btn>
-                    <ConfirmDelete
-                        title="Notiz löschen"
-                        :route="route('customerNote.destroy', { customerNote: item.id })"
-                        :content="
-                            'Möchtest du ' +
-                            (item.type == 'primitive'
-                                ? `die Notiz '${item.key}'`
-                                : item.type == 'complex'
-                                ? `den Ordner '${item.key}' mit all seinen Inhalten`
-                                : `deine hochgeladene Datei '${item.key}'`) +
-                            ' wirklich löschen?'
-                        "
-                    ></ConfirmDelete>
-                </div>
-            </template>
-        </v-treeview>
+        <v-row>
+            <v-col cols="12" md="2">
+                <v-tabs direction="vertical">
+                    <v-tab v-for="note in customerNotes" :key="note.id" @click.stop="selectedNote = note.id">{{ note.key }}</v-tab>
+                </v-tabs>
+            </v-col>
+            <v-col cols="12" md="10">
+                <v-skeleton-loader v-if="loading" type="table"></v-skeleton-loader>
+                <v-data-table
+                    v-else-if="selectedNote"
+                    :items="
+                        childNotes[selectedNote]?.map(n => ({
+                            ...n,
+                            modifier: {
+                                ...n.modifier,
+                                name: n.modifier.first_name + ' ' + n.modifier.last_name,
+                            },
+                        }))
+                    "
+                    :headers="[
+                        { title: 'Zuletzt aktualisiert', value: 'updated_at' },
+                        { title: 'Inhalt', value: 'value' },
+                        { title: 'erstellt von', value: 'modifier.name' },
+                        { title: '', value: 'actions', width: '1px' },
+                    ]"
+                >
+                    <template #item.updated_at="{ item }">
+                        {{ DateTime.fromISO(item.updated_at).toFormat("dd.MM.yyyy',' HH:mm 'Uhr'") }}
+                    </template>
+                    <template #item.actions="{ item }">
+                        <v-btn color="primary" variant="text" @click.stop="editNote(item)"><v-icon>mdi-pencil</v-icon></v-btn>
+                    </template>
+                </v-data-table>
+            </v-col>
+        </v-row>
     </v-card>
 </template>
 <style lang="scss" scoped></style>

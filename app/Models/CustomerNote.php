@@ -16,7 +16,7 @@ class CustomerNote extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    public function modifiedBy()
+    public function modifier()
     {
         return $this->belongsTo(User::class, 'modified_by');
     }

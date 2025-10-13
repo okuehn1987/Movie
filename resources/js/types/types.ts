@@ -603,7 +603,7 @@ export type RelationMap = {
     };
     customerNote: {
         customer: Customer;
-        modified_by: User;
+        modifier: User;
         parent?: CustomerNote;
     };
     customerOperatingSite: {

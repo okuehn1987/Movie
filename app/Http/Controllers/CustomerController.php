@@ -30,14 +30,21 @@ class CustomerController extends Controller
         ]);
     }
 
-    public function show(Customer $customer)
+    public function show(Request $request, Customer $customer)
     {
         Gate::authorize('viewShow', Customer::class);
+
+        $validated = $request->validate([
+            'selectedNote' => 'nullable|exists:customer_notes,id',
+        ]);
+
+        $selectedNote = array_key_exists('selectedNote', $validated) ? $validated['selectedNote'] : $customer->customerNotes()->first()->id;
 
         return Inertia::render('Customer/CustomerShow', [
             'customer' => $customer->load('contacts'),
             'operatingSites' => $customer->customerOperatingSites()->with('currentAddress')->get(),
-            'customerNotes' => $customer->customerNotes,
+            'customerNotes' => $customer->customerNotes()->where('type', 'complex')->get(['id', 'key']),
+            'childNotes' =>  Inertia::merge(fn() => [$selectedNote => $customer->customerNotes()->with('modifier:id,first_name,last_name')->where('parent_id', $selectedNote)->get()]),
             'can' => [
                 'customer' => [
                     'viewShow' => Gate::allows('viewShow', Customer::class),
