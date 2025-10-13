@@ -4,13 +4,13 @@ import UserShowNavBar from './partial/UserShowNavBar.vue';
 import { User } from '@/types/types';
 import { DateTime } from 'luxon';
 
-defineProps<{
+const props = defineProps<{
     user: User;
 }>();
 
 const timestatementForm = useForm({
-    start: DateTime.now().minus({ month: 1 }).toFormat('yyyy-MM'),
-    end: DateTime.now().minus({ month: 1 }).toFormat('yyyy-MM'),
+    start: DateTime.max(DateTime.now().minus({ month: 1 }), DateTime.fromISO(props.user.created_at)).toFormat('yyyy-MM'),
+    end: DateTime.max(DateTime.now().minus({ month: 1 }), DateTime.fromISO(props.user.created_at)).toFormat('yyyy-MM'),
 });
 </script>
 <template>
