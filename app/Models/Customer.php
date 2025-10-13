@@ -38,4 +38,9 @@ class Customer extends Model
     {
         return $this->customerNotes()->whereNull('parent_id');
     }
+
+    public function contacts()
+    {
+        return $this->hasMany(CustomerContact::class);
+    }
 }

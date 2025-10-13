@@ -27,6 +27,8 @@ export type Model =
     | 'organization'
     | 'operatingSite'
     | 'customer'
+    | 'customerContact'
+    | 'customerOperatingSite'
     | 'group'
     | 'user'
     | 'ticket'
@@ -161,6 +163,15 @@ export type Customer = DBObject<'customer'> &
         reference_number: string | null;
         organization_id: Organization['id'];
     };
+
+export type CustomerContact = DBObject<'customerContact'> & {
+    customer_id: Customer['id'];
+    name: string;
+    occupation: string;
+    email: string | null;
+    phone_number: string | null;
+    mobile_number: string | null;
+};
 
 export type Flag = 'auto_accept_travel_logs' | 'christmas_vacation_day' | 'new_year_vacation_day' | 'vacation_limitation_period' | 'night_surcharges';
 
@@ -585,6 +596,10 @@ export type RelationMap = {
         tickets: Ticket[];
         customer_operating_sites: CustomerOperatingSite[];
         customer_notes: CustomerNote[];
+        contacts: CustomerContact[];
+    };
+    customerContact: {
+        customer: Customer;
     };
     customerNote: {
         customer: Customer;

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\CustomerContact;
+use App\Models\CustomerOperatingSite;
 use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -33,7 +35,7 @@ class CustomerController extends Controller
         Gate::authorize('viewShow', Customer::class);
 
         return Inertia::render('Customer/CustomerShow', [
-            'customer' => $customer,
+            'customer' => $customer->load('contacts'),
             'operatingSites' => $customer->customerOperatingSites()->with('currentAddress')->get(),
             'customerNotes' => $customer->customerNotes,
             'can' => [
@@ -42,6 +44,16 @@ class CustomerController extends Controller
                     'update' => Gate::allows('update', Customer::class),
                     'delete' => Gate::allows('delete', Customer::class),
                     'create' => Gate::allows('create', Customer::class),
+                ],
+                'customerContact' => [
+                    'create' => Gate::allows('create', CustomerContact::class),
+                    'update' => Gate::allows('update', CustomerContact::class),
+                    'delete' => Gate::allows('delete', CustomerContact::class),
+                ],
+                'customerOperatingSite' => [
+                    'create' => Gate::allows('create', CustomerOperatingSite::class),
+                    'update' => Gate::allows('update', CustomerOperatingSite::class),
+                    'delete' => Gate::allows('delete', CustomerOperatingSite::class),
                 ]
             ],
         ]);

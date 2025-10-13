@@ -20,6 +20,17 @@ return new class extends Migration
             $table->foreignId('organization_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
+
+        Schema::create('customer_contacts', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('customer_id')->constrained()->onDelete('cascade');
+            $table->string('name');
+            $table->string('occupation');
+            $table->string('email')->nullable();
+            $table->string('phone_number')->nullable();
+            $table->string('mobile_number')->nullable();
+            $table->timestamps();
+        });
     }
 
     /**
