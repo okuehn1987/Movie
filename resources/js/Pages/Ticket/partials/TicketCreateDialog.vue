@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PRIORITIES } from '@/types/types';
-import { CustomerOperatingSiteProp, CustomerProp, OperatingSiteProp, UserProp } from './ticketTypes';
+import { CustomerProp, OperatingSiteProp, UserProp } from './ticketTypes';
 import { usePage } from '@inertiajs/vue3';
 import { Ref } from 'vue';
 
@@ -8,7 +8,6 @@ const props = defineProps<{
     customers: CustomerProp[];
     users: UserProp[];
     operatingSites: OperatingSiteProp[];
-    customerOperatingSites: CustomerOperatingSiteProp[];
 }>();
 
 const ticketForm = useForm({

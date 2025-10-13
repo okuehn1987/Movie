@@ -22,6 +22,7 @@ class TicketRecordController extends Controller
 
         $validated = $request->validate([
             'start' => 'required|date',
+            'operatingSite=' => 'required',
             'duration' => 'required|date_format:H:i',
             'description' => 'required|string',
             'resources' => 'nullable|string',

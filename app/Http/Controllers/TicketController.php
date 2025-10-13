@@ -25,12 +25,30 @@ use Illuminate\Support\Facades\Storage;
 
 class TicketController extends Controller
 {
-    public function index()
+    public function index(#[CurrentUser] User $authUser)
     {
         Gate::authorize('publicAuth', User::class);
 
-        $ticketQuery = Ticket::inOrganization()->with(['customer:id,name', 'user:id,first_name,last_name', 'assignees:id,first_name,last_name', 'records.user', 'records.files']);
 
+        $operatingSites = collect();
+
+        $operatingSiteName = OperatingSite::inOrganization()->whereId($authUser->operating_site_id)->first()->name;
+
+        $customerOperatingSites = CustomerOperatingSite::inOrganization()
+            ->get()
+            ->map(fn($co) => [
+                'title' => $co->name,
+                'value' => ['id' => $co->id, 'type' => CustomerOperatingSite::class],
+                'customer_id' => $co->customer_id
+            ]);
+
+        $operatingSites->push(
+            ['title' => $operatingSiteName, 'value' => ['id' => $authUser->operating_site_id, 'type' => OperatingSite::class]],
+            ['title' => 'Homeoffice', 'value' => ['id' => $authUser->id, 'type' => User::class]]
+        );
+        $operatingSites = $operatingSites->merge($customerOperatingSites);
+
+        $ticketQuery = Ticket::inOrganization()->with(['customer:id,name', 'user:id,first_name,last_name', 'assignees:id,first_name,last_name', 'records.user', 'records.files']);
         return Inertia::render('Ticket/TicketIndex', [
             'tickets' => (clone $ticketQuery)
                 ->whereNull('tickets.finished_at')
@@ -62,8 +80,7 @@ class TicketController extends Controller
                 ->get(),
             'customers' => Customer::inOrganization()->get(['id', 'name']),
             'users' => User::inOrganization()->get(['id', 'first_name', 'last_name', 'job_role']),
-            'operatingSites' => OperatingSite::inOrganization()->with('currentAddress')->get(),
-            'customerOperatingSites' => CustomerOperatingSite::inOrganization()->with('currentAddress')->get(),
+            'operatingSites' => $operatingSites
         ]);
     }
 

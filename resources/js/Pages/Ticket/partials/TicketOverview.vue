@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { CustomerOperatingSiteProp, CustomerProp, OperatingSiteProp, Tab, TicketProp, UserProp } from './ticketTypes';
+import { CustomerProp, OperatingSiteProp, Tab, TicketProp, UserProp } from './ticketTypes';
 import TicketTable from './TicketTable.vue';
 
 const props = defineProps<{
@@ -9,7 +9,6 @@ const props = defineProps<{
     customers: CustomerProp[];
     users: UserProp[];
     operatingSites: OperatingSiteProp[];
-    customerOperatingSites: CustomerOperatingSiteProp[];
 }>();
 
 const tab = ref<Tab>(
@@ -47,7 +46,6 @@ const tab = ref<Tab>(
                 :customers="customers"
                 :users="users"
                 :operatingSites
-                :customerOperatingSites
                 tab="newTickets"
             />
         </v-tabs-window-item>
@@ -57,15 +55,20 @@ const tab = ref<Tab>(
                 :customers="customers"
                 :users="users"
                 :operatingSites
-                :customerOperatingSites
                 tab="workingTickets"
             />
         </v-tabs-window-item>
         <v-tabs-window-item value="finishedTickets">
-            <TicketTable :tickets="tickets.filter(t => t.finished_at !== null)" :customers="customers" :users="users" tab="finishedTickets" />
+            <TicketTable
+                :tickets="tickets.filter(t => t.finished_at !== null)"
+                :customers="customers"
+                :users="users"
+                :operatingSites
+                tab="finishedTickets"
+            />
         </v-tabs-window-item>
         <v-tabs-window-item value="archive">
-            <TicketTable :tickets="archiveTickets" :customers="customers" :users="users" tab="archive" />
+            <TicketTable :tickets="archiveTickets" :customers="customers" :users="users" :operatingSites tab="archive" />
         </v-tabs-window-item>
     </v-tabs-window>
 </template>

@@ -3,22 +3,18 @@ import { Canable, DATETIME_LOCAL_FORMAT, Relations, TicketRecord, TicketRecordFi
 import { secondsToDuration } from '@/utils';
 import { DateTime } from 'luxon';
 import { computed, ref, watch } from 'vue';
-import { CustomerOperatingSiteProp, OperatingSiteProp, TicketProp, UserProp } from './ticketTypes';
-import { usePage } from '@inertiajs/vue3';
+import { OperatingSiteProp, TicketProp, UserProp } from './ticketTypes';
 
 const props = defineProps<{
     users: UserProp[];
     ticket: TicketProp;
     record?: TicketRecord & Canable & { files: TicketRecordFile[]; user: Relations<'ticketRecord'>['user'] };
     operatingSites: OperatingSiteProp[];
-    customerOperatingSites: CustomerOperatingSiteProp[];
 }>();
-
-const page = usePage();
 
 const recordForm = useForm({
     start: props.record ? DateTime.fromSQL(props.record.start).toISO() : null,
-    operatingSite: props.operatingSites.find(o => o.id === page.props.auth.user.operating_site_id)?.name,
+    operatingSite: props.operatingSites.find(o => o.value.type === 'App\\Models\\OperatingSite'),
     duration: secondsToDuration(props.record?.duration ?? 0),
     description: props.record?.description ?? '',
     resources: props.record?.resources ?? '',
@@ -74,7 +70,6 @@ function submit() {
         </template>
         <template #default="{ isActive }">
             <v-card :title="mode === 'create' ? 'Eintrag erstellen' : 'Eintrag bearbeiten'">
-                <!-- {{ customerOperatingSites.filter(o => o.customer_id === ticket.customer_id) }} -->
                 <template #append>
                     <v-btn icon variant="text" @click="isActive.value = false">
                         <v-icon>mdi-close</v-icon>
@@ -111,11 +106,7 @@ function submit() {
                                 <v-select
                                     label="Standort"
                                     v-model="recordForm.operatingSite"
-                                    :items="[
-                                        operatingSites.find(o => o.id === page.props.auth.user.operating_site_id)!,
-                                        { name: 'Homeoffice', id: null },
-                                        ...customerOperatingSites.filter(o => o.customer_id === ticket.customer_id),
-                                    ].map(o=>({title:o.name, value:o.id}))"
+                                    :items="operatingSites.filter(o => !('customer_id' in o) || o.customer_id === ticket.customer_id)"
                                     :error-messages="recordForm.errors.operatingSite"
                                 ></v-select>
                             </v-col>

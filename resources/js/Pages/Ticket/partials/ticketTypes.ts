@@ -1,14 +1,19 @@
 import { Canable, Customer, CustomerOperatingSite, OperatingSite, Relations, Ticket, TicketRecord, User } from '@/types/types';
 
-export type TicketProp = Ticket & Canable &
+export type TicketProp = Ticket &
+    Canable &
     Pick<Relations<'ticket'>, 'user' | 'assignees' | 'customer'> & {
-        records: (TicketRecord & Canable & Pick<Relations<'ticketRecord'>, 'files'> & {user:Relations<'ticketRecord'>['user'] })[];
+        records: (TicketRecord & Canable & Pick<Relations<'ticketRecord'>, 'files'> & { user: Relations<'ticketRecord'>['user'] })[];
     };
 export type CustomerProp = Pick<Customer, 'id' | 'name'>;
 export type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'job_role'> & Canable;
 
-export type OperatingSiteProp= OperatingSite & Pick<Relations<'operatingSite'>,'current_address'>;
+export type OperatingSiteProp = {
+    title: string;
+} & (
+    | { value: { id: User['id']; type: 'App\\Models\\User' } }
+    | { value: { id: OperatingSite['id']; type: 'App\\Models\\OperatingSite' } }
+    | { value: { id: CustomerOperatingSite['id']; type: 'App\\Models\\CustomerOperatingSite' }; customer_id: Customer['id'] }
+);
 
-export type CustomerOperatingSiteProp= CustomerOperatingSite & Pick<Relations<'customerOperatingSite'>,'current_address'>;
-
-export type Tab = 'archive' | 'finishedTickets' | 'newTickets' | 'workingTickets' 
+export type Tab = 'archive' | 'finishedTickets' | 'newTickets' | 'workingTickets';

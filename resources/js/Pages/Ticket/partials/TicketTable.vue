@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import TicketCreateDialog from './TicketCreateDialog.vue';
-import { CustomerOperatingSiteProp, CustomerProp, OperatingSiteProp, TicketProp, UserProp } from './ticketTypes';
+import { CustomerProp, OperatingSiteProp, TicketProp, UserProp } from './ticketTypes';
 import TicketShowDialog from './TicketShowDialog.vue';
 import RecordCreateDialog from './RecordCreateDialog.vue';
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
@@ -15,7 +15,6 @@ defineProps<{
     users: UserProp[];
     tab: 'archive' | 'finishedTickets' | 'newTickets' | 'workingTickets';
     operatingSites: OperatingSiteProp[];
-    customerOperatingSites: CustomerOperatingSiteProp[];
 }>();
 
 const search = ref('');
@@ -78,7 +77,7 @@ function getAccountedAt(records: TicketRecord[]) {
             <template v-slot:header.actions>
                 <div class="d-flex ga-2 align-center">
                     <v-text-field v-model="search" placeholder="Suche" variant="outlined" density="compact" hide-details></v-text-field>
-                    <TicketCreateDialog v-if="tab === 'newTickets'" :customers="customers" :users="users" :operatingSites :customerOperatingSites />
+                    <TicketCreateDialog v-if="tab === 'newTickets'" :customers="customers" :users="users" :operatingSites />
                 </div>
             </template>
             <template v-slot:item.created_at="{ item }">
@@ -113,7 +112,7 @@ function getAccountedAt(records: TicketRecord[]) {
                     @click.stop="acceptTicketForm.patch(route('ticket.accept', { ticket: item.id }))"
                 ></v-btn>
                 <TicketFinishDialog v-if="tab === 'workingTickets' || tab === 'finishedTickets'" :tab :item></TicketFinishDialog>
-                <RecordCreateDialog v-if="tab === 'workingTickets'" :ticket="item" :users="users" :operatingSites :customerOperatingSites />
+                <RecordCreateDialog v-if="tab === 'workingTickets'" :ticket="item" :users="users" :operatingSites />
                 <TicketShowDialog :ticket="item" :customers="customers" :users="users" :tab />
                 <ConfirmDelete
                     v-if="tab === 'newTickets' && can('ticket', 'delete', item)"
