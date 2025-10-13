@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import TicketCreateDialog from './TicketCreateDialog.vue';
-import { CustomerProp, TicketProp, UserProp } from './ticketTypes';
+import { CustomerOperatingSiteProp, CustomerProp, OperatingSiteProp, TicketProp, UserProp } from './ticketTypes';
 import TicketShowDialog from './TicketShowDialog.vue';
 import RecordCreateDialog from './RecordCreateDialog.vue';
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
@@ -14,6 +14,8 @@ defineProps<{
     customers: CustomerProp[];
     users: UserProp[];
     tab: 'archive' | 'finishedTickets' | 'newTickets' | 'workingTickets';
+    operatingSites: OperatingSiteProp[];
+    customerOperatingSites: CustomerOperatingSiteProp[];
 }>();
 
 const search = ref('');
@@ -76,7 +78,7 @@ function getAccountedAt(records: TicketRecord[]) {
             <template v-slot:header.actions>
                 <div class="d-flex ga-2 align-center">
                     <v-text-field v-model="search" placeholder="Suche" variant="outlined" density="compact" hide-details></v-text-field>
-                    <TicketCreateDialog v-if="tab === 'newTickets'" :customers="customers" :users="users" />
+                    <TicketCreateDialog v-if="tab === 'newTickets'" :customers="customers" :users="users" :operatingSites :customerOperatingSites />
                 </div>
             </template>
             <template v-slot:item.created_at="{ item }">
@@ -100,7 +102,10 @@ function getAccountedAt(records: TicketRecord[]) {
             </template>
             <template v-slot:item.actions="{ item }">
                 <v-btn
-                    v-if="!item.assignees.find(a => a.pivot.status === 'accepted' && a.pivot.user_id === $page.props.auth.user.id)"
+                    v-if="
+                        ['newTickets', 'workingTickets'].includes(tab) &&
+                        !item.assignees.find(a => a.pivot.status === 'accepted' && a.pivot.user_id === $page.props.auth.user.id)
+                    "
                     icon="mdi-handshake"
                     variant="text"
                     color="primary"
@@ -108,7 +113,7 @@ function getAccountedAt(records: TicketRecord[]) {
                     @click.stop="acceptTicketForm.patch(route('ticket.accept', { ticket: item.id }))"
                 ></v-btn>
                 <TicketFinishDialog v-if="tab === 'workingTickets' || tab === 'finishedTickets'" :tab :item></TicketFinishDialog>
-                <RecordCreateDialog v-if="tab === 'workingTickets'" :ticket="item" :users="users" />
+                <RecordCreateDialog v-if="tab === 'workingTickets'" :ticket="item" :users="users" :operatingSites :customerOperatingSites />
                 <TicketShowDialog :ticket="item" :customers="customers" :users="users" :tab />
                 <ConfirmDelete
                     v-if="tab === 'newTickets' && can('ticket', 'delete', item)"

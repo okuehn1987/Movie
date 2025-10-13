@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class CustomerNote extends Model
 {
     use HasFactory;
+    use ScopeInOrganization;
 
     protected $guarded = [];
 

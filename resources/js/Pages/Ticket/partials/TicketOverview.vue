@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { CustomerProp, Tab, TicketProp, UserProp } from './ticketTypes';
+import { CustomerOperatingSiteProp, CustomerProp, OperatingSiteProp, Tab, TicketProp, UserProp } from './ticketTypes';
 import TicketTable from './TicketTable.vue';
 
 const props = defineProps<{
@@ -8,7 +8,10 @@ const props = defineProps<{
     archiveTickets: TicketProp[];
     customers: CustomerProp[];
     users: UserProp[];
+    operatingSites: OperatingSiteProp[];
+    customerOperatingSites: CustomerOperatingSiteProp[];
 }>();
+
 const tab = ref<Tab>(
     props.archiveTickets.find(t => t.id === Number(route().params['openTicket']))
         ? 'archive'
@@ -43,6 +46,8 @@ const tab = ref<Tab>(
                 :tickets="tickets.filter(t => t.finished_at === null && t.assignees.filter(a => a.pivot.status == 'accepted').length == 0)"
                 :customers="customers"
                 :users="users"
+                :operatingSites
+                :customerOperatingSites
                 tab="newTickets"
             />
         </v-tabs-window-item>
@@ -51,7 +56,9 @@ const tab = ref<Tab>(
                 :tickets="tickets.filter(t => t.finished_at === null && t.assignees.filter(a => a.pivot.status == 'accepted').length > 0)"
                 :customers="customers"
                 :users="users"
-                tab="newTickets"
+                :operatingSites
+                :customerOperatingSites
+                tab="workingTickets"
             />
         </v-tabs-window-item>
         <v-tabs-window-item value="finishedTickets">

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
-import { Canable, PRIORITIES, User } from '@/types/types';
+import { Canable, PRIORITIES } from '@/types/types';
 import { formatDuration } from '@/utils';
 import { DateTime } from 'luxon';
 import { computed, ref, watch } from 'vue';
@@ -45,8 +45,13 @@ const durationSum = computed(() => props.ticket.records.reduce((a, c) => a + c.d
 const selectedDurationSum = computed(() =>
     props.ticket.records.filter(tr => form.selected.find(s => s === tr.id)).reduce((a, c) => a + c.duration, 0),
 );
+
+const statusIcon = {
+    accepted: 'mdi-check',
+    created: 'mdi-timer-sand',
+    declined: 'mdi-close',
+} as const;
 </script>
-<!-- TODO: bei anzeige einmal zuweisung, die ist bearbeitbar; einmal wer es bearbeitet, nicht bearbeitbar -->
 <template>
     <v-dialog max-width="1000px" height="800px" v-model="showDialog">
         <template #activator="{ props: activatorProps }">
@@ -99,13 +104,16 @@ const selectedDurationSum = computed(() =>
                                     </template>
                                 </v-select>
                             </v-col>
-                            <v-col cols="12">
+                            <v-col cols="12"></v-col>
+                            <v-col cols="12" md="12">
                                 <v-autocomplete
                                     label="Zuweisung"
-                                    :disabled="tab !== 'newTickets'"
+                                    :disabled="tab !== 'newTickets' && tab !== 'workingTickets'"
                                     required
                                     multiple
                                     chips
+                                    v-model="form.assignees"
+                                    :error-messages="form.errors.assignees"
                                     :items="
                                         users.map(u => ({
                                             value: u.id,
@@ -113,9 +121,28 @@ const selectedDurationSum = computed(() =>
                                             props: { subtitle: u.job_role ?? '' },
                                         }))
                                     "
-                                    :error-messages="form.errors.assignees"
-                                    v-model="form.assignees"
-                                ></v-autocomplete>
+                                >
+                                    <template v-slot:chip="{ item }">
+                                        <v-chip
+                                            :prepend-icon="statusIcon[ticket.assignees.find(u => u.id === item.value)?.pivot.status ?? 'created']"
+                                        ></v-chip>
+                                    </template>
+                                    <template #append>
+                                        <v-tooltip>
+                                            <template v-slot:activator="{ props }">
+                                                <v-icon v-bind="props" icon="mdi-information-outline" variant="text" color="primary"></v-icon>
+                                            </template>
+                                            <v-icon>mdi-check</v-icon>
+                                            : angenommen
+                                            <br />
+                                            <v-icon>mdi-timer-sand</v-icon>
+                                            : zugewiesen
+                                            <br />
+                                            <v-icon>mdi-close</v-icon>
+                                            : abgelehnt
+                                        </v-tooltip>
+                                    </template>
+                                </v-autocomplete>
                             </v-col>
                             <v-col cols="12">
                                 <v-text-field

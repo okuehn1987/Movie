@@ -33,6 +33,11 @@ trait ScopeInOrganization
         ) {
             return $builder->where('organization_id', $org->id);
         }
+        if (
+            new self instanceof \App\Models\CustomerOperatingSite || new self instanceof \App\Models\CustomerNote
+        ) {
+            return $builder->whereIn('customer_id', Customer::select('id')->inOrganization());
+        }
         abort(501);
     }
 }

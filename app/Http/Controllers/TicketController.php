@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\CustomerOperatingSite;
+use App\Models\OperatingSite;
 use App\Models\Organization;
 use App\Models\Ticket;
 use App\Models\TicketRecord;
@@ -60,6 +62,8 @@ class TicketController extends Controller
                 ->get(),
             'customers' => Customer::inOrganization()->get(['id', 'name']),
             'users' => User::inOrganization()->get(['id', 'first_name', 'last_name', 'job_role']),
+            'operatingSites' => OperatingSite::inOrganization()->with('currentAddress')->get(),
+            'customerOperatingSites' => CustomerOperatingSite::inOrganization()->with('currentAddress')->get(),
         ]);
     }
 
