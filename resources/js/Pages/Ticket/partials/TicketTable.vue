@@ -113,7 +113,7 @@ function getAccountedAt(records: TicketRecord[]) {
                 ></v-btn>
                 <TicketFinishDialog v-if="tab === 'workingTickets' || tab === 'finishedTickets'" :tab :item></TicketFinishDialog>
                 <RecordCreateDialog v-if="tab === 'workingTickets'" :ticket="item" :users="users" :operatingSites />
-                <TicketShowDialog :ticket="item" :customers="customers" :users="users" :tab />
+                <TicketShowDialog :ticket="item" :customers="customers" :users="users" :tab :operatingSites />
                 <ConfirmDelete
                     v-if="tab === 'newTickets' && can('ticket', 'delete', item)"
                     content="Möchtest du dieses Ticket löschen?"

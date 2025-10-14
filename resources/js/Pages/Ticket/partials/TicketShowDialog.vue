@@ -5,13 +5,14 @@ import { formatDuration } from '@/utils';
 import { DateTime } from 'luxon';
 import { computed, ref, watch } from 'vue';
 import RecordCreateDialog from './RecordCreateDialog.vue';
-import { CustomerProp, Tab, TicketProp, UserProp } from './ticketTypes';
+import { CustomerProp, OperatingSiteProp, Tab, TicketProp, UserProp } from './ticketTypes';
 
 const props = defineProps<{
     ticket: TicketProp & Canable;
     customers: CustomerProp[];
     users: UserProp[];
     tab: Tab;
+    operatingSites: OperatingSiteProp[];
 }>();
 
 const form = useForm({
@@ -192,6 +193,7 @@ const statusIcon = {
                                             :ticket="ticket"
                                             :users="users"
                                             :record="item"
+                                            :operatingSites
                                         ></RecordCreateDialog>
                                     </template>
                                     <template v-slot:item.data-table-expand="{ internalItem, isExpanded, toggleExpand }">

@@ -115,7 +115,7 @@ function submit(isActive: Ref<boolean>) {
                                     </v-col>
                                     <v-col cols="12" md="5">
                                         <v-text-field
-                                            label="Termin"
+                                            label="Termin (optional)"
                                             type="datetime-local"
                                             v-model="ticketForm.appointment_at"
                                             :error-Messages="ticketForm.errors.appointment_at"

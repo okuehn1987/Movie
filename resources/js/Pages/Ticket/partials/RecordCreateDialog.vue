@@ -14,7 +14,7 @@ const props = defineProps<{
 
 const recordForm = useForm({
     start: props.record ? DateTime.fromSQL(props.record.start).toISO() : null,
-    operatingSite: props.operatingSites.find(o => o.value.type === 'App\\Models\\OperatingSite'),
+    operatingSite: props.operatingSites.find(o => o.value.type === 'App\\Models\\OperatingSite')?.value,
     duration: secondsToDuration(props.record?.duration ?? 0),
     description: props.record?.description ?? '',
     resources: props.record?.resources ?? '',

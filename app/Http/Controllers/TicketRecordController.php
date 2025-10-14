@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CustomerOperatingSite;
+use App\Models\OperatingSite;
 use App\Models\Organization;
 use App\Models\Ticket;
 use App\Models\TicketRecord;
@@ -22,7 +24,16 @@ class TicketRecordController extends Controller
 
         $validated = $request->validate([
             'start' => 'required|date',
-            'operatingSite=' => 'required',
+            'operatingSite' => ['required', 'array', function ($attr, $value, $fail) {
+                if (!array_key_exists('type', $value) || !array_key_exists('id', $value)) $fail('böse');
+                $type = $value['type'];
+                if (!in_array($type, [OperatingSite::class, CustomerOperatingSite::class, User::class])) {
+                    $fail('Bitte gib einen gültigen Standort ein');
+                };
+
+                $operatingSite = $type::inOrganization()->exists($value['id']);
+                if (!$operatingSite) $fail('Bitte gib einen gültigen Standort ein');
+            }],
             'duration' => 'required|date_format:H:i',
             'description' => 'required|string',
             'resources' => 'nullable|string',
@@ -32,11 +43,14 @@ class TicketRecordController extends Controller
             'files.*' => 'Die Dateien müssen im Format JPG, PNG, JPEG, AVIF, TIFF, SVG oder PDF vorliegen.',
         ]);
 
+        $address = $validated['operatingSite']['type']::inOrganization()->find($validated['operatingSite']['id'])->currentAddress;
+
         $record = $ticket->records()->create([
-            ...collect($validated)->except('files'),
+            ...collect($validated)->except(['files', 'operatingSite']),
             'start' => Carbon::parse($validated['start']),
             'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
             'user_id' => $authUser->id,
+            'address_id' => $address->id,
         ]);
 
         foreach ($validated['files'] as $file) {
