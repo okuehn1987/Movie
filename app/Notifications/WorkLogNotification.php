@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Enums\Status;
 use App\Models\User;
 use App\Models\WorkLog;
 use Carbon\Carbon;
@@ -59,7 +60,7 @@ class WorkLogNotification extends Notification
         return [
             'title' => $this->user->name . ' hat eine neue Buchung beantragt.',
             'work_log_id' => $this->log->id,
-            'status' => 'created',
+            'status' => Status::Created,
         ];
     }
 

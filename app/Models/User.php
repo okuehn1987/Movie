@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Enums\Status;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -413,7 +414,7 @@ class User extends Authenticatable
             $this->absencePatches()
                 ->with('log.currentAcceptedPatch')
                 ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
-                ->where('status', 'accepted')
+                ->where('status', Status::Accepted)
                 ->whereNot('type', 'delete')
                 ->whereDate('start', '<=', $endOfYear)
                 ->whereDate('end', '>=', $startOfYear)
@@ -455,7 +456,7 @@ class User extends Authenticatable
             $this->absencePatches()
                 ->with('log.currentAcceptedPatch')
                 ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
-                ->where('status', 'accepted')
+                ->where('status', Status::Accepted)
                 ->whereNot('type', 'delete')
                 ->whereDate('start', '<=', $endOfMonth)
                 ->whereDate('end', '>=', $startOfMonth)
@@ -548,7 +549,7 @@ class User extends Authenticatable
     {
         $absences = $this->absences()
             ->with(['patches', 'currentAcceptedPatch'])
-            ->where('status', 'accepted')
+            ->where('status', Status::Accepted)
             ->get();
 
         $absences = $absences->map(fn($a) => $a->currentAcceptedPatch ?? $a);
@@ -586,7 +587,7 @@ class User extends Authenticatable
             fn($s) =>
             $s->entries->filter(
                 fn($e) =>
-                $e->status == 'accepted' &&
+                $e->status == Status::Accepted &&
                     $e->accepted_at != null &&
                     Carbon::parse($e->start)->between($date->copy()->startOfDay(), $date->copy()->endOfDay()) &&
                     Carbon::parse($e->end)->between($date->copy()->startOfDay(), $date->copy()->endOfDay())
@@ -670,7 +671,7 @@ class User extends Authenticatable
                     ->merge(
                         $this->absencePatches()
                             ->with('log.currentAcceptedPatch')
-                            ->where('status', 'accepted')
+                            ->where('status', Status::Accepted)
                             ->whereDate('end', '>=', now())
                             ->get()
                             ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p))

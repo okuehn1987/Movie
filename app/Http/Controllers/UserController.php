@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Status;
 use App\Models\Absence;
 use App\Models\AbsenceType;
 use App\Models\Group;
@@ -626,7 +627,7 @@ class UserController extends Controller
 
         $absences = $user->absences()
             ->with(['patches', 'currentAcceptedPatch.absenceType:id,name', 'absenceType:id,name'])
-            ->where('status', 'accepted')
+            ->where('status', Status::Accepted)
             ->get();
 
         $absences = $absences->map(fn($a) => $a->currentAcceptedPatch ?? $a)

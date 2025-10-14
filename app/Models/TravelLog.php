@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Status;
 use App\Models\Traits\HasDuration;
 use App\Models\Traits\HasPatches;
 use App\Models\Traits\IsAccountable;
@@ -17,6 +18,10 @@ class TravelLog extends Model
     use ScopeInOrganization, HasPatches, IsAccountable, HasDuration;
 
     protected $guarded = [];
+
+    protected $casts = [
+        'status' => Status::class,
+    ];
 
     private static function getPatchModel()
     {

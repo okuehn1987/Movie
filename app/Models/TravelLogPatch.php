@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Status;
 use App\Models\Traits\HasDuration;
 use App\Models\Traits\HasLog;
 use App\Models\Traits\IsAccountable;
@@ -18,6 +19,10 @@ class TravelLogPatch extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'status' => Status::class,
+    ];
+
     private static function getLogModel()
     {
         return TravelLog::class;
@@ -28,7 +33,7 @@ class TravelLogPatch extends Model
         parent::boot();
         self::saving(function (TravelLogPatch $model) {
             //if the entry spans multiple days we need to split it into different entries
-            if ($model->status != 'accepted' || !$model->accepted_at) return;
+            if ($model->status != Status::Accepted || !$model->accepted_at) return;
             if ($model->end && !Carbon::parse($model->start)->isSameDay($model->end)) {
                 if (Carbon::parse($model->start)->gt($model->end)) throw new Exception("start can't be after end");
                 $end = Carbon::parse($model->end)->copy();
