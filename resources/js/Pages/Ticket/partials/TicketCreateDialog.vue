@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { PRIORITIES } from '@/types/types';
-import { CustomerProp, OperatingSiteProp, UserProp } from './ticketTypes';
+import { Customer, PRIORITIES } from '@/types/types';
+import { formatAddress } from '@/utils';
 import { usePage } from '@inertiajs/vue3';
-import { Ref } from 'vue';
+import { ref, Ref, watch } from 'vue';
+import { CustomerProp, OperatingSiteProp, UserProp } from './ticketTypes';
 
 const props = defineProps<{
     customers: CustomerProp[];
@@ -10,14 +11,17 @@ const props = defineProps<{
     operatingSites: OperatingSiteProp[];
 }>();
 
+const selectedSites = ref(['']);
+
 const ticketForm = useForm({
     title: '',
     description: '',
     priority: 'medium',
-    customer_id: props.customers.length == 1 ? props.customers.map(c => ({ title: c.name, value: c.id }))[0] : null,
+    customer_id: null as Customer['id'] | null,
     assignees: [usePage().props.auth.user.id],
     start: null as string | null,
     duration: '00:00',
+    operatingSite: props.operatingSites.find(o => o.value.type === 'App\\Models\\OperatingSite')?.value,
     resources: '',
     appointment_at: null as string | null,
     files: [] as File[],
@@ -32,6 +36,13 @@ function submit(isActive: Ref<boolean>) {
         },
     });
 }
+
+watch(
+    () => ticketForm.customer_id,
+    () => {
+        ticketForm.reset('operatingSite');
+    },
+);
 </script>
 <template>
     <v-dialog max-width="600px">
@@ -43,6 +54,7 @@ function submit(isActive: Ref<boolean>) {
 
         <template v-slot:default="{ isActive }">
             <v-card title="Auftrag hinzufügen">
+                {{ ticketForm.tab }}
                 <template #append>
                     <v-btn icon variant="text" @click="isActive.value = false">
                         <v-icon>mdi-close</v-icon>
@@ -160,6 +172,31 @@ function submit(isActive: Ref<boolean>) {
                                             v-model="ticketForm.duration"
                                             :error-messages="ticketForm.errors.duration"
                                         ></v-text-field>
+                                    </v-col>
+                                    <!-- TODO: autocomplete-->
+                                    <v-col cols="12">
+                                        <v-select
+                                            label="Standort"
+                                            v-model="ticketForm.operatingSite"
+                                            :items="
+                                                operatingSites
+                                                    .filter(o => !('customer_id' in o) || o.customer_id === ticketForm.customer_id)
+                                                    .map(os => ({
+                                                        ...os,
+                                                        props: { subtitle: 'address' in os ? formatAddress(os.address) : '' },
+                                                    }))
+                                            "
+                                            :error-messages="ticketForm.errors.operatingSite"
+                                        >
+                                            <!-- <template #prepend-item>
+                                                <div class="d-flex ga-2 px-2 pb-2">
+                                                    <v-chip role="button">Persönlich</v-chip>
+                                                    <v-chip role="button">Organisation</v-chip>
+                                                    <v-chip role="button">Kundenstandort</v-chip>
+                                                </div>
+                                                <v-divider></v-divider>
+                                            </template> -->
+                                        </v-select>
                                     </v-col>
                                     <v-col cols="12">
                                         <v-text-field

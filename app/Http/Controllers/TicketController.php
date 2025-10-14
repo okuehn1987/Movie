@@ -29,24 +29,30 @@ class TicketController extends Controller
     {
         Gate::authorize('publicAuth', User::class);
 
-
         $operatingSites = collect();
 
-        $operatingSiteName = OperatingSite::inOrganization()->whereId($authUser->operating_site_id)->first()->name;
-
-        $customerOperatingSites = CustomerOperatingSite::inOrganization()
+        $customerOperatingSites = CustomerOperatingSite::inOrganization()->with('currentAddress')
             ->get()
             ->map(fn($co) => [
                 'title' => $co->name,
                 'value' => ['id' => $co->id, 'type' => CustomerOperatingSite::class],
-                'customer_id' => $co->customer_id
+                'customer_id' => $co->customer_id,
+                'address' => $co->currentAddress
+            ]);
+
+        $orgOperatingSites = OperatingSite::inOrganization()->with('currentAddress')
+            ->get()
+            ->map(fn($os) => [
+                'title' => $os->name,
+                'value' => ['id' => $os->id, 'type' => OperatingSite::class],
+                'address' => $os->currentAddress
             ]);
 
         $operatingSites->push(
-            ['title' => $operatingSiteName, 'value' => ['id' => $authUser->operating_site_id, 'type' => OperatingSite::class]],
             ['title' => 'Homeoffice', 'value' => ['id' => $authUser->id, 'type' => User::class]]
         );
-        $operatingSites = $operatingSites->merge($customerOperatingSites);
+
+        $operatingSites = $operatingSites->merge($orgOperatingSites)->merge($customerOperatingSites);
 
         $ticketQuery = Ticket::inOrganization()->with(['customer:id,name', 'user:id,first_name,last_name', 'assignees:id,first_name,last_name', 'records.user', 'records.files']);
         return Inertia::render('Ticket/TicketIndex', [
