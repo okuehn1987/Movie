@@ -147,9 +147,9 @@ class AbsenceController extends Controller
                 ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'group_id', 'operating_site_id'])
                 ->map(fn(User $u) => [
                     ...$u->toArray(),
-                    'leaveDaysForYear' => $u->leaveDaysForYear($date, $u->userLeaveDays),
+                    'leaveDaysForYear' => $u->leaveDaysForYear(now(), $u->userLeaveDays),
                     'usedLeaveDaysForYear' => $u->usedLeaveDaysForYear(
-                        $date,
+                        now(),
                         $u->userWorkingWeeks,
                         collect($u->absences)->merge($u->absencePatches->filter(fn($p) => $p->log->currentAcceptedPatch->is($p)))
                     ),
