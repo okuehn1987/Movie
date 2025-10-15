@@ -228,12 +228,12 @@ const display = useDisplay();
                             width: '48px',
                             sortable:false
                         }]: []),
-                    ...(display.mdAndUp.value ? getDaysInMonth() :getDaysInWeek()).map(e => ({
+                    ...(display.mdAndUp.value ? getDaysInMonth() :getDaysInWeek()).map((e,_,dayList) => ({
                         title: e.weekdayShort + '\n' + e.day.toString(),
                         key: e.toString(),
                         sortable: false,
                         align: 'center',
-                        width: display.mdAndUp.value?'44px': '14%' ,
+                        width: (1/dayList.length * 100)+'%' ,
                         headerProps:{ class: {'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate() }}
                     } as const)),
                 ]"
