@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Addressable;
+use App\Models\Traits\Addressable;
 use App\Models\Traits\HasDuration;
 use App\Models\Traits\HasLog;
 use App\Models\Traits\IsAccountable;
