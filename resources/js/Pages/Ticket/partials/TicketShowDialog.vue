@@ -105,7 +105,6 @@ const statusIcon = {
                                     </template>
                                 </v-select>
                             </v-col>
-                            <v-col cols="12"></v-col>
                             <v-col cols="12" md="12">
                                 <v-autocomplete
                                     label="Zuweisung"
@@ -205,22 +204,24 @@ const statusIcon = {
                                         <tr>
                                             <td :colspan="columns.length" class="py-2">
                                                 <v-table density="compact">
-                                                    <thead class="bg-surface-light">
-                                                        <tr>
+                                                    <tbody class="bg-surface-medium">
+                                                        <tr class="bg-surface-light">
                                                             <th>Ressourcen</th>
                                                             <td class="py-2">{{ item.resources }}</td>
                                                             <td></td>
                                                             <td></td>
                                                         </tr>
-                                                    </thead>
-                                                    <tbody class="bg-surface-medium">
                                                         <tr>
                                                             <th>Beschreibung</th>
                                                             <td class="py-2">{{ item.description }}</td>
                                                             <td></td>
                                                             <td></td>
                                                         </tr>
-                                                        <tr v-for="(file, index) in item.files" :key="index">
+                                                        <tr
+                                                            v-for="(file, index) in item.files"
+                                                            :class="{ 'bg-surface-light': index % 2 == 0 }"
+                                                            :key="index"
+                                                        >
                                                             <th v-if="index == 0">Anhang</th>
                                                             <th v-else></th>
                                                             <td class="py-2">{{ file.original_name }}</td>

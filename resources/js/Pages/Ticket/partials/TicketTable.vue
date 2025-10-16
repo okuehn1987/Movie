@@ -111,7 +111,7 @@ function getAccountedAt(records: TicketRecord[]) {
                     title="Ticket übernehmen"
                     @click.stop="acceptTicketForm.patch(route('ticket.accept', { ticket: item.id }))"
                 ></v-btn>
-                <TicketFinishDialog v-if="tab === 'workingTickets' || tab === 'finishedTickets'" :tab :item></TicketFinishDialog>
+                <TicketFinishDialog v-if="tab === 'workingTickets'" :tab :item></TicketFinishDialog>
                 <RecordCreateDialog v-if="tab === 'workingTickets'" :ticket="item" :users="users" :operatingSites />
                 <TicketShowDialog :ticket="item" :customers="customers" :users="users" :tab :operatingSites />
                 <ConfirmDelete
