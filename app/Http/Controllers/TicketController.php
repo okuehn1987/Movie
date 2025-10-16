@@ -25,38 +25,30 @@ use Illuminate\Support\Facades\Storage;
 
 class TicketController extends Controller
 {
-    public function index(#[CurrentUser] User $authUser)
+    public function index(Request $request, #[CurrentUser] User $authUser)
     {
         Gate::authorize('publicAuth', User::class);
 
-        $operatingSites = collect();
+        $validated = $request->validate([
+            'tab' => 'nullable|string|in:archive,finishedTickets,newTickets,workingTickets',
+            'customer_id' => 'nullable|required_if:tab,archive|exists:customers,id',
+            'assignees' => 'nullable|array',
+            'assignees.*' => ['nullable', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))],
+            'start' => 'nullable|date|required_with:end',
+            'end' => 'nullable|date|required_with:start'
+        ]);
 
-        $customerOperatingSites = CustomerOperatingSite::inOrganization()->with('currentAddress')
-            ->get()
-            ->map(fn($co) => [
-                'title' => $co->name,
-                'value' => ['id' => $co->id, 'type' => CustomerOperatingSite::class],
-                'customer_id' => $co->customer_id,
-                'address' => $co->currentAddress
-            ]);
+        $tab = array_key_exists('tab', $validated) ? $validated['tab'] : 'newTickets';
 
-        $orgOperatingSites = OperatingSite::inOrganization()->with('currentAddress')
-            ->get()
-            ->map(fn($os) => [
-                'title' => $os->name,
-                'value' => ['id' => $os->id, 'type' => OperatingSite::class],
-                'address' => $os->currentAddress
-            ]);
-
-        $operatingSites->push(
-            ['title' => 'Homeoffice', 'value' => ['id' => $authUser->id, 'type' => User::class]]
-        );
-
-        $operatingSites = $operatingSites->merge($orgOperatingSites)->merge($customerOperatingSites);
-
-        $ticketQuery = Ticket::inOrganization()->with(['customer:id,name', 'user:id,first_name,last_name', 'assignees:id,first_name,last_name', 'records.user', 'records.files']);
+        $ticketQuery = Ticket::inOrganization()->with([
+            'customer:id,name',
+            'user:id,first_name,last_name',
+            'assignees:id,first_name,last_name',
+            'records.user',
+            'records.files'
+        ]);
         return Inertia::render('Ticket/TicketIndex', [
-            'tickets' => (clone $ticketQuery)
+            'tickets' => fn() => (clone $ticketQuery)
                 ->whereNull('tickets.finished_at')
                 ->orWhereHas('records', fn($q) => $q->whereNull('accounted_at'))
                 ->get()
@@ -80,13 +72,32 @@ class TicketController extends Controller
                         ]
                     )
                 ]),
-            'archiveTickets' => (clone $ticketQuery)
+            'archiveTickets' => fn() => (clone $ticketQuery)
                 ->whereNotNull('tickets.finished_at')
                 ->whereDoesntHave('records', fn($q) => $q->whereNull('accounted_at'))
-                ->get(),
-            'customers' => Customer::inOrganization()->get(['id', 'name']),
-            'users' => User::inOrganization()->get(['id', 'first_name', 'last_name', 'job_role']),
-            'operatingSites' => $operatingSites
+                ->paginate(2),
+            'customers' => fn() => Customer::inOrganization()->get(['id', 'name']),
+            'users' => fn() => User::inOrganization()->get(['id', 'first_name', 'last_name', 'job_role']),
+            'operatingSites' => fn() => collect([['title' => 'Homeoffice', 'value' => ['id' => $authUser->id, 'type' => User::class]]])
+                ->merge(
+                    CustomerOperatingSite::inOrganization()->with('currentAddress')
+                        ->get()
+                        ->map(fn($co) => [
+                            'title' => $co->name,
+                            'value' => ['id' => $co->id, 'type' => CustomerOperatingSite::class],
+                            'customer_id' => $co->customer_id,
+                            'address' => $co->currentAddress
+                        ])
+                )->merge(
+                    OperatingSite::inOrganization()->with('currentAddress')
+                        ->get()
+                        ->map(fn($os) => [
+                            'title' => $os->name,
+                            'value' => ['id' => $os->id, 'type' => OperatingSite::class],
+                            'address' => $os->currentAddress
+                        ])
+                ),
+            'tab' => Inertia::always(fn() => $tab)
         ]);
     }
 
