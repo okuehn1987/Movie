@@ -39,4 +39,9 @@ class Ticket extends Model
     {
         return $this->belongsToMany(User::class)->withTimestamps()->withPivot('status');
     }
+
+    public function address()
+    {
+        return $this->belongsTo(Address::class);
+    }
 }

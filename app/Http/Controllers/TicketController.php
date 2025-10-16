@@ -97,6 +97,16 @@ class TicketController extends Controller
         $validated = $request->validate([
             'tab' => 'required|in:expressTicket,ticket',
             'title' => 'required|string|max:255',
+            'operatingSite' => ['required', 'array', function ($attr, $value, $fail) {
+                if (!array_key_exists('type', $value) || !array_key_exists('id', $value)) $fail('böse');
+                $type = $value['type'];
+                if (!in_array($type, [OperatingSite::class, CustomerOperatingSite::class, User::class])) {
+                    $fail('Bitte gib einen gültigen Standort ein');
+                };
+
+                $operatingSite = $type::inOrganization()->exists($value['id']);
+                if (!$operatingSite) $fail('Bitte gib einen gültigen Standort ein');
+            }],
             'description' => 'nullable|string',
             'priority' => 'required|in:lowest,low,medium,high,highest',
             'customer_id' => ['required', Rule::exists('customers', 'id')->whereIn('id', Organization::getCurrent()->customers()->select('customers.id'))],
@@ -127,11 +137,15 @@ class TicketController extends Controller
 
         if ($validated["tab"] === "expressTicket") {
 
+
+            $address = $validated['operatingSite']['type']::inOrganization()->find($validated['operatingSite']['id'])->currentAddress;
+
             $record = $ticket->records()->create([
                 'resources' => $validated['resources'],
                 'start' => Carbon::parse($validated['start']),
                 'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
                 'user_id' => $authUser->id,
+                'address_id' => $address->id,
             ]);
             $ticket->update(['finished_at' => now()]);
 

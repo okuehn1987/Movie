@@ -11,8 +11,6 @@ const props = defineProps<{
     operatingSites: OperatingSiteProp[];
 }>();
 
-const selectedSites = ref(['']);
-
 const ticketForm = useForm({
     title: '',
     description: '',
@@ -173,9 +171,8 @@ watch(
                                             :error-messages="ticketForm.errors.duration"
                                         ></v-text-field>
                                     </v-col>
-                                    <!-- TODO: autocomplete-->
                                     <v-col cols="12">
-                                        <v-select
+                                        <v-autocomplete
                                             label="Standort"
                                             v-model="ticketForm.operatingSite"
                                             :items="
@@ -187,16 +184,7 @@ watch(
                                                     }))
                                             "
                                             :error-messages="ticketForm.errors.operatingSite"
-                                        >
-                                            <!-- <template #prepend-item>
-                                                <div class="d-flex ga-2 px-2 pb-2">
-                                                    <v-chip role="button">Persönlich</v-chip>
-                                                    <v-chip role="button">Organisation</v-chip>
-                                                    <v-chip role="button">Kundenstandort</v-chip>
-                                                </div>
-                                                <v-divider></v-divider>
-                                            </template> -->
-                                        </v-select>
+                                        ></v-autocomplete>
                                     </v-col>
                                     <v-col cols="12">
                                         <v-text-field
