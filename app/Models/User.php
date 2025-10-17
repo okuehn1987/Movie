@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Models\Traits\Addressable;
 use App\Enums\Status;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -20,7 +21,7 @@ use App\Notifications\PasswordResetNotification;
 class User extends Authenticatable
 {
     use \Znck\Eloquent\Traits\BelongsToThrough;
-    use HasFactory, Notifiable, SoftDeletes, ScopeInOrganization;
+    use HasFactory, Notifiable, SoftDeletes, ScopeInOrganization, Addressable;
 
     /**
      * Send a password reset notification to the user.
@@ -58,11 +59,13 @@ class User extends Authenticatable
             ['name' => 'timeAccount_permission', 'label' => 'Zeitkonten verwalten'],
             ['name' => 'timeAccountSetting_permission', 'label' => 'Zeitkontovarianten verwalten'],
             ['name' => 'timeAccountTransaction_permission', 'label' => 'Zeitkontotransaktionen verwalten'],
+            ['name' => 'ticket_permission', 'label' => 'Tickets verwalten'],
         ],
         'organization' => [
             ['name' => 'absenceType_permission', 'label' => 'Abwesenheitsgründe verwalten'],
             ['name' => 'specialWorkingHoursFactor_permission', 'label' => 'Sonderarbeitszeitfaktoren verwalten'],
             ['name' => 'organization_permission', 'label' => 'Organisation verwalten'],
+            ['name' => 'customer_permission', 'label' => 'Kunden verwalten'],
         ],
         'operatingSite' => [['name' => 'operatingSite_permission', 'label' => 'Betriebsstätte verwalten']],
         'group' =>  [['name' => 'group_permission', 'label' => 'Abteilungen verwalten']],
@@ -206,6 +209,11 @@ class User extends Authenticatable
     public function isSubstitutionFor()
     {
         return $this->belongsToMany(User::class, 'substitutes', 'substitute_id', 'user_id');
+    }
+
+    public function tickets()
+    {
+        return $this->belongsToMany(Ticket::class)->withTimestamps();
     }
 
     public function group()
@@ -572,6 +580,8 @@ class User extends Authenticatable
 
         $currentWorkingHours = $this->userWorkingHoursForDate($date);
         $currentWorkingWeek = $this->userWorkingWeekForDate($date);
+
+        if (!$currentWorkingHours || !$currentWorkingWeek || $currentWorkingWeek->numberOfWorkingDays == 0) return 0;
 
         return $currentWorkingHours['weekly_working_hours'] / $currentWorkingWeek->numberOfWorkingDays * 3600;
     }

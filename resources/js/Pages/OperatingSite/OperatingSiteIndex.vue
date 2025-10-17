@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Country, CountryProp, Canable, Count, OperatingSite, Paginator, User } from '@/types/types';
+import { Country, CountryProp, Canable, Count, OperatingSite, Paginator, User, Relations } from '@/types/types';
 import { fillNullishValues, getStates, usePagination } from '@/utils';
 import { Link } from '@inertiajs/vue3';
 import { toRefs } from 'vue';
 
 const props = defineProps<{
-    operatingSites: Paginator<OperatingSite & Canable & Count<User>>;
+    operatingSites: Paginator<OperatingSite & Pick<Relations<'operatingSite'>, 'current_address'> & Canable & Count<User>>;
     countries: CountryProp[];
 }>();
 
@@ -50,8 +50,12 @@ function submit() {
                 ]"
                 :items="
                     data.map(o => {
-                        const streetAddress = o.street && o.house_number ? o.street + ' ' + o.house_number : '/';
-                        const cityAddress = o.zip && o.city ? o.zip + ' ' + o.city : '/';
+                        const streetAddress =
+                            o.current_address.street && o.current_address.house_number
+                                ? o.current_address.street + ' ' + o.current_address.house_number
+                                : '/';
+                        const cityAddress =
+                            o.current_address.zip && o.current_address.city ? o.current_address.zip + ' ' + o.current_address.city : '/';
 
                         return { ...fillNullishValues(o), streetAddress, cityAddress };
                     })
@@ -82,7 +86,7 @@ function submit() {
                                                 <v-text-field
                                                     label="Name"
                                                     required
-                                                    :error-messages="operatingSiteForm.errors.street"
+                                                    :error-messages="operatingSiteForm.errors.name"
                                                     v-model="operatingSiteForm.name"
                                                 ></v-text-field>
                                             </v-col>

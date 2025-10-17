@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\Organization;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -27,8 +29,18 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request)
     {
+        $request->validate([
+            'email' => [
+                'required',
+                'string',
+                'email',
+                Rule::exists('users', 'email')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))
+            ],
+            'password' => ['required', 'string'],
+        ]);
+
         $request->authenticate();
 
         $request->session()->regenerate();

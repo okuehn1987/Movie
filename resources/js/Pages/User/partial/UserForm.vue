@@ -1,33 +1,14 @@
 <script setup lang="ts">
-import {
-    Country,
-    CountryProp,
-    DateString,
-    Group,
-    GroupUser,
-    OperatingSite,
-    OperatingSiteUser,
-    OrganizationUser,
-    Permission,
-    RelationPick,
-    Relations,
-    User,
-    UserLeaveDays,
-    UserWorkingHours,
-    UserWorkingWeek,
-    Weekday,
-} from '@/types/types';
+import { Country, CountryProp, DateString, FederalState, Group, OperatingSite, Permission, User, UserLeaveDays, Weekday } from '@/types/types';
 import { getBrowser, getStates } from '@/utils';
 import { DateTime, Info } from 'luxon';
-import PermissionSelector from './PermissionSelector.vue';
 import { nextTick } from 'vue';
+import HertaUserFormSections from './HertaUserFormSections.vue';
+import PermissionSelector from './PermissionSelector.vue';
+import { FormData, UserProp } from './userFormTypes';
 
 const props = defineProps<{
-    user?: User &
-        RelationPick<'user', 'supervisor', 'id'> &
-        Pick<Relations<'user'>, 'organization_user' | 'operating_site_user' | 'group_user' | 'user_working_hours' | 'user_working_weeks'> & {
-            user_leave_days: (UserLeaveDays | null)[];
-        };
+    user?: UserProp;
     supervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];
     groups: Pick<Group, 'id' | 'name'>[];
@@ -42,11 +23,11 @@ const emit = defineEmits<{
 
 const WEEKDAYS = Info.weekdays('long', { locale: 'en' }).map(e => e.toLowerCase()) as Weekday[];
 
-const userForm = useForm({
+const userForm = useForm<FormData>({
     first_name: '',
     last_name: '',
     email: '',
-    date_of_birth: '' as null | string,
+    date_of_birth: null as null | string,
     city: '',
     zip: '',
     street: '',
@@ -55,28 +36,26 @@ const userForm = useForm({
     country: props.countries[0]?.value ?? ('' as Country),
     federal_state: '',
     phone_number: '',
-    staff_number: null as null | string,
-    job_role: null as null | string,
+    staff_number: null,
+    job_role: null,
     password: '',
-    group_id: null as null | Group['id'],
-    operating_site_id: null as null | OperatingSite['id'],
-    supervisor_id: null as null | User['id'],
+    group_id: null,
+    operating_site_id: null,
+    supervisor_id: null,
     is_supervisor: false,
-    resignation_date: '' as null | DateString,
+    resignation_date: null as null | DateString,
     home_office: false,
-    home_office_hours_per_week: null as null | number, //TODO: check if we need active_since
+    home_office_hours_per_week: null, //TODO: check if we need active_since
     use_time_balance_traffic_light: false,
     time_balance_yellow_threshold: null as null | number,
     time_balance_red_threshold: null as null | number,
 
-    user_working_hours: [] as (Pick<UserWorkingHours, 'weekly_working_hours'> & { active_since: string; id: UserWorkingHours['id'] | null })[],
-
-    user_leave_days: [] as (Pick<UserLeaveDays, 'leave_days'> & { active_since: string; id: UserLeaveDays['id'] | null })[],
-
-    user_working_weeks: [] as { id: UserWorkingWeek['id'] | null; active_since: string; weekdays: Weekday[] }[],
+    user_working_hours: [],
+    user_leave_days: [],
+    user_working_weeks: [],
     initialRemainingLeaveDays: 0,
 
-    overtime_calculations_start: DateTime.now().toFormat('yyyy-MM-dd'),
+    overtime_calculations_start: DateTime.now().toFormat('yyyy-MM-dd') as DateString,
     organizationUser: {
         organization_permission: null,
         operatingSite_permission: null,
@@ -89,8 +68,12 @@ const userForm = useForm({
         user_permission: null,
         specialWorkingHoursFactor_permission: null,
         workLogPatch_permission: null,
-    } as Pick<OrganizationUser, Permission[keyof Permission]>,
+        workLog_permission: null,
+        ticket_permission: null,
+        customer_permission: null,
+    },
     groupUser: {
+        absenceType_permission: null,
         group_permission: null,
         absence_permission: null,
         timeAccount_permission: null,
@@ -98,16 +81,21 @@ const userForm = useForm({
         timeAccountTransaction_permission: null,
         user_permission: null,
         workLogPatch_permission: null,
-    } as Pick<GroupUser, Permission['all' | 'group']>,
+        workLog_permission: null,
+        ticket_permission: null,
+    },
     operatingSiteUser: {
+        absenceType_permission: null,
         operatingSite_permission: null,
         absence_permission: null,
         timeAccount_permission: null,
         timeAccountSetting_permission: null,
         timeAccountTransaction_permission: null,
         user_permission: null,
+        workLog_permission: null,
         workLogPatch_permission: null,
-    } as Pick<OperatingSiteUser, Permission['all' | 'operatingSite']>,
+        ticket_permission: null,
+    },
 });
 
 if (props.user) {
@@ -115,13 +103,13 @@ if (props.user) {
     userForm.last_name = props.user.last_name;
     userForm.email = props.user.email;
     userForm.date_of_birth = props.user.date_of_birth;
-    userForm.city = props.user.city ?? '';
-    userForm.zip = props.user.zip ?? '';
-    userForm.street = props.user.street ?? '';
-    userForm.house_number = props.user.house_number ?? '';
-    userForm.address_suffix = props.user.address_suffix ?? '';
-    userForm.country = props.user.country;
-    userForm.federal_state = props.user.federal_state;
+    userForm.city = props.user.current_address.city ?? '';
+    userForm.zip = props.user.current_address.zip ?? '';
+    userForm.street = props.user.current_address.street ?? '';
+    userForm.house_number = props.user.current_address.house_number ?? '';
+    userForm.address_suffix = props.user.current_address.address_suffix ?? '';
+    userForm.country = props.user.current_address.country ?? ('' as Country);
+    userForm.federal_state = props.user.current_address.federal_state ?? ('' as FederalState);
     userForm.phone_number = props.user.phone_number ?? '';
     userForm.staff_number = props.user.staff_number;
     userForm.job_role = props.user.job_role;
@@ -143,9 +131,9 @@ if (props.user) {
     if (userForm.user_leave_days.length == 0)
         userForm.user_leave_days.push({ id: null, active_since: DateTime.now().toFormat('yyyy-MM'), leave_days: 0 });
 
-    userForm.user_working_hours = props.user.user_working_hours;
+    userForm.user_working_hours = props.user.user_working_hours ?? [];
     if (userForm.user_working_hours.length == 0)
-        userForm.user_working_hours.push({ id: null, active_since: DateTime.now().toFormat('yyyy-MM-dd'), weekly_working_hours: 0 });
+        userForm.user_working_hours.push({ id: null, active_since: DateTime.now().plus({ day: 1 }).toFormat('yyyy-MM-dd'), weekly_working_hours: 0 });
 
     for (const entry of props.user.user_working_weeks) {
         const weekdays = [] as Weekday[];
@@ -158,7 +146,7 @@ if (props.user) {
         });
     }
     if (userForm.user_working_weeks.length == 0)
-        userForm.user_working_weeks.push({ id: null, active_since: DateTime.now().toFormat('yyyy-MM-dd'), weekdays: [] });
+        userForm.user_working_weeks.push({ id: null, active_since: DateTime.now().plus({ day: 1 }).toFormat('yyyy-MM-dd'), weekdays: [] });
 
     for (const key in userForm.organizationUser) {
         userForm.organizationUser[key as keyof typeof userForm.organizationUser] =
@@ -297,9 +285,12 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-btn>
             </template>
         </v-card>
+
+        <HertaUserFormSections v-if="can('app', 'herta')" :mode :user v-model:user-form="userForm"></HertaUserFormSections>
+
         <v-card class="mb-4">
             <v-card-item>
-                <v-card-title class="mb-2">Wochenarbeitszeit</v-card-title>
+                <v-card-title class="mb-2">Arbeitswoche</v-card-title>
             </v-card-item>
             <v-card-text>
                 <v-row>
@@ -616,6 +607,23 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                         :permissions
                         :errors="userForm.errors"
                         label="Organisationsrechte"
+                        :items="[
+                            {
+                                label: 'Zeiterfassung',
+                                keys: [
+                                    'workLog_permission',
+                                    'workLogPatch_permission',
+                                    'timeAccount_permission',
+                                    'timeAccountSetting_permission',
+                                    'timeAccountTransaction_permission',
+                                ],
+                            },
+                            { label: 'Abwesenheiten', keys: ['absence_permission', 'absenceType_permission'] },
+                            { label: 'Mitarbeiter', keys: ['user_permission'] },
+                            { label: 'Organisation', keys: ['organization_permission'] },
+                            { label: 'Ticket', keys: ['ticket_permission'] },
+                            { label: 'Kunden', keys: ['customer_permission'] },
+                        ]"
                     />
                 </v-row>
             </v-card-text>
@@ -640,6 +648,22 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                         :errors="userForm.errors"
                         label="Wähle die Rechte des Mitarbeitenden für die ausgewählte Betriebsstätte aus"
                         data-testid="userOperatingSitePermissions"
+                        :items="[
+                            {
+                                label: 'Zeiterfassung',
+                                keys: [
+                                    'workLog_permission',
+                                    'workLogPatch_permission',
+                                    'timeAccount_permission',
+                                    'timeAccountSetting_permission',
+                                    'timeAccountTransaction_permission',
+                                ],
+                            },
+                            { label: 'Abwesenheiten', keys: ['absence_permission', 'absenceType_permission'] },
+                            { label: 'Mitarbeiter', keys: ['user_permission'] },
+                            { label: 'Betriebsstätte', keys: ['operatingSite_permission'] },
+                            { label: 'Ticket', keys: ['ticket_permission'] },
+                        ]"
                     />
                 </v-row>
             </v-card-text>
@@ -665,6 +689,22 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                         :errors="userForm.errors"
                         label="Abteilungsrechte"
                         data-testid="userGroupPermissions"
+                        :items="[
+                            {
+                                label: 'Zeiterfassung',
+                                keys: [
+                                    'workLog_permission',
+                                    'workLogPatch_permission',
+                                    'timeAccount_permission',
+                                    'timeAccountSetting_permission',
+                                    'timeAccountTransaction_permission',
+                                ],
+                            },
+                            { label: 'Abwesenheiten', keys: ['absence_permission', 'absenceType_permission'] },
+                            { label: 'Mitarbeiter', keys: ['user_permission'] },
+                            { label: 'Abteilung', keys: ['group_permission'] },
+                            { label: 'Ticket', keys: ['ticket_permission'] },
+                        ]"
                     />
                 </v-row>
             </v-card-text>

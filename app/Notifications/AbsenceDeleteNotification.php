@@ -64,11 +64,6 @@ class AbsenceDeleteNotification extends Notification
         ];
     }
 
-    public function readNotification(array $notification)
-    {
-        \Illuminate\Notifications\DatabaseNotification::find($notification['id'])?->markAsRead();
-    }
-
     public function getNotificationURL()
     {
         return  route('dispute.index', [

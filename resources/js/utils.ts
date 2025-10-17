@@ -1,7 +1,7 @@
 import { router, usePage } from '@inertiajs/vue3';
 import { DateTime, Duration } from 'luxon';
 import { computed, onMounted, onUnmounted, ref, Ref, watch } from 'vue';
-import { Country, Paginator, FederalState, TimeAccountSetting, Tree } from './types/types';
+import { Country, Paginator, FederalState, TimeAccountSetting, Tree, Address } from './types/types';
 
 export function useNow() {
     const now = ref(DateTime.now());
@@ -175,12 +175,26 @@ export function throttle<T extends (...args: unknown[]) => void>(func: T, delayL
     };
 }
 
-export function formatDuration(seconds: number, accuracy: 'seconds' | 'minutes' = 'seconds') {
+export function secondsToDuration(seconds: number): `${string}:${string}` {
+    return `${Math.floor(seconds / 3600)
+        .toString()
+        .padStart(2, '0')}:${((seconds % 3600) / 60).toString().padStart(2, '0')}`;
+}
+
+export function formatDuration(seconds: number, accuracy: 'seconds' | 'minutes' = 'seconds', formatType: 'time' | 'duration' = 'time') {
     const format = {
-        seconds: 'h:mm:ss',
-        minutes: 'h:mm',
+        seconds: formatType == 'time' ? 'h:mm:ss' : `h'h 'mm'm 'ss's'`,
+        minutes: formatType == 'time' ? 'h:mm' : `h'h 'mm'm'`,
     };
+
     return (seconds < 0 ? '-' : '') + Duration.fromObject({ seconds: Math.abs(seconds) }).toFormat(format[accuracy]);
+}
+
+export function formatAddress(obj: Address) {
+    const a = obj.street && obj.house_number ? obj.street + ' ' + obj.house_number : '';
+    const b = obj.zip && obj.city ? obj.zip + ' ' + obj.city : '';
+    return [a, b].filter(e => !!e).join(', ');
+    //FIXME: handle null cases
 }
 
 type Browser = 'Google Chrome' | 'Microsoft Edge' | 'Mozilla Firefox' | 'Apple Safari';

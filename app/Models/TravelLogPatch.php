@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\Addressable;
 use App\Enums\Status;
 use App\Models\Traits\HasDuration;
 use App\Models\Traits\HasLog;
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class TravelLogPatch extends Model
 {
     use HasFactory, SoftDeletes;
-    use ScopeInOrganization, HasLog, IsAccountable, HasDuration;
+    use ScopeInOrganization, HasLog, IsAccountable, HasDuration, Addressable;
 
     protected $guarded = [];
 
@@ -63,13 +64,5 @@ class TravelLogPatch extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-    public function startLocation()
-    {
-        return $this->hasOne(TravelLogAddress::class);
-    }
-    public function endLocation()
-    {
-        return $this->hasOne(TravelLogAddress::class);
     }
 }

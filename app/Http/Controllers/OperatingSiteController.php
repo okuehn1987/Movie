@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Address;
 use App\Models\OperatingSite;
 use App\Models\OperatingTime;
 use App\Models\Organization;
@@ -18,7 +19,7 @@ class OperatingSiteController extends Controller
         Gate::authorize('viewIndex', OperatingSite::class);
 
         return Inertia::render('OperatingSite/OperatingSiteIndex', [
-            'operatingSites' => OperatingSite::inOrganization()->withCount('users')->paginate(12)->through(
+            'operatingSites' => OperatingSite::inOrganization()->with('currentAddress')->withCount('users')->paginate(12)->through(
                 fn($operatingSite) => [
                     ...$operatingSite->toArray(),
                     'can' => [
@@ -42,7 +43,7 @@ class OperatingSiteController extends Controller
         Gate::authorize('viewShow', $operatingSite);
 
         return Inertia::render('OperatingSite/OperatingSiteShow', [
-            'operatingSite' => $operatingSite->load('operatingTimes'),
+            'operatingSite' => $operatingSite->load(['operatingTimes', 'currentAddress']),
             'countries' => HolidayService::getCountries(),
             'can' => [
                 'operatingSite' => [
@@ -75,7 +76,10 @@ class OperatingSiteController extends Controller
             'zip' => "required|string",
         ]);
 
-        OperatingSite::create([...$validated, 'organization_id' => Organization::getCurrent()->id]);
+        $operatingSite = Organization::getCurrent()->operatingSites()->create([
+            ...collect($validated)->except(Address::$ADDRESS_KEYS)
+        ]);
+        $operatingSite->addresses()->create(collect($validated)->only(Address::$ADDRESS_KEYS)->toArray());
 
         return back()->with('success', 'Betriebsstätte erfolgreich erstellt.');
     }
@@ -102,7 +106,9 @@ class OperatingSiteController extends Controller
             OperatingSite::inOrganization()->where('is_headquarter', true)->update(['is_headquarter' => false]);
         }
 
-        $operatingSite->update($validated);
+        // FIXME: wir brauchen active since und sync wie CustomerOperatingSiteController@update
+        $operatingSite->update(collect($validated)->except(Address::$ADDRESS_KEYS)->toArray());
+        $operatingSite->addresses()->create(collect($validated)->only(Address::$ADDRESS_KEYS)->toArray());
 
         return back()->with('success', 'Betriebsstätte erfolgreich aktualisiert.');
     }

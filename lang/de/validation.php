@@ -201,9 +201,18 @@ return [
         'year' => 'Jahr',
         'month' => 'Monat',
         'description' => 'Beschreibung',
+        'title' => 'Betreff',
         'resignation_date' => 'Kündigungsdatum',
         'set_name' => 'Filtername',
         'extra_charge' => 'Faktor Zuschlag',
+        'customer_id' => 'Kunde',
+        'tab' => 'Auswahl'
     ],
+
+    'values' => [
+        'tab' => [
+            'expressTicket' => 'Einzelauftrag'
+        ]
+    ]
 
 ];
