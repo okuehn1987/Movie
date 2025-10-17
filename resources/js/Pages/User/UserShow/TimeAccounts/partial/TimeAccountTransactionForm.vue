@@ -28,6 +28,7 @@ const timeAccountTransactionForm = useForm({
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>
+                <v-divider></v-divider>
                 <v-card-text>
                     <v-form
                         @submit.prevent="
@@ -46,8 +47,8 @@ const timeAccountTransactionForm = useForm({
                                 })
                         "
                     >
-                        <v-row
-                            ><v-col cols="12" md="6">
+                        <v-row>
+                            <v-col cols="12" md="6">
                                 <v-select
                                     :items="[
                                         { title: 'Stunden hinzufügen', value: 'ADD' },
@@ -74,7 +75,7 @@ const timeAccountTransactionForm = useForm({
                                 ></v-text-field>
                             </v-col>
                             <v-col cols="12" class="text-end">
-                                <v-btn type="submit" color="primary" :loading="timeAccountTransactionForm.processing"> Speichern </v-btn>
+                                <v-btn type="submit" color="primary" :loading="timeAccountTransactionForm.processing">Speichern</v-btn>
                             </v-col>
                         </v-row>
                     </v-form>

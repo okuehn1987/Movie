@@ -64,6 +64,7 @@ function changeWorkLogStatus() {
                     <v-icon>mdi-close</v-icon>
                 </v-btn>
             </template>
+            <v-divider></v-divider>
             <v-card-text>
                 <v-row>
                     <v-col cols="12">
