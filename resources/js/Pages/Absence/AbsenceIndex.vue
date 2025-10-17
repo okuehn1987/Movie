@@ -157,8 +157,8 @@ const display = useDisplay();
             @absenceReload="loadedMonths = [currentDate.toFormat('yyyy-MM')]"
         ></ShowAbsenceModal>
         <v-card>
-            <v-card-text>
-                <div class="d-flex justify-space-between align-center w-100">
+            <v-card-text class="px-sm-4 px-0">
+                <div class="d-flex align-center w-100" :class="display.mdAndUp.value ? 'justify-space-between' : 'justify-center'">
                     <AbsenceFilter
                         v-if="display.mdAndUp.value"
                         :absence_types
@@ -166,7 +166,7 @@ const display = useDisplay();
                         :user_absence_filters
                         v-model:filterForm="filterForm"
                     ></AbsenceFilter>
-                    <div class="d-flex flex-wrap align-center w-100">
+                    <div class="d-flex flex-wrap align-center">
                         <div class="d-flex">
                             <template v-if="display.mdAndUp.value">
                                 <v-btn @click.stop="currentDate = currentDate.minus({ year: 1 })" variant="text" icon color="primary">
@@ -181,9 +181,9 @@ const display = useDisplay();
                             </v-btn>
                         </div>
                         <h2 class="mx-md-4 text-center" :style="{ minWidth: display.mdAndUp.value ? '170px' : '110px' }">
-                            <template v-if="display.smAndUp.value">{{ currentDate.toFormat('MMMM yyyy') }}</template>
+                            <template v-if="display.mdAndUp.value">{{ currentDate.toFormat('MMMM yyyy') }}</template>
                             <template v-else>
-                                {{ currentDate.startOf('week').toFormat('dd.MM.yyyy') }} - {{ currentDate.endOf('week').toFormat('dd.MM.yyyy') }}
+                                {{ currentDate.startOf('week').toFormat('dd.MM.yy') }} - {{ currentDate.endOf('week').toFormat('dd.MM.yy') }}
                             </template>
                             <v-progress-linear v-if="loading" indeterminate></v-progress-linear>
                         </h2>
@@ -220,10 +220,6 @@ const display = useDisplay();
                         .toSorted((a, b) => (b.id == $page.props.auth.user.id ? 1 : a.last_name.localeCompare(b.last_name)))
                 "
                 :headers="[
-                {
-                    title: 'Name',
-                    key: 'name',
-                },
                     {
                         title: 'Name',
                         key: 'name',
