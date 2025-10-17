@@ -96,7 +96,13 @@ class TicketController extends Controller
             'selected.*' => [
                 'required',
                 Rule::exists('ticket_records', 'id')
-                    ->whereIn('id', TicketRecord::whereHas('ticket', fn($q) => $q->whereIn('id', Organization::getCurrent()->tickets()->select('tickets.id')))->pluck('id'))
+                    ->whereIn(
+                        'id',
+                        TicketRecord::whereHas('ticket', fn($q) => $q->whereIn(
+                            'id',
+                            Organization::getCurrent()->tickets()->select('tickets.id')
+                        ))->select('ticket_records.id')
+                    )
             ]
         ]);
 

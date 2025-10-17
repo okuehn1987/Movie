@@ -28,7 +28,7 @@ class TicketRecordController extends Controller
         $ticket->records()->create([
             ...$validated,
             'start' => Carbon::parse($validated['start']),
-            'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
+            'duration' => Carbon::parse($validated['duration'])->secondsSinceMidnight(),
             'user_id' => $authUser->id,
         ]);
 
@@ -54,7 +54,7 @@ class TicketRecordController extends Controller
         $ticketRecord->update([
             ...$validated,
             'start' => Carbon::parse($validated['start']),
-            'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
+            'duration' => Carbon::parse($validated['duration'])->secondsSinceMidnight(),
         ]);
 
         Organization::getCurrent()->users
