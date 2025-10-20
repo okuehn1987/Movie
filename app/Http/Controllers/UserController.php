@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Status;
 use App\Models\Absence;
 use App\Models\AbsenceType;
+use App\Models\Address;
 use App\Models\Group;
 use App\Models\GroupUser;
 use App\Models\OperatingSite;
@@ -21,6 +23,7 @@ use App\Models\User;
 use App\Models\UserLeaveDay;
 use App\Models\UserWorkingHour;
 use App\Models\UserWorkingWeek;
+use App\Services\AppModuleService;
 use App\Services\HolidayService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -92,7 +95,7 @@ class UserController extends Controller
             'home_office' => 'required|boolean',
             'home_office_hours_per_week' => 'nullable|min:0|numeric',
 
-            'user_working_hours' => 'required|array',
+            'user_working_hours' => 'present|array',
             'user_working_hours.*.id' => 'nullable|exists:user_working_hours,id',
             'user_working_hours.*.weekly_working_hours' => 'required|min:0|decimal:0,2',
             'user_working_hours.*.active_since' => ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
@@ -106,7 +109,7 @@ class UserController extends Controller
                 }
             }],
 
-            'user_working_weeks' => 'required|array',
+            'user_working_weeks' => 'present|array',
             'user_working_weeks.*.id' => 'nullable|exists:user_working_weeks,id',
             'user_working_weeks.*.weekdays' => 'required|array',
             'user_working_weeks.*.weekdays.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
@@ -121,7 +124,7 @@ class UserController extends Controller
                 }
             }],
 
-            'user_leave_days' => 'required|array',
+            'user_leave_days' => 'present|array',
             'user_leave_days.*.id' => 'nullable|exists:user_leave_days,id',
             'user_leave_days.*.leave_days' => 'required|integer|min:0',
             'user_leave_days.*.active_since' => ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
@@ -173,7 +176,7 @@ class UserController extends Controller
         Gate::authorize('viewIndex', User::class);
 
         return Inertia::render('User/UserIndex', [
-            'users' => User::inOrganization()->with('group:id,name')->get([
+            'users' => User::inOrganization()->with(['group:id,name', 'currentAddress'])->get([
                 'id',
                 'first_name',
                 'last_name',
@@ -209,27 +212,27 @@ class UserController extends Controller
     {
         Gate::authorize('viewShow', $user);
 
-        $user->load(['groupUser', 'operatingSiteUser', 'organizationUser', 'supervisor:id']);
-
-        $user['user_working_hours'] = $user->userWorkingHours()
-            ->orderBy('active_since', 'asc')
-            ->whereDate('active_since', '>', Carbon::now())
-            ->get()
-            ->merge([$user->currentWorkingHours]);
-
-        $user['user_working_weeks'] = $user->userWorkingWeeks()
-            ->orderBy('active_since', 'asc')
-            ->whereDate('active_since', '>', Carbon::now())
-            ->get()
-            ->merge([$user->currentWorkingWeek]);
-
-        $user['user_leave_days'] = collect(
-            $user->userLeaveDays()
-                ->where('type', 'annual')
-                ->orderBy('active_since', 'asc')
-                ->whereDate('active_since', '>', Carbon::now())
-                ->get()
-        )->merge([$user->currentLeaveDays]);
+        $user->load([
+            'groupUser',
+            'operatingSiteUser',
+            'organizationUser',
+            'supervisor:id',
+            'currentAddress',
+            'userWorkingWeeks' => function ($q) {
+                $q->orderBy('active_since', 'desc');
+            },
+            'userLeaveDays' => function ($q) {
+                $q->where('type', 'annual')->orderBy('active_since', 'desc');
+            },
+            ...(AppModuleService::hasAppModule('herta') ?
+                [
+                    'userWorkingHours' => function ($q) {
+                        $q->orderBy('active_since', 'desc');
+                    }
+                ] :
+                []
+            ),
+        ]);
 
         return Inertia::render('User/UserShow/GeneralInformation', [
             'user' => $user,
@@ -354,13 +357,6 @@ class UserController extends Controller
             'last_name' => $validated['last_name'],
             'email' => $validated['email'],
             'date_of_birth' => $validated['date_of_birth'],
-            'city' => $validated['city'],
-            'zip' => $validated['zip'],
-            'street' => $validated['street'],
-            'house_number' => $validated['house_number'],
-            'address_suffix' => $validated['address_suffix'],
-            'country' => $validated['country'],
-            'federal_state' => $validated['federal_state'],
             'phone_number' => $validated['phone_number'],
             'staff_number' => $validated['staff_number'],
             'password' =>  Hash::make($validated['password']),
@@ -380,6 +376,8 @@ class UserController extends Controller
             'notification_channels' => ['database', 'mail'],
         ]);
         $user->save();
+
+        $user->addresses()->create(collect($validated)->only(Address::$ADDRESS_KEYS)->toArray());
 
         UserLeaveDay::create([
             'user_id' => $user->id,
@@ -475,13 +473,6 @@ class UserController extends Controller
             'last_name' => $validated['last_name'],
             'email' => $validated['email'],
             'date_of_birth' => $validated['date_of_birth'],
-            'city' => $validated['city'],
-            'zip' => $validated['zip'],
-            'street' => $validated['street'],
-            'house_number' => $validated['house_number'],
-            'address_suffix' => $validated['address_suffix'],
-            'country' => $validated['country'],
-            'federal_state' => $validated['federal_state'],
             'phone_number' => $validated['phone_number'],
             'staff_number' => $validated['staff_number'],
             'group_id' => $validated['group_id'],
@@ -497,6 +488,10 @@ class UserController extends Controller
             'time_balance_yellow_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_yellow_threshold']  : null,
             'time_balance_red_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_red_threshold'] : null,
         ]);
+
+        // FIXME: wir brauchen active since und sync wie CustomerOperatingSiteController@update
+        $user->addresses()->create(collect($validated)->only(Address::$ADDRESS_KEYS)->toArray());
+
         $user->organizationUser->update($validated['organizationUser']);
         $user->operatingSiteUser->update($validated['operatingSiteUser']);
         $user->groupUser?->update($validated['groupUser']);
@@ -626,7 +621,7 @@ class UserController extends Controller
 
         $absences = $user->absences()
             ->with(['patches', 'currentAcceptedPatch.absenceType:id,name', 'absenceType:id,name'])
-            ->where('status', 'accepted')
+            ->where('status', Status::Accepted)
             ->get();
 
         $absences = $absences->map(fn($a) => $a->currentAcceptedPatch ?? $a)
@@ -677,7 +672,11 @@ class UserController extends Controller
                         $currentValue = (object)[];
 
                         $day = $date->copy()->addDays($i - 1);
-                        $holiday = HolidayService::getHolidayName($user->operatingSite->country, $user->operatingSite->federal_state, $day);
+                        $holiday = HolidayService::getHolidayName(
+                            $user->operatingSite->currentAddress->country,
+                            $user->operatingSite->currentAddress->federal_state,
+                            $day
+                        );
 
                         $currentValueEntryCount = countEntriesOfChunk($currentChunk);
 
@@ -838,9 +837,10 @@ class UserController extends Controller
             $month->travellogDuration = $allShiftEntriesOfMonth->sum(fn($item) => $item->travellogDuration);
         }
 
+        $operatingSiteAddress = $user->operatingSite->currentAddress;
         $props = [
             'organization' => Organization::getCurrent(),
-            'federal_state' => HolidayService::$COUNTRIES[$user->operatingSite->country]['regions'][$user->operatingSite->federal_state],
+            'federal_state' => HolidayService::$COUNTRIES[$operatingSiteAddress->country]['regions'][$operatingSiteAddress->federal_state],
             'user' => $user->load('operatingSite'),
             'monthData' => $monthData,
         ];
@@ -852,24 +852,26 @@ class UserController extends Controller
 
     private function getUserShowCans(User $user)
     {
+        $canHerta = AppModuleService::hasAppModule('herta');
+
         return [
             'absences' => [
-                'viewIndex' =>  Gate::allows('viewIndex', [Absence::class, $user]),
-            ],
-            'timeAccount' => [
-                'viewIndex' => Gate::allows('viewIndex', [TimeAccount::class, $user]),
-                'create' => Gate::allows('create', [TimeAccount::class, $user]),
-                'update' => Gate::allows('update', [TimeAccount::class, $user]),
-                'delete' => Gate::allows('delete', [TimeAccount::class, $user]),
-            ],
-            'timeAccountTransaction' => [
-                'viewIndex' => Gate::allows('viewIndex', [TimeAccountTransaction::class, $user]),
-                'create' => Gate::allows('create', [TimeAccountTransaction::class, $user]),
+                'viewIndex' => Gate::allows('viewIndex', [Absence::class, $user]),
             ],
             'user' => [
                 'update' => Gate::allows('update', $user),
                 'viewShow' => Gate::allows('viewShow', $user),
                 'viewIndex' => Gate::allows('viewIndex', User::class),
+            ],
+            'timeAccount' => [
+                'viewIndex' => $canHerta && Gate::allows('viewIndex', [TimeAccount::class, $user]),
+                'create' => $canHerta && Gate::allows('create', [TimeAccount::class, $user]),
+                'update' => $canHerta && Gate::allows('update', [TimeAccount::class, $user]),
+                'delete' => $canHerta && Gate::allows('delete', [TimeAccount::class, $user]),
+            ],
+            'timeAccountTransaction' => [
+                'viewIndex' => $canHerta &&  Gate::allows('viewIndex', [TimeAccountTransaction::class, $user]),
+                'create' => $canHerta && Gate::allows('create', [TimeAccountTransaction::class, $user]),
             ]
         ];
     }

@@ -2,6 +2,7 @@
 
 namespace App\Models\Traits;
 
+use App\Enums\Status;
 use Illuminate\Database\Eloquent\Builder;
 
 trait HasPatches
@@ -17,7 +18,7 @@ trait HasPatches
 
     public function currentAcceptedPatch()
     {
-        return $this->patches()->one()->OfMany(['accepted_at' => 'max'], fn(Builder $q) => $q->where('status', 'accepted'));
+        return $this->patches()->one()->OfMany(['accepted_at' => 'max'], fn(Builder $q) => $q->where('status', Status::Accepted));
     }
 
     public function latestPatch()

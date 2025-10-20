@@ -74,6 +74,7 @@ function changeAbsenceStatus(accepted: boolean) {
                     <v-icon>mdi-close</v-icon>
                 </v-btn>
             </template>
+            <v-divider></v-divider>
             <v-card-text>
                 <v-row>
                     <v-col cols="12" v-if="absenceDialog.absence_type.name == 'Urlaub'">

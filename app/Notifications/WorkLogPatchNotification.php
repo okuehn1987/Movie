@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Enums\Status;
 use App\Models\User;
 use App\Models\WorkLogPatch;
 use Carbon\Carbon;
@@ -60,13 +61,8 @@ class WorkLogPatchNotification extends Notification
         return [
             'title' => $this->user->name . ' hat eine Zeitkorrektur beantragt.',
             'work_log_patch_id' => $this->patch->id,
-            'status' => 'created',
+            'status' => Status::Created,
         ];
-    }
-
-    public function readNotification(array $notification)
-    {
-        \Illuminate\Notifications\DatabaseNotification::find($notification['id'])?->markAsRead();
     }
 
     public function getNotificationURL()

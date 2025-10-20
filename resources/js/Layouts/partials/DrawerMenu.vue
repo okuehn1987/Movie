@@ -9,24 +9,41 @@ import { router } from '@inertiajs/vue3';
         :items="
             [
                 { props: { active: route().current('dashboard'), prependIcon: 'mdi-view-dashboard' }, value: route('dashboard'), title: 'Dashboard' },
-                can('absence', 'viewIndex') && {
-                    props: { active: route().current('absence.index'), prependIcon: 'mdi-timer-cancel-outline' },
-                    value: route('absence.index'),
-                    title: 'Abwesenheiten',
-                },
-                can('workLog', 'viewIndex') && {
-                    props: { active: route().current('workLog.index'), prependIcon: 'mdi-clock-outline' },
-                    value: route('workLog.index'),
-                    title: 'Arbeitszeiten',
-                },
+                ...($page.props.currentAppModule == 'herta'
+                    ? [
+                          can('workLog', 'viewIndex') && {
+                              props: { active: route().current('workLog.index'), prependIcon: 'mdi-clock-outline' },
+                              value: route('workLog.index'),
+                              title: 'Arbeitszeiten',
+                          },
+                      ]
+                    : []),
+                ...($page.props.currentAppModule == 'timesheets'
+                    ? [
+                          can('customer', 'viewIndex') && {
+                              props: { active: route().current('customer.index'), prependIcon: 'mdi-folder-account-outline' },
+                              value: route('customer.index'),
+                              title: 'Kundenliste',
+                          },
+                          {
+                              props: { active: route().current('ticket.index'), prependIcon: 'mdi-ticket-account' },
+                              value: route('ticket.index'),
+                              title: 'Tickets',
+                          },
+                      ]
+                    : []),
                 can('dispute', 'viewIndex') && {
                     props: { active: route().current('dispute.index'), prependIcon: 'mdi-bookmark-outline' },
                     value: route('dispute.index'),
                     title: 'Anträge',
                 },
+                can('absence', 'viewIndex') && {
+                    props: { active: route().current('absence.index'), prependIcon: 'mdi-timer-cancel-outline' },
+                    value: route('absence.index'),
+                    title: 'Abwesenheiten',
+                },
                 can('organization', 'viewShow') && {
                     title: 'Organisation',
-                    subtitle: 'test',
                     value: route('organization.show', { organization: $page.props.organization.id }),
                     props: { prependIcon: 'mdi-domain', active: route().current('organization.show') },
                 },

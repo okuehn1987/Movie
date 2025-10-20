@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Traits\Addressable;
+use App\Enums\Status;
 use App\Models\Traits\HasDuration;
 use App\Models\Traits\HasPatches;
 use App\Models\Traits\IsAccountable;
@@ -14,9 +16,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class TravelLog extends Model
 {
     use HasFactory, SoftDeletes;
-    use ScopeInOrganization, HasPatches, IsAccountable, HasDuration;
+    use ScopeInOrganization, HasPatches, IsAccountable, HasDuration, Addressable;
 
     protected $guarded = [];
+
+    protected $casts = [
+        'status' => Status::class,
+    ];
 
     private static function getPatchModel()
     {
@@ -48,13 +54,5 @@ class TravelLog extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-    public function startLocation()
-    {
-        return $this->hasOne(TravelLogAddress::class);
-    }
-    public function endLocation()
-    {
-        return $this->hasOne(TravelLogAddress::class);
     }
 }

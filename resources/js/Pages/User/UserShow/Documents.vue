@@ -4,19 +4,19 @@ import UserShowNavBar from './partial/UserShowNavBar.vue';
 import { User } from '@/types/types';
 import { DateTime } from 'luxon';
 
-defineProps<{
+const props = defineProps<{
     user: User;
 }>();
 
 const timestatementForm = useForm({
-    start: DateTime.now().minus({ month: 1 }).toFormat('yyyy-MM'),
-    end: DateTime.now().minus({ month: 1 }).toFormat('yyyy-MM'),
+    start: DateTime.max(DateTime.now().minus({ month: 1 }), DateTime.fromISO(props.user.created_at)).toFormat('yyyy-MM'),
+    end: DateTime.max(DateTime.now().minus({ month: 1 }), DateTime.fromISO(props.user.created_at)).toFormat('yyyy-MM'),
 });
 </script>
 <template>
     <AdminLayout :title="user.first_name + ' ' + user.last_name">
         <UserShowNavBar :user tab="documents" />
-        <v-card title="Zeitnachweise">
+        <v-card title="Zeitnachweise" v-if="can('app', 'herta')">
             <v-card-text>
                 <v-row>
                     <v-col cols="12" md="5">

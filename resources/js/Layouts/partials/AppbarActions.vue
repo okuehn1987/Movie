@@ -38,6 +38,26 @@ function openNotification(notification: Notification) {
         url = route('dispute.index', {
             openAbsenceDelete: notification.data.absence_id,
         });
+    else if (notification.type == 'App\\Notifications\\TicketCreationNotification')
+        url = route('ticket.index', {
+            openTicket: notification.data.ticket_id,
+        });
+    else if (notification.type == 'App\\Notifications\\TicketUpdateNotification')
+        url = route('ticket.index', {
+            openTicket: notification.data.ticket_id,
+        });
+    else if (notification.type == 'App\\Notifications\\TicketFinishNotification')
+        url = route('ticket.index', {
+            openTicket: notification.data.ticket_id,
+        });
+    else if (notification.type == 'App\\Notifications\\TicketDeletionNotification')
+        url = route('ticket.index', {
+            openTicket: notification.data.ticket_id,
+        });
+    else if (notification.type == 'App\\Notifications\\TicketRecordCreationNotification')
+        url = route('ticket.index', {
+            openTicket: notification.data.ticket_id,
+        });
     else if (notification.type == 'App\\Notifications\\DisputeStatusNotification') {
         if (notification.data.type == 'delete') return;
         if (notification.data.log_model == 'App\\Models\\Absence') url = route('absence.index', { openAbsence: notification.data.log_id });
@@ -66,7 +86,7 @@ function convertTimeStamp(notification: Notification) {
     }
     return endTime.toFormat('HH:mm') + ' Uhr';
 }
-
+// mobile titles for notifications
 const disputes = {
     'App\\Notifications\\AbsenceNotification': 'neuer Antrag ',
     'App\\Notifications\\AbsencePatchNotification': 'neue Korrektur',
@@ -74,6 +94,11 @@ const disputes = {
     'App\\Notifications\\DisputeStatusNotification': 'Antrag bearbeitet',
     'App\\Notifications\\AbsenceDeleteNotification': 'neuer Antrag',
     'App\\Notifications\\WorkLogNotification': 'neue Buchung',
+    'App\\Notifications\\TicketCreationNotification': 'neues Ticket',
+    'App\\Notifications\\TicketUpdateNotification': 'Ticket Update',
+    'App\\Notifications\\TicketFinishNotification': 'Ticket abgeschlossen',
+    'App\\Notifications\\TicketDeletionNotification': 'Ticket gelöscht',
+    'App\\Notifications\\TicketRecordCreationNotification': 'Ticket Update',
 } satisfies Record<Notification['type'], string>;
 </script>
 
@@ -106,20 +131,21 @@ const disputes = {
                             <v-btn
                                 :size="display.smAndDown.value ? 'small' : undefined"
                                 v-if="
-                                    notification.type != 'App\\Notifications\\DisputeStatusNotification' ||
-                                    (notification.type == 'App\\Notifications\\DisputeStatusNotification' && notification.data.type != 'delete')
+                                    notification.type != 'App\\Notifications\\TicketDeletionNotification' &&
+                                    (notification.type != 'App\\Notifications\\DisputeStatusNotification' ||
+                                        (notification.type == 'App\\Notifications\\DisputeStatusNotification' && notification.data.type != 'delete'))
                                 "
                                 color="primary"
                                 icon="mdi-eye"
-                                variant="tonal"
+                                variant="text"
                                 @click.stop="openNotification(notification)"
                             ></v-btn>
                             <div v-else style="width: 48px"></div>
                             <v-btn
                                 :size="display.smAndDown.value ? 'small' : undefined"
-                                color="error"
-                                icon="mdi-delete"
-                                variant="tonal"
+                                color="primary"
+                                icon="mdi-close"
+                                variant="text"
                                 @click.stop="readNotification(notification)"
                             ></v-btn>
                         </div>

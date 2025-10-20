@@ -1,0 +1,1 @@
+import{_ as o}from"./CustomerNotes.vue_vue_type_script_setup_true_lang-Cl-WYMLC.js";import"./app-DEdqeUfQ.js";import"./ConfirmDelete.vue_vue_type_script_setup_true_lang-CvGC2bBi.js";import"./utils-C7pGGWv0.js";export{o as default};

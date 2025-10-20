@@ -23,6 +23,7 @@ const vuetify = createVuetify({
         VFileInput: { variant: 'underlined' },
         VSelect: { variant: 'underlined' },
         VDateInput: { variant: 'underlined' },
+        VAutocomplete: { variant: 'underlined' },
         VAlert: { variant: 'tonal' },
     },
     theme: {

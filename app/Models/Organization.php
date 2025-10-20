@@ -21,6 +21,21 @@ class Organization extends Model
         "new_year_vacation_day" => "31.12 als Urlaubstag"
     ];
 
+    public function modules()
+    {
+        return $this->hasMany(OrganizationModule::class);
+    }
+
+    public function customers()
+    {
+        return $this->hasMany(Customer::class);
+    }
+
+    public function tickets()
+    {
+        return $this->hasManyThrough(Ticket::class, Customer::class);
+    }
+
     public function operatingSites()
     {
         return $this->hasMany(OperatingSite::class);
@@ -76,7 +91,6 @@ class Organization extends Model
         return Organization::where('name', self::getOrganizationNameByDomain())->first() ?? Organization::first();
     }
 
-
     public static function getOrganizationNameByDomain(): string
     {
         if (app()->environment('local')) {
@@ -89,5 +103,10 @@ class Organization extends Model
             'staging.herta.mbd-team.de' => 'MBD',
             default => 'MBD',
         };
+    }
+
+    public static function id()
+    {
+        return self::getCurrent()->id;
     }
 }

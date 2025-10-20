@@ -2,13 +2,13 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Absence;
+use App\Models\Customer;
 use App\Models\Group;
 use App\Models\OperatingSite;
 use App\Models\Organization;
-use App\Models\TimeAccountSetting;
 use App\Models\User;
 use App\Models\WorkLog;
+use App\Services\AppModuleService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Middleware;
@@ -31,6 +31,28 @@ class HandleInertiaRequests extends Middleware
         return parent::version($request);
     }
 
+    public function shareHerta(Request $request): array
+    {
+        return [
+            'appGlobalCan' => [
+                'workLog' => [
+                    'viewIndex' => Gate::allows('viewIndex', WorkLog::class),
+                ],
+            ]
+        ];
+    }
+
+    public function shareTimesheets(Request $request): array
+    {
+        return [
+            'appGlobalCan' => [
+                'customer' => [
+                    'viewIndex' => Gate::allows('viewIndex', Customer::class),
+                ],
+            ]
+        ];
+    }
+
     /**
      * Define the props that are shared by default.
      *
@@ -38,6 +60,9 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $accessableModules = collect(AppModuleService::getAppModules())
+            ->filter(fn($m) => AppModuleService::hasAppModule($m['value']))
+            ->values();
         return [
             ...parent::share($request),
             'auth' => [
@@ -49,16 +74,19 @@ class HandleInertiaRequests extends Middleware
                 'location' => $request->url(),
             ]),
             'organization' => Organization::getCurrent(),
+            'currentAppModule' => AppModuleService::currentAppModule(),
+            'appModules' => $accessableModules,
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
             'globalCan' => [
+                'app' => [
+                    'herta' => $accessableModules->pluck('value')->contains('herta'),
+                    'timesheets' => $accessableModules->pluck('value')->contains('timesheets'),
+                ],
                 'absence' => [
                     'viewIndex' => Gate::allows('publicAuth', User::class),
-                ],
-                'workLog' => [
-                    'viewIndex' => Gate::allows('viewIndex', WorkLog::class),
                 ],
                 'organization' => [
                     'viewIndex' =>  Gate::allows('viewIndex', Organization::class),
@@ -76,7 +104,12 @@ class HandleInertiaRequests extends Middleware
                 'dispute' => [
                     'viewIndex' => !!$request->user()?->is_supervisor,
                 ],
-            ]
+            ],
+            ...match (AppModuleService::currentAppModule()) {
+                'herta' => $this->shareHerta($request),
+                'timesheets' => $this->shareTimesheets($request),
+                default => $this->shareHerta($request),
+            }
         ];
     }
 }
