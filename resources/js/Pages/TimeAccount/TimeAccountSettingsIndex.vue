@@ -35,7 +35,14 @@ const timeAccountSettingForm = useForm({
                     <template v-slot:default="{ isActive }">
                         <v-card title="Neue Variante Erstellen">
                             <template #append>
-                                <v-btn icon variant="text" @click.stop="isActive.value = false">
+                                <v-btn
+                                    icon
+                                    variant="text"
+                                    @click.stop="
+                                        isActive.value = false;
+                                        timeAccountSettingForm.reset();
+                                    "
+                                >
                                     <v-icon>mdi-close</v-icon>
                                 </v-btn>
                             </template>
@@ -44,7 +51,10 @@ const timeAccountSettingForm = useForm({
                                 <v-form
                                     @submit.prevent="
                                         timeAccountSettingForm.post(route('timeAccountSetting.store'), {
-                                            onSuccess: () => (isActive.value = false),
+                                            onSuccess: () => {
+                                                isActive.value = false;
+                                                timeAccountSettingForm.reset();
+                                            },
                                         })
                                     "
                                 >

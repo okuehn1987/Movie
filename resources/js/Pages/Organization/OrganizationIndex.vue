@@ -65,7 +65,14 @@ function submit() {
                                 <template v-slot:default="{ isActive }">
                                     <v-card title="Organisation erstellen">
                                         <template #append>
-                                            <v-btn icon variant="text" @click="isActive.value = false">
+                                            <v-btn
+                                                icon
+                                                variant="text"
+                                                @click="
+                                                    isActive.value = false;
+                                                    organizationForm.reset();
+                                                "
+                                            >
                                                 <v-icon>mdi-close</v-icon>
                                             </v-btn>
                                         </template>

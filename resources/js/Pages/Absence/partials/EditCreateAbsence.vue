@@ -86,7 +86,14 @@ const requiresApproval = computed(() => {
                 "
             >
                 <template #append>
-                    <v-btn icon variant="text" @click="isActive.value = false">
+                    <v-btn
+                        icon
+                        variant="text"
+                        @click="
+                            isActive.value = false;
+                            absenceForm.reset();
+                        "
+                    >
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>

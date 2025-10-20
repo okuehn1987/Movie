@@ -72,7 +72,14 @@ function submit() {
                         <template v-slot:default="{ isActive }">
                             <v-card title="Betriebsstätte erstellen">
                                 <template #append>
-                                    <v-btn icon variant="text" @click="isActive.value = false">
+                                    <v-btn
+                                        icon
+                                        variant="text"
+                                        @click="
+                                            isActive.value = false;
+                                            operatingSiteForm.reset();
+                                        "
+                                    >
                                         <v-icon>mdi-close</v-icon>
                                     </v-btn>
                                 </template>
