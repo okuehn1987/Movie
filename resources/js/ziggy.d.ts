@@ -472,6 +472,13 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "ticket.accept": [
+        {
+            "name": "ticket",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "ticket.finish": [
         {
             "name": "ticket",
@@ -482,6 +489,20 @@ declare module 'ziggy-js' {
     "ticket.unfinish": [
         {
             "name": "ticket",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticketRecordFile.download": [
+        {
+            "name": "ticketRecordFile",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticketRecordFile.deleteFile": [
+        {
+            "name": "ticketRecordFile",
             "required": true,
             "binding": "id"
         }

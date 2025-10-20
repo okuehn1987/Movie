@@ -60,7 +60,7 @@ class TicketCreationNotification extends Notification
 
     public function getNotificationURL()
     {
-        return  route('ticket.index', [
+        return route('ticket.index', [
             'openTicket' => $this->ticket->id,
         ]);
     }

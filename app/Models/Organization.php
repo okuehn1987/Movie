@@ -91,12 +91,6 @@ class Organization extends Model
         return Organization::where('name', self::getOrganizationNameByDomain())->first() ?? Organization::first();
     }
 
-    public static function id()
-    {
-        return self::getCurrent()->id;
-    }
-
-
     public static function getOrganizationNameByDomain(): string
     {
         if (app()->environment('local')) {
@@ -109,5 +103,10 @@ class Organization extends Model
             'staging.herta.mbd-team.de' => 'MBD',
             default => 'MBD',
         };
+    }
+
+    public static function id()
+    {
+        return self::getCurrent()->id;
     }
 }

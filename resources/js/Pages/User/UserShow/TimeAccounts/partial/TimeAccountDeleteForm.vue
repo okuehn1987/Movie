@@ -24,6 +24,7 @@ const loading = usePageIsLoading();
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>
+                <v-divider></v-divider>
                 <v-card-text>
                     <v-form
                         @submit.prevent="
@@ -36,13 +37,11 @@ const loading = usePageIsLoading();
                     >
                         <v-row>
                             <v-col cols="12">
-                                <v-alert color="error" v-if="item.balance == 0">
-                                    Sind Sie sich sicher das dieses Konto gelöscht werden soll?
-                                </v-alert>
+                                <v-alert color="error" v-if="item.balance == 0">Sind Sie sich sicher das dieses Konto gelöscht werden soll?</v-alert>
                                 <v-alert v-else>Konten können nur gelöscht werden wenn die Stunden auf 0 stehen</v-alert>
                             </v-col>
                             <v-col cols="12" class="text-end" v-if="item.balance == 0">
-                                <v-btn type="submit" color="primary" :loading> Speichern </v-btn>
+                                <v-btn type="submit" color="primary" :loading>Speichern</v-btn>
                             </v-col>
                         </v-row>
                     </v-form>

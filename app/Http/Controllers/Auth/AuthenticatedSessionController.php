@@ -32,7 +32,12 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request)
     {
         $request->validate([
-            'email' => ['required', 'string', 'email', Rule::in(Organization::getCurrent()->users->pluck('email'))],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                Rule::exists('users', 'email')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))
+            ],
             'password' => ['required', 'string'],
         ]);
 

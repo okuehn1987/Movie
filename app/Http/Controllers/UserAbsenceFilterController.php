@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Status;
 use App\Models\AbsenceType;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
@@ -26,7 +27,7 @@ class UserAbsenceFilterController extends Controller
             'selected_absence_types.*' => Rule::in(AbsenceType::inOrganization()->pluck('id')),
 
             "selected_statuses" => 'present|array',
-            "selected_statuses.*" => 'in:created,accepted,declined',
+            "selected_statuses.*" => Rule::enum(Status::class),
         ]);
 
         UserAbsenceFilter::create([
@@ -55,7 +56,7 @@ class UserAbsenceFilterController extends Controller
             'selected_absence_types.*' => Rule::in(AbsenceType::inOrganization()->pluck('id')),
 
             "selected_statuses" => 'present|array',
-            "selected_statuses.*" => 'in:created,accepted,declined',
+            "selected_statuses.*" => Rule::enum(Status::class),
         ]);
 
         $userAbsenceFilter->update([

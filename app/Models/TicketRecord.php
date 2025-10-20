@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Addressable;
+use App\Models\Traits\Addressable;
 use Illuminate\Database\Eloquent\Model;
 
 class TicketRecord extends Model

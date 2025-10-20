@@ -2,7 +2,8 @@
 
 namespace App\Models;
 
-use App\Addressable;
+use App\Models\Traits\Addressable;
+use App\Enums\Status;
 use App\Models\Traits\HasDuration;
 use App\Models\Traits\HasPatches;
 use App\Models\Traits\IsAccountable;
@@ -18,6 +19,10 @@ class TravelLog extends Model
     use ScopeInOrganization, HasPatches, IsAccountable, HasDuration, Addressable;
 
     protected $guarded = [];
+
+    protected $casts = [
+        'status' => Status::class,
+    ];
 
     private static function getPatchModel()
     {

@@ -9,11 +9,11 @@ class AppModuleController extends Controller
 {
     public function switchAppModule(Request $request)
     {
-        $request->validate([
+        $module = $request->validate([
             'module' => 'required|string|in:herta,timesheets',
-        ]);
+        ])['module'];
 
-        AppModuleService::setCurrentAppModule($request->input('module'));
+        AppModuleService::setCurrentAppModule($module);
 
         return redirect(route('dashboard'));
     }

@@ -168,15 +168,21 @@ class TicketController extends Controller
 
         $validated = $request->validate([
             'priority' => 'required|in:lowest,low,medium,high,highest',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string|max:400',
             'assignees' => 'present|array',
             'assignees.*' => ['required_if:tab,ticket', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))],
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
             'selected' => 'present|array',
             'selected.*' => [
                 'required',
                 Rule::exists('ticket_records', 'id')
-                    ->whereIn('id', TicketRecord::whereHas('ticket', fn($q) => $q->whereIn('id', Organization::getCurrent()->tickets()->pluck('tickets.id')))->pluck('id'))
+                    ->whereIn(
+                        'id',
+                        TicketRecord::whereHas('ticket', fn($q) => $q->whereIn(
+                            'id',
+                            Organization::getCurrent()->tickets()->select('tickets.id')
+                        ))->select('ticket_records.id')
+                    )
             ]
         ]);
 
@@ -191,7 +197,7 @@ class TicketController extends Controller
         $ticket->assignees
             ->filter(fn($a) => collect($validated["assignees"])->doesntContain($a->id))
             ->each
-            ->notify(new RemovedFromTicketNotification($authUser, $ticket));
+            ->notify(new RemovedFromTicketNotification($ticket));
 
         $ticket->records()->whereNotNull('accounted_at')->whereNotIn('id', $validated['selected'])->update(['accounted_at' => null]);
         $ticket->records()->whereNull('accounted_at')->whereIn('id', $validated['selected'])->update(['accounted_at' => now()]);
