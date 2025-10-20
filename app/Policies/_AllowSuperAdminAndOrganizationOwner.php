@@ -12,7 +12,7 @@ trait _AllowSuperAdminAndOrganizationOwner
 
         if (
             $user->role === 'super-admin' ||
-            $user->organization->owner_id === $user->id
+            $user->loadMissing('organization')->organization->owner_id === $user->id
         ) return true;
 
         return null;

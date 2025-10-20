@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Enums\Status;
 use App\Models\Absence;
 use App\Models\User;
 use Carbon\Carbon;
@@ -59,13 +60,8 @@ class AbsenceDeleteNotification extends Notification
         return [
             'title' => $this->user->name . ' hat die Löschung einer Abwesenheit beantragt.',
             'absence_id' => $this->absence->id,
-            'status' => 'created',
+            'status' => Status::Created,
         ];
-    }
-
-    public function readNotification(array $notification)
-    {
-        \Illuminate\Notifications\DatabaseNotification::find($notification['id'])?->markAsRead();
     }
 
     public function getNotificationURL()
