@@ -82,7 +82,7 @@ function convertTimeStamp(notification: Notification) {
         return 'vor ' + Math.floor(diff.as('minutes')) + ' minuten';
     }
     if (endTime.day !== now.value.day || endTime.month !== now.value.month || endTime.year !== now.value.year) {
-        return endTime.toFormat('dd.MM - HH:mm') + ' Uhr';
+        return endTime.toFormat('dd.MM. - HH:mm') + ' Uhr';
     }
     return endTime.toFormat('HH:mm') + ' Uhr';
 }
