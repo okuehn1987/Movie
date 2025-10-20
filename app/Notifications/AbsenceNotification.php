@@ -32,7 +32,7 @@ class AbsenceNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return $notifiable->notification_channels;
+        return $notifiable->notification_channels ?? ['database'];
     }
 
     /**
