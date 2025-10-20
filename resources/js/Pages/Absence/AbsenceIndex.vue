@@ -41,10 +41,14 @@ const singleFilterForm = useForm({
 
 const currentFilterForm = ref<null | typeof groupFilterForm | typeof singleFilterForm>(null);
 
-watch([() => singleFilterForm.set, () => groupFilterForm.set], () => {
-    if (groupFilterForm.set == null) currentFilterForm.value = singleFilterForm;
-    else currentFilterForm.value = groupFilterForm;
-});
+watch(
+    [() => singleFilterForm.data(), () => groupFilterForm.set],
+    () => {
+        if (groupFilterForm.set == null) currentFilterForm.value = singleFilterForm;
+        else currentFilterForm.value = groupFilterForm;
+    },
+    { deep: true },
+);
 
 const currentMonthEntries = computed(() => {
     const entries = [] as typeof props.absences | typeof props.absencePatches;
