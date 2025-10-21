@@ -33,8 +33,6 @@ const currentTab = ref(props.tab);
 // );
 </script>
 <template>
-    <!-- FIXME: Archive funktioniert nicht: Wechsel von Seiten nicht möglich -->
-    {{ currentTab }}
     <v-tabs v-model="currentTab">
         <v-tab value="newTickets">
             Offene Aufträge
@@ -83,7 +81,7 @@ const currentTab = ref(props.tab);
             />
         </v-tabs-window-item>
         <v-tabs-window-item value="archive">
-            <TicketArchiveTable :tickets="archiveTickets" :customers="customers" :users="users" :operatingSites />
+            <TicketArchiveTable :archiveTickets="archiveTickets" :customers="customers" :users="users" :operatingSites />
         </v-tabs-window-item>
     </v-tabs-window>
 </template>

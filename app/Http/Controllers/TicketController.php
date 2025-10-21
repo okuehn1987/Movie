@@ -31,11 +31,11 @@ class TicketController extends Controller
 
         $validated = $request->validate([
             'tab' => 'nullable|string|in:archive,finishedTickets,newTickets,workingTickets',
-            'customer_id' => 'nullable|required_if:tab,archive|exists:customers,id',
+            'customer_id' => 'nullable|exists:customers,id',
             'assignees' => 'nullable|array',
             'assignees.*' => ['nullable', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))],
             'start' => 'nullable|date|required_with:end',
-            'end' => 'nullable|date|required_with:start'
+            'end' => 'nullable|date|required_with:start|after_or_equal:start',
         ]);
 
         $tab = array_key_exists('tab', $validated) ? $validated['tab'] : 'newTickets';
@@ -75,7 +75,19 @@ class TicketController extends Controller
             'archiveTickets' => fn() => (clone $ticketQuery)
                 ->whereNotNull('tickets.finished_at')
                 ->whereDoesntHave('records', fn($q) => $q->whereNull('accounted_at'))
-                ->paginate(2),
+                ->when(
+                    array_key_exists('customer_id', $validated) && $validated['customer_id'] != null,
+                    fn($q) => $q->where('customer_id', $validated['customer_id'])
+                )
+                ->when(
+                    array_key_exists('assignees', $validated) && $validated['assignees'] != null,
+                    fn($q) => $q->whereHas('assignees', fn($q2) => $q2->wherePivot('status', 'accepted')->whereIn('users.id', $validated['assignees']))
+                )
+                ->when(
+                    array_key_exists('start', $validated) && array_key_exists('end', $validated) && $validated['start'] != null && $validated['end'] != null,
+                    fn($q) => $q->whereBetween('tickets.finished_at', [Carbon::parse($validated['start'])->startOfDay(), Carbon::parse($validated['end'])->endOfDay()])
+                )
+                ->paginate(14),
             'customers' => fn() => Customer::inOrganization()->get(['id', 'name']),
             'users' => fn() => User::inOrganization()->get(['id', 'first_name', 'last_name', 'job_role']),
             'operatingSites' => fn() => collect([['title' => 'Homeoffice', 'value' => ['id' => $authUser->id, 'type' => User::class]]])

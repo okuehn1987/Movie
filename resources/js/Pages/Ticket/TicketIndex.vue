@@ -15,7 +15,6 @@ defineProps<{
 </script>
 <template>
     <AdminLayout title="Tickets">
-        |{{ tab }}|
         <TicketOverview :tickets :archiveTickets :customers :users :operatingSites :tab></TicketOverview>
     </AdminLayout>
 </template>

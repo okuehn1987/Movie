@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { CustomerProp, OperatingSiteProp, TicketProp, UserProp } from './ticketTypes';
-import TicketShowDialog from './TicketShowDialog.vue';
 import { Paginator, PRIORITIES, TicketRecord } from '@/types/types';
-import { ref, toRefs } from 'vue';
-import { DateTime } from 'luxon';
 import { usePagination } from '@/utils';
+import { DateTime } from 'luxon';
+import { toRefs } from 'vue';
 import TicketArchiveFilter from './TicketArchiveFilter.vue';
+import TicketShowDialog from './TicketShowDialog.vue';
+import { CustomerProp, OperatingSiteProp, TicketProp, UserProp } from './ticketTypes';
 
 const props = defineProps<{
-    tickets: Paginator<TicketProp>;
+    archiveTickets: Paginator<TicketProp>;
     customers: CustomerProp[];
     users: UserProp[];
     operatingSites: OperatingSiteProp[];
 }>();
 
-const { currentPage, lastPage, data, itemsPerPage } = usePagination(toRefs(props), 'tickets', { tab: 'archive' });
+const { currentPage, lastPage, data, itemsPerPage } = usePagination(toRefs(props), 'archiveTickets', { tab: 'archive' });
 
 // const search = ref('');
 
@@ -34,13 +34,11 @@ function getAccountedAt(records: TicketRecord[]) {
 </script>
 <template>
     <v-card>
-        {{ customers }}
         <v-data-table-virtual
             fixed-header
             v-model:page="currentPage"
             :itemsPerPage
             :headers="[
-                // { title: 'Prio', key: 'priorityText', width: '1px' },
                 { title: 'Ticket', key: 'reference_number', width: '1px' },
                 { title: 'Datum', key: 'created_at', width: '1px' },
                 { title: 'Titel', key: 'title' },
@@ -71,7 +69,6 @@ function getAccountedAt(records: TicketRecord[]) {
             hover
         >
             <template v-slot:header.actions>
-                <!-- <v-text-field v-model="search" placeholder="Suche" variant="outlined" density="compact" hide-details></v-text-field> -->
                 <TicketArchiveFilter :customers :users :operating-sites></TicketArchiveFilter>
             </template>
             <template v-slot:item.created_at="{ item }">

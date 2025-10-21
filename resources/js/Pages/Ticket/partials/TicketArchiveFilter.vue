@@ -1,24 +1,40 @@
 <script setup lang="ts">
 import { Customer } from '@/types/types';
-import { CustomerProp, OperatingSiteProp, TicketProp, UserProp } from './ticketTypes';
-import { usePage } from '@inertiajs/vue3';
+import { CustomerProp, OperatingSiteProp, UserProp } from './ticketTypes';
+import { router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
-const props = defineProps<{
+defineProps<{
     customers: CustomerProp[];
     users: UserProp[];
     operatingSites: OperatingSiteProp[];
 }>();
 
-const form = useForm({
+const filterForm = useForm({
     customer_id: null as Customer['id'] | null,
     assignees: [],
     start: null as string | null,
     end: null as string | null,
 });
-</script>
 
+function resetFilter() {
+    filterForm.reset();
+    search();
+}
+function search() {
+    router.reload({
+        only: ['archiveTickets'],
+        data: { page: 1, tab: 'archive', ...filterForm.data() },
+        onSuccess: () => {
+            showDialog.value = false;
+        },
+    });
+}
+
+const showDialog = ref(false);
+</script>
 <template>
-    <v-dialog max-width="1000">
+    <v-dialog max-width="1000" v-model="showDialog">
         <template #activator="{ props: activatorProps }">
             <v-btn v-bind="activatorProps" variant="flat" color="primary"><v-icon>mdi-filter</v-icon></v-btn>
         </template>
@@ -30,20 +46,27 @@ const form = useForm({
                     </div>
                 </template>
                 <template #append>
-                    <v-btn icon variant="text" @click="isActive.value = false">
+                    <v-btn
+                        icon
+                        variant="text"
+                        @click="
+                            isActive.value = false;
+                            filterForm.reset();
+                        "
+                    >
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>
                 <v-card-text>
-                    <v-form>
+                    <v-form @submit.prevent="search">
                         <v-row>
                             <v-col cols="12">
                                 <v-autocomplete
                                     clearable
                                     label="Kunde wählen"
                                     :items="customers.map(c => ({ value: c.id, title: c.name }))"
-                                    v-model="form.customer_id"
-                                    :error-messages="form.errors.customer_id"
+                                    v-model="filterForm.customer_id"
+                                    :error-messages="filterForm.errors.customer_id"
                                 ></v-autocomplete>
                             </v-col>
                             <v-col cols="12">
@@ -51,31 +74,34 @@ const form = useForm({
                                     label="Zuweisung"
                                     multiple
                                     clearable
-                                    required
                                     chips
                                     :items="
                                         users.map(u => ({
                                             value: u.id,
                                             title: `${u.first_name} ${u.last_name}`,
-                                            // props: { subtitle: u.job_role ?? '' },
                                         }))
                                     "
-                                    :error-messages="form.errors.assignees"
-                                    v-model="form.assignees"
+                                    :error-messages="filterForm.errors.assignees"
+                                    v-model="filterForm.assignees"
                                 ></v-autocomplete>
                             </v-col>
                             <v-col cols="12" md="6">
-                                <v-text-field type="date" label="von" v-model="form.start" :error-messages="form.errors.start"></v-text-field>
+                                <v-text-field
+                                    type="date"
+                                    label="von"
+                                    v-model="filterForm.start"
+                                    :error-messages="filterForm.errors.start"
+                                ></v-text-field>
                             </v-col>
                             <v-col cols="12" md="6">
-                                <v-text-field type="date" label="bis" v-model="form.end" :error-messages="form.errors.end"></v-text-field>
+                                <v-text-field type="date" label="bis" v-model="filterForm.end" :error-messages="filterForm.errors.end"></v-text-field>
                             </v-col>
                         </v-row>
+                        <div class="d-flex ga-2 justify-end">
+                            <v-btn titel="Abbrechen" color="error" @click.stop="resetFilter">Filter zurücksetzen</v-btn>
+                            <v-btn titel="Suchen" type="submit" color="primary">Tickets anzeigen</v-btn>
+                        </div>
                     </v-form>
-                    <div class="d-flex ga-2 justify-end">
-                        <v-btn titel="Abbrechen" color="error" @click.stop="form.reset()">Filter zurücksetzen</v-btn>
-                        <v-btn titel="Suchen" color="primary">Tickets anzeigen</v-btn>
-                    </div>
                 </v-card-text>
             </v-card>
         </template>
