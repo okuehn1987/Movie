@@ -121,7 +121,14 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
         <template #default="{ isActive }">
             <v-card title="Abwesenheiten filtern">
                 <template #append>
-                    <v-btn icon variant="text" @click.stop="isActive.value = false">
+                    <v-btn
+                        icon
+                        variant="text"
+                        @click="
+                            isActive.value = false;
+                            filterForm.reset();
+                        "
+                    >
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>

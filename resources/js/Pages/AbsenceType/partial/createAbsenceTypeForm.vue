@@ -15,7 +15,14 @@ const absenceTypeForm = useForm({
 <template>
     <v-card title="Abwesenheitgrund erstellen">
         <template #append>
-            <v-btn icon variant="text" @click="emit('close')">
+            <v-btn
+                icon
+                variant="text"
+                @click="
+                    emit('close');
+                    absenceTypeForm.reset();
+                "
+            >
                 <v-icon>mdi-close</v-icon>
             </v-btn>
         </template>
