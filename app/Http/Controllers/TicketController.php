@@ -107,14 +107,14 @@ class TicketController extends Controller
                 $operatingSite = $type::inOrganization()->exists($value['id']);
                 if (!$operatingSite) $fail('Bitte gib einen gültigen Standort ein');
             }],
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:1000',
             'priority' => 'required|in:lowest,low,medium,high,highest',
             'customer_id' => ['required', Rule::exists('customers', 'id')->whereIn('id', Organization::getCurrent()->customers()->select('customers.id'))],
             'assignees' => 'present|array',
             'assignees.*' => ['required_if:tab,ticket', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))],
             'start' => 'nullable|required_if:tab,expressTicket|date',
             'duration' => 'nullable|required_if:tab,expressTicket|date_format:H:i',
-            'resources' => 'nullable|string',
+            'resources' => 'nullable|string|max:1000',
             'appointment_at' => 'nullable|date',
             'files' => 'present|array',
             'files.*' => 'required|file|mimes:jpg,png,jpeg,avif,tiff,svg+xml,pdf|max:5120',
@@ -169,7 +169,7 @@ class TicketController extends Controller
         $validated = $request->validate([
             'priority' => 'required|in:lowest,low,medium,high,highest',
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string|max:400',
+            'description' => 'nullable|string|max:1000',
             'assignees' => 'present|array',
             'assignees.*' => ['required_if:tab,ticket', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))],
             'selected' => 'present|array',

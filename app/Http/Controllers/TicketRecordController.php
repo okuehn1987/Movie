@@ -35,8 +35,8 @@ class TicketRecordController extends Controller
                 if (!$operatingSite) $fail('Bitte gib einen gültigen Standort ein');
             }],
             'duration' => 'required|date_format:H:i',
-            'description' => 'required|string|max:400',
-            'resources' => 'nullable|string|max:400',
+            'description' => 'required|string|max:1000',
+            'resources' => 'nullable|string|max:1000',
             'files' => 'present|array',
             'files.*' => 'required|file|mimes:jpg,png,jpeg,avif,tiff,svg+xml,pdf|max:5120',
         ], [
@@ -76,8 +76,8 @@ class TicketRecordController extends Controller
         $validated = $request->validate([
             'start' => 'required|date',
             'duration' => 'required|date_format:H:i',
-            'description' => 'required|string|max:400',
-            'resources' => 'nullable|string|max:400',
+            'description' => 'required|string|max:1000',
+            'resources' => 'nullable|string|max:1000',
             'files' => 'present|array',
             'files.*' => 'required|file|mimes:jpg,png,jpeg,avif,tiff,svg+xml,pdf|max:5120',
         ], [
