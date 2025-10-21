@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\Status;
 use App\Models\Absence;
 use App\Models\User;
 
@@ -43,7 +44,7 @@ class AbsencePolicy
 
     public function deleteDispute(User $authUser, Absence $absence): bool
     {
-        return $absence->status === 'created' && $authUser->is($absence->user);
+        return $absence->status === Status::Created && $authUser->is($absence->user);
     }
 
     public function delete(User $authUser, Absence $absence): bool

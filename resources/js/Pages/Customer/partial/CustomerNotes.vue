@@ -117,7 +117,7 @@ function editNote(note: CustomerNote) {
                                             clearable
                                         ></v-select>
                                     </v-col>
-                                    <v-col cols="12">
+                                    <v-col cols="12" v-if="createNoteForm.type !== 'file'">
                                         <v-text-field
                                             label="Bezeichnung"
                                             v-model="createNoteForm.key"

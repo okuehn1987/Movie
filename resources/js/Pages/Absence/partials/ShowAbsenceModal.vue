@@ -3,6 +3,9 @@ import { AbsenceType, User } from '@/types/types';
 import { AbsencePatchProp, AbsenceProp, UserProp } from '../utils';
 import { router } from '@inertiajs/vue3';
 
+const emit = defineEmits<{
+    absenceReload: [];
+}>();
 const props = defineProps<{
     users: Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'>[];
     absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
@@ -31,6 +34,7 @@ function withdrawRequest() {
     const options = {
         onSuccess: () => {
             openModal.value = false;
+            emit('absenceReload');
         },
     };
     if ('absence_id' in props.selectedAbsence) {
@@ -58,6 +62,7 @@ function withdrawRequest() {
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>
+                <v-divider></v-divider>
                 <v-card-text>
                     <v-form readonly>
                         <v-row>

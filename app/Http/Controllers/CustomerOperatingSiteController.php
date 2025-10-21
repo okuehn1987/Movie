@@ -31,15 +31,7 @@ class CustomerOperatingSiteController extends Controller
             'name' => $validated['name'],
         ]);
 
-        $customerOperatingSite->addresses()->create([
-            'street' => $validated['street'],
-            'house_number' => $validated['house_number'],
-            'address_suffix' => $validated['address_suffix'],
-            'country' => $validated['country'],
-            'city' => $validated['city'],
-            'zip' => $validated['zip'],
-            'federal_state' => $validated['federal_state'],
-        ]);
+        $customerOperatingSite->addresses()->create(collect($validated)->only(Address::$ADDRESS_KEYS)->toArray());
 
         return back()->with('success', 'Der Standort wurde erfolgreich angelegt.');
     }

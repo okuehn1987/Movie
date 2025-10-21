@@ -35,8 +35,8 @@ class TicketRecordController extends Controller
                 if (!$operatingSite) $fail('Bitte gib einen gültigen Standort ein');
             }],
             'duration' => 'required|date_format:H:i',
-            'description' => 'required|string',
-            'resources' => 'nullable|string',
+            'description' => 'required|string|max:1000',
+            'resources' => 'nullable|string|max:1000',
             'files' => 'present|array',
             'files.*' => 'required|file|mimes:jpg,png,jpeg,avif,tiff,svg+xml,pdf|max:5120',
         ], [
@@ -48,7 +48,7 @@ class TicketRecordController extends Controller
         $record = $ticket->records()->create([
             ...collect($validated)->except(['files', 'operatingSite']),
             'start' => Carbon::parse($validated['start']),
-            'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
+            'duration' => Carbon::parse($validated['duration'])->secondsSinceMidnight(),
             'user_id' => $authUser->id,
             'address_id' => $address->id,
         ]);
@@ -76,8 +76,8 @@ class TicketRecordController extends Controller
         $validated = $request->validate([
             'start' => 'required|date',
             'duration' => 'required|date_format:H:i',
-            'description' => 'required|string',
-            'resources' => 'nullable|string',
+            'description' => 'required|string|max:1000',
+            'resources' => 'nullable|string|max:1000',
             'files' => 'present|array',
             'files.*' => 'required|file|mimes:jpg,png,jpeg,avif,tiff,svg+xml,pdf|max:5120',
         ], [
@@ -87,7 +87,7 @@ class TicketRecordController extends Controller
         $ticketRecord->update([
             ...collect($validated)->except('files'),
             'start' => Carbon::parse($validated['start']),
-            'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
+            'duration' => Carbon::parse($validated['duration'])->secondsSinceMidnight(),
         ]);
 
         foreach ($validated['files'] as $file) {

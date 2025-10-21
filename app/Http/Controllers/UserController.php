@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Status;
 use App\Models\Absence;
 use App\Models\AbsenceType;
 use App\Models\Address;
@@ -487,6 +488,8 @@ class UserController extends Controller
             'time_balance_yellow_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_yellow_threshold']  : null,
             'time_balance_red_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_red_threshold'] : null,
         ]);
+
+        // FIXME: wir brauchen active since und sync wie CustomerOperatingSiteController@update
         $user->addresses()->create(collect($validated)->only(Address::$ADDRESS_KEYS)->toArray());
 
         $user->organizationUser->update($validated['organizationUser']);
@@ -618,7 +621,7 @@ class UserController extends Controller
 
         $absences = $user->absences()
             ->with(['patches', 'currentAcceptedPatch.absenceType:id,name', 'absenceType:id,name'])
-            ->where('status', 'accepted')
+            ->where('status', Status::Accepted)
             ->get();
 
         $absences = $absences->map(fn($a) => $a->currentAcceptedPatch ?? $a)

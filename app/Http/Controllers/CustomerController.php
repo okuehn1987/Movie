@@ -72,10 +72,7 @@ class CustomerController extends Controller
         ]);
 
         Customer::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'],
-            'reference_number' => $validated['reference_number'],
+            ...$validated,
             'organization_id' => Organization::id(),
         ]);
 
@@ -93,12 +90,7 @@ class CustomerController extends Controller
             'reference_number' => 'nullable|string',
         ]);
 
-        $customer->update([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'],
-            'reference_number' => $validated['reference_number'],
-        ]);
+        $customer->update($validated);
 
         return back()->with('success', 'Der Kunde wurde erfolgreich aktualisiert.');
     }

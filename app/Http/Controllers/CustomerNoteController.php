@@ -9,6 +9,7 @@ use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class CustomerNoteController extends Controller
 {
@@ -18,9 +19,9 @@ class CustomerNoteController extends Controller
 
         $validated = $request->validate([
             'type' => 'required|in:primitive,complex,file',
-            'key' => 'required|string',
-            'value' => 'nullable|required_if:type,primitive|string',
-            'parent_id' => 'nullable|exists:customer_notes,id',
+            'key' => ['nullable', Rule::requiredIf(fn() => in_array($request->input('type'), ['primitive', 'complex'])), 'string', 'max:30'],
+            'value' => 'nullable|required_if:type,primitive|string|max:200',
+            'parent_id' => ['nullable', Rule::exists('customer_notes', 'id')->where(fn($q) => $q->where('customer_id', $customer->id))],
             'file' => 'nullable|required_if:type,file|file',
         ]);
 
@@ -31,7 +32,7 @@ class CustomerNoteController extends Controller
                 'modified_by' => $authUser->id,
                 'parent_id' => $validated['parent_id'],
                 'type' => $validated['type'],
-                'key' => $validated['key'],
+                'key' => $validated['file']->getClientOriginalName(),
                 'value' => $path,
             ]);
         } else {

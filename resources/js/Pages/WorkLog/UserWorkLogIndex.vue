@@ -223,6 +223,7 @@ const tableHeight = useMaxScrollHeight(0);
                                 <v-icon>mdi-close</v-icon>
                             </v-btn>
                         </template>
+                        <v-divider></v-divider>
                         <v-card-text>
                             <v-form @submit.prevent="submit">
                                 <v-row>

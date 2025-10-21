@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Status;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -48,21 +49,21 @@ class Shift extends Model
             get: function () {
                 $workLogs = $this->workLogs()
                     ->doesntHave('currentAcceptedPatch')
-                    ->where('status', 'accepted')
+                    ->where('status', Status::Accepted)
                     ->get();
                 $travelLogs = $this->travelLogs()
                     ->doesntHave('currentAcceptedPatch')
-                    ->where('status', 'accepted')
+                    ->where('status', Status::Accepted)
                     ->get();
                 $workLogPatches = $this->workLogPatches()
                     ->with('log.currentAcceptedPatch')
-                    ->where('status', 'accepted')
+                    ->where('status', Status::Accepted)
                     ->whereNot('type', 'delete')
                     ->get()
                     ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p));
                 $travelLogPatches = $this->travelLogPatches()
                     ->with('log.currentAcceptedPatch')
-                    ->where('status', 'accepted')
+                    ->where('status', Status::Accepted)
                     ->whereNot('type', 'delete')
                     ->get()
                     ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p));
@@ -260,7 +261,7 @@ class Shift extends Model
                 default => throw new Exception('Invalid model type for shift calculation'),
             };
 
-            if (!$model->accepted_at || $model->status != 'accepted') return;
+            if (!$model->accepted_at || $model->status != Status::Accepted) return;
 
             Shift::lockFor($model->user);
             /** @var \Illuminate\Support\Collection<int,\App\Models\Shift>*/
@@ -290,7 +291,7 @@ class Shift extends Model
                 'log'
                 => $baseLog,
                 'patch'
-                => $baseLog->currentAcceptedPatch ?? ($baseLog->status == 'accepted' ? $baseLog : $model),
+                => $baseLog->currentAcceptedPatch ?? ($baseLog->status == Status::Accepted ? $baseLog : $model),
             };
 
             /** @var \Illuminate\Support\Collection<int,\App\Models\Shift>*/
@@ -509,7 +510,7 @@ class Shift extends Model
             if ($type == 'work') {
                 $baseLog?->updateQuietly([
                     'shift_id' => $model->shift_id,
-                    'status' => 'accepted',
+                    'status' => Status::Accepted,
                     'accepted_at' => $baseLog->accepted_at ?? $baseLog->end
                 ]);
                 $oldShifts->each->delete();

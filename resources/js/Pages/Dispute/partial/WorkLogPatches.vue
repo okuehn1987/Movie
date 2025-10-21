@@ -60,7 +60,8 @@ function changePatchStatus(accepted: boolean) {
             { title: 'Mitarbeiter', key: 'user' },
             { title: 'Datum', key: 'date' },
         ]"
-        ><template v-slot:bottom>
+    >
+        <template v-slot:bottom>
             <v-pagination v-if="patches.length > 5" v-model="currentPage" :length="Math.ceil(patches.length / 5)"></v-pagination>
         </template>
     </v-data-table>
@@ -72,6 +73,7 @@ function changePatchStatus(accepted: boolean) {
                     <v-icon>mdi-close</v-icon>
                 </v-btn>
             </template>
+            <v-divider></v-divider>
             <v-card-text>
                 <v-row>
                     <v-col cols="12">
