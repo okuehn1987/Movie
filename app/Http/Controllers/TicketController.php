@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Status;
 use App\Models\Customer;
 use App\Models\CustomerOperatingSite;
 use App\Models\OperatingSite;
@@ -81,7 +82,7 @@ class TicketController extends Controller
                 )
                 ->when(
                     array_key_exists('assignees', $validated) && $validated['assignees'] != null,
-                    fn($q) => $q->whereHas('assignees', fn($q2) => $q2->wherePivot('status', 'accepted')->whereIn('users.id', $validated['assignees']))
+                    fn($q) => $q->whereHas('assignees', fn($q2) => $q2->wherePivot('status', Status::Accepted)->whereIn('users.id', $validated['assignees']))
                 )
                 ->when(
                     array_key_exists('start', $validated) && array_key_exists('end', $validated) && $validated['start'] != null && $validated['end'] != null,
