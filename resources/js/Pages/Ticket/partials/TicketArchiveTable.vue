@@ -6,6 +6,7 @@ import { toRefs } from 'vue';
 import TicketArchiveFilter from './TicketArchiveFilter.vue';
 import TicketShowDialog from './TicketShowDialog.vue';
 import { CustomerProp, OperatingSiteProp, TicketProp, UserProp } from './ticketTypes';
+import TicketFinishDialog from './TicketFinishDialog.vue';
 
 const props = defineProps<{
     archiveTickets: Paginator<TicketProp>;
@@ -91,6 +92,8 @@ function getAccountedAt(records: TicketRecord[]) {
                 {{ getAccountedAt(item.records) }}
             </template>
             <template v-slot:item.actions="{ item }">
+                <TicketFinishDialog tab="archive" :item></TicketFinishDialog>
+
                 <TicketShowDialog :ticket="item" :customers="customers" :users="users" tab="archive" :operatingSites />
             </template>
             <template v-slot:bottom>

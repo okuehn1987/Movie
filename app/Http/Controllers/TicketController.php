@@ -28,7 +28,7 @@ class TicketController extends Controller
 {
     public function index(Request $request, #[CurrentUser] User $authUser)
     {
-        Gate::authorize('publicAuth', User::class);
+        Gate::authorize('viewIndex', Ticket::class);
 
         $validated = $request->validate([
             'tab' => 'nullable|string|in:archive,finishedTickets,newTickets,workingTickets',
@@ -37,9 +37,17 @@ class TicketController extends Controller
             'assignees.*' => ['nullable', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))],
             'start' => 'nullable|date|required_with:end',
             'end' => 'nullable|date|required_with:start|after_or_equal:start',
+            'openTicket' => ['nullable', Rule::exists('tickets', 'id')->whereIn('id', Ticket::inOrganization()->select('tickets.id'))],
         ]);
 
-        $tab = array_key_exists('tab', $validated) ? $validated['tab'] : 'newTickets';
+        $openTicket = array_key_exists('openTicket', $validated) && $validated['openTicket'] != null ? Ticket::find($validated['openTicket']) : null;
+
+        $tab = match (true) {
+            $openTicket->finished_at != null => $validated['tab'],
+            $openTicket != null => 'workingTickets',
+            default => 'newTickets',
+        };
+
 
         $ticketQuery = Ticket::inOrganization()->with([
             'customer:id,name',
@@ -116,7 +124,7 @@ class TicketController extends Controller
 
     public function store(Request $request, #[CurrentUser] User $authUser)
     {
-        Gate::authorize('publicAuth', User::class);
+        Gate::authorize('create', Ticket::class);
 
         $validated = $request->validate([
             'tab' => 'required|in:expressTicket,ticket',
@@ -160,21 +168,19 @@ class TicketController extends Controller
         $ticket->assignees()->attach($validated['assignees']);
 
         if ($validated["tab"] === "expressTicket") {
-
-
             $address = $validated['operatingSite']['type']::inOrganization()->find($validated['operatingSite']['id'])->currentAddress;
 
             $record = $ticket->records()->create([
                 'resources' => $validated['resources'],
                 'start' => Carbon::parse($validated['start']),
-                'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
+                'duration' => Carbon::parse($validated['duration'])->secondsSinceMidnight(),
                 'user_id' => $authUser->id,
                 'address_id' => $address->id,
             ]);
             $ticket->update(['finished_at' => now()]);
 
             foreach ($validated['files'] as $file) {
-                $path = $file ? Storage::disk('ticket_record_files')->putFile($file) : null;
+                $path = Storage::disk('ticket_record_files')->putFile($file);
                 $record->files()->create([
                     'path' => $path,
                     'original_name' => $file->getClientOriginalName(),
@@ -240,10 +246,12 @@ class TicketController extends Controller
 
         $ticket->update(['finished_at' => now()]);
 
-        Organization::getCurrent()->users
-            ->filter(fn($u) => !$authUser->is($u) && $u->can('update', $ticket))
-            ->each
-            ->notify(new TicketFinishNotification($authUser, $ticket));
+        $userToNotify = collect($ticket->assignees);
+        if ($ticket->records()->count() > 0) {
+            $userToNotify = $userToNotify->merge(User::inOrganization()->get()->filter(fn($u) => $u->can('account', $ticket)));
+        }
+
+        $userToNotify->filter(fn($u) => !$u->is($authUser))->unique()->each->notify(new TicketFinishNotification($authUser, $ticket));
 
         return back()->with('success', 'Ticket erfolgreich abgeschlossen.');
     }
@@ -254,10 +262,7 @@ class TicketController extends Controller
 
         $ticket->update(['finished_at' => null]);
 
-        Organization::getCurrent()->users
-            ->filter(fn($u) => !$authUser->is($u) && $u->can('update', $ticket))
-            ->each
-            ->notify(new TicketFinishNotification($authUser, $ticket));
+        $ticket->assignees->filter(fn($u) => !$u->is($authUser))->each->notify(new TicketUpdateNotification($authUser, $ticket));
 
         return back()->with('success', 'Ticket erfolgreich als unbearbeitet markiert.');
     }
@@ -275,7 +280,7 @@ class TicketController extends Controller
 
     public function accept(Ticket $ticket, #[CurrentUser] User $authUser)
     {
-        Gate::authorize('publicAuth', User::class);
+        Gate::authorize('update', Ticket::class);
 
         $authUser->tickets()->syncWithoutDetaching([$ticket->id]);
         $authUser->tickets()->updateExistingPivot($ticket->id, ['status' => 'accepted']);

@@ -28,15 +28,16 @@ const acceptTicketForm = useForm({});
             :headers="[
                 { title: 'Prio', key: 'priorityText', width: '1px' },
                 { title: 'Ticket', key: 'reference_number', width: '1px' },
-                { title: 'Datum', key: 'created_at', width: '1px' },
+                { title: 'Erstellt', key: 'created_at', width: '1px' },
+                { title: 'Ersteller', key: 'user.name' },
                 { title: 'Titel', key: 'title' },
                 { title: 'Kunde', key: 'customer.name' },
                 { title: 'Termin', key: 'appointment_at' },
                 { title: 'Zugewiesen an', key: 'assigneeName' },
-                { title: '', key: 'actions', align: 'end', sortable: false },
+                { title: '', key: 'actions', align: 'end', sortable: false, width: '280px' },
             ]"
             :items="
-                tickets.map(t => {
+               tickets.map((t) => {
                     const assignee = (()=>{
                         if(t.assignees.length == 0) return null;
                         const a = t.assignees[0]!
@@ -45,7 +46,7 @@ const acceptTicketForm = useForm({});
                     })()
                     return {
                         ...t,
-                        user: { ...t.user, name: t.user.first_name + ' ' + t.user.last_name },
+                        user: { ...t.user, name: (t.user.first_name + ' ' + t.user.last_name) },
                         assigneeName: assignee,
                         priorityText:  PRIORITIES.find(p => p.value === t.priority)?.title,
                         priorityValue: PRIORITIES.find(p=>p.value === t.priority)?.priorityValue,
@@ -93,7 +94,7 @@ const acceptTicketForm = useForm({});
                     title="Ticket übernehmen"
                     @click.stop="acceptTicketForm.patch(route('ticket.accept', { ticket: item.id }))"
                 ></v-btn>
-                <TicketFinishDialog v-if="tab === 'workingTickets'" :tab :item></TicketFinishDialog>
+                <TicketFinishDialog v-if="['workingTickets', 'finishedTickets'].includes(tab)" :tab :item></TicketFinishDialog>
                 <RecordCreateDialog v-if="tab === 'workingTickets'" :ticket="item" :users="users" :operatingSites />
                 <TicketShowDialog :ticket="item" :customers="customers" :users="users" :tab :operatingSites />
                 <ConfirmDelete

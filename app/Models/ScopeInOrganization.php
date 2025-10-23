@@ -22,7 +22,7 @@ trait ScopeInOrganization
         if (
             new self instanceof \App\Models\TravelLog || new self instanceof \App\Models\TravelLogPatch ||
             new self instanceof \App\Models\WorkLog || new self instanceof \App\Models\WorkLogPatch ||
-            new self instanceof \App\Models\TimeAccount || new self instanceof \App\Models\Ticket
+            new self instanceof \App\Models\TimeAccount
         ) {
             return $builder->whereIn('user_id', User::select('id')->inOrganization());
         }
@@ -34,7 +34,8 @@ trait ScopeInOrganization
             return $builder->where('organization_id', $org->id);
         }
         if (
-            new self instanceof \App\Models\CustomerOperatingSite || new self instanceof \App\Models\CustomerNote
+            new self instanceof \App\Models\CustomerOperatingSite || new self instanceof \App\Models\CustomerNote ||
+            new self instanceof \App\Models\Ticket
         ) {
             return $builder->whereIn('customer_id', Customer::select('id')->inOrganization());
         }

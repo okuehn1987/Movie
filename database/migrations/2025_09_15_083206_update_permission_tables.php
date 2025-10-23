@@ -13,17 +13,20 @@ return new class extends Migration
     {
         Schema::table('organization_users', function (Blueprint $table) {
             $table->enum('ticket_permission', ['read', 'write'])->nullable();
+            $table->enum('ticket_accounting_permission', ['read', 'write'])->nullable();
             $table->enum('customer_permission', ['read', 'write'])->nullable();
         });
 
         Schema::table('operating_site_users', function (Blueprint $table) {
             $table->enum('ticket_permission', ['read', 'write'])->nullable();
+            $table->enum('ticket_accounting_permission', ['read', 'write'])->nullable();
             $table->enum('customer_permission', ['read', 'write'])->nullable();
             $table->enum('absenceType_permission', ['read', 'write'])->nullable();
         });
 
         Schema::table('group_users', function (Blueprint $table) {
             $table->enum('ticket_permission', ['read', 'write'])->nullable();
+            $table->enum('ticket_accounting_permission', ['read', 'write'])->nullable();
             $table->enum('customer_permission', ['read', 'write'])->nullable();
             $table->enum('absenceType_permission', ['read', 'write'])->nullable();
         });
@@ -36,15 +39,18 @@ return new class extends Migration
     {
         Schema::table('organization_users', function (Blueprint $table) {
             $table->dropColumn('ticket_permission');
+            $table->dropColumn('ticket_accounting_permission');
         });
 
         Schema::table('operating_site_users', function (Blueprint $table) {
             $table->dropColumn('ticket_permission');
+            $table->dropColumn('ticket_accounting_permission');
             $table->dropColumn('absenceType_permission');
         });
 
         Schema::table('group_users', function (Blueprint $table) {
             $table->dropColumn('ticket_permission');
+            $table->dropColumn('ticket_accounting_permission');
             $table->dropColumn('absenceType_permission');
         });
     }

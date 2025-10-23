@@ -60,6 +60,7 @@ class User extends Authenticatable
             ['name' => 'timeAccountSetting_permission', 'label' => 'Zeitkontovarianten verwalten'],
             ['name' => 'timeAccountTransaction_permission', 'label' => 'Zeitkontotransaktionen verwalten'],
             ['name' => 'ticket_permission', 'label' => 'Tickets verwalten'],
+            ['name' => 'ticket_accounting_permission', 'label' => 'Tickets abrechnen'],
         ],
         'organization' => [
             ['name' => 'absenceType_permission', 'label' => 'Abwesenheitsgründe verwalten'],

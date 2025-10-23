@@ -24,7 +24,7 @@ function resetFilter() {
 function search() {
     router.reload({
         only: ['archiveTickets'],
-        data: { page: 1, tab: 'archive', ...filterForm.data() },
+        data: { page: 1, openTicket: null, tab: 'archive', ...filterForm.data() },
         onSuccess: () => {
             showDialog.value = false;
         },
