@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Status;
 use App\Models\User;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
@@ -53,7 +54,7 @@ class WorkLogController extends Controller
                 'start' => now(),
                 'end' => null,
                 'user_id' => $authUser->id,
-                'status' => 'accepted',
+                'status' => Status::Accepted,
                 'accepted_at' => now(),
             ]);
         }
@@ -83,7 +84,7 @@ class WorkLogController extends Controller
             'is_home_office' => $validated['is_home_office'],
             'start' => Carbon::parse($validated['start']),
             'end' => Carbon::parse($validated['end']),
-            'status' => 'created',
+            'status' => Status::Created,
             'comment' => $validated['comment'],
             'user_id' => $user->id
         ]);
@@ -106,14 +107,14 @@ class WorkLogController extends Controller
 
         $workLogNotification = $authUser->notifications()
             ->where('type', WorkLogNotification::class)
-            ->where('data->status', 'created')
+            ->where('data->status', Status::Created)
             ->where('data->work_log_id', $workLog->id)
             ->first();
 
         if ($workLogNotification) {
             $workLogNotification->markAsRead();
-            $workLogNotification->update(['data->status' => 'accepted']);
-            $workLog->user->notify(new DisputeStatusNotification($workLog, $is_accepted ? 'accepted' : 'declined'));
+            $workLogNotification->update(['data->status' => Status::Accepted]);
+            $workLog->user->notify(new DisputeStatusNotification($workLog, $is_accepted ? Status::Accepted : Status::Declined));
         }
 
         if ($is_accepted) $workLog->accept();
@@ -129,7 +130,7 @@ class WorkLogController extends Controller
         if ($workLog->delete()) {
             $workLog->user->supervisor->notifications()
                 ->where('type', WorkLogNotification::class)
-                ->where('data->status', 'created')
+                ->where('data->status', Status::Created)
                 ->where('data->work_log_id', $workLog->id)
                 ->delete();
         }

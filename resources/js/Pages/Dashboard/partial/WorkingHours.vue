@@ -42,7 +42,7 @@ const lastActionText = computed(() => {
         return 'vor ' + Math.floor(diff.as('minutes')) + ' minuten';
     }
     if (endTime.day !== now.value.day) {
-        return endTime.toFormat('dd.MM - HH:mm') + ' Uhr';
+        return endTime.toFormat('dd.MM. - HH:mm') + ' Uhr';
     }
     return endTime.toFormat('HH:mm') + ' Uhr';
 });
@@ -60,7 +60,7 @@ const lastActionText = computed(() => {
                         <div class="d-flex flex-column">
                             Aktuelle Schicht
                             <div class="text-h6">
-                                {{ formatDuration(Math.max(0,currentWorkingHours), 'minutes') }}
+                                {{ formatDuration(Math.max(0, currentWorkingHours), 'minutes') }}
                             </div>
                         </div>
                     </div>

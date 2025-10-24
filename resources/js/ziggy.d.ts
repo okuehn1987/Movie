@@ -50,73 +50,9 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "switchAppModule": [],
     "dashboard": [],
-    "user.index": [],
-    "user.store": [],
-    "user.update": [
-        {
-            "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "user.destroy": [
-        {
-            "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "user.generalInformation": [
-        {
-            "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "user.absences": [
-        {
-            "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "user.timeAccounts": [
-        {
-            "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "user.timeAccountTransactions": [
-        {
-            "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "user.documents": [
-        {
-            "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "user.timeStatementDoc": [
-        {
-            "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "user.userOrganigram": [
-        {
-            "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "user.profile": [],
+    "reportBug.store": [],
     "organization.saveSettings": [],
     "organization.show": [
         {
@@ -180,13 +116,15 @@ declare module 'ziggy-js' {
     "userAbsenceFilter.update": [
         {
             "name": "userAbsenceFilter",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "userAbsenceFilter.destroy": [
         {
             "name": "userAbsenceFilter",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "absence.absencePatch.store": [
@@ -216,6 +154,7 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "dispute.index": [],
     "absenceType.store": [],
     "absenceType.update": [
         {
@@ -257,6 +196,118 @@ declare module 'ziggy-js' {
         {
             "name": "group",
             "required": true
+        }
+    ],
+    "operatingSite.index": [],
+    "operatingSite.store": [],
+    "operatingSite.show": [
+        {
+            "name": "operatingSite",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "operatingSite.update": [
+        {
+            "name": "operatingSite",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "operatingSite.destroy": [
+        {
+            "name": "operatingSite",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "operatingSite.operatingTime.store": [
+        {
+            "name": "operatingSite",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "operatingTime.destroy": [
+        {
+            "name": "operatingTime",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "notification.update": [
+        {
+            "name": "notification",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "profile.update": [],
+    "profile.updateSettings": [],
+    "user.index": [],
+    "user.store": [],
+    "user.update": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.destroy": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.generalInformation": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.absences": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.documents": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.userOrganigram": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.profile": [],
+    "user.timeAccounts": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.timeAccountTransactions": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "user.timeStatementDoc": [
+        {
+            "name": "user",
+            "required": true,
+            "binding": "id"
         }
     ],
     "workLogPatch.store": [],
@@ -311,37 +362,6 @@ declare module 'ziggy-js' {
             "required": true
         }
     ],
-    "operatingSite.index": [],
-    "operatingSite.store": [],
-    "operatingSite.show": [
-        {
-            "name": "operatingSite",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "operatingSite.update": [
-        {
-            "name": "operatingSite",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "operatingSite.destroy": [
-        {
-            "name": "operatingSite",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "operatingTime.store": [],
-    "operatingTime.destroy": [
-        {
-            "name": "operatingTime",
-            "required": true,
-            "binding": "id"
-        }
-    ],
     "user.timeAccount.store": [
         {
             "name": "user",
@@ -365,16 +385,120 @@ declare module 'ziggy-js' {
     ],
     "timeAccountTransaction.store": [],
     "timeAccountSetting.store": [],
-    "dispute.index": [],
-    "notification.update": [
+    "customer.index": [],
+    "customer.store": [],
+    "customer.show": [
         {
-            "name": "notification",
+            "name": "customer",
             "required": true,
             "binding": "id"
         }
     ],
-    "profile.update": [],
-    "profile.updateSettings": [],
+    "customer.update": [
+        {
+            "name": "customer",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customer.destroy": [
+        {
+            "name": "customer",
+            "required": true
+        }
+    ],
+    "customer.customerNote.store": [
+        {
+            "name": "customer",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customerNote.update": [
+        {
+            "name": "customerNote",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customerNote.destroy": [
+        {
+            "name": "customerNote",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customerNote.getFile": [
+        {
+            "name": "customerNote",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customer.customerOperatingSite.store": [
+        {
+            "name": "customer",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customerOperatingSite.update": [
+        {
+            "name": "customerOperatingSite",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customerOperatingSite.destroy": [
+        {
+            "name": "customerOperatingSite",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticket.index": [],
+    "ticket.store": [],
+    "ticket.update": [
+        {
+            "name": "ticket",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticket.destroy": [
+        {
+            "name": "ticket",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticket.finish": [
+        {
+            "name": "ticket",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticket.ticketRecord.store": [
+        {
+            "name": "ticket",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticketRecord.update": [
+        {
+            "name": "ticketRecord",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticketRecord.destroy": [
+        {
+            "name": "ticketRecord",
+            "required": true
+        }
+    ],
     "login": [],
     "password.request": [],
     "password.email": [],

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\Addressable;
 use App\Services\HolidayService;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class OperatingSite extends Model
 {
-    use HasFactory, SoftDeletes, ScopeInOrganization;
+    use HasFactory, SoftDeletes, ScopeInOrganization, Addressable;
 
     protected $guarded = [];
 
@@ -38,9 +39,9 @@ class OperatingSite extends Model
 
     public function hasHoliday(CarbonInterface $date)
     {
-        if (!$this->country || !$this->federal_state) {
+        if (!$this->currentAddress->country || !$this->currentAddress->federal_state) {
             return false;
         }
-        return HolidayService::isHoliday($this->country, $this->federal_state, $date);
+        return HolidayService::isHoliday($this->currentAddress->country, $this->currentAddress->federal_state, $date);
     }
 }

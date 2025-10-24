@@ -24,7 +24,14 @@ const timeAccountTransactionForm = useForm({
         <template v-slot:default="{ isActive }">
             <v-card :title="`Stunden für Konto ${item.name} bearbeiten`">
                 <template #append>
-                    <v-btn icon variant="text" @click.stop="isActive.value = false">
+                    <v-btn
+                        icon
+                        variant="text"
+                        @click.stop="
+                            isActive.value = false;
+                            timeAccountTransactionForm.reset();
+                        "
+                    >
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>

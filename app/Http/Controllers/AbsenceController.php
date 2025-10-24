@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Absence;
 use App\Models\AbsencePatch;
 use App\Models\AbsenceType;
+use App\Enums\Status;
 use App\Models\Organization;
 use App\Models\User;
 use App\Notifications\AbsenceDeleteNotification;
@@ -14,8 +15,8 @@ use App\Services\HolidayService;
 use Carbon\Carbon;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
@@ -48,9 +49,9 @@ class AbsenceController extends Controller
 
         $date = Carbon::now();
         if (array_key_exists('openAbsence', $validated) && $validated["openAbsence"] != null)
-            $date = Carbon::parse(Absence::find($validated['openAbsence'])->start);
+            $date = Carbon::parse(Absence::find($validated['openAbsence'])?->start);
         else if (array_key_exists('openAbsencePatch', $validated) && $validated["openAbsencePatch"] != null)
-            $date = Carbon::parse(AbsencePatch::find($validated['openAbsencePatch'])->start);
+            $date = Carbon::parse(AbsencePatch::find($validated['openAbsencePatch'])?->start);
         else if (array_key_exists('date', $validated)) $date =  Carbon::parse($validated['date']);
 
 
@@ -70,7 +71,7 @@ class AbsenceController extends Controller
                 'absenceType' => fn($q) => $q->select(['id', 'abbreviation'])->withTrashed(),
                 'user:id'
             ])
-            ->withExists(['patches' => fn($q) => $q->where('status', 'created')])
+            ->withExists(['patches' => fn($q) => $q->where('status', Status::Created)])
             ->get(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status']);
 
         $absencePatches = AbsencePatch::inOrganization()
@@ -79,7 +80,7 @@ class AbsenceController extends Controller
             ->whereHas('log')
             ->with([
                 'absenceType' => fn($q) => $q->select(['id', 'abbreviation'])->withTrashed(),
-                'log' => fn($q) => $q->select(['id', 'user_id'])->withExists(['patches' => fn($q) => $q->where('status', 'created')]),
+                'log' => fn($q) => $q->select(['id', 'user_id'])->withExists(['patches' => fn($q) => $q->where('status', Status::Created)]),
                 'user:id'
             ])
             ->select(['id', 'start', 'end', 'absence_type_id', 'user_id', 'status', 'absence_id'])
@@ -88,15 +89,15 @@ class AbsenceController extends Controller
 
         $absenceFilter =
             fn($a) => (
-                ($a->status === 'accepted' ||
-                    ($a->status === 'created' &&
+                ($a->status === Status::Accepted ||
+                    ($a->status === Status::Created &&
                         $a->user_id === $authUser->id ||
                         $authUser->can(
                             'update',
                             [Absence::class, $visibleUsers->find($a->user_id)]
                         )
                     ) ||
-                    ($a->status === 'declined' && $a->user_id === $authUser->id)
+                    ($a->status === Status::Declined && $a->user_id === $authUser->id)
                 )
             );
 
@@ -118,7 +119,11 @@ class AbsenceController extends Controller
             ]
         ])->values();
 
-        $holidays = HolidayService::getHolidaysForMonth($authUser->operatingSite->country, $authUser->operatingSite->federal_state, $date)
+        $holidays = HolidayService::getHolidaysForMonth(
+            $authUser->operatingSite->currentAddress->country,
+            $authUser->operatingSite->currentAddress->federal_state,
+            $date
+        )
             ->mapWithKeys(
                 fn($val, $key) => [Carbon::parse($key)->format('Y-m-d') => $val]
             );
@@ -128,7 +133,7 @@ class AbsenceController extends Controller
             User::whereIn('id', $visibleUsers->pluck('id'))
                 ->with([
                     'userWorkingWeeks:id,user_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,active_since',
-                    'operatingSite:id,country,federal_state',
+                    'operatingSite.currentAddress:id,country,federal_state,addresses.addressable_id,addresses.addressable_type',
                     'userLeaveDays',
                     'absences' => fn($q) => $q
                         ->doesntHave('currentAcceptedPatch')
@@ -138,7 +143,7 @@ class AbsenceController extends Controller
                     'absencePatches' => fn($q) => $q
                         ->with('log.currentAcceptedPatch')
                         ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
-                        ->where('status', 'accepted')
+                        ->where('status', Status::Accepted)
                         ->whereNot('type', 'delete')
                         ->whereDate('start', '<=', $date->copy()->endOfYear())
                         ->whereDate('end', '>=', $date->copy()->startOfYear())
@@ -146,9 +151,9 @@ class AbsenceController extends Controller
                 ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'group_id', 'operating_site_id'])
                 ->map(fn(User $u) => [
                     ...$u->toArray(),
-                    'leaveDaysForYear' => $u->leaveDaysForYear($date, $u->userLeaveDays),
+                    'leaveDaysForYear' => $u->leaveDaysForYear(now(), $u->userLeaveDays),
                     'usedLeaveDaysForYear' => $u->usedLeaveDaysForYear(
-                        $date,
+                        now(),
                         $u->userWorkingWeeks,
                         collect($u->absences)->merge($u->absencePatches->filter(fn($p) => $p->log->currentAcceptedPatch->is($p)))
                     ),
@@ -182,7 +187,7 @@ class AbsenceController extends Controller
         $validated = $request->validate([
             'start' => ['required', 'date', function ($attr, $val, $fail) use ($absenceUser, $request) {
                 if (
-                    AbsencePatch::getCurrentEntries($absenceUser)
+                    AbsencePatch::getCurrentEntries($absenceUser, true)
                     ->where('start', '<=', $request['end'])
                     ->where('end', '>=', $request['start'])
                     ->count() > 0
@@ -192,27 +197,25 @@ class AbsenceController extends Controller
             'end' => 'required|date|after_or_equal:start',
             'absence_type_id' => [
                 'required',
-                Rule::in(AbsenceType::inOrganization()->get()->pluck('id'))
+                Rule::exists(AbsenceType::inOrganization()->select('id'))
             ],
             'user_id' => [
                 'required',
-                Rule::in(User::inOrganization()->get()->pluck('id'))
+                Rule::exists(User::inOrganization()->select('id'))
             ]
         ]);
 
-        $requires_approval =
-            $authUser->supervisor_id &&
-            $authUser->supervisor_id != Auth::id() &&
-            AbsenceType::find($validated['absence_type_id'])->requires_approval;
+        $requires_approval = $authUser->supervisor_id && AbsenceType::find($validated['absence_type_id'])->requires_approval;
 
         $absence = Absence::create([
             ...$validated,
             'start' => Carbon::parse($validated['start']),
             'end' => Carbon::parse($validated['end']),
-            'status' => 'created',
+            'status' => Status::Created,
         ]);
+
         if ($authUser->id !== $absence->user_id) {
-            $absence->user->notify(new DisputeStatusNotification($absence, $requires_approval ? 'created' : 'accepted'));
+            $absence->user->notify(new DisputeStatusNotification($absence, $requires_approval ? Status::Created : Status::Accepted));
         }
         if ($requires_approval) $authUser->supervisor->notify(new AbsenceNotification($authUser, $absence));
         else $absence->accept();
@@ -220,7 +223,7 @@ class AbsenceController extends Controller
         return back()->with('success', 'Abwesenheit erfolgreich beantragt.');
     }
 
-    public function updateStatus(Request $request, Absence $absence, #[CurrentUser] User $authUser)
+    public function updateStatus(Request $request, Absence $absence)
     {
         Gate::authorize('update', [Absence::class, $absence->user]);
 
@@ -236,16 +239,15 @@ class AbsenceController extends Controller
             ->count() > 0
         ) return back()->with('error', 'In diesem Zeitraum besteht bereits eine Abwesenheit.');
 
-        $absenceNotification = $authUser->notifications()
-            ->where('type', AbsenceNotification::class)
-            ->where('data->status', 'created')
+        $absenceNotification = Notification::where('type', AbsenceNotification::class)
+            ->where('data->status', Status::Created)
             ->where('data->absence_id', $absence->id)
             ->first();
 
         if ($absenceNotification) {
             $absenceNotification->markAsRead();
-            $absenceNotification->update(['data->status' => $is_accepted ? 'accepted' : 'declined']);
-            $absence->user->notify(new DisputeStatusNotification($absence, $is_accepted ? 'accepted' : 'declined'));
+            $absenceNotification->update(['data->status' => $is_accepted ? Status::Accepted : Status::Declined]);
+            $absence->user->notify(new DisputeStatusNotification($absence, $is_accepted ? Status::Accepted : Status::Declined));
         };
 
         if ($is_accepted) $absence->accept();
@@ -254,17 +256,16 @@ class AbsenceController extends Controller
         return back()->with('success',  "Abwesenheit erfolgreich " . ($is_accepted ? 'akzeptiert' : 'abgelehnt') . ".");
     }
 
-    public function destroyDispute(Absence $absence, #[CurrentUser] User $authUser)
+    public function destroyDispute(Absence $absence)
     {
         Gate::authorize('deleteDispute', $absence);
 
-        $absence->deleteQuietly();
-
-        $authUser->notifications()
-            ->where('type', AbsenceNotification::class)
-            ->where('data->status', 'created')
-            ->where('data->absence_id', $absence->id)
-            ->delete();
+        if ($absence->deleteQuietly()) {
+            Notification::where('type', AbsenceNotification::class)
+                ->where('data->status', Status::Created)
+                ->where('data->absence_id', $absence->id)
+                ->delete();
+        }
 
         return back()->with('success', 'Abwesenheitsantrag erfolgreich zurückgezogen');
     }
@@ -276,16 +277,15 @@ class AbsenceController extends Controller
         if (Gate::allows('delete', $absence)) {
             $absence->delete();
 
-            $openDeleteNotification = $authUser->notifications()
-                ->where('type', AbsenceDeleteNotification::class)
-                ->where('data->status', 'created')
+            $openDeleteNotification = Notification::where('type', AbsenceDeleteNotification::class)
+                ->where('data->status', Status::Created)
                 ->where('data->absence_id', $absence->id)
                 ->first();
 
             if ($openDeleteNotification) {
                 $openDeleteNotification->markAsRead();
-                $openDeleteNotification->update(['data->status' => 'accepted']);
-                $absence->user->notify(new DisputeStatusNotification($absence, 'accepted', 'delete'));
+                $openDeleteNotification->update(['data->status' => Status::Accepted]);
+                $absence->user->notify(new DisputeStatusNotification($absence, Status::Accepted, 'delete'));
             }
             return back()->with('success', 'Die Abwesenheit wurde erfolgreich gelöscht.');
         } else {
@@ -294,20 +294,19 @@ class AbsenceController extends Controller
         }
     }
 
-    public function denyDestroy(Absence $absence, #[CurrentUser] User $authUser)
+    public function denyDestroy(Absence $absence)
     {
         Gate::allows('delete', $absence);
 
-        $openDeleteNotification = $authUser->notifications()
-            ->where('type', AbsenceDeleteNotification::class)
-            ->where('data->status', 'created')
+        $openDeleteNotification = Notification::where('type', AbsenceDeleteNotification::class)
+            ->where('data->status', Status::Created)
             ->where('data->absence_id', $absence->id)
             ->first();
 
         if ($openDeleteNotification) {
             $openDeleteNotification->markAsRead();
-            $openDeleteNotification->update(['data->status' => 'declined']);
-            $absence->user->notify(new DisputeStatusNotification($absence, 'declined', 'delete'));
+            $openDeleteNotification->update(['data->status' => Status::Declined]);
+            $absence->user->notify(new DisputeStatusNotification($absence, Status::Declined, 'delete'));
         }
 
         return back()->with('success', 'Der Antrag auf Löschung wurde abgelehnt.');

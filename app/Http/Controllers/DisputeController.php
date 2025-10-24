@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Status;
 use App\Models\Absence;
 use App\Models\AbsencePatch;
 use App\Models\User;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
 use App\Notifications\AbsenceDeleteNotification;
+use App\Services\AppModuleService;
 use Carbon\Carbon;
-use Illuminate\Container\Attributes\CurrentUser;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
@@ -25,8 +24,10 @@ class DisputeController extends Controller
             'absenceRequests' => self::getAbsenceRequests(),
             'absencePatchRequests' => self::getAbsencePatchRequests(),
             'absenceDeleteRequests' => self::getAbsenceDeleteRequests(),
-            'workLogPatchRequests' => self::getWorkLogPatchRequests(),
-            'workLogRequests' => self::getWorkLogRequests(),
+            ...(AppModuleService::hasAppModule('herta') ? [
+                'workLogPatchRequests' => self::getWorkLogPatchRequests(),
+                'workLogRequests' => self::getWorkLogRequests(),
+            ] : [])
         ]);
     }
 
@@ -35,7 +36,7 @@ class DisputeController extends Controller
         $authUser = request()->user();
 
         return WorkLogPatch::inOrganization()
-            ->where('status', 'created')
+            ->where('status', Status::Created)
             ->with([
                 'log:id,start,end,is_home_office',
                 'user' => fn($q) => $q->select(['id', 'first_name', 'last_name', 'operating_site_id', 'supervisor_id'])->withTrashed()
@@ -50,7 +51,7 @@ class DisputeController extends Controller
         $authUser = request()->user();
 
         return WorkLog::inOrganization()
-            ->where('status', 'created')
+            ->where('status', Status::Created)
             ->with([
                 'user' => fn($q) => $q->select(['id', 'first_name', 'last_name', 'operating_site_id', 'supervisor_id'])->withTrashed()
             ])
@@ -64,14 +65,16 @@ class DisputeController extends Controller
         $authUser = request()->user();
 
         $absenceRequests = Absence::inOrganization()
-            ->where('status', 'created')
+            ->where('status', Status::Created)
             ->with([
                 'user' => fn($q) => $q->select(['id', 'first_name', 'last_name', 'operating_site_id', 'supervisor_id'])->withTrashed(),
                 'absenceType:id,name'
             ])
             ->get(['id', 'start', 'end', 'user_id', 'absence_type_id']);
 
-        $absenceRequestUsers = User::whereIn('id', $absenceRequests->pluck('user_id'))->withTrashed()->with('operatingSite')->get();
+        $absenceRequestUsers = count($absenceRequests) > 0 ?
+            User::whereIn('id', $absenceRequests->pluck('user_id'))->withTrashed()->with('operatingSite')->get() :
+            collect();
 
         $absenceRequests = $absenceRequests
             ->filter(fn(Absence $a) => $authUser->can('update', [Absence::class, $absenceRequestUsers->find($a->user_id)]))
@@ -93,14 +96,16 @@ class DisputeController extends Controller
         $authUser = request()->user();
 
         $absencePatchRequests = AbsencePatch::inOrganization()
-            ->where('status', 'created')
+            ->where('status', Status::Created)
             ->with([
                 'user' => fn($q) => $q->select(['id', 'first_name', 'last_name', 'operating_site_id', 'supervisor_id'])->withTrashed(),
                 'absenceType:id,name'
             ])
             ->get(['id', 'start', 'end', 'user_id', 'absence_type_id', 'absence_id']);
 
-        $absenceRequestUsers = User::whereIn('id', $absencePatchRequests->pluck('user_id'))->withTrashed()->with('operatingSite')->get();
+        $absenceRequestUsers = count($absencePatchRequests) > 0 ?
+            User::whereIn('id', $absencePatchRequests->pluck('user_id'))->withTrashed()->with('operatingSite')->get() :
+            collect();
 
         $absencePatchRequests = $absencePatchRequests
             ->filter(fn(AbsencePatch $a) => $authUser->can('update', $a))
@@ -124,16 +129,18 @@ class DisputeController extends Controller
 
         $openDeleteNotifications = $authUser->notifications()
             ->where('type', AbsenceDeleteNotification::class)
-            ->where('data->status', 'created')
+            ->where('data->status', Status::Created)
             ->get();
 
-        $requestesdAbsences = Absence::inOrganization()
+        $requestesdAbsences = count($openDeleteNotifications) > 0 ?
+            Absence::inOrganization()
             ->whereIn('id', $openDeleteNotifications->pluck('data.absence_id'))
             ->with([
                 'user' => fn($q) => $q->select(['id', 'first_name', 'last_name', 'operating_site_id', 'supervisor_id'])->withTrashed(),
                 'absenceType:id,name'
             ])
-            ->get(['id', 'start', 'end', 'user_id', 'absence_type_id']);
+            ->get(['id', 'start', 'end', 'user_id', 'absence_type_id']) :
+            collect();
 
         return $requestesdAbsences->filter(fn(Absence $a) => $authUser->can('delete', $a))->values();
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Absence;
 use App\Models\AbsencePatch;
 use App\Models\AbsenceType;
+use App\Enums\Status;
 use App\Models\User;
 use App\Notifications\AbsencePatchNotification;
 use App\Notifications\DisputeStatusNotification;
@@ -40,12 +41,12 @@ class AbsencePatchController extends Controller
             ...$validated,
             'user_id' => $absence->user_id,
             'absence_id' => $absence->id,
-            'status' => 'created',
+            'status' => Status::Created,
             'type' => 'patch'
         ]);
 
         if ($authUser->id !== $absencePatch->user_id) {
-            $authUser->notify(new DisputeStatusNotification($absencePatch, 'created'));
+            $authUser->notify(new DisputeStatusNotification($absencePatch, Status::Created));
         }
         if ($requires_approval) $authUser->supervisor->notify(new AbsencePatchNotification($authUser, $absencePatch));
         else $absencePatch->accept();
@@ -71,14 +72,14 @@ class AbsencePatchController extends Controller
 
         $absencePatchNotification = $authUser->notifications()
             ->where('type', AbsencePatchNotification::class)
-            ->where('data->status', 'created')
+            ->where('data->status', Status::Created)
             ->where('data->absence_patch_id', $absencePatch->id)
             ->first();
 
         if ($absencePatchNotification) {
             $absencePatchNotification->markAsRead();
-            $absencePatchNotification->update(['data->status' => $is_accepted ? 'accepted' : 'declined']);
-            $absencePatch->user->notify(new DisputeStatusNotification($absencePatch, $is_accepted ? 'accepted' : 'declined'));
+            $absencePatchNotification->update(['data->status' => $is_accepted ? Status::Accepted : Status::Declined]);
+            $absencePatch->user->notify(new DisputeStatusNotification($absencePatch, $is_accepted ? Status::Accepted : Status::Declined));
         }
 
         if ($is_accepted) $absencePatch->accept();
@@ -94,7 +95,7 @@ class AbsencePatchController extends Controller
         if ($absencePatch->delete()) {
             $authUser->notifications()
                 ->where('type', AbsencePatchNotification::class)
-                ->where('data->status', 'created')
+                ->where('data->status', Status::Created)
                 ->where('data->absence_patch_id', $absencePatch->id)
                 ->delete();
         }

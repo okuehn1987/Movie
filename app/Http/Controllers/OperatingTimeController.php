@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\OperatingSite;
 use App\Models\OperatingTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 class OperatingTimeController extends Controller
 {
-    public function store(Request $request)
+    public function store(Request $request, OperatingSite $operatingSite)
     {
         Gate::authorize('create', OperatingTime::class);
 
@@ -16,12 +17,10 @@ class OperatingTimeController extends Controller
             "start" => 'required|string',
             "end" => 'required|string',
             "type" => "required|string",
-            "operating_site_id" => "required|integer"
         ]);
 
-        OperatingTime::inOrganization()->updateOrCreate(
+        $operatingSite->operatingTimes()->updateOrCreate(
             [
-                'operating_site_id' => $validated['operating_site_id'],
                 "type" => $validated['type']
             ],
             [
@@ -41,6 +40,4 @@ class OperatingTimeController extends Controller
 
         return back()->with('success', 'Betriebszeit erfolgreich gelöscht.');
     }
-
-    // TODO: function update
 }

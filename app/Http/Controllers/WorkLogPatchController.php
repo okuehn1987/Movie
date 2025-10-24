@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Status;
 use App\Models\User;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
 use App\Notifications\DisputeStatusNotification;
-use App\Notifications\PatchNotification;
 use App\Notifications\WorkLogPatchNotification;
 use Carbon\Carbon;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
 class WorkLogPatchController extends Controller
@@ -35,7 +34,7 @@ class WorkLogPatchController extends Controller
             'is_home_office' => $validated['is_home_office'],
             'start' => Carbon::parse($validated['start']),
             'end' => Carbon::parse($validated['end']),
-            'status' => 'created',
+            'status' => Status::Created,
             'comment' => $validated['comment'],
             'work_log_id' => $workLog->id,
             'user_id' => $user->id
@@ -59,14 +58,14 @@ class WorkLogPatchController extends Controller
 
         $patchNotification = $authUser->notifications()
             ->where('type', WorkLogPatchNotification::class)
-            ->where('data->status', 'created')
+            ->where('data->status', Status::Created)
             ->where('data->work_log_patch_id', $workLogPatch->id)
             ->first();
 
         if ($patchNotification) {
             $patchNotification->markAsRead();
-            $patchNotification->update(['data->status' => 'accepted']);
-            $workLogPatch->user->notify(new DisputeStatusNotification($workLogPatch, $is_accepted ? 'accepted' : 'declined'));
+            $patchNotification->update(['data->status' => Status::Accepted]);
+            $workLogPatch->user->notify(new DisputeStatusNotification($workLogPatch, $is_accepted ? Status::Accepted : Status::Declined));
         }
 
         if ($is_accepted) $workLogPatch->accept();
@@ -82,7 +81,7 @@ class WorkLogPatchController extends Controller
         if ($workLogPatch->delete()) {
             $authUser->notifications()
                 ->where('type', WorkLogPatchNotification::class)
-                ->where('data->status', 'created')
+                ->where('data->status', Status::Created)
                 ->where('data->work_log_patch_id', $workLogPatch->id)
                 ->delete();
         }
