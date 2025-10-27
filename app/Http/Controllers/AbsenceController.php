@@ -6,6 +6,7 @@ use App\Models\Absence;
 use App\Models\AbsencePatch;
 use App\Models\AbsenceType;
 use App\Enums\Status;
+use App\Models\OperatingSite;
 use App\Models\Organization;
 use App\Models\User;
 use App\Notifications\AbsenceDeleteNotification;
@@ -197,11 +198,11 @@ class AbsenceController extends Controller
             'end' => 'required|date|after_or_equal:start',
             'absence_type_id' => [
                 'required',
-                Rule::exists(AbsenceType::inOrganization()->select('id'))
+                Rule::exists('absence_types', 'id')->whereIn('id', AbsenceType::inOrganization()->select('id'))
             ],
             'user_id' => [
                 'required',
-                Rule::exists(User::inOrganization()->select('id'))
+                Rule::exists('users', 'id')->whereIn('operating_site_id', OperatingSite::inOrganization()->select('id'))
             ]
         ]);
 
