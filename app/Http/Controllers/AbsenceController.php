@@ -16,6 +16,7 @@ use App\Services\HolidayService;
 use Carbon\Carbon;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
@@ -240,7 +241,7 @@ class AbsenceController extends Controller
             ->count() > 0
         ) return back()->with('error', 'In diesem Zeitraum besteht bereits eine Abwesenheit.');
 
-        $absenceNotification = Notification::where('type', AbsenceNotification::class)
+        $absenceNotification = DB::table('notifications')->where('type', AbsenceNotification::class)
             ->where('data->status', Status::Created)
             ->where('data->absence_id', $absence->id)
             ->first();
@@ -262,7 +263,7 @@ class AbsenceController extends Controller
         Gate::authorize('deleteDispute', $absence);
 
         if ($absence->deleteQuietly()) {
-            Notification::where('type', AbsenceNotification::class)
+            DB::table('notifications')->where('type', AbsenceNotification::class)
                 ->where('data->status', Status::Created)
                 ->where('data->absence_id', $absence->id)
                 ->delete();
@@ -278,7 +279,7 @@ class AbsenceController extends Controller
         if (Gate::allows('delete', $absence)) {
             $absence->delete();
 
-            $openDeleteNotification = Notification::where('type', AbsenceDeleteNotification::class)
+            $openDeleteNotification = DB::table('notifications')->where('type', AbsenceDeleteNotification::class)
                 ->where('data->status', Status::Created)
                 ->where('data->absence_id', $absence->id)
                 ->first();
@@ -299,7 +300,7 @@ class AbsenceController extends Controller
     {
         Gate::allows('delete', $absence);
 
-        $openDeleteNotification = Notification::where('type', AbsenceDeleteNotification::class)
+        $openDeleteNotification = DB::table('notifications')->where('type', AbsenceDeleteNotification::class)
             ->where('data->status', Status::Created)
             ->where('data->absence_id', $absence->id)
             ->first();
