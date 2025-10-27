@@ -674,6 +674,7 @@ class User extends Authenticatable
                 $futureAbsences =
                     collect(
                         $this->absences()
+                            ->where('status', Status::Accepted)
                             ->doesntHave('currentAcceptedPatch')
                             ->whereDate('end', '>=', now())
                             ->get()
