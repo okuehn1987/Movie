@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import GuestLayout from '@/Layouts/GuestLayout.vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 
 defineProps<{
     canResetPassword?: boolean;
@@ -16,8 +16,11 @@ const adminForm = useForm({
 
 const adminLogin = () => {
     adminForm.post(route('login'), {
-        onError: () => {
+       onFinish: () => {
             adminForm.reset('password');
+            if (!adminForm.errors.email && !adminForm.errors.password) {
+                router.reload();
+            }
         },
     });
 };
