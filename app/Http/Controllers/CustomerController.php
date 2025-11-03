@@ -58,9 +58,8 @@ class CustomerController extends Controller
             'reference_number' => 'nullable|string',
         ]);
 
-        Customer::create([
+        Organization::getCurrent()->customers()->create([
             ...$validated,
-            'organization_id' => Organization::id(),
         ]);
 
         return back()->with('success', 'Der Kunde wurde erfolgreich angelegt.');
