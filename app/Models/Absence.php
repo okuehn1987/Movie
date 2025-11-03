@@ -2,11 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\Status;
 use App\Models\Traits\HasPatches;
 use App\Models\Traits\IsAccountable;
 use Carbon\Carbon;
-use Illuminate\Container\Attributes\CurrentUser;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -17,6 +16,10 @@ class Absence extends Model
     use ScopeInOrganization, HasPatches, IsAccountable;
 
     protected $guarded = [];
+
+    protected $casts = [
+        'status' => Status::class,
+    ];
 
     private static function getPatchModel()
     {
@@ -37,7 +40,7 @@ class Absence extends Model
                 'end' => '1970-01-01',
                 'user_id' => $model->user_id,
                 'absence_type_id' => $model->absence_type_id,
-                'status' => 'accepted',
+                'status' => Status::Accepted,
                 'accepted_at' => now(),
                 'comment' => $model->comment,
                 'type' => 'delete',

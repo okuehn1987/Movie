@@ -13,14 +13,13 @@ class RemovedFromTicketNotification extends Notification
 {
     use Queueable;
 
-    private $authUser, $ticket;
+    private $ticket;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(User $authUser, Ticket $ticket)
+    public function __construct(Ticket $ticket)
     {
-        $this->authUser = $authUser;
         $this->ticket = $ticket;
     }
 
@@ -31,7 +30,7 @@ class RemovedFromTicketNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return $notifiable->notification_channels;
+        return $notifiable->notification_channels ?? ['database'];
     }
 
     /**

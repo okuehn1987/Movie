@@ -24,10 +24,18 @@ const newTimeAccountForm = useForm({
         <template v-slot:default="{ isActive }">
             <v-card title="Neues Arbeitszeitkonto erstellen">
                 <template #append>
-                    <v-btn icon variant="text" @click.stop="isActive.value = false">
+                    <v-btn
+                        icon
+                        variant="text"
+                        @click.stop="
+                            isActive.value = false;
+                            newTimeAccountForm.reset();
+                        "
+                    >
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>
+                <v-divider></v-divider>
                 <v-card-text>
                     <v-form
                         @submit.prevent="

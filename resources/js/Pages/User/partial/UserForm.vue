@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Country, CountryProp, DateString, FederalState, Group, OperatingSite, Permission, User, UserLeaveDays, Weekday } from '@/types/types';
-import { getStates } from '@/utils';
+import { getBrowser, getStates } from '@/utils';
 import { DateTime, Info } from 'luxon';
 import { nextTick } from 'vue';
 import HertaUserFormSections from './HertaUserFormSections.vue';
@@ -197,7 +197,7 @@ function submit() {
 function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since: string }) {
     if (props.user && !can('user', 'update')) return true;
     const original = props.user?.user_leave_days.find(e => e?.id === item.id);
-    if (original) return original.active_since < DateTime.now().startOf('month').toFormat('yyyy-MM-dd');
+    if (original) return original.active_since < DateTime.now().startOf('year').toFormat('yyyy-MM-dd');
     return false;
 }
 </script>
@@ -280,7 +280,14 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
             <template #append v-if="mode == 'create'">
-                <v-btn icon variant="text" @click="emit('close')">
+                <v-btn
+                    icon
+                    variant="text"
+                    @click="
+                        emit('close');
+                        userForm.reset();
+                    "
+                >
                     <v-icon>mdi-close</v-icon>
                 </v-btn>
             </template>
@@ -728,7 +735,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" v-if="user?.organization_id || user?.supervisor">
+        <v-card class="mb-4" v-if="can('user', 'update')">
             <v-card-title>Kündigungseinstellungen</v-card-title>
             <v-card-text>
                 <v-row>
@@ -736,9 +743,13 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                         <v-text-field
                             type="date"
                             label="Kündigungsdatum"
-                            :min="DateTime.now().plus({ day: 1 }).toFormat('yyyy-MM-dd')"
+                            :min="getBrowser() != 'Apple Safari' ? DateTime.now().plus({ day: 1 }).toFormat('yyyy-MM-dd') : undefined"
                             v-model="userForm.resignation_date"
-                            :disabled="!!userForm.resignation_date && DateTime.now().toFormat('yyyy-MM-dd') >= userForm.resignation_date"
+                            :disabled="
+                                getBrowser() != 'Apple Safari'
+                                    ? !!userForm.resignation_date && DateTime.now().toFormat('yyyy-MM-dd') > userForm.resignation_date
+                                    : false
+                            "
                             :error-messages="userForm.errors.resignation_date"
                             clearable
                         ></v-text-field>

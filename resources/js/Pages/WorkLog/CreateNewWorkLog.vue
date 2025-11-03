@@ -40,6 +40,7 @@ function submit() {
         .post(route('user.workLog.store', { user: props.user.id }), {
             onSuccess: () => {
                 showCreationDialog.value = false;
+                newWorkLogForm.reset();
             },
         });
 }
@@ -53,10 +54,18 @@ function submit() {
         <template v-slot:default="{ isActive }">
             <v-card :title="'Neue Buchung ' + (can('workLogPatch', 'update') ? 'erstellen' : 'beantragen')">
                 <template #append>
-                    <v-btn icon variant="text" @click="isActive.value = false">
+                    <v-btn
+                        icon
+                        variant="text"
+                        @click="
+                            isActive.value = false;
+                            newWorkLogForm.reset();
+                        "
+                    >
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>
+                <v-divider></v-divider>
                 <v-card-text>
                     <v-form @submit.prevent="submit">
                         <v-row>

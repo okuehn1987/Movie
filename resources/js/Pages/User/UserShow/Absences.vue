@@ -6,7 +6,7 @@ import UserShowNavBar from './partial/UserShowNavBar.vue';
 import { useMaxScrollHeight } from '@/utils';
 import { ref } from 'vue';
 
-const props = defineProps<{
+defineProps<{
     user: User & {
         leaveDaysForYear: number;
         usedLeaveDaysForYear: number;
@@ -18,7 +18,7 @@ const props = defineProps<{
     absenceTypes: Pick<AbsenceType, 'id' | 'name'>[];
 }>();
 
-const open = ref(props.absenceTypes.map((_, i) => i));
+const open = ref([]);
 </script>
 <template>
     <AdminLayout :title="user.first_name + ' ' + user.last_name">

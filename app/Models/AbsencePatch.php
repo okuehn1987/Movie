@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Status;
 use App\Models\Traits\HasLog;
 use App\Models\Traits\IsAccountable;
 use Carbon\Carbon;
@@ -16,6 +17,10 @@ class AbsencePatch extends Model
     use ScopeInOrganization, HasLog, IsAccountable;
 
     protected $guarded = [];
+
+    protected $casts = [
+        'status' => Status::class,
+    ];
 
     private static function getLogModel()
     {

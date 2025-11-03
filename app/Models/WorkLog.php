@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Status;
 use App\Models\Traits\HasDuration;
 use App\Models\Traits\HasPatches;
 use App\Models\Traits\IsAccountable;
@@ -23,7 +24,7 @@ class WorkLog extends Model
 
     protected $guarded = [];
 
-    protected $casts = ['is_home_office' => 'boolean'];
+    protected $casts = ['is_home_office' => 'boolean', 'status' => Status::class];
 
     public static function boot()
     {
@@ -52,7 +53,7 @@ class WorkLog extends Model
                 'start' => '1970-01-01',
                 'end' => '1970-01-01',
                 'user_id' => $model->user_id,
-                'status' => 'accepted',
+                'status' => Status::Accepted,
                 'accepted_at' => now(),
                 'is_home_office' => $model->is_home_office,
                 'comment' => $model->comment,

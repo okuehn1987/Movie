@@ -21,14 +21,14 @@ class TicketRecordController extends Controller
         $validated = $request->validate([
             'start' => 'required|date',
             'duration' => 'required|date_format:H:i',
-            'description' => 'required|string',
-            'resources' => 'nullable|string',
+            'description' => 'required|string|max:400',
+            'resources' => 'nullable|string|max:400',
         ]);
 
         $ticket->records()->create([
             ...$validated,
             'start' => Carbon::parse($validated['start']),
-            'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
+            'duration' => Carbon::parse($validated['duration'])->secondsSinceMidnight(),
             'user_id' => $authUser->id,
         ]);
 
@@ -47,14 +47,14 @@ class TicketRecordController extends Controller
         $validated = $request->validate([
             'start' => 'required|date',
             'duration' => 'required|date_format:H:i',
-            'description' => 'required|string',
-            'resources' => 'nullable|string',
+            'description' => 'required|string|max:400',
+            'resources' => 'nullable|string|max:400',
         ]);
 
         $ticketRecord->update([
             ...$validated,
             'start' => Carbon::parse($validated['start']),
-            'duration' => Carbon::parse($validated['duration'])->hour * 3600 + Carbon::parse($validated['duration'])->minute * 60,
+            'duration' => Carbon::parse($validated['duration'])->secondsSinceMidnight(),
         ]);
 
         Organization::getCurrent()->users

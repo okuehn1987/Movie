@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Addressable;
+use App\Models\Traits\Addressable;
 use App\Services\HolidayService;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

@@ -60,10 +60,18 @@ function changeWorkLogStatus() {
     <v-dialog v-if="workLogDialog" v-model="showWorkLogDialog" max-width="1000">
         <v-card :title="'Buchungsantrag von ' + workLogDialog.user.first_name + ' ' + workLogDialog.user.last_name">
             <template #append>
-                <v-btn icon variant="text" @click="showWorkLogDialog = false">
+                <v-btn
+                    icon
+                    variant="text"
+                    @click="
+                        showWorkLogDialog = false;
+                        changeStatusForm.reset();
+                    "
+                >
                     <v-icon>mdi-close</v-icon>
                 </v-btn>
             </template>
+            <v-divider></v-divider>
             <v-card-text>
                 <v-row>
                     <v-col cols="12">

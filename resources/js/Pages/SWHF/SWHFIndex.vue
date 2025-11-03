@@ -53,10 +53,18 @@ function submit() {
         <template v-slot:default="{ isActive }">
             <v-card title="Besondere Arbeitszeitzuschläge">
                 <template #append>
-                    <v-btn icon variant="text" @click="isActive.value = false">
+                    <v-btn
+                        icon
+                        variant="text"
+                        @click="
+                            isActive.value = false;
+                            swhfForm.reset();
+                        "
+                    >
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>
+                <v-divider></v-divider>
                 <v-card-text>
                     <v-form @submit.prevent="submit">
                         <v-row>

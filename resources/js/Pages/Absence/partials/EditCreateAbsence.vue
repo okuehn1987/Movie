@@ -5,6 +5,9 @@ import { AbsencePatchProp, AbsenceProp, UserProp } from '../utils';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
+const emit = defineEmits<{
+    absenceReload: [];
+}>();
 const props = defineProps<{
     users: UserProp[];
     absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval'>[];
@@ -30,6 +33,7 @@ function saveAbsence() {
             onSuccess: () => {
                 absenceForm.reset();
                 openModal.value = false;
+                emit('absenceReload');
             },
         });
     } else {
@@ -37,6 +41,7 @@ function saveAbsence() {
             onSuccess: () => {
                 absenceForm.reset();
                 openModal.value = false;
+                emit('absenceReload');
             },
         });
     }
@@ -51,6 +56,7 @@ function deleteAbsence() {
         {
             onSuccess: () => {
                 openModal.value = false;
+                emit('absenceReload');
             },
         },
     );
@@ -80,10 +86,18 @@ const requiresApproval = computed(() => {
                 "
             >
                 <template #append>
-                    <v-btn icon variant="text" @click="isActive.value = false">
+                    <v-btn
+                        icon
+                        variant="text"
+                        @click="
+                            isActive.value = false;
+                            absenceForm.reset();
+                        "
+                    >
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>
+                <v-divider></v-divider>
                 <v-card-text v-if="absenceForm.errors.user_id">
                     <v-alert color="error" closable>{{ absenceForm.errors.user_id }}</v-alert>
                 </v-card-text>
@@ -114,13 +128,20 @@ const requiresApproval = computed(() => {
                                     :error-messages="absenceForm.errors.end"
                                 ></v-text-field>
                             </v-col>
-                            <v-alert v-if="currentUser && currentUser.usedLeaveDaysForYear && currentUser.leaveDaysForYear" type="info" class="w-100">
+                            <v-alert
+                                v-if="currentUser && currentUser.leaveDaysForYear && (!selectedDate || selectedDate.year == DateTime.now().year)"
+                                type="info"
+                                class="w-100"
+                            >
                                 <v-row>
                                     <v-col cols="12" md="6">
                                         <div>Bereits verwendete Urlaubstage für {{ DateTime.now().year }}</div>
                                     </v-col>
                                     <v-col cols="12" md="6">
-                                        <div>{{ currentUser.usedLeaveDaysForYear }} von {{ currentUser.leaveDaysForYear }}</div>
+                                        <div>
+                                            {{ currentUser.usedLeaveDaysForYear }} von
+                                            {{ currentUser.leaveDaysForYear }}
+                                        </div>
                                     </v-col>
                                 </v-row>
                             </v-alert>

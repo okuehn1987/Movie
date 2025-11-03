@@ -30,7 +30,7 @@ class TicketCreationNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return $notifiable->notification_channels;
+        return $notifiable->notification_channels ?? ['database'];
     }
 
     /**
@@ -60,7 +60,7 @@ class TicketCreationNotification extends Notification
 
     public function getNotificationURL()
     {
-        return  route('ticket.index', [
+        return route('ticket.index', [
             'openTicket' => $this->ticket->id,
         ]);
     }
