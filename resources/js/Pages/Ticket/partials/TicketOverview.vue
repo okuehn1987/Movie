@@ -23,14 +23,6 @@ watch(
 );
 
 const currentTab = ref(props.tab);
-
-// const tab = ref<Tab>(
-//     props.archiveTickets.data.find(t => t.id === Number(route().params['openTicket']))
-//         ? 'archive'
-//         : props.tickets.find(t => t.finished_at !== null && t.id === Number(route().params['openTicket']))
-//         ? 'finishedTickets'
-//         : 'newTickets',
-// );
 </script>
 <template>
     <v-tabs v-model="currentTab">

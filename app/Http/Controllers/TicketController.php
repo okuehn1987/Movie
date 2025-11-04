@@ -43,9 +43,9 @@ class TicketController extends Controller
         $openTicket = array_key_exists('openTicket', $validated) && $validated['openTicket'] != null ? Ticket::find($validated['openTicket']) : null;
 
         $tab = match (true) {
-            $openTicket->finished_at != null => $validated['tab'],
+            $openTicket?->finished_at != null => $validated['tab'],
             $openTicket != null => 'workingTickets',
-            default => 'newTickets',
+            default => array_key_exists('tab', $validated) && $validated['tab'] ? $validated['tab'] : 'newTickets',
         };
 
 
@@ -139,7 +139,7 @@ class TicketController extends Controller
                 $operatingSite = $type::inOrganization()->exists($value['id']);
                 if (!$operatingSite) $fail('Bitte gib einen gültigen Standort ein');
             }],
-            'description' => 'nullable|string|max:1000',
+            'description' => 'nullable|required_if:tab,expressTicket|string|max:1000',
             'priority' => 'required|in:lowest,low,medium,high,highest',
             'customer_id' => ['required', Rule::exists('customers', 'id')->whereIn('id', Organization::getCurrent()->customers()->select('customers.id'))],
             'assignees' => 'present|array',
@@ -174,6 +174,7 @@ class TicketController extends Controller
                 'resources' => $validated['resources'],
                 'start' => Carbon::parse($validated['start']),
                 'duration' => Carbon::parse($validated['duration'])->secondsSinceMidnight(),
+                'description' => $validated['description'],
                 'user_id' => $authUser->id,
                 'address_id' => $address->id,
             ]);
