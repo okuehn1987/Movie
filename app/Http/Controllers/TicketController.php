@@ -43,9 +43,11 @@ class TicketController extends Controller
         $openTicket = array_key_exists('openTicket', $validated) && $validated['openTicket'] != null ? Ticket::find($validated['openTicket']) : null;
 
         $tab = match (true) {
-            $openTicket?->finished_at != null => $validated['tab'],
-            $openTicket != null => 'workingTickets',
-            default => array_key_exists('tab', $validated) && $validated['tab'] ? $validated['tab'] : 'newTickets',
+            $openTicket && $openTicket->finished_at != null && !$openTicket->records()->whereNull('accounted_at')->exists() => 'archive',
+            $openTicket && $openTicket->finished_at != null && $openTicket->records()->whereNull('accounted_at')->exists() => 'finishedTickets',
+            $openTicket && $openTicket->finished_at == null && $openTicket->assignees()->where('status', 'accepted')->exists() => 'workingTickets',
+            array_key_exists('tab', $validated) && $validated['tab'] => $validated['tab'],
+            default => 'newTickets',
         };
 
 
@@ -281,7 +283,7 @@ class TicketController extends Controller
 
     public function accept(Ticket $ticket, #[CurrentUser] User $authUser)
     {
-        Gate::authorize('update', Ticket::class);
+        Gate::authorize('update', $ticket);
 
         $authUser->tickets()->syncWithoutDetaching([$ticket->id]);
         $authUser->tickets()->updateExistingPivot($ticket->id, ['status' => 'accepted']);

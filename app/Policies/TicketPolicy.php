@@ -11,7 +11,7 @@ class TicketPolicy
 
     public function viewIndex(User $authUser): bool
     {
-        return $authUser->hasPermissionOrDelegation(null, 'ticket_permission', 'read');
+        return true;
     }
 
     public function create(User $authUser): bool
