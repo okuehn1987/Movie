@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\AbsenceType;
 use App\Models\Address;
+use App\Models\ChatAssistant;
 use App\Models\Customer;
 use App\Models\CustomerOperatingSite;
 use App\Models\Group;
@@ -19,6 +20,7 @@ use App\Models\User;
 use App\Models\UserWorkingHour;
 use App\Models\UserWorkingWeek;
 use App\Services\AppModuleService;
+use App\Services\OpenAIService;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -40,6 +42,7 @@ class DatabaseSeeder extends Seeder
         $operatingSites = OperatingSite::factory(3)->has(Address::factory(1));
 
         $org = Organization::factory()
+            ->has(ChatAssistant::factory())
             ->has(TimeAccountSetting::factory(1))
             ->has(
                 $operatingSites
@@ -58,6 +61,8 @@ class DatabaseSeeder extends Seeder
             ->has(Group::factory(3))
             ->has(Customer::factory(10)->has(CustomerOperatingSite::factory(2)->has(Address::factory(1))))
             ->create();
+
+        OpenAIService::createAssistant($org->chatAssistant);
 
         OrganizationModule::create([
             'organization_id' => $org->id,
@@ -127,6 +132,7 @@ class DatabaseSeeder extends Seeder
         $users = User::factory(10)->has(Address::factory(1));
 
         $org = Organization::factory()
+            ->has(ChatAssistant::factory())
             ->has(TimeAccountSetting::factory(1))
             ->has(
                 OperatingSite::factory(3)
@@ -146,6 +152,8 @@ class DatabaseSeeder extends Seeder
             ->has(Group::factory(3))
             ->has(Customer::factory(10)->has(CustomerOperatingSite::factory(2)->has(Address::factory(1))))
             ->create();
+
+        OpenAIService::createAssistant($org->chatAssistant);
 
         foreach (array_keys(AppModuleService::$APP_MODULES) as $module) {
             OrganizationModule::create([

@@ -29,7 +29,8 @@ trait ScopeInOrganization
         if (
             new self instanceof \App\Models\OperatingSite || new self instanceof \App\Models\AbsenceType ||
             new self instanceof \App\Models\Group ||  new self instanceof \App\Models\SpecialWorkingHoursFactor ||
-            new self instanceof \App\Models\TimeAccountSetting || new self instanceof \App\Models\Customer
+            new self instanceof \App\Models\TimeAccountSetting || new self instanceof \App\Models\Customer ||
+            new self instanceof \App\Models\ChatAssistant || new self instanceof \App\Models\ChatFile
         ) {
             return $builder->where('organization_id', $org->id);
         }
@@ -37,6 +38,16 @@ trait ScopeInOrganization
             new self instanceof \App\Models\CustomerNote || new self instanceof \App\Models\CustomerOperatingSite
         ) {
             return $builder->whereIn('customer_id', Customer::select('id')->inOrganization());
+        }
+        if (
+            new self instanceof \App\Models\Chat
+        ) {
+            return $builder->whereIn('chat_assistant_id', ChatAssistant::select('id')->inOrganization());
+        }
+        if (
+            new self instanceof \App\Models\ChatMessage
+        ) {
+            return $builder->whereIn('chat_id', Chat::select('id')->inOrganization());
         }
         abort(501);
     }

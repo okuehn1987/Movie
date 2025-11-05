@@ -85,6 +85,21 @@ class Organization extends Model
         return $this->hasMany(CustomAddress::class);
     }
 
+    public function chatAssistant()
+    {
+        return $this->hasOne(ChatAssistant::class);
+    }
+
+    public function chats()
+    {
+        return $this->hasManyThrough(Chat::class, ChatAssistant::class);
+    }
+
+    public function chatFiles()
+    {
+        return $this->hasMany(ChatFile::class);
+    }
+
     public static function getCurrent(): Organization
     {
         if (Auth::check()) return Auth::user()->organization;

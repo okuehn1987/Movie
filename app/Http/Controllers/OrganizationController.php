@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AbsenceType;
+use App\Models\ChatAssistant;
 use App\Models\GroupUser;
 use App\Models\OperatingSite;
 use App\Models\OperatingSiteUser;
@@ -14,6 +15,7 @@ use App\Models\TimeAccountSetting;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use App\Services\HolidayService;
+use App\Services\OpenAIService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -48,6 +50,7 @@ class OrganizationController extends Controller
             'email' => "required|string",
             'password' => "required|string",
             'date_of_birth' => "required|date",
+            'openai_api_key' => "required|string",
         ]);
 
         $org = Organization::create([
@@ -116,6 +119,14 @@ class OrganizationController extends Controller
             'balance_limit' => 40 * 2 * 3600,
             'time_account_setting_id' => $defaultTimeAccountSetting->id,
         ]);
+
+        $chatAssistant = ChatAssistant::create([
+            'organization_id' => $org->id,
+            'monthly_cost_limit' => 100,
+        ]);
+
+        $chatAssistant->vector_store_id = OpenAIService::createAssistant($chatAssistant);
+        $chatAssistant->save();
 
         return back()->with('success', 'Organisation erfolgreich erstellt.');
     }

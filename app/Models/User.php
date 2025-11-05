@@ -317,6 +317,12 @@ class User extends Authenticatable
         return $this->hasOne(OperatingSiteUser::class);
     }
 
+    public function chats()
+    {
+        return $this->hasMany(Chat::class);
+    }
+
+
     public function workingWeeks(): Attribute
     {
         return Attribute::make(

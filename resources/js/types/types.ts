@@ -549,10 +549,51 @@ export type CustomerNote = DBObject<'customerNote'> & {
     value: string;
     file: File | null;
 };
-export type TicketUser = DBObject<'ticket_user'> & {
+export type TicketUser = DBObject<'ticketUser'> & {
     ticket_id: Ticket['id'];
     user_id: User['id'];
 };
+
+export type ChatAssistant = Prettify<
+    DBObject<'chatAssistant'> &
+        SoftDelete & {
+            vector_store_id: string;
+            organization_id: Organization['id'];
+            monthly_cost_limit: number;
+        }
+>;
+
+export type Chat = Prettify<
+    DBObject<'chat'> &
+        SoftDelete & {
+            chat_assistant_id: ChatAssistant['id'];
+            assistant_api_thread_id: string;
+            open_ai_tokens_used: number;
+            user_id: User['id'];
+            last_response_id: string | null;
+        }
+>;
+
+export type ChatMessage = Prettify<
+    DBObject<'chatMessage'> &
+        SoftDelete & {
+            msg: string;
+            chat_id: Chat['id'];
+            role: 'user' | 'assistant' | 'system' | 'annotation';
+            assistant_api_message_id: string;
+        }
+>;
+
+export type ChatFile = Prettify<
+    DBObject<'chatFile'> &
+        SoftDelete & {
+            name: string;
+            file_name: string;
+            assistant_api_file_id: string;
+            chat_assistant_id: ChatAssistant['id'] | null;
+            organization_id: Organization['id'];
+        }
+>;
 
 export type RelationMap = {
     absence: {
@@ -574,6 +615,25 @@ export type RelationMap = {
     };
     address: {
         addressable: User | OperatingSite | CustomAddress;
+    };
+    chat: {
+        chat_assistant: ChatAssistant;
+        user: User;
+        chat_messages: ChatMessage[];
+        latest_chat_message: ChatMessage | null;
+    };
+    chatAssistant: {
+        organization: Organization;
+        chats: Chat[];
+        chat_messages: ChatMessage[];
+        chat_files: ChatFile[];
+    };
+    chatFile: {
+        organization: Organization;
+        chat_assistant: ChatAssistant | null;
+    };
+    chatMessage: {
+        chat: Chat;
     };
     customAddress: {
         organization: Organization;

@@ -50,6 +50,45 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "isa.index": [],
+    "isa.store": [],
+    "isa.update": [
+        {
+            "name": "isa",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "isa.message": [],
+    "isa.retryLastRun": [
+        {
+            "name": "chat",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "file.index": [],
+    "file.store": [],
+    "file.show": [
+        {
+            "name": "file",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "file.destroy": [
+        {
+            "name": "file",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "file.getContent": [
+        {
+            "name": "file",
+            "required": true
+        }
+    ],
     "switchAppModule": [],
     "dashboard": [],
     "reportBug.store": [],

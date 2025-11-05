@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\ChatMessage;
 use App\Models\Customer;
 use App\Models\Group;
 use App\Models\OperatingSite;
@@ -9,6 +10,7 @@ use App\Models\Organization;
 use App\Models\User;
 use App\Models\WorkLog;
 use App\Services\AppModuleService;
+use App\Services\OpenAIService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Middleware;
@@ -74,6 +76,8 @@ class HandleInertiaRequests extends Middleware
                 'location' => $request->url(),
             ]),
             'organization' => Organization::getCurrent(),
+            'reachedMonthlyTokenLimit' => false ?? Organization::getCurrent()->chatAssistant ? OpenAIService::hasReachedTokenLimit(Organization::getCurrent()->chatAssistant) : false,
+            'currentUserChat' => $request->user()?->chats()->with('chatMessages:id,chat_id,role,assistant_api_message_id,created_at,msg')->first(),
             'currentAppModule' => AppModuleService::currentAppModule(),
             'appModules' => $accessableModules,
             'flash' => [
