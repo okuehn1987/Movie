@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Illuminate\Container\Attributes\CurrentUser;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class TicketController extends Controller
@@ -275,9 +276,17 @@ class TicketController extends Controller
     {
         Gate::authorize('delete',  $ticket);
 
-        $ticket->assignees->each->notify(new TicketDeletionNotification($authUser, $ticket));
+        if ($ticket->delete()) {
+            DB::table('notifications')->where('type', TicketUpdateNotification::class)
+                ->where('data->status', Status::Created)
+                ->where('data->ticket_id', $ticket->id)
+                ->delete();
+            DB::table('notifications')->where('type',  TicketCreationNotification::class)
+                ->where('data->ticket_id', $ticket->id)
+                ->delete();
+        }
+        $ticket->assignees->filter(fn($u) => !$u->is($authUser))->each->notify(new TicketDeletionNotification($authUser, $ticket));
 
-        $ticket->delete();
 
         return back()->with('success', 'Ticket erfolgreich gelöscht.');
     }
