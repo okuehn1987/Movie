@@ -18,7 +18,7 @@ class CustomerNoteFolderController extends Controller
     {
         Gate::authorize('publicAuth', User::class);
         $validated = $request->validate([
-            'name' => 'required|string|max:20',
+            'name' => 'required|string',
         ]);
 
         // if ($validated['type'] == 'file') {
@@ -41,42 +41,45 @@ class CustomerNoteFolderController extends Controller
         return back()->with('success', 'Notiz erfolgreich erstellt.');
     }
 
-    public function update(Request $request, CustomerNoteFolder $customerNote)
+    public function update(Request $request, CustomerNoteFolder $customerNoteFolder)
     {
         Gate::authorize('publicAuth', User::class);
 
+        // $validated = $request->validate([
+        //     'key' => 'required|string|max:65535',
+        //     'value' => 'nullable|string|max:65535',
+        //     'file' => 'nullable|file',
+        // ]);
+
+        // if ($customerNote->type == 'file') {
+        //     $path = array_key_exists('file', $validated) && $validated['file'] ? Storage::disk('customer_note_files')->putFile($validated['file']) : null;
+
+        //     if ($customerNote->value && $path)
+        //         Storage::disk('customer_note_files')->delete($customerNote->value);
+
+        //     $customerNote->update([
+        //         'key' => $validated['key'],
+        //         ...(array_key_exists('file', $validated) && $validated['file'] ? ['value' =>  $path] : []),
+        //     ]);
+
+
         $validated = $request->validate([
-            'key' => 'required|string|max:65535',
-            'value' => 'nullable|string|max:65535',
-            'file' => 'nullable|file',
+            'name' => 'required|string',
         ]);
 
-        if ($customerNote->type == 'file') {
-            $path = array_key_exists('file', $validated) && $validated['file'] ? Storage::disk('customer_note_files')->putFile($validated['file']) : null;
-
-            if ($customerNote->value && $path)
-                Storage::disk('customer_note_files')->delete($customerNote->value);
-
-            $customerNote->update([
-                'key' => $validated['key'],
-                ...(array_key_exists('file', $validated) && $validated['file'] ? ['value' =>  $path] : []),
-            ]);
-        } else {
-            $customerNote->update([
-                'key' => $validated['key'],
-                'value' => $validated['value'],
-            ]);
-        }
+        $customerNoteFolder->update([
+            'name' => $validated['name'],
+        ]);
 
         return back()->with('success', 'Notiz erfolgreich aktualisiert');
     }
 
-    public function destroy(CustomerNoteFolder $customerNote)
+    public function destroy(CustomerNoteFolder $customerNoteFolder)
     {
         Gate::authorize('publicAuth', User::class);
-
-        Storage::disk('customer_note_files')->delete($customerNote->value);
-        $customerNote->delete();
+        //TODO: when entrys work, have a look at entry deletion
+        // Storage::disk('customer_note_files')->delete($customerNoteFolder->value);
+        $customerNoteFolder->delete();
 
         return back()->with('success', 'Notiz erfolgreich gelöscht');
     }

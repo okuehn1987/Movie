@@ -5,6 +5,7 @@ import { router } from '@inertiajs/vue3';
 import { throttle } from '@/utils';
 import { DateTime } from 'luxon';
 import CreateEditCustomerNoteFolder from './CreateEditCustomerNoteFolder.vue';
+import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 
 const props = defineProps<{
     customerNoteFolders: Pick<CustomerNoteFolder, 'id' | 'customer_id' | 'name'>[];
@@ -164,54 +165,6 @@ function editNote(note: CustomerNoteEntry) {
         <v-divider></v-divider>
         <div class="d-flex">
             <div class="flex-shrink-1" style="max-width: 40%">
-                <!-- <v-dialog max-width="1000" v-model="openDialog">
-                    <template v-slot:activator="{ props: activatorProps }">
-                        <v-btn v-bind="activatorProps" color="error" variant="flat" class="mr-2" v-if="mode == 'edit' && can('customer', 'update')">
-                            <v-icon>mdi-delete</v-icon>
-                        </v-btn>
-                    </template>
-                    <template v-slot:default="{ isActive }">
-                        <v-form
-                            @submit.prevent="
-                                createNoteFolderForm.post(route('customer.customerNoteFolder.store', { customer: customer.id }), {
-                                    onSuccess: () => {
-                                        isActive.value = false;
-                                    },
-                                })
-                            "
-                        >
-                            <v-card title="Kategorie anlegen">
-                                <template #append>
-                                    <v-btn
-                                        icon
-                                        variant="text"
-                                        @click.stop="
-                                            () => {
-                                                isActive.value = false;
-                                            }
-                                        "
-                                    >
-                                        <v-icon>mdi-close</v-icon>
-                                    </v-btn>
-                                </template>
-                                <v-card-text>
-                                    <v-row>
-                                        <v-col cols="12">
-                                            <v-text-field
-                                                label="Bezeichnung"
-                                                v-model="createNoteFolderForm.name"
-                                                :error-messages="createNoteFolderForm.errors.name"
-                                            ></v-text-field>
-                                        </v-col>
-                                        <v-col cols="12" class="text-end">
-                                            <v-btn color="primary" variant="flat" type="submit">Speichern</v-btn>
-                                        </v-col>
-                                    </v-row>
-                                </v-card-text>
-                            </v-card>
-                        </v-form>
-                    </template>
-                </v-dialog> -->
                 <v-tabs direction="vertical">
                     <div class="ma-2" @click.stop="() => {}">
                         <CreateEditCustomerNoteFolder
@@ -220,6 +173,60 @@ function editNote(note: CustomerNoteEntry) {
                             :customerNoteFolders
                             :customerNoteEntries
                         ></CreateEditCustomerNoteFolder>
+                        <!-- <v-dialog max-width="1000" v-model="openDialog">
+                            <template v-slot:activator="{ props: activatorProps }">
+                                <v-btn
+                                    v-bind="activatorProps"
+                                    color="error"
+                                    variant="flat"
+                                    class="mr-2"
+                                    v-if="mode == 'edit' && can('customer', 'update')"
+                                >
+                                    <v-icon>mdi-delete</v-icon>
+                                </v-btn>
+                            </template>
+                            <template v-slot:default="{ isActive }">
+                                <v-form
+                                    @submit.prevent="
+                                        createNoteFolderForm.post(route('customer.customerNoteFolder.store', { customer: customer.id }), {
+                                            onSuccess: () => {
+                                                isActive.value = false;
+                                            },
+                                        })
+                                    "
+                                >
+                                    <v-card title="Kategorie anlegen">
+                                        <template #append>
+                                            <v-btn
+                                                icon
+                                                variant="text"
+                                                @click.stop="
+                                                    () => {
+                                                        isActive.value = false;
+                                                    }
+                                                "
+                                            >
+                                                <v-icon>mdi-close</v-icon>
+                                            </v-btn>
+                                        </template>
+                                        <v-card-text>
+                                            <v-row>
+                                                <v-col cols="12">
+                                                    <v-text-field
+                                                        label="Bezeichnung"
+                                                        v-model="createNoteFolderForm.name"
+                                                        :error-messages="createNoteFolderForm.errors.name"
+                                                    ></v-text-field>
+                                                </v-col>
+                                                <v-col cols="12" class="text-end">
+                                                    <v-btn color="primary" variant="flat" type="submit">Speichern</v-btn>
+                                                </v-col>
+                                            </v-row>
+                                        </v-card-text>
+                                    </v-card>
+                                </v-form>
+                            </template>
+                        </v-dialog> -->
                     </div>
                     <v-tab
                         v-for="note in customerNoteFolders"
@@ -229,13 +236,23 @@ function editNote(note: CustomerNoteEntry) {
                     >
                         <div class="d-flex align-center justify-space-between w-100">
                             <span>{{ note.name }}</span>
-                            <CreateEditCustomerNoteFolder
-                                :categoryMode="'edit'"
-                                :note="note"
-                                :customer="customer"
-                                :customerNoteFolders="customerNoteFolders"
-                                :customerNoteEntries="customerNoteEntries"
-                            />
+                            <div>
+                                <CreateEditCustomerNoteFolder
+                                    :note="note"
+                                    :customer="customer"
+                                    :customerNoteFolders="customerNoteFolders"
+                                    :customerNoteEntries="customerNoteEntries"
+                                />
+                                <ConfirmDelete
+                                    :title="'Kategorie &quot;' + note.name + '&quot; löschen'"
+                                    :content="
+                                        'Bist du dir sicher, dass du die Kategorie &quot;' +
+                                        note.name +
+                                        '&quot; mit all ihren Inhalten löschen möchtest?'
+                                    "
+                                    :route="route('customerNoteFolder.destroy', { customerNoteFolder: note.id })"
+                                ></ConfirmDelete>
+                            </div>
                         </div>
                     </v-tab>
                 </v-tabs>

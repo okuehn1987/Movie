@@ -9,7 +9,6 @@ defineProps<{
         (CustomerNoteEntry & RelationPick<'customerNoteEntry', 'user', 'first_name' | 'last_name'>)[]
     >;
     customer: Customer;
-    categoryMode: 'create' | 'edit';
     note?: Pick<CustomerNoteFolder, 'name' | 'id' | 'customer_id'>;
 }>();
 
@@ -22,35 +21,28 @@ const createNoteFolderForm = useForm({
 <template>
     <v-dialog max-width="1000" v-model="openDialog">
         <template v-slot:activator="{ props: activatorProps }">
-            <v-btn
-                v-bind="activatorProps"
-                color="primary"
-                variant="flat"
-                :title="categoryMode == 'create' ? 'Neue Kategorie anlegen' : 'Kategorie bearbeiten'"
-            >
-                <v-icon>{{ categoryMode == 'create' ? 'mdi-plus' : 'mdi-pencil' }}</v-icon>
+            <v-btn v-if="note" v-bind="activatorProps" color="primary" variant="text" title="Kategorie bearbeiten" :icon="'mdi-pencil'"></v-btn>
+            <v-btn v-else v-bind="activatorProps" color="primary" variant="flat" title="Neue Kategorie anlegen">
+                <v-icon>{{ 'mdi-plus' }}</v-icon>
             </v-btn>
         </template>
         <template v-slot:default="{ isActive }">
             <v-form
                 @submit.prevent="
-                    categoryMode == 'create'
-                        ? createNoteFolderForm.post(route('customer.customerNoteFolder.store', { customer: customer.id }), {
+                    note
+                        ? createNoteFolderForm.patch(route('customerNoteFolder.update', { customerNoteFolder: note.id }), {
                               onSuccess: () => {
                                   isActive.value = false;
                               },
                           })
-                        : createNoteFolderForm.patch(
-                              route('customer.customerNoteFolder.update', { customer: customer.id, customerFolderId: note?.id }),
-                              {
-                                  onSuccess: () => {
-                                      isActive.value = false;
-                                  },
+                        : createNoteFolderForm.post(route('customer.customerNoteFolder.store', { customer: customer.id }), {
+                              onSuccess: () => {
+                                  isActive.value = false;
                               },
-                          )
+                          })
                 "
             >
-                <v-card :title="categoryMode == 'create' ? 'Kategorie anlegen' : 'Kategorie ' + note?.name + ' bearbeiten'">
+                <v-card :title="note ? 'Kategorie &quot;' + note?.name + '&quot; bearbeiten' : 'Kategorie anlegen'">
                     <template #append>
                         <v-btn
                             icon

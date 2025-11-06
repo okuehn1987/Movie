@@ -407,25 +407,23 @@ declare module 'ziggy-js' {
             "required": true
         }
     ],
-    "customer.customerNote.store": [
+    "customer.customerNoteFolder.store": [
         {
             "name": "customer",
             "required": true,
             "binding": "id"
         }
     ],
-    "customerNote.update": [
+    "customerNoteFolder.update": [
         {
-            "name": "customerNote",
-            "required": true,
-            "binding": "id"
+            "name": "customerNoteFolder",
+            "required": true
         }
     ],
-    "customerNote.destroy": [
+    "customerNoteFolder.destroy": [
         {
-            "name": "customerNote",
-            "required": true,
-            "binding": "id"
+            "name": "customerNoteFolder",
+            "required": true
         }
     ],
     "customer.customerContact.store": [
@@ -445,13 +443,6 @@ declare module 'ziggy-js' {
     "customerContact.destroy": [
         {
             "name": "customerContact",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "customerNote.getFile": [
-        {
-            "name": "customerNote",
             "required": true,
             "binding": "id"
         }
