@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 import { Canable, PRIORITIES } from '@/types/types';
+import { router } from '@inertiajs/vue3';
 import { formatDuration } from '@/utils';
 import { DateTime } from 'luxon';
 import { computed, ref, watch } from 'vue';
@@ -52,6 +53,10 @@ const statusIcon = {
     created: 'mdi-timer-sand',
     declined: 'mdi-close',
 } as const;
+
+function closeTicket() {
+    router.get(route('ticket.index', { tab: props.tab }));
+}
 </script>
 <template>
     <v-dialog max-width="1000px" height="800px" v-model="showDialog">
@@ -67,13 +72,21 @@ const statusIcon = {
                         onSuccess: () => {
                             form.reset();
                             isActive.value = false;
+                            closeTicket();
                         },
                     })
                 "
             >
                 <v-card title="Auftrag anzeigen">
                     <template #append>
-                        <v-btn icon variant="text" @click="isActive.value = false">
+                        <v-btn
+                            icon
+                            variant="text"
+                            @click.stop="
+                                isActive.value = false;
+                                closeTicket();
+                            "
+                        >
                             <v-icon>mdi-close</v-icon>
                         </v-btn>
                     </template>

@@ -2,7 +2,7 @@
 import { Customer, PRIORITIES } from '@/types/types';
 import { formatAddress } from '@/utils';
 import { usePage } from '@inertiajs/vue3';
-import { ref, Ref, watch } from 'vue';
+import { Ref, watch } from 'vue';
 import { CustomerProp, OperatingSiteProp, UserProp } from './ticketTypes';
 
 const props = defineProps<{
