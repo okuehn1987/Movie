@@ -79,7 +79,7 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     //timesheets specific routes
     Route::middleware(isApp::class . ':timesheets')->group(function () {
         Route::resource('customer', CustomerController::class)->only(['index', 'store', 'update', 'show', 'destroy']);
-        Route::resource('customer.customerNote', CustomerNoteController::class)->only(['store', 'update', 'destroy'])->shallow();
+        Route::resource('customer.customerNoteFolder', CustomerNoteFolderController::class)->only(['store', 'update', 'destroy'])->shallow();
         Route::resource('customer.customerContact', CustomerContactController::class)->only(['store', 'update', 'destroy'])->shallow();
         Route::get('/customerNote/{customerNote}/getFile', [CustomerNoteController::class, 'getFile'])->name('customerNote.getFile');
 

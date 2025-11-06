@@ -1,67 +1,59 @@
 <script setup lang="ts">
-import { Customer, CustomerNote, Relations } from '@/types/types';
+import { Customer, CustomerNoteEntry, CustomerNoteFolder, RelationPick } from '@/types/types';
 import { ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { throttle } from '@/utils';
 import { DateTime } from 'luxon';
+import CreateEditCustomerNoteFolder from './CreateEditCustomerNoteFolder.vue';
 
 const props = defineProps<{
-    customerNotes: Pick<CustomerNote, 'id' | 'key'>[];
-    childNotes: Record<CustomerNote['id'], (CustomerNote & Pick<Relations<'customerNote'>, 'modifier'>)[]>;
+    customerNoteFolders: Pick<CustomerNoteFolder, 'id' | 'customer_id' | 'name'>[];
+    customerNoteEntries: Record<
+        CustomerNoteFolder['id'],
+        (CustomerNoteEntry & RelationPick<'customerNoteEntry', 'user', 'first_name' | 'last_name'>)[]
+    >;
     customer: Customer;
 }>();
 
 const mode = ref<'show' | 'edit'>('show');
-const selectedNote = ref<CustomerNote['id'] | null>(props.customerNotes[0]?.id ?? null);
+const selectedFolder = ref<CustomerNoteFolder['id'] | null>(props.customerNoteFolders[0]?.id ?? null);
 
-const loadedNotes = ref<CustomerNote['id'][]>([]);
+const loadedNotes = ref<CustomerNoteFolder['id'][]>([]);
 const loading = ref(false);
 
 const reload = throttle(() => {
-    if (!selectedNote.value || loadedNotes.value.includes(selectedNote.value)) return;
+    if (!selectedFolder.value || loadedNotes.value.includes(selectedFolder.value)) return;
     router.reload({
         only: ['childNotes'],
-        data: { selectedNote: selectedNote.value },
+        data: { selectedNote: selectedFolder.value },
         onStart: () => {
-            if (selectedNote.value) {
-                loadedNotes.value.push(selectedNote.value);
+            if (selectedFolder.value) {
+                loadedNotes.value.push(selectedFolder.value);
                 loading.value = true;
             }
         },
-        onError: () => (loadedNotes.value = loadedNotes.value.filter(e => e != selectedNote.value)),
+        onError: () => (loadedNotes.value = loadedNotes.value.filter(e => e != selectedFolder.value)),
         onFinish: () => (loading.value = false),
     });
 }, 500);
-watch(selectedNote, reload);
-
-const openDialog = ref(false);
+watch(selectedFolder, reload);
 
 const editNoteForm = useForm({
-    noteId: null as CustomerNote['id'] | null,
-    key: null as string | null,
-    value: '' as string | null,
-    file: null as File | null,
+    noteId: null as CustomerNoteEntry['id'] | null,
+    title: null as string | null,
+    value: null as string | null,
 });
 
-const createNoteForm = useForm({
-    type: null as string | null,
-    key: null,
-    value: '' as string | null,
-    parent_id: null as CustomerNote['id'] | null,
-    file: null as File | null,
-});
-
-function editNote(note: CustomerNote) {
+function editNote(note: CustomerNoteEntry) {
     editNoteForm.noteId = note.id;
-    editNoteForm.key = note.key;
+    editNoteForm.title = note.title;
     editNoteForm.value = note.value;
-    editNoteForm.file = note.file;
 }
 </script>
 <template>
     <v-card title="Kundennotizen">
         <template #append>
-            <v-dialog max-width="1000" v-model="openDialog">
+            <!-- <v-dialog max-width="1000" v-model="openDialog">
                 <template v-slot:activator="{ props: activatorProps }">
                     <v-btn
                         v-bind="activatorProps"
@@ -80,7 +72,6 @@ function editNote(note: CustomerNote) {
                             createNoteForm.post(route('customer.customerNote.store', { customer: customer.id }), {
                                 onSuccess: () => {
                                     isActive.value = false;
-                                    createNoteForm.reset('parent_id');
                                 },
                             })
                         "
@@ -93,7 +84,6 @@ function editNote(note: CustomerNote) {
                                     @click.stop="
                                         () => {
                                             isActive.value = false;
-                                            createNoteForm.reset('parent_id');
                                         }
                                     "
                                 >
@@ -124,7 +114,7 @@ function editNote(note: CustomerNote) {
                                     <v-col cols="12" v-if="createNoteForm.type !== 'file'">
                                         <v-text-field
                                             label="Bezeichnung"
-                                            v-model="createNoteForm.key"
+                                            v-model="createNoteForm.name"
                                             :error-messages="createNoteForm.errors.key"
                                         ></v-text-field>
                                     </v-col>
@@ -150,7 +140,7 @@ function editNote(note: CustomerNote) {
                         </v-card>
                     </v-form>
                 </template>
-            </v-dialog>
+            </v-dialog> -->
             <v-btn
                 append-icon="mdi-swap-horizontal"
                 color="primary"
@@ -172,29 +162,98 @@ function editNote(note: CustomerNote) {
             </v-btn>
         </template>
         <v-divider></v-divider>
-        <v-row>
-            <v-col cols="12" md="2">
+        <div class="d-flex">
+            <div class="flex-shrink-1" style="max-width: 40%">
+                <!-- <v-dialog max-width="1000" v-model="openDialog">
+                    <template v-slot:activator="{ props: activatorProps }">
+                        <v-btn v-bind="activatorProps" color="error" variant="flat" class="mr-2" v-if="mode == 'edit' && can('customer', 'update')">
+                            <v-icon>mdi-delete</v-icon>
+                        </v-btn>
+                    </template>
+                    <template v-slot:default="{ isActive }">
+                        <v-form
+                            @submit.prevent="
+                                createNoteFolderForm.post(route('customer.customerNoteFolder.store', { customer: customer.id }), {
+                                    onSuccess: () => {
+                                        isActive.value = false;
+                                    },
+                                })
+                            "
+                        >
+                            <v-card title="Kategorie anlegen">
+                                <template #append>
+                                    <v-btn
+                                        icon
+                                        variant="text"
+                                        @click.stop="
+                                            () => {
+                                                isActive.value = false;
+                                            }
+                                        "
+                                    >
+                                        <v-icon>mdi-close</v-icon>
+                                    </v-btn>
+                                </template>
+                                <v-card-text>
+                                    <v-row>
+                                        <v-col cols="12">
+                                            <v-text-field
+                                                label="Bezeichnung"
+                                                v-model="createNoteFolderForm.name"
+                                                :error-messages="createNoteFolderForm.errors.name"
+                                            ></v-text-field>
+                                        </v-col>
+                                        <v-col cols="12" class="text-end">
+                                            <v-btn color="primary" variant="flat" type="submit">Speichern</v-btn>
+                                        </v-col>
+                                    </v-row>
+                                </v-card-text>
+                            </v-card>
+                        </v-form>
+                    </template>
+                </v-dialog> -->
                 <v-tabs direction="vertical">
-                    <v-tab v-for="note in customerNotes" :key="note.id" @click.stop="selectedNote = note.id">{{ note.key }}</v-tab>
+                    <div class="ma-2" @click.stop="() => {}">
+                        <CreateEditCustomerNoteFolder
+                            :categoryMode="'create'"
+                            :customer
+                            :customerNoteFolders
+                            :customerNoteEntries
+                        ></CreateEditCustomerNoteFolder>
+                    </div>
+                    <v-tab
+                        v-for="note in customerNoteFolders"
+                        :key="note.customer_id"
+                        @click.stop="selectedFolder = note.id"
+                        style="display: block; overflow: visible"
+                    >
+                        <div class="d-flex align-center justify-space-between w-100">
+                            <span>{{ note.name }}</span>
+                            <CreateEditCustomerNoteFolder
+                                :categoryMode="'edit'"
+                                :note="note"
+                                :customer="customer"
+                                :customerNoteFolders="customerNoteFolders"
+                                :customerNoteEntries="customerNoteEntries"
+                            />
+                        </div>
+                    </v-tab>
                 </v-tabs>
-            </v-col>
-            <v-col cols="12" md="10">
+            </div>
+            <div class="flex-grow-1">
                 <v-skeleton-loader v-if="loading" type="table"></v-skeleton-loader>
                 <v-data-table
-                    v-else-if="selectedNote"
+                    v-else-if="selectedFolder"
                     :items="
-                        childNotes[selectedNote]?.map(n => ({
+                        customerNoteEntries[selectedFolder]?.map(n => ({
                             ...n,
-                            modifier: {
-                                ...n.modifier,
-                                name: n.modifier.first_name + ' ' + n.modifier.last_name,
-                            },
+                            userName: n.user.first_name + ' ' + n.user.last_name,
                         }))
                     "
                     :headers="[
                         { title: 'Zuletzt aktualisiert', value: 'updated_at' },
                         { title: 'Inhalt', value: 'value' },
-                        { title: 'erstellt von', value: 'modifier.name' },
+                        { title: 'erstellt von', value: 'userName' },
                         { title: '', value: 'actions', width: '1px' },
                     ]"
                 >
@@ -205,8 +264,8 @@ function editNote(note: CustomerNote) {
                         <v-btn color="primary" variant="text" @click.stop="editNote(item)"><v-icon>mdi-pencil</v-icon></v-btn>
                     </template>
                 </v-data-table>
-            </v-col>
-        </v-row>
+            </div>
+        </div>
     </v-card>
 </template>
 <style lang="scss" scoped></style>

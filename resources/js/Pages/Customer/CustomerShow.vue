@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Customer, CustomerNote, CustomerOperatingSite, Relations } from '@/types/types';
+import { Customer, CustomerNoteEntry, CustomerNoteFolder, CustomerOperatingSite, Relations } from '@/types/types';
 import { ref } from 'vue';
 import CustomerForm from './partial/CustomerForm.vue';
 import { formatAddress } from '@/utils';
@@ -12,9 +12,8 @@ import CustomerContactDialog from './partial/CustomerContactDialog.vue';
 defineProps<{
     customer: Customer & Pick<Relations<'customer'>, 'contacts'>;
     operatingSites: (CustomerOperatingSite & Pick<Relations<'customerOperatingSite'>, 'current_address'>)[];
-
-    customerNotes: Pick<CustomerNote, 'id' | 'key'>[];
-    childNotes: Record<CustomerNote['id'], (CustomerNote & Pick<Relations<'customerNote'>, 'modifier'>)[]>;
+    customerNoteFolders: Pick<CustomerNoteFolder, 'id' | 'customer_id' | 'name'>[];
+    customerNoteEntries: Record<CustomerNoteFolder['id'], CustomerNoteEntry[]>;
 }>();
 
 const currentTab = ref('customerData');
@@ -92,7 +91,7 @@ const currentTab = ref('customerData');
             </v-tabs-window-item>
             <v-tabs-window-item value="operatingSites"></v-tabs-window-item>
             <v-tabs-window-item value="customerNotes">
-                <CustomerNotes :childNotes :customer :customerNotes="customerNotes"></CustomerNotes>
+                <CustomerNotes :customerNoteEntries :customer :customerNoteFolders="customerNoteFolders"></CustomerNotes>
             </v-tabs-window-item>
         </v-tabs-window>
     </AdminLayout>

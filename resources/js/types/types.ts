@@ -551,15 +551,18 @@ export type CustomerOperatingSite = DBObject<'customerOperatingSite'> & {
 
 export type JSON = string | number | boolean | null | { [x: string]: JSON } | JSON[];
 
-export type CustomerNote = DBObject<'customerNote'> & {
+export type CustomerNoteFolder = DBObject<'customerNoteFolder'> & {
     customer_id: Customer['id'];
-    modified_by: User['id'];
-    parent_id: CustomerNote['id'] | null;
-    type: 'complex' | 'primitive' | 'file';
-    key: string | null;
-    value: string;
-    file: File | null;
+    name: string;
 };
+
+export type CustomerNoteEntry = DBObject<'customerNoteEntry'> & {
+    customer_note_folder_id: CustomerNoteFolder['id'];
+    title: string;
+    value: string;
+    modified_by: User['id'];
+};
+
 export type TicketUser = DBObject<'ticket_user'> & {
     ticket_id: Ticket['id'];
     user_id: User['id'];
@@ -595,16 +598,20 @@ export type RelationMap = {
         organization: Organization;
         tickets: Ticket[];
         customer_operating_sites: CustomerOperatingSite[];
-        customer_notes: CustomerNote[];
+        customer_note_folders: CustomerNoteFolder[];
+        customer_note_entries: CustomerNoteEntry[];
         contacts: CustomerContact[];
     };
     customerContact: {
         customer: Customer;
     };
-    customerNote: {
+    customerNoteFolder: {
         customer: Customer;
-        modifier: User;
-        parent?: CustomerNote;
+        entries: CustomerNoteEntry[];
+    };
+    customerNoteEntry: {
+        customer_note_folders: CustomerNoteFolder[];
+        user: User;
     };
     customerOperatingSite: {
         customer: Customer;

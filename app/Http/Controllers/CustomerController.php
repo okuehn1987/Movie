@@ -35,16 +35,16 @@ class CustomerController extends Controller
         Gate::authorize('viewShow', Customer::class);
 
         $validated = $request->validate([
-            'selectedNote' => 'nullable|exists:customer_notes,id',
+            'selectedFolder' => 'nullable|exists:customer_notes,id',
         ]);
 
-        $selectedNote = array_key_exists('selectedNote', $validated) ? $validated['selectedNote'] : $customer->customerNotes()->first()->id;
+        $selectedFolder = array_key_exists('selectedFolder', $validated) ? $validated['selectedFolder'] : $customer->customerNoteFolders()->first();
 
         return Inertia::render('Customer/CustomerShow', [
             'customer' => $customer->load('contacts'),
             'operatingSites' => $customer->customerOperatingSites()->with('currentAddress')->get(),
-            'customerNotes' => $customer->customerNotes()->where('type', 'complex')->get(['id', 'key']),
-            'childNotes' =>  Inertia::merge(fn() => [$selectedNote => $customer->customerNotes()->with('modifier:id,first_name,last_name')->where('parent_id', $selectedNote)->get()]),
+            'customerNoteFolders' => $customer->customerNoteFolders()->get(['id', 'name']),
+            'customerNoteEntries' => Inertia::merge(fn() => [$selectedFolder?->id => $selectedFolder?->entries()->with(['user' => fn($q) => $q->select(['id', 'first_name', 'last_name'])])->get(['id', 'title', 'value', 'updated_at', 'modified_by'])]),
             'can' => [
                 'customer' => [
                     'viewShow' => Gate::allows('viewShow', Customer::class),
