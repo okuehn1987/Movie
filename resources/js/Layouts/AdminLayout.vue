@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import ChatDetails from '@/Pages/Isa/ChatDetails.vue';
-import { AppModule } from '@/types/types';
+import { AppModule, ChatMessage } from '@/types/types';
 import { Head, router, usePage, usePoll } from '@inertiajs/vue3';
 import { computed, nextTick, ref, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 import AppbarActions from './partials/AppbarActions.vue';
 import DrawerMenu from './partials/DrawerMenu.vue';
+import { DateTime } from 'luxon';
 
 defineProps<{
     title: string;
@@ -43,17 +44,34 @@ function setCurrentApp(module: AppModule['module']) {
 const currentApp = computed(() => page.props.appModules.find(m => m.value === page.props.currentAppModule));
 
 const showChat = ref(false);
-const showIntro = ref(false);
+const INITIAL_MESSAGE = {
+    id: -999,
+    role: 'assistant',
+    created_at: DateTime.local().toISO(),
+    msg: 'Hallo, ich bin ISA. Wie kann ich Ihnen helfen?',
+} as Pick<ChatMessage, 'id' | 'role' | 'created_at' | 'msg'>;
+
+const INITIAL_USER_CHAT = {
+    id: -999,
+    chat_messages: [INITIAL_MESSAGE],
+};
+
+watch(
+    () => !!page.props.currentUserChat,
+    () => {
+        INITIAL_USER_CHAT.chat_messages = [INITIAL_MESSAGE];
+    },
+);
 
 function openChat() {
-    showIntro.value = true;
     showChat.value = true;
 }
 function closeChat() {
     showChat.value = false;
 }
-function newChat() {
-    // TODO: start new chat
+function deleteChat() {
+    router.delete(route('isa.deleteChat', { chat: page.props.currentUserChat?.id }), { preserveState: true, preserveScroll: true });
+    showChat.value = true;
 }
 </script>
 
@@ -102,7 +120,7 @@ function newChat() {
 
             <div class="d-flex align-center mr-auto ga-2">
                 <span
-                    class="text-h6 ps-0 mx-md-5 px-2 mb-0"
+                    class="text-h6 ps-0 mx-5 px-2 mb-0"
                     style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: calc(100vw - 72px - 72px - 52px)"
                 >
                     {{ title }}
@@ -138,25 +156,32 @@ function newChat() {
                 style="position: fixed; bottom: 20px; right: 20px"
                 type="button"
                 title="Chat öffnen"
-                @click="openChat"
-                aria-label="Chat öffnen"
+                @click.stop="openChat"
             >
                 <img src="/img/Isa-klein.png" alt="" />
             </v-btn>
             <transition name="chat-pop">
                 <div v-show="showChat" class="chat-space bg-white elevation-12">
                     <div class="chat-header">
-                        <v-btn class="chat-button" type="button" @click="closeChat" aria-label="Chat schließen" title="Chat schließen">
-                            <img src="/img/Isa-klein.png" alt="" />
-                        </v-btn>
-                        <v-btn icon="mdi-delete" color="error" density="comfortable" variant="text" @click="newChat" title="Chat löschen" />
+                        <div class="chat-button" role="button" @click.stop="closeChat">
+                            <img src="/img/Isa-klein.png" alt="ISA Logo"></img>
+                        </div>
+                        <div>
+                            <v-btn
+                                icon="mdi-window-minimize"
+                                color="primary"
+                                variant="text"
+                                @click.stop="closeChat"
+                                title="Chat minimieren"
+                            />
+                            <v-btn icon="mdi-delete" color="error"  variant="text" @click.stop="deleteChat" title="Chat löschen" />
+                        </div>
                     </div>
                     <div class="chat-body">
                         <ChatDetails
-                            :chat="$page.props.currentUserChat"
+                        :showChat
+                            :chat="$page.props.currentUserChat ? $page.props.currentUserChat : INITIAL_USER_CHAT"
                             :reachedMonthlyTokenLimit="$page.props.reachedMonthlyTokenLimit"
-                            :introMode="showIntro"
-                            @first-send="showIntro = false"
                         />
                     </div>
                 </div>
@@ -193,13 +218,12 @@ function newChat() {
 }
 
 .chat-button {
-    width: 60px;
+    max-width: 60px;
     height: 60px;
     border-radius: 10%;
     background-color: rgba(178, 178, 186, 0.9);
     border: none;
     padding: 0;
-    cursor: pointer;
     z-index: 1000;
 }
 .chat-button img {
@@ -210,9 +234,9 @@ function newChat() {
 .chat-space {
     position: fixed;
     bottom: 20px;
-    right: 20px;
-    width: 500px;
-    height: 450px;
+    right: min(16px, calc((100vw - min(500px, 100vw - 32px)) / 2));
+    width: min(500px, 100vw - 32px);
+    height: min(650px, 60vh);
     border-radius: 12px;
     overflow: hidden;
     display: flex;
@@ -244,12 +268,5 @@ function newChat() {
 .chat-pop-leave-to {
     transform: scale(0.1);
     opacity: 0;
-}
-
-@media (max-width: 960px) {
-    .chat-space {
-        width: 92vw;
-        height: 60vh;
-    }
 }
 </style>

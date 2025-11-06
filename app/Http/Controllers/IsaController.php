@@ -34,8 +34,7 @@ class IsaController extends Controller
         if (!$chatAssistant) return back()->with('error', 'Dein Unternehmen hat noch keinen Chat Assistenten. Bitte kontaktiere den Support.');
 
         $monthTokens = $chatAssistant->chats()->where('created_at', '>=', Carbon::now()->startOfMonth())->sum('open_ai_tokens_used') ?? 0;
-        // $chatAssistant->current_monthly_cost = OpenAIService::getCostForTokens($monthTokens);
-        $chatAssistant->current_monthly_cost = 100;
+        $chatAssistant->current_monthly_cost = OpenAIService::getCostForTokens($monthTokens);
 
         return Inertia::render('Isa/IsaIndex', [
             'chatAssistant' => $chatAssistant,
@@ -85,6 +84,18 @@ class IsaController extends Controller
         ]);
 
         $chat->sendUserMessage(str_replace('\n', '<br/>', $validated['msg']), false);
+
+        return back();
+    }
+
+    public function deleteChat(Chat $chat, #[CurrentUser] User $authUser)
+    {
+        Gate::authorize('publicAuth', User::class);
+
+        if ($chat->user_id === $authUser->id) {
+            $chat->chatMessages()->delete();
+            $chat->delete();
+        };
 
         return back();
     }

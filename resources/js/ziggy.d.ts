@@ -60,6 +60,13 @@ declare module 'ziggy-js' {
         }
     ],
     "isa.message": [],
+    "isa.deleteChat": [
+        {
+            "name": "chat",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "isa.retryLastRun": [
         {
             "name": "chat",

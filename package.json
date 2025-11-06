@@ -2,7 +2,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "dev": "concurrently -k -c \"green,red,grey.bold\" \"npm run dev:vite\" \"php artisan serve\" --names=vite,laravel",
+        "dev": "concurrently -k -c \"green,red,grey.bold\" \"npm run dev:vite\" \"npm run backend\" \"npm run websocket\" \"npm run schedule\" \"php artisan pail\" --names=vite,laravel,websocket,schedule,logs",
         "dev:vite": "vite",
         "backend": "php artisan serve",
         "test": "playwright test",
@@ -14,7 +14,8 @@
         "typegen": "php artisan ziggy:generate --types",
         "lint": "npx eslint resources/js",
         "testCoverage": "XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-clover test-reports/cov.xml",
-        "websocket": "php artisan reverb:start"
+        "websocket": "php artisan reverb:start",
+        "schedule": "php artisan schedule:work"
     },
     "devDependencies": {
         "@inertiajs/vue3": "2.1.5",

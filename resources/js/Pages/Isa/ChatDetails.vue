@@ -7,25 +7,21 @@ import { DateTime } from 'luxon';
 
 const props = defineProps<{
     chat: Pick<Chat, 'id'> & {
-        chat_messages: Pick<ChatMessage, 'id' | 'role' | 'assistant_api_message_id' | 'created_at' | 'msg'>[];
+        chat_messages: Pick<ChatMessage, 'id' | 'role' | 'created_at' | 'msg'>[];
     };
     reachedMonthlyTokenLimit: boolean;
-    introMode?: boolean;
-}>();
-
-const emit = defineEmits<{
-    (e: 'first-send'): void;
+    showChat: boolean;
 }>();
 
 const { chat: chatProp } = toRefs(props);
 
 const chat = ref(chatProp.value);
 watch(chatProp, value => (chat.value = value));
-
-const isIntro = ref(!!props.introMode);
 watch(
-    () => props.introMode,
-    v => (isIntro.value = !!v),
+    () => props.showChat,
+    () => {
+        if (props.showChat) setTimeout(scrollToBottom, 200);
+    },
 );
 
 const chatMessageForm = useForm({
@@ -34,10 +30,6 @@ const chatMessageForm = useForm({
 
 function submitChatMessage() {
     chatMessageForm.clearErrors();
-    if (isIntro.value) {
-        isIntro.value = false;
-        emit('first-send');
-    }
     chatMessageForm.post(route('isa.message'), {
         preserveScroll: true,
     });
@@ -46,7 +38,6 @@ function submitChatMessage() {
         created_at: DateTime.local().toISO() as ChatMessage['created_at'],
         msg: chatMessageForm.msg.replaceAll('\n', '<br>'),
         role: 'user',
-        assistant_api_message_id: '',
     });
     chatMessageForm.reset();
 }
@@ -64,41 +55,30 @@ watch(currentPartialChatResponse, scrollToBottom, { immediate: true });
 
 function scrollToBottom() {
     const elem = document.getElementById('messages');
-    if (elem) elem.scrollTop = elem.scrollHeight;
+    if (elem) elem.scrollTo({ top: elem.scrollHeight, behavior: 'instant' });
 }
 
-if (chat.value && !isIntro.value) {
+if (chat.value) {
     window.Echo.channel('chat.' + chat.value.id).listen('.ChatMessageDelta', ({ msg }: { msg: string }) => {
         currentPartialChatResponse.value += msg;
     });
 }
-
-const textInputLabel = 'Geben Sie hier Ihre Frage ein...';
 </script>
 
 <template>
     <div class="chat-details">
         <div id="messages" class="messages">
             <v-container style="max-width: 100%" class="m-0 px-0 pb-0 pt-2">
-                <template v-if="isIntro">
-                    <ChatMessageComp
-                        :chatMessage="({
-              id: -999,
-              role: 'assistant',
-              assistant_api_message_id: 'intro',
-              created_at: DateTime.local().toISO(),
-              msg: 'Hallo, ich bin ISA. Wie kann ich Ihnen helfen?',
-            } as ChatMessage)"
-                    />
+                <template v-if="chat && chat.chat_messages.length > 0">
+                    <div
+                        v-for="(chatMessage, index) of chat.chat_messages.filter(e => e.role != 'annotation')"
+                        :key="index.toString()"
+                        :id="'ChatMessage-' + chatMessage.id.toString()"
+                    >
+                        <ChatMessageComp :chatMessage="chatMessage" />
+                    </div>
                 </template>
-                <template v-else-if="chat && chat.chat_messages.length > 0">
-                    <template v-for="chatMessage of chat.chat_messages.filter(e => e.role != 'annotation')" :key="chatMessage.id">
-                        <div :id="'ChatMessage-' + chatMessage.id.toString()">
-                            <ChatMessageComp :chatMessage="chatMessage" />
-                        </div>
-                    </template>
-                </template>
-                <template v-if="!chatMessageForm.processing && !isIntro">
+                <template v-if="!chatMessageForm.processing">
                     <div class="bg-white">
                         <v-alert variant="tonal" color="error" v-if="$page.props.errors['openai']">
                             <div class="d-flex justify-space-between">
@@ -121,7 +101,7 @@ const textInputLabel = 'Geben Sie hier Ihre Frage ein...';
                     </div>
                 </template>
                 <ChatMessageComp
-                    v-if="!isIntro && (chatMessageForm.processing || currentPartialChatResponse)"
+                    v-if="chatMessageForm.processing || currentPartialChatResponse"
                     :chatMessage="({
                     msg: currentPartialChatResponse,
                     role: 'assistant',
@@ -134,7 +114,7 @@ const textInputLabel = 'Geben Sie hier Ihre Frage ein...';
         </div>
         <form class="composer mt-2 w-100" @submit.prevent="submitChatMessage">
             <v-textarea
-                :label="textInputLabel"
+                label="Geben Sie hier Ihre Frage ein..."
                 v-model="chatMessageForm.msg"
                 required
                 auto-grow
@@ -179,7 +159,6 @@ const textInputLabel = 'Geben Sie hier Ihre Frage ein...';
 
 .composer {
     position: static;
-    background-color: rgb(245, 245, 245);
     border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 </style>

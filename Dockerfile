@@ -10,6 +10,10 @@ RUN echo -e "[program:cron]\ncommand=crond -f\nautostart=true\nautorestart=true"
 
 # install extension needed for laravel reverb
 RUN docker-php-ext-install calendar && docker-php-ext-configure calendar --enable-calendar
+RUN docker-php-ext-install pcntl && docker-php-ext-configure pcntl --enable-pcntl
+# make websockets running
+RUN echo -e "[program:websockets]\ncommand=/bin/bash -c 'cd /var/www/html && php artisan reverb:start'\nautostart=true\nautorestart=true" > /etc/supervisor/conf.d/websockets.conf
+
 
 COPY . /var/www/html
 RUN rm -rf /var/www/html/database/database.sqlite 
