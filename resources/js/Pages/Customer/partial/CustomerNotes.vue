@@ -6,6 +6,7 @@ import { throttle } from '@/utils';
 import { DateTime } from 'luxon';
 import CreateEditCustomerNoteFolder from './CreateEditCustomerNoteFolder.vue';
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
+import CreateEditCustomerNoteEntry from './CreateEditCustomerNoteEntry.vue';
 
 const props = defineProps<{
     customerNoteFolders: Pick<CustomerNoteFolder, 'id' | 'customer_id' | 'name'>[];
@@ -16,7 +17,6 @@ const props = defineProps<{
     customer: Customer;
 }>();
 
-const mode = ref<'show' | 'edit'>('show');
 const selectedFolder = ref<CustomerNoteFolder['id'] | null>(props.customerNoteFolders[0]?.id ?? null);
 
 const loadedNotes = ref<CustomerNoteFolder['id'][]>([]);
@@ -53,115 +53,7 @@ function editNote(note: CustomerNoteEntry) {
 </script>
 <template>
     <v-card title="Kundennotizen">
-        <template #append>
-            <!-- <v-dialog max-width="1000" v-model="openDialog">
-                <template v-slot:activator="{ props: activatorProps }">
-                    <v-btn
-                        v-bind="activatorProps"
-                        append-icon="mdi-plus"
-                        color="primary"
-                        variant="flat"
-                        class="mr-2"
-                        v-if="mode == 'edit' && can('customer', 'update')"
-                    >
-                        Notiz anlegen
-                    </v-btn>
-                </template>
-                <template v-slot:default="{ isActive }">
-                    <v-form
-                        @submit.prevent="
-                            createNoteForm.post(route('customer.customerNote.store', { customer: customer.id }), {
-                                onSuccess: () => {
-                                    isActive.value = false;
-                                },
-                            })
-                        "
-                    >
-                        <v-card title="Notiz anlegen">
-                            <template #append>
-                                <v-btn
-                                    icon
-                                    variant="text"
-                                    @click.stop="
-                                        () => {
-                                            isActive.value = false;
-                                        }
-                                    "
-                                >
-                                    <v-icon>mdi-close</v-icon>
-                                </v-btn>
-                            </template>
-                            <v-card-text>
-                                <v-row>
-                                    <v-col cols="12">
-                                        <v-select
-                                            label="Anlegungstyp"
-                                            :model-value="createNoteForm.type"
-                                            @update:model-value="
-                                                value => {
-                                                    createNoteForm.type = value;
-                                                    createNoteForm.value = '';
-                                                    createNoteForm.file = null;
-                                                }
-                                            "
-                                            :items="[
-                                                { title: 'Einzelnotiz', value: 'primitive' },
-                                                { title: 'Ordnerstruktur', value: 'complex' },
-                                                { title: 'Datei', value: 'file' },
-                                            ]"
-                                            clearable
-                                        ></v-select>
-                                    </v-col>
-                                    <v-col cols="12" v-if="createNoteForm.type !== 'file'">
-                                        <v-text-field
-                                            label="Bezeichnung"
-                                            v-model="createNoteForm.name"
-                                            :error-messages="createNoteForm.errors.key"
-                                        ></v-text-field>
-                                    </v-col>
-                                    <v-col cols="12" v-if="createNoteForm.type == 'primitive'">
-                                        <v-text-field
-                                            label="Inhalt"
-                                            v-model="createNoteForm.value"
-                                            :error-messages="createNoteForm.errors.value"
-                                        ></v-text-field>
-                                    </v-col>
-                                    <v-col cols="12" v-if="createNoteForm.type == 'file'">
-                                        <v-file-input
-                                            label="Dateiupload"
-                                            v-model="createNoteForm.file"
-                                            :error-messages="createNoteForm.errors.file"
-                                        ></v-file-input>
-                                    </v-col>
-                                    <v-col cols="12" class="text-end">
-                                        <v-btn color="primary" variant="flat" type="submit">Speichern</v-btn>
-                                    </v-col>
-                                </v-row>
-                            </v-card-text>
-                        </v-card>
-                    </v-form>
-                </template>
-            </v-dialog> -->
-            <v-btn
-                append-icon="mdi-swap-horizontal"
-                color="primary"
-                variant="flat"
-                @click.stop="
-                    () => {
-                        if (mode == 'show') {
-                            mode = 'edit';
-                            editNoteForm.reset();
-                        } else {
-                            mode = 'show';
-                            editNoteForm.reset();
-                        }
-                    }
-                "
-                :disabled="!can('customer', 'update')"
-            >
-                {{ mode == 'show' ? 'Ansichtsmodus' : 'Bearbeitungsmodus' }}
-            </v-btn>
-        </template>
+        <template #append></template>
         <v-divider></v-divider>
         <div class="d-flex">
             <div class="flex-shrink-1" style="max-width: 40%">
@@ -173,60 +65,6 @@ function editNote(note: CustomerNoteEntry) {
                             :customerNoteFolders
                             :customerNoteEntries
                         ></CreateEditCustomerNoteFolder>
-                        <!-- <v-dialog max-width="1000" v-model="openDialog">
-                            <template v-slot:activator="{ props: activatorProps }">
-                                <v-btn
-                                    v-bind="activatorProps"
-                                    color="error"
-                                    variant="flat"
-                                    class="mr-2"
-                                    v-if="mode == 'edit' && can('customer', 'update')"
-                                >
-                                    <v-icon>mdi-delete</v-icon>
-                                </v-btn>
-                            </template>
-                            <template v-slot:default="{ isActive }">
-                                <v-form
-                                    @submit.prevent="
-                                        createNoteFolderForm.post(route('customer.customerNoteFolder.store', { customer: customer.id }), {
-                                            onSuccess: () => {
-                                                isActive.value = false;
-                                            },
-                                        })
-                                    "
-                                >
-                                    <v-card title="Kategorie anlegen">
-                                        <template #append>
-                                            <v-btn
-                                                icon
-                                                variant="text"
-                                                @click.stop="
-                                                    () => {
-                                                        isActive.value = false;
-                                                    }
-                                                "
-                                            >
-                                                <v-icon>mdi-close</v-icon>
-                                            </v-btn>
-                                        </template>
-                                        <v-card-text>
-                                            <v-row>
-                                                <v-col cols="12">
-                                                    <v-text-field
-                                                        label="Bezeichnung"
-                                                        v-model="createNoteFolderForm.name"
-                                                        :error-messages="createNoteFolderForm.errors.name"
-                                                    ></v-text-field>
-                                                </v-col>
-                                                <v-col cols="12" class="text-end">
-                                                    <v-btn color="primary" variant="flat" type="submit">Speichern</v-btn>
-                                                </v-col>
-                                            </v-row>
-                                        </v-card-text>
-                                    </v-card>
-                                </v-form>
-                            </template>
-                        </v-dialog> -->
                     </div>
                     <v-tab
                         v-for="note in customerNoteFolders"
@@ -269,11 +107,15 @@ function editNote(note: CustomerNoteEntry) {
                     "
                     :headers="[
                         { title: 'Zuletzt aktualisiert', value: 'updated_at' },
+                        { title: 'Titel', value: 'title' },
                         { title: 'Inhalt', value: 'value' },
                         { title: 'erstellt von', value: 'userName' },
                         { title: '', value: 'actions', width: '1px' },
                     ]"
                 >
+                    <template #header.actions>
+                        <CreateEditCustomerNoteEntry :selectedFolder :customer="customer"></CreateEditCustomerNoteEntry>
+                    </template>
                     <template #item.updated_at="{ item }">
                         {{ DateTime.fromISO(item.updated_at).toFormat("dd.MM.yyyy',' HH:mm 'Uhr'") }}
                     </template>

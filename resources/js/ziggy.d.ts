@@ -417,12 +417,38 @@ declare module 'ziggy-js' {
     "customerNoteFolder.update": [
         {
             "name": "customerNoteFolder",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "customerNoteFolder.destroy": [
         {
             "name": "customerNoteFolder",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customer.customerNoteEntry.store": [
+        {
+            "name": "customer",
+            "required": true
+        }
+    ],
+    "customerNoteEntry.update": [
+        {
+            "name": "customerNoteEntry",
+            "required": true
+        }
+    ],
+    "customerNoteEntry.destroy": [
+        {
+            "name": "customerNoteEntry",
+            "required": true
+        }
+    ],
+    "customerNoteEntry.getFile": [
+        {
+            "name": "customerNoteEntry",
             "required": true
         }
     ],
