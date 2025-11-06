@@ -507,6 +507,7 @@ export type Permission = {
         | 'timeAccountSetting_permission'
         | 'timeAccountTransaction_permission'
         | 'ticket_permission'
+        | 'ticket_accounting_permission'
         | 'absenceType_permission';
     organization: 'specialWorkingHoursFactor_permission' | 'organization_permission' | 'customer_permission';
     operatingSite: 'operatingSite_permission';
