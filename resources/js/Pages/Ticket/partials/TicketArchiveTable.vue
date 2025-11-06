@@ -17,8 +17,6 @@ const props = defineProps<{
 
 const { currentPage, lastPage, data, itemsPerPage } = usePagination(toRefs(props), 'archiveTickets', { tab: 'archive' });
 
-// const search = ref('');
-
 function getAccountedAt(records: TicketRecord[]) {
     const sortedRecords = records.sort((a, b) => {
         if (!a.accounted_at) return 1;

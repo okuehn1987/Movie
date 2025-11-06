@@ -86,6 +86,7 @@ class TicketController extends Controller
             'archiveTickets' => fn() => (clone $ticketQuery)
                 ->whereNotNull('tickets.finished_at')
                 ->whereDoesntHave('records', fn($q) => $q->whereNull('accounted_at'))
+                ->with('records')
                 ->when(
                     array_key_exists('customer_id', $validated) && $validated['customer_id'] != null,
                     fn($q) => $q->where('customer_id', $validated['customer_id'])

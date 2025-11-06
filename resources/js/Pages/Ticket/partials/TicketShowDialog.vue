@@ -201,7 +201,7 @@ function closeTicket() {
 
                                     <template v-slot:item.actions="{ item }">
                                         <RecordCreateDialog
-                                            v-if="tab != 'finishedTickets'"
+                                            v-if="tab != 'finishedTickets' && tab !== 'archive'"
                                             :ticket="ticket"
                                             :users="users"
                                             :record="item"
