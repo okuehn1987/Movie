@@ -124,7 +124,14 @@ function openFile(note: CustomerNoteEntry) {
                         </v-btn>
                     </template>
                     <template #item.actions="{ item }">
-                        <CreateEditCustomerNoteEntry :selectedFolder :customer="customer" :item />
+                        <div class="d-flex">
+                            <CreateEditCustomerNoteEntry :selectedFolder :customer="customer" :item />
+                            <ConfirmDelete
+                                :title="'Notiz &quot;' + item.title + '&quot; löschen'"
+                                :content="'Bist du dir sicher, dass du die Notiz &quot;' + item.title + '&quot; löschen möchtest?'"
+                                :route="route('customerNoteEntry.destroy', { customerNoteEntry: item.id })"
+                            ></ConfirmDelete>
+                        </div>
                     </template>
                 </v-data-table>
             </div>

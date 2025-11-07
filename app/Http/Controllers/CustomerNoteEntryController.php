@@ -16,6 +16,7 @@ class CustomerNoteEntryController extends Controller
 
     public function store(Request $request, Customer $customer,  #[CurrentUser] User $authUser)
     {
+        Gate::authorize('publicAuth', User::class);
 
         $validated = $request->validate([
             'type' => 'required|in:primitive,file',
@@ -43,11 +44,13 @@ class CustomerNoteEntryController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Notiz wurde erfolgreich angelegt.');
+        return back()->with('success', 'Notiz wurde erfolgreich angelegt');
     }
 
     public function update(Request $request, CustomerNoteEntry $customerNoteEntry, #[CurrentUser] User $authUser)
     {
+        Gate::authorize('publicAuth', User::class);
+
         $validated = $request->validate([
             'type' => 'required|in:primitive,file',
             'title' => 'required|string',
@@ -76,12 +79,18 @@ class CustomerNoteEntryController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Notiz wurde erfolgreich aktualisiert.');
+        return back()->with('success', 'Notiz wurde erfolgreich aktualisiert');
     }
 
-    public function destroy($request)
+    public function destroy(CustomerNoteEntry $customerNoteEntry)
     {
-        // Storage::disk('customer_note_files')->delete($customerNoteFolder->value);
+        Gate::authorize('publicAuth', User::class);
+
+        Storage::disk('customer_note_files')->delete($customerNoteEntry->value);
+
+        $customerNoteEntry->delete();
+
+        return back()->with('success', 'Die Notiz wurde erfolgreich gelöscht');
     }
 
 
