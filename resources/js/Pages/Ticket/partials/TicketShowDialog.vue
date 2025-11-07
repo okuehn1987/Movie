@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
-import { Canable, PRIORITIES } from '@/types/types';
+import { Canable, PRIORITIES, TicketRecord } from '@/types/types';
 import { router } from '@inertiajs/vue3';
 import { formatDuration } from '@/utils';
 import { DateTime } from 'luxon';
@@ -56,6 +56,18 @@ const statusIcon = {
 
 function closeTicket() {
     router.get(route('ticket.index', { tab: props.tab }));
+}
+
+function copyRecordToClipBoard(record: TicketRecord & { userName: string }) {
+    navigator.clipboard.writeText(
+        DateTime.fromSQL(record.start).toFormat('dd.MM.yyyy HH:mm') +
+            ' - ' +
+            DateTime.fromSQL(record.start).plus({ seconds: record.duration }).toFormat('HH:mm') +
+            ' Uhr, ' +
+            record.userName +
+            '\n\n' +
+            (record.description ?? ''),
+    );
 }
 </script>
 <template>
@@ -200,13 +212,18 @@ function closeTicket() {
                                     </template>
 
                                     <template v-slot:item.actions="{ item }">
-                                        <RecordCreateDialog
-                                            v-if="tab != 'finishedTickets' && tab !== 'archive'"
-                                            :ticket="ticket"
-                                            :users="users"
-                                            :record="item"
-                                            :operatingSites
-                                        ></RecordCreateDialog>
+                                        <div class="d-flex ga-2">
+                                            <v-btn variant="text" color="primary" title="Eintrag kopieren" @click.stop="copyRecordToClipBoard(item)">
+                                                <v-icon icon="mdi-content-copy"></v-icon>
+                                            </v-btn>
+                                            <RecordCreateDialog
+                                                v-if="tab != 'finishedTickets' && tab !== 'archive'"
+                                                :ticket="ticket"
+                                                :users="users"
+                                                :record="item"
+                                                :operatingSites
+                                            ></RecordCreateDialog>
+                                        </div>
                                     </template>
                                     <template v-slot:item.data-table-expand="{ internalItem, isExpanded, toggleExpand }">
                                         <v-btn size="small" variant="text" border @click="toggleExpand(internalItem)">
