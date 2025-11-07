@@ -1,15 +1,16 @@
 <script setup lang="ts">
+import type { Customer, CustomerNoteEntry, CustomerNoteFolder } from '@/types/types';
 import { ref } from 'vue';
-import type { Customer, CustomerNoteFolder } from '@/types/types';
 
 defineProps<{
     selectedFolder: CustomerNoteFolder['id'] | null;
     customer: Customer;
+    item?: Pick<CustomerNoteEntry, 'id' | 'title' | 'value'>;
 }>();
 
 const openDialog = ref(false);
 
-const createNoteEntryForm = useForm({
+const noteEntryForm = useForm({
     type: null as string | null,
     title: null as string | null,
     value: null as string | null,
@@ -20,20 +21,29 @@ const createNoteEntryForm = useForm({
 <template>
     <v-dialog max-width="1000" v-model="openDialog">
         <template v-slot:activator="{ props: activatorProps }">
-            <v-btn v-bind="activatorProps" color="primary" variant="flat"><v-icon>mdi-plus</v-icon></v-btn>
+            <v-btn v-if="item" v-bind="activatorProps" color="primary" variant="text" icon="mdi-pencil"></v-btn>
+            <v-btn v-else v-bind="activatorProps" color="primary" variant="flat"><v-icon>mdi-plus</v-icon></v-btn>
         </template>
         <template v-slot:default="{ isActive }">
             <v-form
                 @submit.prevent="
-                    createNoteEntryForm.selectedFolder = selectedFolder;
-                    createNoteEntryForm.post(route('customer.customerNoteEntry.store', { customer: customer.id, selectedFolder: selectedFolder }), {
-                        onSuccess: () => {
-                            isActive.value = false;
-                        },
-                    });
+                    noteEntryForm.selectedFolder = selectedFolder;
+                    item
+                        ? noteEntryForm
+                              .transform(data => ({ ...data, _method: 'patch' }))
+                              .post(route('customerNoteEntry.update', { customerNoteEntry: item.id }), {
+                                  onSuccess: () => {
+                                      isActive.value = false;
+                                  },
+                              })
+                        : noteEntryForm.post(route('customer.customerNoteEntry.store', { customer: customer.id, selectedFolder: selectedFolder }), {
+                              onSuccess: () => {
+                                  isActive.value = false;
+                              },
+                          });
                 "
             >
-                <v-card title="Notiz anlegen">
+                <v-card :title="item ? ' Notiz bearbeiten' : 'Notiz anlegen'">
                     <template #append>
                         <v-btn
                             icon
@@ -52,12 +62,12 @@ const createNoteEntryForm = useForm({
                             <v-col cols="12">
                                 <v-select
                                     label="Anlegungstyp"
-                                    :model-value="createNoteEntryForm.type"
+                                    :model-value="noteEntryForm.type"
                                     @update:model-value="
                                         value => {
-                                            createNoteEntryForm.type = value;
-                                            createNoteEntryForm.value = '';
-                                            createNoteEntryForm.file = null;
+                                            noteEntryForm.type = value;
+                                            noteEntryForm.value = '';
+                                            noteEntryForm.file = null;
                                         }
                                     "
                                     :items="[
@@ -70,19 +80,15 @@ const createNoteEntryForm = useForm({
                             <v-col cols="12">
                                 <v-text-field
                                     label="Bezeichnung"
-                                    v-model="createNoteEntryForm.title"
-                                    :error-messages="createNoteEntryForm.errors.title"
+                                    v-model="noteEntryForm.title"
+                                    :error-messages="noteEntryForm.errors.title"
                                 ></v-text-field>
                             </v-col>
-                            <v-col cols="12" v-if="createNoteEntryForm.type == 'primitive'">
-                                <v-text-field label="Inhalt" v-model="createNoteEntryForm.value" :error-messages="createNoteEntryForm.errors.value" />
+                            <v-col cols="12" v-if="noteEntryForm.type == 'primitive'">
+                                <v-text-field label="Inhalt" v-model="noteEntryForm.value" :error-messages="noteEntryForm.errors.value" />
                             </v-col>
-                            <v-col cols="12" v-if="createNoteEntryForm.type == 'file'">
-                                <v-file-input
-                                    label="Dateiupload"
-                                    v-model="createNoteEntryForm.file"
-                                    :error-messages="createNoteEntryForm.errors.value"
-                                />
+                            <v-col cols="12" v-if="noteEntryForm.type == 'file'">
+                                <v-file-input label="Dateiupload" v-model="noteEntryForm.file" :error-messages="noteEntryForm.errors.value" />
                             </v-col>
                             <v-col cols="12" class="text-end">
                                 <v-btn color="primary" variant="flat" type="submit">Speichern</v-btn>

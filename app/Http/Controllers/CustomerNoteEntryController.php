@@ -46,24 +46,37 @@ class CustomerNoteEntryController extends Controller
         return back()->with('success', 'Notiz wurde erfolgreich angelegt.');
     }
 
-    public function update($request)
+    public function update(Request $request, CustomerNoteEntry $customerNoteEntry, #[CurrentUser] User $authUser)
     {
-        // $validated = $request->validate([
-        //     'key' => 'required|string|max:65535',
-        //     'value' => 'nullable|string|max:65535',
-        //     'file' => 'nullable|file',
-        // ]);
+        $validated = $request->validate([
+            'type' => 'required|in:primitive,file',
+            'title' => 'required|string',
+            'value' => 'nullable|required_if:type,primitive|string|max:200',
+            'file' => 'nullable|required_if:type,file|file',
+            'selectedFolder' => 'required|int',
+        ]);
 
-        // if ($customerNote->type == 'file') {
-        //     $path = array_key_exists('file', $validated) && $validated['file'] ? Storage::disk('customer_note_files')->putFile($validated['file']) : null;
+        if ($validated['type'] == 'file') {
+            $path = array_key_exists('file', $validated) && $validated['file'] ? Storage::disk('customer_note_files')->putFile($validated['file']) : null;
 
-        //     if ($customerNote->value && $path)
-        //         Storage::disk('customer_note_files')->delete($customerNote->value);
+            if ($customerNoteEntry->value && $path) {
+                Storage::disk('customer_note_files')->delete($customerNoteEntry->value);
+            }
 
-        //     $customerNote->update([
-        //         'key' => $validated['key'],
-        //         ...(array_key_exists('file', $validated) && $validated['file'] ? ['value' =>  $path] : []),
-        //     ]);
+            $customerNoteEntry->update([
+                'modified_by' => $authUser->id,
+                'title' => $validated['title'],
+                ...(array_key_exists('file', $validated) && $validated['file'] ? ['value' =>  $path] : []),
+            ]);
+        } else {
+            $customerNoteEntry->update([
+                'modified_by' => $authUser->id,
+                'title' => $validated['title'],
+                'value' => $validated['value'],
+            ]);
+        }
+
+        return back()->with('success', 'Notiz wurde erfolgreich aktualisiert.');
     }
 
     public function destroy($request)

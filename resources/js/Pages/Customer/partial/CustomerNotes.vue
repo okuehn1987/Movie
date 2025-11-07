@@ -39,18 +39,6 @@ const reload = throttle(() => {
 }, 500);
 watch(selectedFolder, reload);
 
-const editNoteForm = useForm({
-    noteId: null as CustomerNoteEntry['id'] | null,
-    title: null as string | null,
-    value: null as string | null,
-});
-
-function editNote(note: CustomerNoteEntry) {
-    editNoteForm.noteId = note.id;
-    editNoteForm.title = note.title;
-    editNoteForm.value = note.value;
-}
-
 function isFile(value: string | null): boolean {
     if (!value) return false;
     return /\.(pdf|jpg|jpeg|png|gif|doc|docx|xls|xlsx|txt|csv|ppt|pptx|webp)$/i.test(value);
@@ -136,7 +124,7 @@ function openFile(note: CustomerNoteEntry) {
                         </v-btn>
                     </template>
                     <template #item.actions="{ item }">
-                        <v-btn color="primary" variant="text" @click.stop="editNote(item)"><v-icon>mdi-pencil</v-icon></v-btn>
+                        <CreateEditCustomerNoteEntry :selectedFolder :customer="customer" :item />
                     </template>
                 </v-data-table>
             </div>
