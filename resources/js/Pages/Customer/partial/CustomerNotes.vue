@@ -50,6 +50,16 @@ function editNote(note: CustomerNoteEntry) {
     editNoteForm.title = note.title;
     editNoteForm.value = note.value;
 }
+
+function isFile(value: string | null): boolean {
+    if (!value) return false;
+    return /\.(pdf|jpg|jpeg|png|gif|doc|docx|xls|xlsx|txt|csv|ppt|pptx|webp)$/i.test(value);
+}
+
+function openFile(note: CustomerNoteEntry) {
+    const fileURL = route('customerNoteEntry.getFile', { customerNoteEntry: note.id });
+    window.open(fileURL, '_blank');
+}
 </script>
 <template>
     <v-card title="Kundennotizen">
@@ -118,6 +128,12 @@ function editNote(note: CustomerNoteEntry) {
                     </template>
                     <template #item.updated_at="{ item }">
                         {{ DateTime.fromISO(item.updated_at).toFormat("dd.MM.yyyy',' HH:mm 'Uhr'") }}
+                    </template>
+                    <template #item.value="{ item }">
+                        <span v-if="!isFile(item.value)">{{ item.value }}</span>
+                        <v-btn v-if="isFile(item.value)" @click.stop="openFile(item)" color="primary" variant="flat">
+                            <v-icon>mdi-eye</v-icon>
+                        </v-btn>
                     </template>
                     <template #item.actions="{ item }">
                         <v-btn color="primary" variant="text" @click.stop="editNote(item)"><v-icon>mdi-pencil</v-icon></v-btn>

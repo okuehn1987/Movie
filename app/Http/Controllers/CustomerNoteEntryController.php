@@ -76,8 +76,6 @@ class CustomerNoteEntryController extends Controller
     {
         Gate::authorize('publicAuth', User::class);
 
-        if ($customerNoteEntry->type != 'file') abort(404);
-
         return response()->file(Storage::disk('customer_note_files')->path($customerNoteEntry->value));
     }
 }
