@@ -19,9 +19,9 @@ class CustomerNoteEntryController extends Controller
         Gate::authorize('publicAuth', User::class);
 
         $validated = $request->validate([
-            'type' => 'required|in:primitive,file',
+            'type' => 'required|in:text,file',
             'title' => 'required|string',
-            'value' => 'nullable|required_if:type,primitive|string|max:200',
+            'value' => 'nullable|required_if:type,text|string|max:200',
             'file' => 'nullable|required_if:type,file|file',
             'selectedFolder' => 'required|int',
         ]);
@@ -30,6 +30,7 @@ class CustomerNoteEntryController extends Controller
             $path = $validated['file'] ? Storage::disk('customer_note_files')->putFile($validated['file']) : null;
 
             $customer->customerNoteEntries()->create([
+                'type' => $validated['type'],
                 'modified_by' => $authUser->id,
                 'customer_note_folder_id' => $validated['selectedFolder'],
                 'title' => $validated['title'],
@@ -37,6 +38,7 @@ class CustomerNoteEntryController extends Controller
             ]);
         } else {
             $customer->customerNoteEntries()->create([
+                'type' => $validated['type'],
                 'modified_by' => $authUser->id,
                 'customer_note_folder_id' => $validated['selectedFolder'],
                 'title' => $validated['title'],
@@ -52,9 +54,9 @@ class CustomerNoteEntryController extends Controller
         Gate::authorize('publicAuth', User::class);
 
         $validated = $request->validate([
-            'type' => 'required|in:primitive,file',
+            'type' => 'required|in:text,file',
             'title' => 'required|string',
-            'value' => 'nullable|required_if:type,primitive|string|max:200',
+            'value' => 'nullable|required_if:type,text|string|max:200',
             'file' => 'nullable|required_if:type,file|file',
             'selectedFolder' => 'required|int',
         ]);
@@ -68,12 +70,14 @@ class CustomerNoteEntryController extends Controller
 
             $customerNoteEntry->update([
                 'modified_by' => $authUser->id,
+                'type' => $validated['type'],
                 'title' => $validated['title'],
                 ...(array_key_exists('file', $validated) && $validated['file'] ? ['value' =>  $path] : []),
             ]);
         } else {
             $customerNoteEntry->update([
                 'modified_by' => $authUser->id,
+                'type' => $validated['type'],
                 'title' => $validated['title'],
                 'value' => $validated['value'],
             ]);

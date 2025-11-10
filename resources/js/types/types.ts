@@ -557,6 +557,7 @@ export type CustomerNoteFolder = DBObject<'customerNoteFolder'> & {
 };
 
 export type CustomerNoteEntry = DBObject<'customerNoteEntry'> & {
+    type: string;
     customer_note_folder_id: CustomerNoteFolder['id'];
     title: string;
     value: string;

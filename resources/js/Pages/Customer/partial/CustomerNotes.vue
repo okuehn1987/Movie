@@ -125,7 +125,7 @@ function openFile(note: CustomerNoteEntry) {
                     </template>
                     <template #item.actions="{ item }">
                         <div class="d-flex">
-                            <CreateEditCustomerNoteEntry :selectedFolder :customer="customer" :item />
+                            <CreateEditCustomerNoteEntry :selectedFolder :customer="customer" :customerNoteEntry="item" />
                             <ConfirmDelete
                                 :title="'Notiz &quot;' + item.title + '&quot; löschen'"
                                 :content="'Bist du dir sicher, dass du die Notiz &quot;' + item.title + '&quot; löschen möchtest?'"

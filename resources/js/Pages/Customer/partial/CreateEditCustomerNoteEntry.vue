@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import type { Customer, CustomerNoteEntry, CustomerNoteFolder } from '@/types/types';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
-defineProps<{
+const props = defineProps<{
     selectedFolder: CustomerNoteFolder['id'] | null;
     customer: Customer;
-    item?: Pick<CustomerNoteEntry, 'id' | 'title' | 'value'>;
+    customerNoteEntry?: Pick<CustomerNoteEntry, 'id' | 'type' | 'title' | 'value'>;
 }>();
 
 const openDialog = ref(false);
@@ -17,21 +17,35 @@ const noteEntryForm = useForm({
     file: null as File | null,
     selectedFolder: null as number | null,
 });
+
+watch(openDialog, isOpen => {
+    if (!isOpen) return noteEntryForm.reset();
+
+    const entry = props.customerNoteEntry;
+
+    if (entry) {
+        noteEntryForm.type = entry.type ?? '';
+        noteEntryForm.title = entry.title ?? '';
+        noteEntryForm.value = entry.value ?? '';
+    } else {
+        noteEntryForm.reset();
+    }
+});
 </script>
 <template>
     <v-dialog max-width="1000" v-model="openDialog">
         <template v-slot:activator="{ props: activatorProps }">
-            <v-btn v-if="item" v-bind="activatorProps" color="primary" variant="text" icon="mdi-pencil"></v-btn>
+            <v-btn v-if="customerNoteEntry" v-bind="activatorProps" color="primary" variant="text" icon="mdi-pencil"></v-btn>
             <v-btn v-else v-bind="activatorProps" color="primary" variant="flat"><v-icon>mdi-plus</v-icon></v-btn>
         </template>
         <template v-slot:default="{ isActive }">
             <v-form
                 @submit.prevent="
                     noteEntryForm.selectedFolder = selectedFolder;
-                    item
+                    customerNoteEntry
                         ? noteEntryForm
                               .transform(data => ({ ...data, _method: 'patch' }))
-                              .post(route('customerNoteEntry.update', { customerNoteEntry: item.id }), {
+                              .post(route('customerNoteEntry.update', { customerNoteEntry: customerNoteEntry.id }), {
                                   onSuccess: () => {
                                       isActive.value = false;
                                   },
@@ -43,7 +57,7 @@ const noteEntryForm = useForm({
                           });
                 "
             >
-                <v-card :title="item ? ' Notiz bearbeiten' : 'Notiz anlegen'">
+                <v-card :title="customerNoteEntry ? 'Kategorie &quot;' + customerNoteEntry?.title + '&quot; bearbeiten' : 'Notiz anlegen'">
                     <template #append>
                         <v-btn
                             icon
@@ -71,7 +85,7 @@ const noteEntryForm = useForm({
                                         }
                                     "
                                     :items="[
-                                        { title: 'Einzelnotiz', value: 'primitive' },
+                                        { title: 'Einzelnotiz', value: 'text' },
                                         { title: 'Datei', value: 'file' },
                                     ]"
                                     clearable
@@ -84,7 +98,7 @@ const noteEntryForm = useForm({
                                     :error-messages="noteEntryForm.errors.title"
                                 ></v-text-field>
                             </v-col>
-                            <v-col cols="12" v-if="noteEntryForm.type == 'primitive'">
+                            <v-col cols="12" v-if="noteEntryForm.type == 'text'">
                                 <v-text-field label="Inhalt" v-model="noteEntryForm.value" :error-messages="noteEntryForm.errors.value" />
                             </v-col>
                             <v-col cols="12" v-if="noteEntryForm.type == 'file'">

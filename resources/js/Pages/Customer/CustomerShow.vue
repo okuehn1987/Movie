@@ -22,7 +22,7 @@ const currentTab = ref('customerData');
     <AdminLayout :title="'Kunde: ' + customer.name" :backurl="route('customer.index')">
         <v-tabs v-model="currentTab">
             <v-tab value="customerData">Stammdaten</v-tab>
-            <v-tab value="customerNotes">Unterlagen</v-tab>
+            <v-tab value="customerNotes">Notizen</v-tab>
         </v-tabs>
         <v-tabs-window :model-value="currentTab">
             <v-tabs-window-item value="customerData">

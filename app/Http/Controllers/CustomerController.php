@@ -44,7 +44,7 @@ class CustomerController extends Controller
             'customer' => $customer->load('contacts'),
             'operatingSites' => $customer->customerOperatingSites()->with('currentAddress')->get(),
             'customerNoteFolders' => $customer->customerNoteFolders()->get(['id', 'name']),
-            'customerNoteEntries' => Inertia::merge(fn() => [$selectedFolder?->id => $selectedFolder?->entries()->with(['user' => fn($q) => $q->select(['id', 'first_name', 'last_name'])])->get(['id', 'title', 'value', 'updated_at', 'modified_by'])]),
+            'customerNoteEntries' => Inertia::merge(fn() => [$selectedFolder?->id => $selectedFolder?->entries()->with(['user' => fn($q) => $q->select(['id', 'first_name', 'last_name'])])->get(['id', 'type', 'title', 'value', 'updated_at', 'modified_by'])]),
             'can' => [
                 'customer' => [
                     'viewShow' => Gate::allows('viewShow', Customer::class),

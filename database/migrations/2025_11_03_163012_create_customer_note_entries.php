@@ -22,6 +22,7 @@ return new class extends Migration
 
         Schema::create('customer_note_entries', function (Blueprint $table) {
             $table->id();
+            $table->enum('type', ['text', 'file']);
             $table->foreignId('customer_note_folder_id')->constrained()->onDelete('cascade');
             $table->string('title');
             $table->string('value');
