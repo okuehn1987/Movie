@@ -62,7 +62,7 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
 
     Route::resource('dispute', DisputeController::class)->only(['index']);
 
-    Route::post('notifications/{notification}/update', [NotificationController::class, 'update'])->name('notification.update');
+    Route::resource('notification', NotificationController::class)->only(['index', 'update']);
 
     Route::singleton('profile', ProfileController::class)->only(['update']);
     Route::post('profile', [ProfileController::class, 'updateSettings'])->name('profile.updateSettings');

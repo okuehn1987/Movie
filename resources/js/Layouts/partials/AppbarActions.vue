@@ -3,8 +3,8 @@ import { Notification } from '@/types/types';
 import { useNow } from '@/utils';
 import { router, usePage } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
-import ReportBugDialog from './ReportBugDialog.vue';
 import { useDisplay } from 'vuetify';
+import ReportBugDialog from './ReportBugDialog.vue';
 
 const display = useDisplay();
 
@@ -139,6 +139,10 @@ const disputes = {
             </v-list-item>
             <v-list-item @click.stop="() => {}">
                 <ReportBugDialog></ReportBugDialog>
+            </v-list-item>
+            <v-list-item @click.stop="router.get(route('notification.index'))">
+                <v-icon icon="mdi-bell"></v-icon>
+                Benachrichtigungen
             </v-list-item>
             <v-list-item @click.stop="router.post(route('logout'))">
                 <v-icon icon="mdi-logout" class="me-2"></v-icon>

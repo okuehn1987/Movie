@@ -15,6 +15,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class DisputeStatusNotification extends Notification
 {
@@ -131,7 +132,8 @@ class DisputeStatusNotification extends Notification
             'title' => $text . ' ' . ($this->status === 'accepted' ? 'akzeptiert.' : ($this->status == 'created' ? 'beantragt.' : 'abgelehnt.')),
             'log_id' => $this->log->id,
             'log_model' => $modelClass,
-            'type' => $this->type
+            'type' => $this->type,
+            'triggered_by' => Auth::id(),
         ];
     }
 

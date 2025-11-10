@@ -9,6 +9,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class WorkLogPatchNotification extends Notification
 {
@@ -61,6 +62,7 @@ class WorkLogPatchNotification extends Notification
             'title' => $this->user->name . ' hat eine Zeitkorrektur beantragt.',
             'work_log_patch_id' => $this->patch->id,
             'status' => 'created',
+            'triggered_by' => Auth::id(),
         ];
     }
 

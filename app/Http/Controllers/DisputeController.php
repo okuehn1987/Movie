@@ -10,6 +10,7 @@ use App\Models\WorkLogPatch;
 use App\Notifications\AbsenceDeleteNotification;
 use Carbon\Carbon;
 use Illuminate\Container\Attributes\CurrentUser;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -30,12 +31,12 @@ class DisputeController extends Controller
         ]);
     }
 
-    private function getWorkLogPatchRequests()
+    private function getWorkLogPatchRequests(array $statuses = ['created'])
     {
         $authUser = request()->user();
 
         return WorkLogPatch::inOrganization()
-            ->where('status', 'created')
+            ->whereIn('status', $statuses)
             ->with([
                 'log:id,start,end,is_home_office',
                 'user' => fn($q) => $q->select(['id', 'first_name', 'last_name', 'operating_site_id', 'supervisor_id'])->withTrashed()
@@ -45,12 +46,12 @@ class DisputeController extends Controller
             ->values();
     }
 
-    private function getWorkLogRequests()
+    private function getWorkLogRequests(array $statuses = ['created'])
     {
         $authUser = request()->user();
 
         return WorkLog::inOrganization()
-            ->where('status', 'created')
+            ->whereIn('status', $statuses)
             ->with([
                 'user' => fn($q) => $q->select(['id', 'first_name', 'last_name', 'operating_site_id', 'supervisor_id'])->withTrashed()
             ])
@@ -59,12 +60,12 @@ class DisputeController extends Controller
             ->values();
     }
 
-    private function getAbsenceRequests()
+    private function getAbsenceRequests(array $statuses = ['created'])
     {
         $authUser = request()->user();
 
         $absenceRequests = Absence::inOrganization()
-            ->where('status', 'created')
+            ->whereIn('status', $statuses)
             ->with([
                 'user' => fn($q) => $q->select(['id', 'first_name', 'last_name', 'operating_site_id', 'supervisor_id'])->withTrashed(),
                 'absenceType:id,name'
@@ -88,12 +89,12 @@ class DisputeController extends Controller
 
         return $absenceRequests;
     }
-    private function getAbsencePatchRequests()
+    private function getAbsencePatchRequests(array $statuses = ['created'])
     {
         $authUser = request()->user();
 
         $absencePatchRequests = AbsencePatch::inOrganization()
-            ->where('status', 'created')
+            ->whereIn('status', $statuses)
             ->with([
                 'user' => fn($q) => $q->select(['id', 'first_name', 'last_name', 'operating_site_id', 'supervisor_id'])->withTrashed(),
                 'absenceType:id,name'
@@ -118,13 +119,13 @@ class DisputeController extends Controller
         return $absencePatchRequests;
     }
 
-    public function getAbsenceDeleteRequests()
+    public function getAbsenceDeleteRequests(array $statuses = ['created'])
     {
         $authUser = request()->user();
 
         $openDeleteNotifications = $authUser->notifications()
             ->where('type', AbsenceDeleteNotification::class)
-            ->where('data->status', 'created')
+            ->whereIn('data->status', $statuses)
             ->get();
 
         $requestesdAbsences = Absence::inOrganization()

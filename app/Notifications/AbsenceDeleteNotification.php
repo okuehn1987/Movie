@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class AbsenceDeleteNotification extends Notification
 {
@@ -60,6 +61,7 @@ class AbsenceDeleteNotification extends Notification
             'title' => $this->user->name . ' hat die Löschung einer Abwesenheit beantragt.',
             'absence_id' => $this->absence->id,
             'status' => 'created',
+            'triggered_by' => Auth::id(),
         ];
     }
 

@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class WorkLogNotification extends Notification
 {
@@ -60,6 +61,7 @@ class WorkLogNotification extends Notification
             'title' => $this->user->name . ' hat eine neue Buchung beantragt.',
             'work_log_id' => $this->log->id,
             'status' => 'created',
+            'triggered_by' => Auth::id(),
         ];
     }
 

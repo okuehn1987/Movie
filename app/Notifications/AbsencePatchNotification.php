@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class AbsencePatchNotification extends Notification
 {
@@ -61,6 +62,7 @@ class AbsencePatchNotification extends Notification
             'title' => $this->user->name . ' hat eine Abwesenheitskorrektur beantragt.',
             'absence_patch_id' => $this->absencePatch->id,
             'status' => 'created',
+            'triggered_by' => Auth::id(),
         ];
     }
 
