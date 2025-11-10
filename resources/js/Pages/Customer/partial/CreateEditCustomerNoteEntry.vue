@@ -87,6 +87,7 @@ watch(openDialog, isOpen => {
                                     :items="[
                                         { title: 'Einzelnotiz', value: 'text' },
                                         { title: 'Datei', value: 'file' },
+                                        { title: 'Ordner', value: 'folder' },
                                     ]"
                                     clearable
                                 ></v-select>
@@ -99,7 +100,7 @@ watch(openDialog, isOpen => {
                                 ></v-text-field>
                             </v-col>
                             <v-col cols="12" v-if="noteEntryForm.type == 'text'">
-                                <v-text-field label="Inhalt" v-model="noteEntryForm.value" :error-messages="noteEntryForm.errors.value" />
+                                <v-textarea label="Inhalt" v-model="noteEntryForm.value" :error-messages="noteEntryForm.errors.value" />
                             </v-col>
                             <v-col cols="12" v-if="noteEntryForm.type == 'file'">
                                 <v-file-input label="Dateiupload" v-model="noteEntryForm.file" :error-messages="noteEntryForm.errors.value" />

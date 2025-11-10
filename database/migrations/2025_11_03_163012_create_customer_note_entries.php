@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('customer_note_folders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
+            $table->foreignId('customer_note_folder_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('name');
             $table->timestamps();
         });

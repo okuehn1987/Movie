@@ -553,11 +553,12 @@ export type JSON = string | number | boolean | null | { [x: string]: JSON } | JS
 
 export type CustomerNoteFolder = DBObject<'customerNoteFolder'> & {
     customer_id: Customer['id'];
+    customer_note_folder_id: CustomerNoteFolder['id'] | null;
     name: string;
 };
 
 export type CustomerNoteEntry = DBObject<'customerNoteEntry'> & {
-    type: string;
+    type: 'text' | 'file';
     customer_note_folder_id: CustomerNoteFolder['id'];
     title: string;
     value: string;
@@ -609,6 +610,7 @@ export type RelationMap = {
     customerNoteFolder: {
         customer: Customer;
         entries: CustomerNoteEntry[];
+        subFolders: CustomerNoteFolder[];
     };
     customerNoteEntry: {
         customer_note_folders: CustomerNoteFolder[];

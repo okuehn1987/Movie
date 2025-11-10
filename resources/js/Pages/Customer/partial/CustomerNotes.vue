@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { Customer, CustomerNoteEntry, CustomerNoteFolder, RelationPick } from '@/types/types';
-import { ref, watch } from 'vue';
+import { Customer, CustomerNoteEntry, CustomerNoteFolder, RelationPick, Tree } from '@/types/types';
+import { computed, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { throttle } from '@/utils';
+import { filterTree, mapTree, throttle, useMaxScrollHeight } from '@/utils';
 import { DateTime } from 'luxon';
 import CreateEditCustomerNoteFolder from './CreateEditCustomerNoteFolder.vue';
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 import CreateEditCustomerNoteEntry from './CreateEditCustomerNoteEntry.vue';
 
 const props = defineProps<{
-    customerNoteFolders: Pick<CustomerNoteFolder, 'id' | 'customer_id' | 'name'>[];
+    customerNoteFolders: Tree<Pick<CustomerNoteFolder, 'id' | 'customer_id' | 'name'>, 'sub_folders'>[];
     customerNoteEntries: Record<
         CustomerNoteFolder['id'],
         (CustomerNoteEntry & RelationPick<'customerNoteEntry', 'user', 'first_name' | 'last_name'>)[]
@@ -25,7 +25,6 @@ const loading = ref(false);
 const reload = throttle(() => {
     if (!selectedFolder.value || loadedNotes.value.includes(selectedFolder.value)) return;
     router.reload({
-        only: ['childNotes'],
         data: { selectedNote: selectedFolder.value },
         onStart: () => {
             if (selectedFolder.value) {
@@ -39,58 +38,58 @@ const reload = throttle(() => {
 }, 500);
 watch(selectedFolder, reload);
 
-function isFile(value: string | null): boolean {
-    if (!value) return false;
-    return /\.(pdf|jpg|jpeg|png|gif|doc|docx|xls|xlsx|txt|csv|ppt|pptx|webp)$/i.test(value);
-}
-
 function openFile(note: CustomerNoteEntry) {
     const fileURL = route('customerNoteEntry.getFile', { customerNoteEntry: note.id });
     window.open(fileURL, '_blank');
 }
+
+const height = useMaxScrollHeight(48);
+
+const opened = ref([]);
+
+const noteFolders = computed(() => {
+    const folders = filterTree(
+        mapTree(props.customerNoteFolders, 'sub_folders', f => ({
+            name: f.name,
+            id: f.id,
+        })),
+        'sub_folders',
+        () => true,
+    );
+    return folders;
+});
 </script>
 <template>
-    <v-card title="Kundennotizen">
+    <v-card :style="{ height }" title="Kundennotizen">
         <template #append></template>
         <v-divider></v-divider>
         <div class="d-flex">
             <div class="flex-shrink-1" style="max-width: 40%">
                 <v-tabs direction="vertical">
                     <div class="ma-2" @click.stop="() => {}">
-                        <CreateEditCustomerNoteFolder
-                            :categoryMode="'create'"
-                            :customer
-                            :customerNoteFolders
-                            :customerNoteEntries
-                        ></CreateEditCustomerNoteFolder>
+                        <CreateEditCustomerNoteFolder :customer></CreateEditCustomerNoteFolder>
                     </div>
-                    <v-tab
-                        v-for="note in customerNoteFolders"
-                        :key="note.customer_id"
-                        @click.stop="selectedFolder = note.id"
-                        style="display: block; overflow: visible"
-                    >
-                        <div class="d-flex align-center justify-space-between w-100">
-                            <span>{{ note.name }}</span>
-                            <div>
-                                <CreateEditCustomerNoteFolder
-                                    :note="note"
-                                    :customer="customer"
-                                    :customerNoteFolders="customerNoteFolders"
-                                    :customerNoteEntries="customerNoteEntries"
-                                />
+                    <v-treeview :indentLines="true" v-model:opened="opened" item-children="sub_folders">
+                        <v-treeview-item v-for="item in noteFolders" :key="item.id" @click.stop="selectedFolder = item.id">
+                            <template v-slot:prepend>
+                                <v-icon icon="mdi-folder"></v-icon>
+                                <span>{{ item.name }}</span>
+                            </template>
+                            <template v-slot:append>
+                                <CreateEditCustomerNoteFolder :customer></CreateEditCustomerNoteFolder>
+                                <CreateEditCustomerNoteFolder :noteFolder="item" :customer="customer" />
                                 <ConfirmDelete
-                                    :title="'Kategorie &quot;' + note.name + '&quot; löschen'"
+                                    :title="'Kategorie &quot;' + item.name + '&quot; löschen'"
                                     :content="
                                         'Bist du dir sicher, dass du die Kategorie &quot;' +
-                                        note.name +
+                                        item.name +
                                         '&quot; mit all ihren Inhalten löschen möchtest?'
                                     "
-                                    :route="route('customerNoteFolder.destroy', { customerNoteFolder: note.id })"
+                                    :route="route('customerNoteFolder.destroy', { customerNoteFolder: item.id })"
                                 ></ConfirmDelete>
-                            </div>
-                        </div>
-                    </v-tab>
+                            </template>
+                        </v-treeview-item>
+                    </v-treeview>
                 </v-tabs>
             </div>
             <div class="flex-grow-1">
@@ -100,28 +99,25 @@ function openFile(note: CustomerNoteEntry) {
                     :items="
                         customerNoteEntries[selectedFolder]?.map(n => ({
                             ...n,
-                            userName: n.user.first_name + ' ' + n.user.last_name,
+                            userName: n.user.first_name + ' ' + n.user.last_name + ' am ' + DateTime.fromISO(n.updated_at).toFormat('dd.MM.yyyy'),
                         }))
                     "
                     :headers="[
-                        { title: 'Zuletzt aktualisiert', value: 'updated_at' },
                         { title: 'Titel', value: 'title' },
                         { title: 'Inhalt', value: 'value' },
-                        { title: 'erstellt von', value: 'userName' },
-                        { title: '', value: 'actions', width: '1px' },
+                        { title: 'letzte Bearbeitung', value: 'userName' },
+                        { title: '', value: 'actions', width: '1px', align: 'end' },
                     ]"
                 >
                     <template #header.actions>
                         <CreateEditCustomerNoteEntry :selectedFolder :customer="customer"></CreateEditCustomerNoteEntry>
                     </template>
                     <template #item.updated_at="{ item }">
-                        {{ DateTime.fromISO(item.updated_at).toFormat("dd.MM.yyyy',' HH:mm 'Uhr'") }}
+                        {{ DateTime.fromISO(item.updated_at).toFormat('dd.MM.yyyy') }}
                     </template>
                     <template #item.value="{ item }">
-                        <span v-if="!isFile(item.value)">{{ item.value }}</span>
-                        <v-btn v-if="isFile(item.value)" @click.stop="openFile(item)" color="primary" variant="flat">
-                            <v-icon>mdi-eye</v-icon>
-                        </v-btn>
+                        <span v-if="item.type == 'text'">{{ item.value }}</span>
+                        <v-btn v-else @click.stop="openFile(item)" color="primary" variant="text" :icon="'mdi-file-document-outline'"></v-btn>
                     </template>
                     <template #item.actions="{ item }">
                         <div class="d-flex">

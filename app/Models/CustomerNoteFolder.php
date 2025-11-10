@@ -20,4 +20,9 @@ class CustomerNoteFolder extends Model
     {
         return $this->hasMany(CustomerNoteEntry::class);
     }
+
+    public function subFolders()
+    {
+        return $this->hasMany(CustomerNoteFolder::class);
+    }
 }

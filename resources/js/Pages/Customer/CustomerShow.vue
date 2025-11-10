@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Customer, CustomerNoteEntry, CustomerNoteFolder, CustomerOperatingSite, Relations } from '@/types/types';
+import { Customer, CustomerNoteEntry, CustomerNoteFolder, CustomerOperatingSite, RelationPick, Relations, Tree } from '@/types/types';
 import { ref } from 'vue';
 import CustomerForm from './partial/CustomerForm.vue';
 import { formatAddress } from '@/utils';
@@ -12,8 +12,11 @@ import CustomerContactDialog from './partial/CustomerContactDialog.vue';
 defineProps<{
     customer: Customer & Pick<Relations<'customer'>, 'contacts'>;
     operatingSites: (CustomerOperatingSite & Pick<Relations<'customerOperatingSite'>, 'current_address'>)[];
-    customerNoteFolders: Pick<CustomerNoteFolder, 'id' | 'customer_id' | 'name'>[];
-    customerNoteEntries: Record<CustomerNoteFolder['id'], CustomerNoteEntry[]>;
+    customerNoteFolders: Tree<Pick<CustomerNoteFolder, 'id' | 'customer_id' | 'name'>, 'sub_folders'>[];
+    customerNoteEntries: Record<
+        CustomerNoteFolder['id'],
+        (CustomerNoteEntry & RelationPick<'customerNoteEntry', 'user', 'first_name' | 'last_name'>)[]
+    >;
 }>();
 
 const currentTab = ref('customerData');
@@ -22,7 +25,7 @@ const currentTab = ref('customerData');
     <AdminLayout :title="'Kunde: ' + customer.name" :backurl="route('customer.index')">
         <v-tabs v-model="currentTab">
             <v-tab value="customerData">Stammdaten</v-tab>
-            <v-tab value="customerNotes">Notizen</v-tab>
+            <v-tab value="customerNotes">Unterlagen</v-tab>
         </v-tabs>
         <v-tabs-window :model-value="currentTab">
             <v-tabs-window-item value="customerData">
