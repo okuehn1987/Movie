@@ -12,8 +12,8 @@ const props = defineProps<{
 }>();
 
 const notificationForm = useForm({
-    mail_notifications: props.user.notification_channels.includes('mail'),
-    app_notifications: props.user.notification_channels.includes('database'),
+    mail_notifications: (props.user.notification_channels ?? []).includes('mail'),
+    app_notifications: (props.user.notification_channels ?? []).includes('database'),
 });
 </script>
 <template>

@@ -7,6 +7,7 @@ import { useDisplay } from 'vuetify';
 import ReportBugDialog from './ReportBugDialog.vue';
 
 const display = useDisplay();
+const page = usePage();
 
 function readNotification(notification: Notification) {
     router.post(
@@ -17,39 +18,42 @@ function readNotification(notification: Notification) {
 }
 
 function openNotification(notification: Notification) {
-    let url;
-    if (notification.type == 'App\\Notifications\\WorkLogPatchNotification')
-        url = route('dispute.index', {
-            openPatch: notification.data.work_log_patch_id,
-        });
-    else if (notification.type == 'App\\Notifications\\WorkLogNotification')
-        url = route('dispute.index', {
-            openWorkLog: notification.data.work_log_id,
-        });
-    else if (notification.type == 'App\\Notifications\\AbsenceNotification')
-        url = route('dispute.index', {
-            openAbsence: notification.data.absence_id,
-        });
-    else if (notification.type == 'App\\Notifications\\AbsencePatchNotification')
-        url = route('dispute.index', {
-            openAbsencePatch: notification.data.absence_patch_id,
-        });
-    else if (notification.type == 'App\\Notifications\\AbsenceDeleteNotification')
-        url = route('dispute.index', {
-            openAbsenceDelete: notification.data.absence_id,
-        });
-    else if (notification.type == 'App\\Notifications\\DisputeStatusNotification') {
-        if (notification.data.type == 'delete') return;
-        if (notification.data.log_model == 'App\\Models\\Absence') url = route('absence.index', { openAbsence: notification.data.log_id });
-        else if (notification.data.log_model == 'App\\Models\\AbsencePatch')
-            url = route('absence.index', { openAbsencePatch: notification.data.log_id });
-        else if (notification.data.log_model == 'App\\Models\\WorkLogPatch')
-            url = route('user.workLog.index', { user: usePage().props.auth.user.id, openWorkLogPatch: notification.data.log_id });
-        else if (notification.data.log_model == 'App\\Models\\WorkLog')
-            url = route('user.workLog.index', { user: usePage().props.auth.user.id, workLog: notification.data.log_id });
-    }
+    const url = (() => {
+        if (notification.type == 'App\\Notifications\\WorkLogPatchNotification')
+            return route('dispute.index', { openPatch: notification.data.work_log_patch_id });
+        else if (notification.type == 'App\\Notifications\\WorkLogNotification')
+            return route('dispute.index', { openWorkLog: notification.data.work_log_id });
+        else if (notification.type == 'App\\Notifications\\AbsenceNotification')
+            return route('dispute.index', { openAbsence: notification.data.absence_id });
+        else if (notification.type == 'App\\Notifications\\AbsencePatchNotification')
+            return route('dispute.index', { openAbsencePatch: notification.data.absence_patch_id });
+        else if (notification.type == 'App\\Notifications\\AbsenceDeleteNotification')
+            return route('dispute.index', { openAbsenceDelete: notification.data.absence_id });
+        else if (
+            'ticket_id' in notification.data &&
+            [
+                'App\\Notifications\\TicketCreationNotification',
+                'App\\Notifications\\TicketRecordCreationNotification',
+                'App\\Notifications\\TicketUpdateNotification',
+                'App\\Notifications\\TicketDeletionNotification',
+                'App\\Notifications\\TicketFinishNotification',
+            ].includes(notification.type)
+        )
+            return route('ticket.index', { openTicket: notification.data.ticket_id });
+        else if (notification.type == 'App\\Notifications\\DisputeStatusNotification') {
+            if (notification.data.type == 'delete') return;
+            if (notification.data.log_model == 'App\\Models\\Absence') return route('absence.index', { openAbsence: notification.data.log_id });
+            else if (notification.data.log_model == 'App\\Models\\AbsencePatch')
+                return route('absence.index', { openAbsencePatch: notification.data.log_id });
+            else if (notification.data.log_model == 'App\\Models\\WorkLogPatch')
+                return route('user.workLog.index', { user: page.props.auth.user.id, openWorkLogPatch: notification.data.log_id });
+            else if (notification.data.log_model == 'App\\Models\\WorkLog')
+                return route('user.workLog.index', { user: page.props.auth.user.id, workLog: notification.data.log_id });
+        }
+        return;
+    })();
 
-    return url && router.get(url, {}, { onSuccess: () => readNotification(notification) });
+    if (url) router.get(url, {}, { onSuccess: () => readNotification(notification) });
 }
 const now = useNow();
 function convertTimeStamp(notification: Notification) {
@@ -62,11 +66,11 @@ function convertTimeStamp(notification: Notification) {
         return 'vor ' + Math.floor(diff.as('minutes')) + ' minuten';
     }
     if (endTime.day !== now.value.day || endTime.month !== now.value.month || endTime.year !== now.value.year) {
-        return endTime.toFormat('dd.MM - HH:mm') + ' Uhr';
+        return endTime.toFormat('dd.MM. - HH:mm') + ' Uhr';
     }
     return endTime.toFormat('HH:mm') + ' Uhr';
 }
-
+// mobile titles for notifications
 const disputes = {
     'App\\Notifications\\AbsenceNotification': 'neuer Antrag ',
     'App\\Notifications\\AbsencePatchNotification': 'neue Korrektur',
@@ -74,6 +78,11 @@ const disputes = {
     'App\\Notifications\\DisputeStatusNotification': 'Antrag bearbeitet',
     'App\\Notifications\\AbsenceDeleteNotification': 'neuer Antrag',
     'App\\Notifications\\WorkLogNotification': 'neue Buchung',
+    'App\\Notifications\\TicketCreationNotification': 'neues Ticket',
+    'App\\Notifications\\TicketUpdateNotification': 'Ticket Update',
+    'App\\Notifications\\TicketFinishNotification': 'Ticket abgeschlossen',
+    'App\\Notifications\\TicketDeletionNotification': 'Ticket gelöscht',
+    'App\\Notifications\\TicketRecordCreationNotification': 'Ticket Update',
 } satisfies Record<Notification['type'], string>;
 </script>
 
@@ -106,20 +115,21 @@ const disputes = {
                             <v-btn
                                 :size="display.smAndDown.value ? 'small' : undefined"
                                 v-if="
-                                    notification.type != 'App\\Notifications\\DisputeStatusNotification' ||
-                                    (notification.type == 'App\\Notifications\\DisputeStatusNotification' && notification.data.type != 'delete')
+                                    notification.type != 'App\\Notifications\\TicketDeletionNotification' &&
+                                    (notification.type != 'App\\Notifications\\DisputeStatusNotification' ||
+                                        (notification.type == 'App\\Notifications\\DisputeStatusNotification' && notification.data.type != 'delete'))
                                 "
                                 color="primary"
                                 icon="mdi-eye"
-                                variant="tonal"
+                                variant="text"
                                 @click.stop="openNotification(notification)"
                             ></v-btn>
                             <div v-else style="width: 48px"></div>
                             <v-btn
                                 :size="display.smAndDown.value ? 'small' : undefined"
-                                color="error"
-                                icon="mdi-delete"
-                                variant="tonal"
+                                color="primary"
+                                icon="mdi-close"
+                                variant="text"
                                 @click.stop="readNotification(notification)"
                             ></v-btn>
                         </div>

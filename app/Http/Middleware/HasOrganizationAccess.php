@@ -30,11 +30,15 @@ class HasOrganizationAccess
             $targetOrgId = match (true) {
                 $instanceObject instanceof \App\Models\OperatingSite, $instanceObject instanceof \App\Models\AbsenceType,
                 $instanceObject instanceof \App\Models\Group, $instanceObject instanceof \App\Models\SpecialWorkingHoursFactor,
-                $instanceObject instanceof \App\Models\TimeAccountSetting,
+                $instanceObject instanceof \App\Models\TimeAccountSetting, $instanceObject instanceof \App\Models\Customer
                 => $instanceObject->organization_id,
 
                 $instanceObject instanceof \App\Models\Absence, $instanceObject instanceof \App\Models\AbsencePatch
                 => $instanceObject->absenceType()->select('organization_id')->first()->organization_id,
+
+                $instanceObject instanceof \App\Models\CustomerOperatingSite, $instanceObject instanceof \App\Models\CustomerNote,
+                $instanceObject instanceof \App\Models\Ticket
+                => $instanceObject->customer()->select('organization_id')->first()->organization_id,
 
                 $instanceObject instanceof \App\Models\TimeAccount
                 => $instanceObject->timeAccountSetting()->select('organization_id')->first()->organization_id,
@@ -43,7 +47,7 @@ class HasOrganizationAccess
                 => $instanceObject->operatingSite()->select('organization_id')->first()->organization_id,
 
                 $instanceObject instanceof \App\Models\TravelLog,  $instanceObject instanceof \App\Models\WorkLog,
-                $instanceObject instanceof \App\Models\WorkLogPatch
+                $instanceObject instanceof \App\Models\WorkLogPatch, $instanceObject instanceof \App\Models\TicketRecord
                 => $instanceObject->user->operatingSite()->select('organization_id')->first()->organization_id,
 
                 $instanceObject instanceof Organization

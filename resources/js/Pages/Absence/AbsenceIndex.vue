@@ -25,14 +25,32 @@ const props = defineProps<{
 const dateParam = route().params['date'];
 const currentDate = ref(dateParam ? (DateTime.fromFormat(dateParam, 'yyyy-MM') as DateTime<true>) : DateTime.now());
 
-const filterForm = useForm({
+const groupFilterForm = useForm({
     set: null as null | string | { value: UserAbsenceFilter['id']; title: string },
     selected_users: [] as User['id'][],
     selected_absence_types: [] as AbsenceType['id'][],
     selected_statuses: ['created', 'accepted'] as Status[],
 });
 
-const currentEntries = computed(() => {
+const singleFilterForm = useForm({
+    set: null as null | UserAbsenceFilter['id'],
+    selected_users: [] as User['id'][],
+    selected_absence_types: [] as AbsenceType['id'][],
+    selected_statuses: ['created', 'accepted'] as Status[],
+});
+
+const currentFilterForm = ref<null | typeof groupFilterForm | typeof singleFilterForm>(null);
+
+watch(
+    [() => singleFilterForm.data(), () => groupFilterForm.set],
+    () => {
+        if (groupFilterForm.set == null) currentFilterForm.value = singleFilterForm;
+        else currentFilterForm.value = groupFilterForm;
+    },
+    { deep: true },
+);
+
+const currentMonthEntries = computed(() => {
     const entries = [] as typeof props.absences | typeof props.absencePatches;
     return entries
         .concat(
@@ -48,16 +66,21 @@ const currentEntries = computed(() => {
                     a.start <= currentDate.value.endOf('month').toFormat('yyyy-MM-dd') &&
                     a.end >= currentDate.value.startOf('month').toFormat('yyyy-MM-dd'),
             ),
-        )
-        .filter(
-            entry =>
-                (filterForm.selected_users.length == 0 || filterForm.selected_users.includes(entry.user_id)) &&
-                (filterForm.selected_absence_types.length == 0 ||
-                    !entry.absence_type_id ||
-                    filterForm.selected_absence_types.includes(entry.absence_type_id)) &&
-                (filterForm.selected_statuses.length == 0 || filterForm.selected_statuses.includes(entry.status)),
         );
 });
+
+const currentEntries = computed(() => {
+    return currentMonthEntries.value.filter(
+        entry =>
+            !currentFilterForm.value ||
+            ((currentFilterForm.value.selected_users.length == 0 || currentFilterForm.value.selected_users.includes(entry.user_id)) &&
+                (currentFilterForm.value.selected_absence_types.length == 0 ||
+                    !entry.absence_type_id ||
+                    currentFilterForm.value.selected_absence_types.includes(entry.absence_type_id)) &&
+                (currentFilterForm.value.selected_statuses.length == 0 || currentFilterForm.value.selected_statuses.includes(entry.status))),
+    );
+});
+
 const openEditCreateAbsenceModal = ref(false);
 const openShowAbsenceModal = ref(false);
 const selectedAbsence = ref<null | AbsenceProp | AbsencePatchProp>(null);
@@ -154,16 +177,16 @@ const display = useDisplay();
             @absenceReload="loadedMonths = [currentDate.toFormat('yyyy-MM')]"
         ></ShowAbsenceModal>
         <v-card>
-            <v-card-text>
-                <div class="d-flex justify-space-between align-center w-100">
+            <v-card-text class="px-sm-4 px-0">
+                <div class="d-flex align-center w-100" :class="display.mdAndUp.value ? 'justify-space-between' : 'justify-center'">
                     <AbsenceFilter
-                        v-if="display.mdAndUp.value"
                         :absence_types
                         :users
                         :user_absence_filters
-                        v-model:filterForm="filterForm"
+                        v-model:filterForm="groupFilterForm"
+                        v-model:singleFilterForm="singleFilterForm"
                     ></AbsenceFilter>
-                    <div class="d-flex justify-center align-center w-100">
+                    <div class="d-flex flex-wrap align-center">
                         <div class="d-flex">
                             <template v-if="display.mdAndUp.value">
                                 <v-btn @click.stop="currentDate = currentDate.minus({ year: 1 })" variant="text" icon color="primary">
@@ -178,9 +201,9 @@ const display = useDisplay();
                             </v-btn>
                         </div>
                         <h2 class="mx-md-4 text-center" :style="{ minWidth: display.mdAndUp.value ? '170px' : '110px' }">
-                            <template v-if="display.smAndUp.value">{{ currentDate.toFormat('MMMM yyyy') }}</template>
+                            <template v-if="display.mdAndUp.value">{{ currentDate.toFormat('MMMM yyyy') }}</template>
                             <template v-else>
-                                {{ currentDate.startOf('week').toFormat('dd.MM.yyyy') }} - {{ currentDate.endOf('week').toFormat('dd.MM.yyyy') }}
+                                {{ currentDate.startOf('week').toFormat('dd.MM.yy') }} - {{ currentDate.endOf('week').toFormat('dd.MM.yy') }}
                             </template>
                             <v-progress-linear v-if="loading" indeterminate></v-progress-linear>
                         </h2>
@@ -209,12 +232,15 @@ const display = useDisplay();
                 id="absence-table"
                 :items="
                     users
-                        .filter(u => filterForm.selected_users.length == 0 || filterForm.selected_users.includes(u.id))
+                        .filter(
+                            u =>
+                                !currentFilterForm || currentFilterForm.selected_users.length == 0 || currentFilterForm.selected_users.includes(u.id),
+                        )
                         .map(u => ({
                             ...u,
                             name: display.mdAndUp.value ? u.last_name + ', ' + u.first_name : u.first_name.substring(0, 1) + '.' + u.last_name,
                         }))
-                        .toSorted((a, b) => a.last_name.localeCompare(b.last_name))
+                        .toSorted((a, b) => (b.id == $page.props.auth.user.id ? 1 : a.last_name.localeCompare(b.last_name)))
                 "
                 :headers="[
                     {
@@ -228,12 +254,12 @@ const display = useDisplay();
                             width: '48px',
                             sortable:false
                         }]: []),
-                    ...(display.mdAndUp.value ? getDaysInMonth() :getDaysInWeek()).map(e => ({
+                    ...(display.mdAndUp.value ? getDaysInMonth() : getDaysInWeek()).map((e,_,dayList) => ({
                         title: e.weekdayShort + '\n' + e.day.toString(),
                         key: e.toString(),
                         sortable: false,
                         align: 'center',
-                        width: display.mdAndUp.value?'44px': '14%' ,
+                        width: (1/dayList.length * 100)+'%' ,
                         headerProps:{ class: {'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate() }}
                     } as const)),
                 ]"

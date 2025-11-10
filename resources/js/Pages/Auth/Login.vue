@@ -16,7 +16,7 @@ const adminForm = useForm({
 
 const adminLogin = () => {
     adminForm.post(route('login'), {
-        onFinish: () => {
+       onFinish: () => {
             adminForm.reset('password');
             if (!adminForm.errors.email && !adminForm.errors.password) {
                 router.reload();
@@ -51,7 +51,7 @@ const adminLogin = () => {
                     </v-checkbox>
                 </v-col>
                 <v-col cols="12">
-                    <v-btn :loading="adminForm.processing" block color="primary" type="submit" size="large"> Login </v-btn>
+                    <v-btn :loading="adminForm.processing" block color="primary" type="submit" size="large">Login</v-btn>
                 </v-col>
 
                 <v-col cols="12">

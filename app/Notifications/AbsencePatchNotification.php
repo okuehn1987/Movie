@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Enums\Status;
 use App\Models\AbsencePatch;
 use App\Models\User;
 use Carbon\Carbon;
@@ -32,7 +33,7 @@ class AbsencePatchNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return $notifiable->notification_channels;
+        return $notifiable->notification_channels ?? ['database'];
     }
 
     /**
@@ -61,14 +62,8 @@ class AbsencePatchNotification extends Notification
         return [
             'title' => $this->user->name . ' hat eine Abwesenheitskorrektur beantragt.',
             'absence_patch_id' => $this->absencePatch->id,
-            'status' => 'created',
-            'triggered_by' => Auth::id(),
+            'status' => Status::Created,
         ];
-    }
-
-    public function readNotification(array $notification)
-    {
-        \Illuminate\Notifications\DatabaseNotification::find($notification['id'])?->markAsRead();
     }
 
     public function getNotificationURL()

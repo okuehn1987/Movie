@@ -17,7 +17,14 @@ const bugForm = useForm({
         <template #default="{ isActive }">
             <v-card title="Fehler melden">
                 <template #append>
-                    <v-btn icon variant="text" @click="isActive.value = false">
+                    <v-btn
+                        icon
+                        variant="text"
+                        @click="
+                            isActive.value = false;
+                            bugForm.reset();
+                        "
+                    >
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>

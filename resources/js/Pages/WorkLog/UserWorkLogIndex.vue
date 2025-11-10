@@ -76,6 +76,7 @@ function submit() {
         .post(route('workLogPatch.store'), {
             onSuccess: () => {
                 showDialog.value = false;
+                workLogForm.reset();
             },
         });
 }
@@ -219,7 +220,14 @@ const tableHeight = useMaxScrollHeight(0);
                 <template v-slot:default="{ isActive }">
                     <v-card :title="workLogForm.type == 'patch' ? 'Zeitkorrektur' : 'Buchung'">
                         <template #append>
-                            <v-btn icon variant="text" @click="isActive.value = false">
+                            <v-btn
+                                icon
+                                variant="text"
+                                @click="
+                                    isActive.value = false;
+                                    workLogForm.reset();
+                                "
+                            >
                                 <v-icon>mdi-close</v-icon>
                             </v-btn>
                         </template>

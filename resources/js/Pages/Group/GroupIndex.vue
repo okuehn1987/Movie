@@ -41,7 +41,14 @@ const tableHeight = useMaxScrollHeight(0);
                         <template v-slot:default="{ isActive }">
                             <v-card title="Abteilung erstellen">
                                 <template #append>
-                                    <v-btn icon variant="text" @click="isActive.value = false">
+                                    <v-btn
+                                        icon
+                                        variant="text"
+                                        @click="
+                                            isActive.value = false;
+                                            groupForm.reset();
+                                        "
+                                    >
                                         <v-icon>mdi-close</v-icon>
                                     </v-btn>
                                 </template>

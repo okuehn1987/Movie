@@ -4,6 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Models\Traits\Addressable;
+use App\Enums\Status;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,7 +21,7 @@ use App\Notifications\PasswordResetNotification;
 class User extends Authenticatable
 {
     use \Znck\Eloquent\Traits\BelongsToThrough;
-    use HasFactory, Notifiable, SoftDeletes, ScopeInOrganization;
+    use HasFactory, Notifiable, SoftDeletes, ScopeInOrganization, Addressable;
 
     /**
      * Send a password reset notification to the user.
@@ -57,11 +59,13 @@ class User extends Authenticatable
             ['name' => 'timeAccount_permission', 'label' => 'Zeitkonten verwalten'],
             ['name' => 'timeAccountSetting_permission', 'label' => 'Zeitkontovarianten verwalten'],
             ['name' => 'timeAccountTransaction_permission', 'label' => 'Zeitkontotransaktionen verwalten'],
+            ['name' => 'ticket_permission', 'label' => 'Tickets verwalten'],
         ],
         'organization' => [
             ['name' => 'absenceType_permission', 'label' => 'Abwesenheitsgründe verwalten'],
             ['name' => 'specialWorkingHoursFactor_permission', 'label' => 'Sonderarbeitszeitfaktoren verwalten'],
             ['name' => 'organization_permission', 'label' => 'Organisation verwalten'],
+            ['name' => 'customer_permission', 'label' => 'Kunden verwalten'],
         ],
         'operatingSite' => [['name' => 'operatingSite_permission', 'label' => 'Betriebsstätte verwalten']],
         'group' =>  [['name' => 'group_permission', 'label' => 'Abteilungen verwalten']],
@@ -205,6 +209,11 @@ class User extends Authenticatable
     public function isSubstitutionFor()
     {
         return $this->belongsToMany(User::class, 'substitutes', 'substitute_id', 'user_id');
+    }
+
+    public function tickets()
+    {
+        return $this->belongsToMany(Ticket::class)->withTimestamps();
     }
 
     public function group()
@@ -413,7 +422,7 @@ class User extends Authenticatable
             $this->absencePatches()
                 ->with('log.currentAcceptedPatch')
                 ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
-                ->where('status', 'accepted')
+                ->where('status', Status::Accepted)
                 ->whereNot('type', 'delete')
                 ->whereDate('start', '<=', $endOfYear)
                 ->whereDate('end', '>=', $startOfYear)
@@ -455,7 +464,7 @@ class User extends Authenticatable
             $this->absencePatches()
                 ->with('log.currentAcceptedPatch')
                 ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
-                ->where('status', 'accepted')
+                ->where('status', Status::Accepted)
                 ->whereNot('type', 'delete')
                 ->whereDate('start', '<=', $endOfMonth)
                 ->whereDate('end', '>=', $startOfMonth)
@@ -498,35 +507,35 @@ class User extends Authenticatable
     public function leaveDaysForYear(CarbonInterface $year, $userLeaveDays = null): int
     {
         $leaveDays = $userLeaveDays ?? $this->leaveDays;
-        
+
         $annual = $leaveDays->where('type', 'annual')
-        ->filter(fn($ld) => $ld->active_since <= $year->endOfYear()->format('Y-m-d'))
-        ->sortBy('active_since')
-        ->values();
-        
+            ->filter(fn($ld) => $ld->active_since <= $year->copy()->endOfYear()->format('Y-m-d'))
+            ->sortBy('active_since')
+            ->values();
+
         $jan1 = $year->copy()->startOfYear();
         $dec31 = $year->copy()->endOfYear();
 
         $changePoints = $annual
-        ->map(fn($e) => Carbon::parse($e->active_since)->startOfMonth())
-        ->filter(fn($d) => $d->betweenIncluded($jan1, $dec31))
-        ->prepend($jan1)
-        ->unique(fn($d) => $d->format('Y-m'))
-        ->values();
-        
+            ->map(fn($e) => Carbon::parse($e->active_since)->startOfMonth())
+            ->filter(fn($d) => $d->betweenIncluded($jan1, $dec31))
+            ->prepend($jan1)
+            ->unique(fn($d) => $d->format('Y-m'))
+            ->values();
+
         $changePoints->push($dec31->copy()->addMonth()->startOfMonth());
-        
+
 
         $leaveDayCount = 0;
 
         for ($i = 0; $i < $changePoints->count() - 1; $i++) {
             $start = $changePoints[$i];
             $end   = $changePoints[$i + 1]->copy();
-            
+
             $entry = $annual
-            ->filter(fn($e) => Carbon::parse($e->active_since)->startOfMonth()->lte($start))
-            ->last();
-            
+                ->filter(fn($e) => Carbon::parse($e->active_since)->startOfMonth()->lte($start))
+                ->last();
+
             if ($entry) {
                 $months = $start->diffInMonths($end);
                 $leaveDayCount += ($entry->leave_days / 12.0) * $months;
@@ -548,7 +557,7 @@ class User extends Authenticatable
     {
         $absences = $this->absences()
             ->with(['patches', 'currentAcceptedPatch'])
-            ->where('status', 'accepted')
+            ->where('status', Status::Accepted)
             ->get();
 
         $absences = $absences->map(fn($a) => $a->currentAcceptedPatch ?? $a);
@@ -572,6 +581,8 @@ class User extends Authenticatable
         $currentWorkingHours = $this->userWorkingHoursForDate($date);
         $currentWorkingWeek = $this->userWorkingWeekForDate($date);
 
+        if (!$currentWorkingHours || !$currentWorkingWeek || $currentWorkingWeek->numberOfWorkingDays == 0) return 0;
+
         return $currentWorkingHours['weekly_working_hours'] / $currentWorkingWeek->numberOfWorkingDays * 3600;
     }
 
@@ -586,7 +597,7 @@ class User extends Authenticatable
             fn($s) =>
             $s->entries->filter(
                 fn($e) =>
-                $e->status == 'accepted' &&
+                $e->status == Status::Accepted &&
                     $e->accepted_at != null &&
                     Carbon::parse($e->start)->between($date->copy()->startOfDay(), $date->copy()->endOfDay()) &&
                     Carbon::parse($e->end)->between($date->copy()->startOfDay(), $date->copy()->endOfDay())
@@ -663,6 +674,7 @@ class User extends Authenticatable
                 $futureAbsences =
                     collect(
                         $this->absences()
+                            ->where('status', Status::Accepted)
                             ->doesntHave('currentAcceptedPatch')
                             ->whereDate('end', '>=', now())
                             ->get()
@@ -670,7 +682,7 @@ class User extends Authenticatable
                     ->merge(
                         $this->absencePatches()
                             ->with('log.currentAcceptedPatch')
-                            ->where('status', 'accepted')
+                            ->where('status', Status::Accepted)
                             ->whereDate('end', '>=', now())
                             ->get()
                             ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p))

@@ -26,8 +26,10 @@ type SoftDelete = {
 export type Model =
     | 'organization'
     | 'operatingSite'
+    | 'customer'
     | 'group'
     | 'user'
+    | 'ticket'
     | 'timeAccountSetting'
     | 'absence'
     | 'absenceType'
@@ -80,21 +82,26 @@ export type Paginator<T> = {
 
 export type Weekday = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
 
-type Address = {
+export type AdressKeys = 'street' | 'house_number' | 'address_suffix' | 'country' | 'city' | 'zip' | 'federal_state';
+export type Address = DBObject<'address'> & {
     street: string | null;
     house_number: string | null;
     address_suffix: string | null;
-    country: Country;
+    country: Country | null;
     city: string | null;
     zip: string | null;
-    federal_state: FederalState;
-};
+    federal_state: FederalState | null;
+} & (
+        | { addressable_type: 'App\\Models\\User'; addressable_id: User['id'] }
+        | { addressable_type: 'App\\Models\\OperatingSite'; addressable_id: OperatingSite['id'] }
+        | { addressable_type: 'App\\Models\\CustomAddress'; addressable_id: CustomAddress['id'] }
+        | { addressable_type: 'App\\Models\\Customer'; addressable_id: Customer['id'] }
+    );
 
 export type Status = 'created' | 'declined' | 'accepted';
 
 export type User = DBObject<'user'> &
-    SoftDelete &
-    Address & {
+    SoftDelete & {
         first_name: string;
         last_name: string;
         email: string;
@@ -146,6 +153,15 @@ export type UserLeaveDays = DBObject<'userLeaveDays'> &
         type: 'annual' | 'remaining';
     };
 
+export type Customer = DBObject<'customer'> &
+    SoftDelete & {
+        name: string;
+        email: string | null;
+        phone: string | null;
+        reference_number: string | null;
+        organization_id: Organization['id'];
+    };
+
 export type Flag = 'auto_accept_travel_logs' | 'christmas_vacation_day' | 'new_year_vacation_day' | 'vacation_limitation_period' | 'night_surcharges';
 
 export type Organization = DBObject<'organization'> &
@@ -160,7 +176,6 @@ export type Organization = DBObject<'organization'> &
     };
 
 export type OperatingSite = DBObject<'operatingSite'> &
-    Address &
     SoftDelete & {
         name: string;
         email: string | null;
@@ -198,8 +213,7 @@ export type Substitute = DBObject<'substitute'> &
     };
 
 export type CustomAddress = DBObject<'customAddress'> &
-    SoftDelete &
-    Address & {
+    SoftDelete & {
         organization_id: Organization['id'];
     };
 
@@ -235,28 +249,22 @@ export type WorkLogPatch = DBObject<'workLogPatch'> &
         work_log_id: WorkLog['id'];
     };
 
-export type TravelLogAddress = DBObject<'travelLogAddress'> &
-    Address & {
-        name: string;
-        organization_id: Organization['id'];
-    };
-
 export type TravelLog = DBObject<'travelLog'> &
     BaseLog &
     SoftDelete & {
         start: DateTimeString;
-        start_location_id: TravelLogAddress['id'];
         end: DateTimeString;
-        end_location_id: TravelLogAddress['id'];
+        from_id: Address['id'];
+        to_id: Address['id'];
     };
 export type TravelLogPatch = DBObject<'travelLogPatch'> &
     BaseLog &
     SoftDelete & {
         start: DateTimeString;
-        start_location_id: TravelLogAddress['id'];
         end: DateTimeString;
-        end_location_id: TravelLogAddress['id'];
         travel_log_id: TravelLog['id'];
+        from_id: Address['id'];
+        to_id: Address['id'];
     };
 
 export type ShiftEntries = WorkLog | WorkLogPatch | TravelLog | TravelLogPatch;
@@ -296,7 +304,15 @@ export type AbsenceType = DBObject<'absenceType'> &
         organization_id: Organization['id'];
     };
 
+export const DATETIME_LOCAL_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
 export const TRUNCATION_CYCLES = [null, '1', '3', '6', '12'] as const;
+export const PRIORITIES = [
+    { value: 'highest', title: 'Höchste', priorityValue: 1, icon: 'mdi-chevron-double-up', color: 'red-darken-4' },
+    { value: 'high', title: 'Hoch', priorityValue: 2, icon: 'mdi-chevron-up', color: 'orange-darken-4' },
+    { value: 'medium', title: 'Mittel', priorityValue: 3, icon: 'mdi-equal', color: 'orange-lighten-1' },
+    { value: 'low', title: 'Niedrig', priorityValue: 4, icon: 'mdi-chevron-down', color: 'blue-lighten-2' },
+    { value: 'lowest', title: 'Niedrigste', priorityValue: 5, icon: 'mdi-chevron-double-down', color: 'blue-darken-2' },
+] as const;
 
 export type TimeAccountSetting = DBObject<'timeAccountSetting'> &
     SoftDelete & {
@@ -387,6 +403,41 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
               };
           }
         | {
+              type: 'App\\Notifications\\TicketCreationNotification';
+              data: {
+                  title: string;
+                  ticket_id: Ticket['id'];
+              };
+          }
+        | {
+              type: 'App\\Notifications\\TicketUpdateNotification';
+              data: {
+                  title: string;
+                  ticket_id: Ticket['id'];
+              };
+          }
+        | {
+              type: 'App\\Notifications\\TicketDeletionNotification';
+              data: {
+                  title: string;
+                  ticket_id: Ticket['id'];
+              };
+          }
+        | {
+              type: 'App\\Notifications\\TicketFinishNotification';
+              data: {
+                  title: string;
+                  ticket_id: Ticket['id'];
+              };
+          }
+        | {
+              type: 'App\\Notifications\\TicketRecordCreationNotification';
+              data: {
+                  title: string;
+                  ticket_id: Ticket['id'];
+              };
+          }
+        | {
               type: 'App\\Notifications\\DisputeStatusNotification';
               data: {
                   type: 'delete' | 'create';
@@ -411,17 +462,41 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
           }
     );
 
+export type Ticket = DBObject<'ticket'> & {
+    title: string;
+    description: string | null;
+    priority: (typeof PRIORITIES)[number]['value'];
+    customer_id: Customer['id'];
+    user_id: User['id'];
+    accounted_at: DateTimeString | null;
+    finished_at: DateTimeString | null;
+    reference_prefix: string;
+    readonly reference_number: string;
+};
+
+export type TicketRecord = DBObject<'record'> & {
+    ticket_id: Ticket['id'];
+    start: DateTimeString;
+    duration: number;
+    description: string | null;
+    resources: string | null;
+    accounted_at: DateTimeString | null;
+};
+
 export type PermissionValue = 'read' | 'write' | null;
 
 export type Permission = {
     all:
         | 'user_permission'
+        | 'workLog_permission'
         | 'workLogPatch_permission'
         | 'absence_permission'
         | 'timeAccount_permission'
         | 'timeAccountSetting_permission'
-        | 'timeAccountTransaction_permission';
-    organization: 'absenceType_permission' | 'specialWorkingHoursFactor_permission' | 'organization_permission';
+        | 'timeAccountTransaction_permission'
+        | 'ticket_permission'
+        | 'absenceType_permission';
+    organization: 'specialWorkingHoursFactor_permission' | 'organization_permission' | 'customer_permission';
     operatingSite: 'operatingSite_permission';
     group: 'group_permission';
 };
@@ -448,6 +523,33 @@ export type GroupUser = DBObject<'groupUser'> &
         user_id: User['id'];
     } & Record<Permission['all' | 'group'], PermissionValue>;
 
+export type AppModule = DBObject<'appModule'> & {
+    organization_id: Organization['id'];
+    module: 'herta' | 'timesheets';
+    activated_at: DateTimeString | null;
+};
+
+export type CustomerOperatingSite = DBObject<'customerOperatingSite'> & {
+    customer_id: Customer['id'];
+    name: string;
+};
+
+export type JSON = string | number | boolean | null | { [x: string]: JSON } | JSON[];
+
+export type CustomerNote = DBObject<'customerNote'> & {
+    customer_id: Customer['id'];
+    modified_by: User['id'];
+    parent_id: CustomerNote['id'] | null;
+    type: 'complex' | 'primitive' | 'file';
+    key: string | null;
+    value: string;
+    file: File | null;
+};
+export type TicketUser = DBObject<'ticket_user'> & {
+    ticket_id: Ticket['id'];
+    user_id: User['id'];
+};
+
 export type RelationMap = {
     absence: {
         absence_type?: AbsenceType;
@@ -466,8 +568,29 @@ export type RelationMap = {
         organization: Organization;
         absences: Absence[];
     };
+    address: {
+        addressable: User | OperatingSite | CustomAddress;
+    };
     customAddress: {
         organization: Organization;
+        addresses: Address[];
+        current_address: Address;
+    };
+    customer: {
+        organization: Organization;
+        tickets: Ticket[];
+        customer_operating_sites: CustomerOperatingSite[];
+        customer_notes: CustomerNote[];
+    };
+    customerNote: {
+        customer: Customer;
+        modified_by: User;
+        parent?: CustomerNote;
+    };
+    customerOperatingSite: {
+        customer: Customer;
+        addresses: Address[];
+        current_address: Address;
     };
     group: {
         organization: Organization;
@@ -483,6 +606,8 @@ export type RelationMap = {
         users: User[];
         operating_site_users: OperatingSiteUser[];
         operating_times: OperatingTime[];
+        addresses: (Omit<Address, 'country' | 'federal_state'> & { country: Country; federal_state: FederalState })[];
+        current_address: Omit<Address, 'country' | 'federal_state'> & { country: Country; federal_state: FederalState };
     };
     operatingSiteUser: {
         operatings_site: OperatingSite;
@@ -492,6 +617,7 @@ export type RelationMap = {
         operating_site: OperatingSite;
     };
     organization: {
+        customers: Customer[];
         operating_sites: OperatingSite[];
         operating_site_users: OperatingSiteUser[];
         users: User[];
@@ -503,6 +629,7 @@ export type RelationMap = {
         time_account_settings: TimeAccountSetting[];
         owner: User;
         custom_addresses: CustomAddress[];
+        modules: AppModule[];
     };
     organizationUser: {
         organization: Organization;
@@ -517,6 +644,18 @@ export type RelationMap = {
     };
     specialWorkingHoursFactor: {
         organization: Organization;
+    };
+    ticket: {
+        customer: Customer;
+        user: User;
+        assignees: (User & {
+            pivot: TicketUser;
+        })[];
+        records: TicketRecord[];
+    };
+    ticketRecord: {
+        ticket: Ticket;
+        user: User;
     };
     timeAccount: {
         user: User;
@@ -534,23 +673,22 @@ export type RelationMap = {
         user: User | null;
     };
     travelLog: {
-        start_location: TravelLogAddress;
-        end_location: TravelLogAddress;
         user: User;
         patches: TravelLogPatch[];
         current_accepted_patch: TravelLogPatch | null;
         latest_patch: TravelLogPatch | null;
-    };
-    travelLogAddress: {
-        organization: Organization;
-        travel_logs: TravelLog[];
-        travel_log_patches: TravelLogPatch[];
+        addresses: Address[];
+        current_address: Address;
+        from_address: Address;
+        to_address: Address;
     };
     travelLogPatch: {
-        start_location: TravelLogAddress;
-        end_location: TravelLogAddress;
         user: User;
         log: TravelLog;
+        addresses: Address[];
+        current_address: Address;
+        from_address: Address;
+        to_address: Address;
     };
     user: {
         shifts: Shift[];
@@ -585,9 +723,15 @@ export type RelationMap = {
         read_notifications: Notification[];
         unread_notifications: Notification[];
         user_absence_filters: UserAbsenceFilter[];
+        current_address: Address;
+        addresses: Address[];
+        tickets: (Ticket & { pivot: TicketUser })[];
     };
     userAbsenceFilter: {
         user: User;
+        addresses: Address[];
+        current_address: Address;
+        tickets: (Ticket & { pivot: TicketUser })[];
     };
     userLeaveDays: {
         user: User;

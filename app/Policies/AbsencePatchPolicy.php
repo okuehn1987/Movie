@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\Absence;
+use App\Enums\Status;
 use App\Models\AbsencePatch;
 use App\Models\User;
 
@@ -29,6 +29,6 @@ class AbsencePatchPolicy
 
     public function delete(User $authUser, AbsencePatch $absencePatch): bool
     {
-        return $absencePatch->status === 'created' && $authUser->is($absencePatch->user);
+        return $absencePatch->status === Status::Created && $authUser->is($absencePatch->user);
     }
 }

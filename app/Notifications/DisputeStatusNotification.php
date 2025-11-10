@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Models\Absence;
 use App\Models\AbsencePatch;
+use App\Enums\Status;
 use App\Models\TravelLog;
 use App\Models\TravelLogPatch;
 use App\Models\User;
@@ -26,7 +27,7 @@ class DisputeStatusNotification extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct(Model $log, string $status, string $type = 'create')
+    public function __construct(Model $log, Status $status, string $type = 'create')
     {
         $this->log = $log;
         $this->status = $status;
@@ -40,7 +41,7 @@ class DisputeStatusNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return $notifiable->notification_channels;
+        return $notifiable->notification_channels ?? ['database'];
     }
 
     /**
@@ -61,7 +62,7 @@ class DisputeStatusNotification extends Notification
             $this->log instanceof AbsencePatch => 'auf Abwesenheitskorrektur',
         };
 
-        if ($this->status === 'declined') $message
+        if ($this->status === Status::Declined) $message
             ->line('Dein Antrag ' . $modelUserNotificationText .
                 ($this->log instanceof Absence || $this->log instanceof AbsencePatch ?
                     ' mit dem angegebenen Grund "' . $this->log->absenceType->name . '"' : '') .
@@ -129,18 +130,12 @@ class DisputeStatusNotification extends Notification
         };
 
         return [
-            'title' => $text . ' ' . ($this->status === 'accepted' ? 'akzeptiert.' : ($this->status == 'created' ? 'beantragt.' : 'abgelehnt.')),
+            'title' => $text . ' ' . ($this->status === Status::Accepted ? 'akzeptiert.' : ($this->status == Status::Created ? 'beantragt.' : 'abgelehnt.')),
             'log_id' => $this->log->id,
             'log_model' => $modelClass,
             'type' => $this->type,
             'triggered_by' => Auth::id(),
         ];
-    }
-
-
-    public function readNotification(array $notification)
-    {
-        \Illuminate\Notifications\DatabaseNotification::find($notification['id'])?->markAsRead();
     }
 
     public function getNotificationURL()
