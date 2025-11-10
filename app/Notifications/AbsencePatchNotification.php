@@ -63,6 +63,8 @@ class AbsencePatchNotification extends Notification
             'title' => $this->user->name . ' hat eine Abwesenheitskorrektur beantragt.',
             'absence_patch_id' => $this->absencePatch->id,
             'status' => Status::Created,
+            'url' =>  $this->getNotificationURL(),
+            'triggered_by' => Auth::id()
         ];
     }
 

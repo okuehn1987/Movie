@@ -62,6 +62,8 @@ class AbsenceDeleteNotification extends Notification
             'title' => $this->user->name . ' hat die Löschung einer Abwesenheit beantragt.',
             'absence_id' => $this->absence->id,
             'status' => Status::Created,
+            'url' =>  $this->getNotificationURL(),
+            'triggered_by' => Auth::id()
         ];
     }
 

@@ -63,6 +63,8 @@ class AbsenceNotification extends Notification
             'title' => $this->user->name . ' hat eine Abwesenheit beantragt.',
             'absence_id' => $this->absence->id,
             'status' => Status::Created,
+            'url' =>  $this->getNotificationURL(),
+            'triggered_by' => Auth::id()
         ];
     }
 

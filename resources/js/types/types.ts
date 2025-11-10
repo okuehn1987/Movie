@@ -366,7 +366,7 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
     read_at: DateTimeString | null;
     created_at: DateTimeString;
     updated_at: DateTimeString;
-} & { data: { triggered_by: User['id']; title: string } } & (
+} & { data: { url: string; triggered_by: User['id']; title: string } } & (
         | {
               type: 'App\\Notifications\\WorkLogNotification';
               data: {

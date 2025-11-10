@@ -62,6 +62,8 @@ class WorkLogNotification extends Notification
             'title' => $this->user->name . ' hat eine neue Buchung beantragt.',
             'work_log_id' => $this->log->id,
             'status' => Status::Created,
+            'url' =>  $this->getNotificationURL(),
+            'triggered_by' => Auth::id()
         ];
     }
 

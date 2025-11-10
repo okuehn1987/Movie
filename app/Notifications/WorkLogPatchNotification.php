@@ -63,6 +63,8 @@ class WorkLogPatchNotification extends Notification
             'title' => $this->user->name . ' hat eine Zeitkorrektur beantragt.',
             'work_log_patch_id' => $this->patch->id,
             'status' => Status::Created,
+            'url' =>  $this->getNotificationURL(),
+            'triggered_by' => Auth::id()
         ];
     }
 

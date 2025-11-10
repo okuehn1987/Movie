@@ -134,7 +134,8 @@ class DisputeStatusNotification extends Notification
             'log_id' => $this->log->id,
             'log_model' => $modelClass,
             'type' => $this->type,
-            'triggered_by' => Auth::id(),
+            'url' =>  $this->getNotificationURL(),
+            'triggered_by' => Auth::id()
         ];
     }
 
