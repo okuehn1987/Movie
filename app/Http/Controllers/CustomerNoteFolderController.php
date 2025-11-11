@@ -23,20 +23,13 @@ class CustomerNoteFolderController extends Controller
             'customerNoteFolder' => 'nullable|exists:customer_note_folders,id'
         ]);
 
-        $customerNoteFolder = $validated['customerNoteFolder'];
+        $customerNoteFolder = $validated['customerNoteFolder'] ?? null;
 
-        if ($customerNoteFolder) {
-            $customer->customerNoteFolders()->create([
-                'name' => $validated['name'],
-                'customer_id' => $customer->id,
-                'customer_note_folder_id' => $customerNoteFolder,
-            ]);
-        } else {
-            $customer->customerNoteFolders()->create([
-                'name' => $validated['name'],
-                'customer_id' => $customer->id,
-            ]);
-        }
+        $customer->customerNoteFolders()->create([
+            'name' => $validated['name'],
+            'customer_id' => $customer->id,
+            'customer_note_folder_id' => $customerNoteFolder,
+        ]);
 
         return back()->with('success', 'Kategorie erfolgreich erstellt.');
     }
