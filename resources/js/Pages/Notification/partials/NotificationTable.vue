@@ -47,10 +47,10 @@ function readNotification(item: Notification) {
             {{ DateTime.fromISO(item.created_at).toFormat('dd.MM.yyyy HH:mm') }}
         </template>
         <template v-slot:item.actions="{ item }">
-            <v-btn color="primary" icon="mdi-eye" variant="text" @click.stop="router.get(getNotificationUrl(item))">
+            <v-btn v-if="tab !== 'archive'" color="primary" icon="mdi-eye" variant="text" @click.stop="router.get(getNotificationUrl(item))">
                 <v-icon icon="mdi-eye"></v-icon>
             </v-btn>
-            <v-btn color="primary" icon="mdi-close" variant="text" @click.stop="readNotification(item)"></v-btn>
+            <v-btn v-if="tab !== 'archive'" color="primary" icon="mdi-close" variant="text" @click.stop="readNotification(item)"></v-btn>
         </template>
         <template v-slot:bottom>
             <v-pagination v-if="lastPage > 1" v-model="currentPage" :length="lastPage"></v-pagination>
