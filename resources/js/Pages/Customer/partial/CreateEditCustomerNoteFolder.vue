@@ -4,7 +4,8 @@ import { ref, watch } from 'vue';
 
 const props = defineProps<{
     customer: Customer;
-    noteFolder?: Tree<Pick<CustomerNoteFolder, 'id' | 'name'>, 'sub_folders'>;
+    editNoteFolder?: Tree<Pick<CustomerNoteFolder, 'id' | 'name'>, 'sub_folders'>;
+    createSubFolder?: Tree<Pick<CustomerNoteFolder, 'id' | 'name'>, 'sub_folders'>;
 }>();
 
 const openDialog = ref(false);
@@ -16,7 +17,7 @@ const createNoteFolderForm = useForm({
 watch(openDialog, isOpen => {
     if (!isOpen) return createNoteFolderForm.reset();
 
-    const folder = props.noteFolder;
+    const folder = props.editNoteFolder;
 
     if (folder) {
         createNoteFolderForm.name = folder.name ?? '';
@@ -28,18 +29,43 @@ watch(openDialog, isOpen => {
 <template>
     <v-dialog max-width="1000" v-model="openDialog">
         <template v-slot:activator="{ props: activatorProps }">
-            <v-btn v-if="noteFolder" v-bind="activatorProps" color="primary" variant="text" title="Kategorie bearbeiten" :icon="'mdi-pencil'"></v-btn>
+            <v-btn
+                v-if="editNoteFolder"
+                v-bind="activatorProps"
+                color="primary"
+                variant="text"
+                title="Kategorie bearbeiten"
+                :icon="'mdi-pencil'"
+            ></v-btn>
+            <v-btn
+                v-else-if="createSubFolder"
+                v-bind="activatorProps"
+                color="primary"
+                variant="text"
+                :icon="'mdi-plus'"
+                title="Neuen Unterordner anlegen"
+            ></v-btn>
             <v-btn v-else v-bind="activatorProps" color="primary" variant="flat" title="Neue Kategorie anlegen">Kategorie anlegen</v-btn>
         </template>
         <template v-slot:default="{ isActive }">
             <v-form
                 @submit.prevent="
-                    noteFolder
-                        ? createNoteFolderForm.patch(route('customerNoteFolder.update', { customerNoteFolder: noteFolder.id }), {
+                    editNoteFolder
+                        ? createNoteFolderForm.patch(route('customerNoteFolder.update', { customerNoteFolder: editNoteFolder.id }), {
                               onSuccess: () => {
                                   isActive.value = false;
                               },
                           })
+                        : createSubFolder
+                        ? createNoteFolderForm.post(
+                              route('customer.customerNoteFolder.store', { customer: customer.id, customerNoteFolder: createSubFolder.id }),
+                              {
+                                  onSuccess: () => {
+                                      createNoteFolderForm.reset();
+                                      isActive.value = false;
+                                  },
+                              },
+                          )
                         : createNoteFolderForm.post(route('customer.customerNoteFolder.store', { customer: customer.id }), {
                               onSuccess: () => {
                                   createNoteFolderForm.reset();
@@ -48,7 +74,15 @@ watch(openDialog, isOpen => {
                           })
                 "
             >
-                <v-card :title="noteFolder ? 'Kategorie &quot;' + noteFolder?.name + '&quot; bearbeiten' : 'Kategorie anlegen'">
+                <v-card
+                    :title="
+                        editNoteFolder
+                            ? 'Kategorie &quot;' + editNoteFolder?.name + '&quot; bearbeiten'
+                            : createSubFolder
+                            ? 'Unterordner anlegen'
+                            : 'Kategorie anlegen'
+                    "
+                >
                     <template #append>
                         <v-btn
                             icon

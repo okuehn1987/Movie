@@ -14,17 +14,29 @@ use Illuminate\Validation\Rule;
 
 class CustomerNoteFolderController extends Controller
 {
-    public function store(Request $request, Customer $customer, #[CurrentUser] User $authUser)
+    public function store(Request $request, Customer $customer)
     {
         Gate::authorize('publicAuth', User::class);
+
         $validated = $request->validate([
             'name' => 'required|string',
+            'customerNoteFolder' => 'nullable|exists:customer_note_folders,id'
         ]);
 
-        $customer->customerNoteFolders()->create([
-            'name' => $validated['name'],
-            'customer_id' => $customer->id,
-        ]);
+        $customerNoteFolder = $validated['customerNoteFolder'];
+
+        if ($customerNoteFolder) {
+            $customer->customerNoteFolders()->create([
+                'name' => $validated['name'],
+                'customer_id' => $customer->id,
+                'customer_note_folder_id' => $customerNoteFolder,
+            ]);
+        } else {
+            $customer->customerNoteFolders()->create([
+                'name' => $validated['name'],
+                'customer_id' => $customer->id,
+            ]);
+        }
 
         return back()->with('success', 'Kategorie erfolgreich erstellt.');
     }

@@ -58,6 +58,12 @@ const noteFolders = computed(() => {
     );
     return folders;
 });
+
+const selected = ref();
+
+function onActivate(value: unknown) {
+    selectedFolder.value = (value as CustomerNoteFolder['id'] | null) || null;
+}
 </script>
 <template>
     <v-card :style="{ height }" title="Kundennotizen">
@@ -69,26 +75,31 @@ const noteFolders = computed(() => {
                     <div class="ma-2" @click.stop="() => {}">
                         <CreateEditCustomerNoteFolder :customer></CreateEditCustomerNoteFolder>
                     </div>
-                    <v-treeview :indentLines="true" v-model:opened="opened" item-children="sub_folders">
-                        <v-treeview-item v-for="item in noteFolders" :key="item.id" @click.stop="selectedFolder = item.id">
-                            <template v-slot:prepend>
-                                <v-icon icon="mdi-folder"></v-icon>
-                                <span>{{ item.name }}</span>
-                            </template>
-                            <template v-slot:append>
-                                <CreateEditCustomerNoteFolder :customer></CreateEditCustomerNoteFolder>
-                                <CreateEditCustomerNoteFolder :noteFolder="item" :customer="customer" />
-                                <ConfirmDelete
-                                    :title="'Kategorie &quot;' + item.name + '&quot; löschen'"
-                                    :content="
-                                        'Bist du dir sicher, dass du die Kategorie &quot;' +
-                                        item.name +
-                                        '&quot; mit all ihren Inhalten löschen möchtest?'
-                                    "
-                                    :route="route('customerNoteFolder.destroy', { customerNoteFolder: item.id })"
-                                ></ConfirmDelete>
-                            </template>
-                        </v-treeview-item>
+                    <v-treeview
+                        :indentLines="true"
+                        v-model:opened="opened"
+                        v-model:selected="selected"
+                        item-children="sub_folders"
+                        :items="noteFolders"
+                        item-title="name"
+                        item-value="id"
+                        activatable
+                        @update:activated="onActivate"
+                    >
+                        <template v-slot:prepend>
+                            <v-icon icon="mdi-folder"></v-icon>
+                        </template>
+                        <template v-slot:append="{ item }">
+                            <CreateEditCustomerNoteFolder :createSubFolder="item" :customer></CreateEditCustomerNoteFolder>
+                            <CreateEditCustomerNoteFolder :editNoteFolder="item" :customer="customer" />
+                            <ConfirmDelete
+                                :title="'Kategorie &quot;' + item.name + '&quot; löschen'"
+                                :content="
+                                    'Bist du dir sicher, dass du die Kategorie &quot;' + item.name + '&quot; mit all ihren Inhalten löschen möchtest?'
+                                "
+                                :route="route('customerNoteFolder.destroy', { customerNoteFolder: item.id })"
+                            ></ConfirmDelete>
+                        </template>
                     </v-treeview>
                 </v-tabs>
             </div>
