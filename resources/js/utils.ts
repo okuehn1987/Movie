@@ -1,7 +1,7 @@
 import { router, usePage } from '@inertiajs/vue3';
 import { DateTime, Duration } from 'luxon';
 import { computed, onMounted, onUnmounted, ref, Ref, watch } from 'vue';
-import { Country, Paginator, FederalState, TimeAccountSetting, Tree, Address } from './types/types';
+import { Country, Paginator, FederalState, TimeAccountSetting, Tree, Address, Notification } from './types/types';
 
 export function useNow() {
     const now = ref(DateTime.now());
@@ -213,4 +213,41 @@ export function getBrowser(): Browser {
     }
 
     return browser;
+}
+
+export function getNotificationUrl(notification: Notification) {
+    const page = usePage();
+
+    if (notification.type == 'App\\Notifications\\WorkLogPatchNotification')
+        return route('dispute.index', { openPatch: notification.data.work_log_patch_id });
+    else if (notification.type == 'App\\Notifications\\WorkLogNotification')
+        return route('dispute.index', { openWorkLog: notification.data.work_log_id });
+    else if (notification.type == 'App\\Notifications\\AbsenceNotification')
+        return route('dispute.index', { openAbsence: notification.data.absence_id });
+    else if (notification.type == 'App\\Notifications\\AbsencePatchNotification')
+        return route('dispute.index', { openAbsencePatch: notification.data.absence_patch_id });
+    else if (notification.type == 'App\\Notifications\\AbsenceDeleteNotification')
+        return route('dispute.index', { openAbsenceDelete: notification.data.absence_id });
+    else if (
+        'ticket_id' in notification.data &&
+        [
+            'App\\Notifications\\TicketCreationNotification',
+            'App\\Notifications\\TicketRecordCreationNotification',
+            'App\\Notifications\\TicketUpdateNotification',
+            'App\\Notifications\\TicketDeletionNotification',
+            'App\\Notifications\\TicketFinishNotification',
+        ].includes(notification.type)
+    )
+        return route('ticket.index', { openTicket: notification.data.ticket_id });
+    else if (notification.type == 'App\\Notifications\\DisputeStatusNotification') {
+        if (notification.data.type == 'delete') return '';
+        if (notification.data.log_model == 'App\\Models\\Absence') return route('absence.index', { openAbsence: notification.data.log_id });
+        else if (notification.data.log_model == 'App\\Models\\AbsencePatch')
+            return route('absence.index', { openAbsencePatch: notification.data.log_id });
+        else if (notification.data.log_model == 'App\\Models\\WorkLogPatch')
+            return route('user.workLog.index', { user: page.props.auth.user.id, openWorkLogPatch: notification.data.log_id });
+        else if (notification.data.log_model == 'App\\Models\\WorkLog')
+            return route('user.workLog.index', { user: page.props.auth.user.id, workLog: notification.data.log_id });
+    }
+    return '';
 }

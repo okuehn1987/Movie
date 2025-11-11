@@ -1,43 +1,43 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Paginator, User, UserAppends, Notification } from '@/types/types';
-import { usePagination } from '@/utils';
-import { DateTime } from 'luxon';
-import { toRefs } from 'vue';
+import { Notification, Paginator, User, UserAppends } from '@/types/types';
+import { ref } from 'vue';
+import NotificationTable from './partials/NotificationTable.vue';
 
-const props = defineProps<{
-    notifications: Paginator<Notification>;
+defineProps<{
+    archiveNotifications: Paginator<Notification>;
+    flowNotifications: Paginator<Notification>;
+    tideNotifications: Paginator<Notification>;
     triggeredByUsers: (User & UserAppends)[];
 }>();
 
-const { currentPage, lastPage, data } = usePagination(toRefs(props), 'notifications');
+const currentTab = ref(route().params['tab'] || 'flow');
 </script>
 <template>
     <AdminLayout title="Benachrichtigungen">
         <v-card>
-            <v-card-text>
-                <v-data-table
-                    v-model:page="currentPage"
-                    :headers="[
-                        { title: 'Titel', value: 'data.title' },
-                        { title: 'Am', value: 'created_at' },
-                        { title: 'Von', value: 'triggered_by' },
-                    ]"
-                    :items="
-                        data.map(notification => ({
-                            ...notification,
-                            triggered_by: triggeredByUsers.find(user => user.id == notification.data.triggered_by)?.name || 'System',
-                        }))
-                    "
-                >
-                    <template v-slot:item.created_at="{ item }">
-                        {{ DateTime.fromISO(item.created_at).toFormat('dd.MM.yyyy HH:mm') }}
-                    </template>
-                    <template v-slot:bottom>
-                        <v-pagination v-if="lastPage > 1" v-model="currentPage" :length="lastPage"></v-pagination>
-                    </template>
-                </v-data-table>
-            </v-card-text>
+            <v-tabs v-model="currentTab">
+                <v-tab value="flow">
+                    Flow
+                    <v-badge v-if="flowNotifications.total > 0" :content="flowNotifications.total" color="error" inline></v-badge>
+                </v-tab>
+                <v-tab value="tide">
+                    Tide
+                    <v-badge v-if="tideNotifications.total > 0" :content="tideNotifications.total" color="error" inline></v-badge>
+                </v-tab>
+                <v-tab value="archive">Archiv</v-tab>
+            </v-tabs>
+            <v-tabs-window :model-value="currentTab">
+                <v-tabs-window-item value="flow">
+                    <NotificationTable :triggeredByUsers :notifications="flowNotifications" tab="flow"></NotificationTable>
+                </v-tabs-window-item>
+                <v-tabs-window-item value="tide">
+                    <NotificationTable :triggeredByUsers :notifications="tideNotifications" tab="tide"></NotificationTable>
+                </v-tabs-window-item>
+                <v-tabs-window-item value="archive">
+                    <NotificationTable :triggeredByUsers :notifications="archiveNotifications" tab="archive"></NotificationTable>
+                </v-tabs-window-item>
+            </v-tabs-window>
         </v-card>
     </AdminLayout>
 </template>
