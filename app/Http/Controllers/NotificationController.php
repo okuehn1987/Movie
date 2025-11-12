@@ -25,32 +25,41 @@ use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
+    public static $flowNotificationTypes = [
+        AbsenceNotification::class,
+        AbsenceDeleteNotification::class,
+        AbsencePatchNotification::class,
+        DisputeStatusNotification::class,
+        WorkLogNotification::class,
+        WorkLogPatchNotification::class
+    ];
+
+    public static $tideNotificationTypes = [
+        TicketFinishNotification::class,
+        TicketUpdateNotification::class,
+        TicketCreationNotification::class,
+        TicketDeletionNotification::class,
+        TicketRecordCreationNotification::class,
+        RemovedFromTicketNotification::class
+    ];
+
     public function index(Request $request, #[CurrentUser] User $authUser)
     {
-        $flowNotificationTypes = [
-            AbsenceNotification::class,
-            AbsenceDeleteNotification::class,
-            AbsencePatchNotification::class,
-            DisputeStatusNotification::class,
-            WorkLogNotification::class,
-            WorkLogPatchNotification::class
-        ];
-        $tideNotificationTypes = [
-            TicketFinishNotification::class,
-            TicketUpdateNotification::class,
-            TicketCreationNotification::class,
-            TicketDeletionNotification::class,
-            TicketRecordCreationNotification::class,
-            RemovedFromTicketNotification::class
-        ];
 
-        $notifications = $authUser->notifications()->paginate(10);
-        $flowNotifications = $authUser->unreadNotifications()->whereIn('type', $flowNotificationTypes)->paginate(10);
-        $tideNotifications = $authUser->unreadNotifications()->whereIn('type', $tideNotificationTypes)->paginate(10);
-        $triggeredByUsers = User::inOrganization()->whereIn('id', $notifications->pluck('data.triggered_by'))->get()->each->append('name');
+        $archiveNotifications = $authUser->notifications()->paginate(10);
+        $flowNotifications = $authUser->unreadNotifications()->whereIn('type', self::$flowNotificationTypes)->paginate(10);
+        $tideNotifications = $authUser->unreadNotifications()->whereIn('type', self::$tideNotificationTypes)->paginate(10);
+
+        $userIds = $archiveNotifications->pluck('data.triggered_by')
+            ->merge($flowNotifications->pluck('data.triggered_by'))
+            ->merge($tideNotifications->pluck('data.triggered_by'))
+            ->unique()
+            ->values();
+
+        $triggeredByUsers = User::inOrganization()->whereIn('id', $userIds)->get()->each->append('name');
 
         return Inertia::render('Notification/NotificationIndex', [
-            'archiveNotifications' => $notifications,
+            'archiveNotifications' => $archiveNotifications,
             'flowNotifications' => $flowNotifications,
             'tideNotifications' => $tideNotifications,
             'triggeredByUsers' => $triggeredByUsers,
