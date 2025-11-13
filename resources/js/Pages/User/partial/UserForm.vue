@@ -46,6 +46,7 @@ const userForm = useForm<FormData>({
     resignation_date: null as null | DateString,
     home_office: false,
     home_office_hours_per_week: null, //TODO: check if we need active_since
+    home_office_day_generators: [],
     use_time_balance_traffic_light: false,
     time_balance_yellow_threshold: null as null | number,
     time_balance_red_threshold: null as null | number,
@@ -142,6 +143,17 @@ if (props.user) {
         userForm.user_working_weeks.push({
             id: entry.id,
             active_since: entry.active_since,
+            weekdays,
+        });
+    }
+    for (const entry of props.user.home_office_day_generators) {
+        const weekdays = [] as Weekday[];
+        for (const w of WEEKDAYS) if (entry[w]) weekdays.push(w);
+
+        userForm.home_office_day_generators.push({
+            id: entry.id,
+            start: entry.start,
+            end: entry.end,
             weekdays,
         });
     }
@@ -600,6 +612,91 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             :disabled="!userForm.home_office"
                             :error-messages="userForm.errors.home_office_hours_per_week"
                         ></v-text-field>
+                    </v-col>
+                    <v-col cols="12">
+                        <v-data-table-virtual
+                            :items="userForm.home_office_day_generators"
+                            :headers="[
+                                {
+                                    title: 'Homeoffice Tage',
+                                    key: 'weekdays',
+                                    width: '50%',
+                                    sortable: false,
+                                },
+                                {
+                                    title: 'Start',
+                                    key: 'start',
+                                    sortable: false,
+                                },
+                                {
+                                    title: 'Ende',
+                                    key: 'end',
+                                    sortable: false,
+                                },
+                                {
+                                    title: '',
+                                    key: 'actions',
+                                    align: 'end',
+                                    sortable: false,
+                                },
+                            ]"
+                        >
+                            <template v-slot:header.actions>
+                                <v-btn
+                                    v-if="!user || can('user', 'update')"
+                                    color="primary"
+                                    @click.stop="userForm.home_office_day_generators.push({ start: '', end: '', id: null, weekdays: [] })"
+                                >
+                                    <v-icon icon="mdi-plus"></v-icon>
+                                </v-btn>
+                            </template>
+                            <template v-slot:item.weekdays="{ item, index }">
+                                <v-select
+                                    chips
+                                    :disabled="user && !can('user', 'update')"
+                                    v-model="item.weekdays"
+                                    multiple
+                                    :items="
+                                        Info.weekdays().map((e, i) => ({
+                                            title: e,
+                                            value: Info.weekdays('long', { locale: 'en' })[i]?.toLowerCase(),
+                                        }))
+                                    "
+                                    :error-messages="userForm.errors[`home_office_day_generators.${index}.weekdays`]"
+                                />
+                            </template>
+                            <template v-slot:item.start="{ item, index }">
+                                <v-text-field
+                                    type="date"
+                                    variant="underlined"
+                                    :min="mode == 'edit' ? DateTime.now().toFormat('yyyy-MM-dd') : undefined"
+                                    v-model="item.start"
+                                    :error-messages="userForm.errors[`home_office_day_generators.${index}.start`]"
+                                ></v-text-field>
+                            </template>
+                            <template v-slot:item.end="{ item, index }">
+                                <v-text-field
+                                    type="date"
+                                    variant="underlined"
+                                    :min="mode == 'edit' ? DateTime.now().toFormat('yyyy-MM-dd') : undefined"
+                                    v-model="item.end"
+                                    :error-messages="userForm.errors[`home_office_day_generators.${index}.end`]"
+                                ></v-text-field>
+                            </template>
+
+                            <template v-slot:item.actions="{ item, index }">
+                                <v-btn
+                                    color="error"
+                                    @click.stop="userForm.home_office_day_generators.splice(index, 1)"
+                                    v-if="
+                                        (!user || can('user', 'update')) &&
+                                        (!item.id || (item.start && item.start > DateTime.now().toFormat('yyyy-MM-dd')))
+                                    "
+                                >
+                                    <v-icon icon="mdi-delete"></v-icon>
+                                </v-btn>
+                            </template>
+                        </v-data-table-virtual>
                     </v-col>
                 </v-row>
             </v-card-text>
