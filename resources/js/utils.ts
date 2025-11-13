@@ -125,9 +125,10 @@ export function filterTree<K extends keyof T, T extends { [x in K]?: T[] }>(tree
 export const mapTree = <K extends string & keyof T, T extends { [x in K]?: T[] }, MappedType>(
     tree: T[],
     k: K,
-    fn: (e: Omit<T, K>) => MappedType,
+    fn: (e: Omit<T, K>, level: number) => MappedType,
+    level: number = 0,
 ): Tree<MappedType, K>[] => {
-    return tree.map(e => ({ ...fn(e), [k]: e[k] ? mapTree(e[k], k, fn) : [] } as Tree<MappedType, K>));
+    return tree.map(e => ({ ...fn(e, level), [k]: e[k] ? mapTree(e[k], k, fn, level + 1) : [] } as Tree<MappedType, K>));
 };
 
 export function getStates(country: Country, countries: { title: string; value: Country; regions: Record<FederalState, string> }[]) {

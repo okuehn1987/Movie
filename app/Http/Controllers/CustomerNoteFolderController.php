@@ -18,9 +18,20 @@ class CustomerNoteFolderController extends Controller
     {
         Gate::authorize('publicAuth', User::class);
 
+        $topLevelFolders = $customer->customerNoteFolders()
+            ->whereNull('customer_note_folder_id')
+            ->get(['id']);
+
+        $firstLevelSubfolders = $customer->customerNoteFolders()
+            ->whereIn('customer_note_folder_id', $topLevelFolders->pluck('id'))
+            ->get(['id', 'customer_note_folder_id']);
+
         $validated = $request->validate([
             'name' => 'required|string',
-            'customerNoteFolder' => 'nullable|exists:customer_note_folders,id'
+            'customerNoteFolder' => [
+                'nullable',
+                Rule::in($topLevelFolders->pluck('id')->merge($firstLevelSubfolders->pluck('id')))
+            ]
         ]);
 
         $customerNoteFolder = $validated['customerNoteFolder'] ?? null;

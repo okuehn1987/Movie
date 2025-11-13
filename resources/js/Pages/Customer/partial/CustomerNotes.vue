@@ -19,13 +19,14 @@ const props = defineProps<{
 
 const selectedFolder = ref<CustomerNoteFolder['id'] | null>(props.customerNoteFolders[0]?.id ?? null);
 
-const loadedNotes = ref<CustomerNoteFolder['id'][]>([]);
+const loadedNotes = ref<CustomerNoteFolder['id'][]>(props.customerNoteFolders[0] ? [props.customerNoteFolders[0]?.id] : []);
 const loading = ref(false);
 
 const reload = throttle(() => {
     if (!selectedFolder.value || loadedNotes.value.includes(selectedFolder.value)) return;
     router.reload({
-        data: { selectedNote: selectedFolder.value },
+        data: { selectedFolder: selectedFolder.value },
+        only: ['customerNoteEntries'],
         onStart: () => {
             if (selectedFolder.value) {
                 loadedNotes.value.push(selectedFolder.value);
@@ -49,9 +50,10 @@ const opened = ref([]);
 
 const noteFolders = computed(() => {
     const folders = filterTree(
-        mapTree(props.customerNoteFolders, 'sub_folders', f => ({
+        mapTree(props.customerNoteFolders, 'sub_folders', (f, level) => ({
             name: f.name,
             id: f.id,
+            level,
         })),
         'sub_folders',
         () => true,
@@ -61,7 +63,7 @@ const noteFolders = computed(() => {
 
 const selected = ref();
 
-function onActivate(value: unknown) {
+function onActivate(value: CustomerNoteFolder['id']) {
     selectedFolder.value = (value as CustomerNoteFolder['id'] | null) || null;
 }
 </script>
@@ -84,13 +86,13 @@ function onActivate(value: unknown) {
                         item-title="name"
                         item-value="id"
                         activatable
-                        @update:activated="onActivate"
+                        @update:activated="onActivate(($event as [CustomerNoteFolder['id']])[0])"
                     >
                         <template v-slot:prepend>
                             <v-icon icon="mdi-folder"></v-icon>
                         </template>
                         <template v-slot:append="{ item }">
-                            <CreateEditCustomerNoteFolder :createSubFolder="item" :customer></CreateEditCustomerNoteFolder>
+                            <CreateEditCustomerNoteFolder v-if="item.level < 2" :createSubFolder="item" :customer></CreateEditCustomerNoteFolder>
                             <CreateEditCustomerNoteFolder :editNoteFolder="item" :customer="customer" />
                             <ConfirmDelete
                                 :title="'Kategorie &quot;' + item.name + '&quot; löschen'"

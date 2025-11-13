@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Customer;
 use App\Models\CustomerContact;
+use App\Models\CustomerNoteFolder;
 use App\Models\CustomerOperatingSite;
 use App\Models\Organization;
 use App\Models\User;
@@ -35,10 +36,10 @@ class CustomerController extends Controller
         Gate::authorize('viewShow', Customer::class);
 
         $validated = $request->validate([
-            'selectedFolder' => 'nullable|exists:customer_notes,id',
+            'selectedFolder' => 'nullable|exists:customer_note_folders,id',
         ]);
 
-        $selectedFolder = array_key_exists('selectedFolder', $validated) ? $validated['selectedFolder'] : $customer->customerNoteFolders()->first();
+        $selectedFolder = array_key_exists('selectedFolder', $validated) ? CustomerNoteFolder::find($validated['selectedFolder']) : $customer->customerNoteFolders()->first();
 
         return Inertia::render('Customer/CustomerShow', [
             'customer' => $customer->load('contacts'),
@@ -47,9 +48,11 @@ class CustomerController extends Controller
                 'subFolders:id,name,customer_note_folder_id',
                 'subFolders.subFolders:id,name,customer_note_folder_id'
             ])->get(['id', 'name']),
-            'customerNoteEntries' => Inertia::merge(fn() => [$selectedFolder?->id => $selectedFolder?->entries()
-                ->with(['user' => fn($q) => $q->select(['id', 'first_name', 'last_name'])])
-                ->get(['id', 'type', 'title', 'value', 'updated_at', 'modified_by'])]),
+            'customerNoteEntries' => Inertia::merge(fn() =>  [
+                $selectedFolder?->id => $selectedFolder?->entries()
+                    ->with(['user' => fn($q) => $q->select(['id', 'first_name', 'last_name'])])
+                    ->get(['id', 'type', 'title', 'value', 'updated_at', 'modified_by'])
+            ]),
             'can' => [
                 'customer' => [
                     'viewShow' => Gate::allows('viewShow', Customer::class),
@@ -84,7 +87,7 @@ class CustomerController extends Controller
 
         Customer::create([
             ...$validated,
-            'organization_id' => Organization::id(),
+            'organization_id' => Organization::getCurrent()->id,
         ]);
 
         return back()->with('success', 'Der Kunde wurde erfolgreich angelegt.');

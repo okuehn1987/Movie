@@ -45,7 +45,7 @@ watch(openDialog, isOpen => {
                 :icon="'mdi-plus'"
                 title="Neuen Unterordner anlegen"
             ></v-btn>
-            <v-btn v-else v-bind="activatorProps" color="primary" variant="flat" title="Neue Kategorie anlegen">Kategorie anlegen</v-btn>
+            <v-btn v-else v-bind="activatorProps" color="primary" variant="flat" title="Neuen Ordner anlegen">Ordner anlegen</v-btn>
         </template>
         <template v-slot:default="{ isActive }">
             <v-form
@@ -58,7 +58,10 @@ watch(openDialog, isOpen => {
                           })
                         : createSubFolder
                         ? createNoteFolderForm.post(
-                              route('customer.customerNoteFolder.store', { customer: customer.id, customerNoteFolder: createSubFolder.id }),
+                              route('customer.customerNoteFolder.store', {
+                                  customer: customer.id,
+                                  customerNoteFolder: createSubFolder.id,
+                              }),
                               {
                                   onSuccess: () => {
                                       createNoteFolderForm.reset();
@@ -80,7 +83,7 @@ watch(openDialog, isOpen => {
                             ? 'Kategorie &quot;' + editNoteFolder?.name + '&quot; bearbeiten'
                             : createSubFolder
                             ? 'Unterordner anlegen'
-                            : 'Kategorie anlegen'
+                            : 'Ordner anlegen'
                     "
                 >
                     <template #append>

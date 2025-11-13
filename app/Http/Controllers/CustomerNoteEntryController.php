@@ -17,13 +17,12 @@ class CustomerNoteEntryController extends Controller
     public function store(Request $request, Customer $customer,  #[CurrentUser] User $authUser)
     {
         Gate::authorize('publicAuth', User::class);
-
         $validated = $request->validate([
             'type' => 'required|in:text,file',
             'title' => 'required|string',
             'value' => 'nullable|required_if:type,text|string|max:200',
             'file' => 'nullable|required_if:type,file|file',
-            'selectedFolder' => 'required|int',
+            'selectedFolder' => 'required|exists:customer_note_folders,id',
         ]);
 
         if ($validated['type'] == 'file') {

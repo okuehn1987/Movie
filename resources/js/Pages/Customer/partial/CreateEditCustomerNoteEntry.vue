@@ -15,7 +15,7 @@ const noteEntryForm = useForm({
     title: null as string | null,
     value: null as string | null,
     file: null as File | null,
-    selectedFolder: null as number | null,
+    selectedFolder: props.selectedFolder,
 });
 
 watch(openDialog, isOpen => {
@@ -41,7 +41,6 @@ watch(openDialog, isOpen => {
         <template v-slot:default="{ isActive }">
             <v-form
                 @submit.prevent="
-                    noteEntryForm.selectedFolder = selectedFolder;
                     customerNoteEntry
                         ? noteEntryForm
                               .transform(data => ({ ...data, _method: 'patch' }))
@@ -54,7 +53,7 @@ watch(openDialog, isOpen => {
                               onSuccess: () => {
                                   isActive.value = false;
                               },
-                          });
+                          })
                 "
             >
                 <v-card :title="customerNoteEntry ? 'Kategorie &quot;' + customerNoteEntry?.title + '&quot; bearbeiten' : 'Notiz anlegen'">
