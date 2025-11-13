@@ -16,6 +16,7 @@ const noteEntryForm = useForm({
     value: null as string | null,
     file: null as File | null,
     selectedFolder: props.selectedFolder,
+    metadata: [] as string[],
 });
 
 watch(openDialog, isOpen => {
@@ -86,7 +87,6 @@ watch(openDialog, isOpen => {
                                     :items="[
                                         { title: 'Einzelnotiz', value: 'text' },
                                         { title: 'Datei', value: 'file' },
-                                        { title: 'Ordner', value: 'folder' },
                                     ]"
                                     clearable
                                 ></v-select>
@@ -103,6 +103,16 @@ watch(openDialog, isOpen => {
                             </v-col>
                             <v-col cols="12" v-if="noteEntryForm.type == 'file'">
                                 <v-file-input label="Dateiupload" v-model="noteEntryForm.file" :error-messages="noteEntryForm.errors.value" />
+                            </v-col>
+                            <v-col cols="12">
+                                <v-combobox
+                                    label="Suchbegriffe"
+                                    :items="[]"
+                                    multiple
+                                    chips
+                                    v-model="noteEntryForm.metadata"
+                                    :error-messages="noteEntryForm.errors.metadata"
+                                ></v-combobox>
                             </v-col>
                             <v-col cols="12" class="text-end">
                                 <v-btn color="primary" variant="flat" type="submit">Speichern</v-btn>

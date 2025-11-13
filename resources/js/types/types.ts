@@ -563,6 +563,7 @@ export type CustomerNoteEntry = DBObject<'customerNoteEntry'> & {
     title: string;
     value: string;
     modified_by: User['id'];
+    metadata: string[];
 };
 
 export type TicketUser = DBObject<'ticket_user'> & {

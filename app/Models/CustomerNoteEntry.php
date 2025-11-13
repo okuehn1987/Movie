@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class CustomerNoteEntry extends Model
 {
+    protected $casts = ['metadata' => 'array'];
+
     protected $guarded = [];
 
     public function folder()
