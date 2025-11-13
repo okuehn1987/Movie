@@ -317,6 +317,16 @@ class User extends Authenticatable
         return $this->hasOne(OperatingSiteUser::class);
     }
 
+    public function homeOfficeDays()
+    {
+        return $this->hasMany(HomeOfficeDay::class);
+    }
+
+    public function homeOfficeDayGenerators()
+    {
+        return $this->hasMany(HomeOfficeDayGenerator::class);
+    }
+
     public function workingWeeks(): Attribute
     {
         return Attribute::make(

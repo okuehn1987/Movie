@@ -554,6 +554,20 @@ export type TicketUser = DBObject<'ticket_user'> & {
     user_id: User['id'];
 };
 
+export type HomeOfficeDayGenerator = DBObject<'home_office-day-generators'> & {
+    user_id: User['id'];
+    start: DateString;
+    end: DateString;
+} & Record<Weekday, boolean>;
+
+export type HomeOfficeDay = DBObject<'home_office_days'> &
+    SoftDelete & {
+        user_id: User['id'];
+        home_office_day_generator_id: HomeOfficeDayGenerator['id'] | null;
+        date: DateString;
+        status: Status;
+    };
+
 export type RelationMap = {
     absence: {
         absence_type?: AbsenceType;
@@ -604,6 +618,14 @@ export type RelationMap = {
     groupUser: {
         group: Group;
         user: User;
+    };
+    homeOfficeDayGenerator: {
+        user: User;
+        home_office_days: HomeOfficeDay[];
+    };
+    homeOfficeDay: {
+        user: User;
+        home_office_day_generator: HomeOfficeDayGenerator | null;
     };
     operatingSite: {
         organization: Organization;
@@ -730,6 +752,8 @@ export type RelationMap = {
         current_address: Address;
         addresses: Address[];
         tickets: (Ticket & { pivot: TicketUser })[];
+        home_office_day_generators: HomeOfficeDayGenerator[];
+        home_office_days: HomeOfficeDay[];
     };
     userAbsenceFilter: {
         user: User;
