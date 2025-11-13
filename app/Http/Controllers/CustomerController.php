@@ -48,11 +48,9 @@ class CustomerController extends Controller
                 'subFolders:id,name,customer_note_folder_id',
                 'subFolders.subFolders:id,name,customer_note_folder_id'
             ])->get(['id', 'name']),
-            'customerNoteEntries' => Inertia::merge(fn() =>  [
-                $selectedFolder?->id => $selectedFolder?->entries()
-                    ->with(['user' => fn($q) => $q->select(['id', 'first_name', 'last_name'])])
-                    ->get(['id', 'type', 'title', 'value', 'updated_at', 'modified_by'])
-            ]),
+            'customerNoteEntries' =>  $selectedFolder?->entries()
+                ->with(['user' => fn($q) => $q->select(['id', 'first_name', 'last_name'])])
+                ->get(['id', 'type', 'title', 'value', 'updated_at', 'modified_by']),
             'can' => [
                 'customer' => [
                     'viewShow' => Gate::allows('viewShow', Customer::class),

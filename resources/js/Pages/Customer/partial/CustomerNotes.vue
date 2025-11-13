@@ -10,30 +10,24 @@ import CreateEditCustomerNoteEntry from './CreateEditCustomerNoteEntry.vue';
 
 const props = defineProps<{
     customerNoteFolders: Tree<Pick<CustomerNoteFolder, 'id' | 'customer_id' | 'name'>, 'sub_folders'>[];
-    customerNoteEntries: Record<
-        CustomerNoteFolder['id'],
-        (CustomerNoteEntry & RelationPick<'customerNoteEntry', 'user', 'first_name' | 'last_name'>)[]
-    >;
+    customerNoteEntries: (CustomerNoteEntry & RelationPick<'customerNoteEntry', 'user', 'first_name' | 'last_name'>)[];
     customer: Customer;
 }>();
 
 const selectedFolder = ref<CustomerNoteFolder['id'] | null>(props.customerNoteFolders[0]?.id ?? null);
 
-const loadedNotes = ref<CustomerNoteFolder['id'][]>(props.customerNoteFolders[0] ? [props.customerNoteFolders[0]?.id] : []);
 const loading = ref(false);
 
 const reload = throttle(() => {
-    if (!selectedFolder.value || loadedNotes.value.includes(selectedFolder.value)) return;
+    if (!selectedFolder.value) return;
     router.reload({
         data: { selectedFolder: selectedFolder.value },
         only: ['customerNoteEntries'],
         onStart: () => {
             if (selectedFolder.value) {
-                loadedNotes.value.push(selectedFolder.value);
                 loading.value = true;
             }
         },
-        onError: () => (loadedNotes.value = loadedNotes.value.filter(e => e != selectedFolder.value)),
         onFinish: () => (loading.value = false),
     });
 }, 500);
@@ -110,7 +104,7 @@ function onActivate(value: CustomerNoteFolder['id']) {
                 <v-data-table
                     v-else-if="selectedFolder"
                     :items="
-                        customerNoteEntries[selectedFolder]?.map(n => ({
+                        customerNoteEntries?.map(n => ({
                             ...n,
                             userName: n.user.first_name + ' ' + n.user.last_name + ' am ' + DateTime.fromISO(n.updated_at).toFormat('dd.MM.yyyy'),
                         }))
