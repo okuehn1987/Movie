@@ -5,7 +5,7 @@ import { ref, watch } from 'vue';
 const props = defineProps<{
     selectedFolder: CustomerNoteFolder['id'] | null;
     customer: Customer;
-    customerNoteEntry?: Pick<CustomerNoteEntry, 'id' | 'type' | 'title' | 'value'>;
+    customerNoteEntry?: Pick<CustomerNoteEntry, 'id' | 'type' | 'title' | 'value' | 'metadata'>;
 }>();
 
 const openDialog = ref(false);
@@ -28,10 +28,21 @@ watch(openDialog, isOpen => {
         noteEntryForm.type = entry.type ?? '';
         noteEntryForm.title = entry.title ?? '';
         noteEntryForm.value = entry.value ?? '';
+        noteEntryForm.metadata = entry.metadata ?? [];
     } else {
         noteEntryForm.reset();
     }
 });
+
+watch(
+    () => props.customerNoteEntry,
+    value => {
+        if (value?.metadata) {
+            noteEntryForm.metadata = [...value.metadata];
+        }
+    },
+    { immediate: true },
+);
 </script>
 <template>
     <v-dialog max-width="1000" v-model="openDialog">
@@ -99,7 +110,13 @@ watch(openDialog, isOpen => {
                                 ></v-text-field>
                             </v-col>
                             <v-col cols="12" v-if="noteEntryForm.type == 'text'">
-                                <v-textarea label="Inhalt" v-model="noteEntryForm.value" :error-messages="noteEntryForm.errors.value" />
+                                <v-textarea
+                                    label="Inhalt"
+                                    v-model="noteEntryForm.value"
+                                    max-rows="14"
+                                    auto-grow
+                                    :error-messages="noteEntryForm.errors.value"
+                                />
                             </v-col>
                             <v-col cols="12" v-if="noteEntryForm.type == 'file'">
                                 <v-file-input label="Dateiupload" v-model="noteEntryForm.file" :error-messages="noteEntryForm.errors.value" />
@@ -107,11 +124,14 @@ watch(openDialog, isOpen => {
                             <v-col cols="12">
                                 <v-combobox
                                     label="Suchbegriffe"
-                                    :items="[]"
+                                    :items="customerNoteEntry?.metadata"
                                     multiple
                                     chips
+                                    closable-chips
+                                    clearable
                                     v-model="noteEntryForm.metadata"
                                     :error-messages="noteEntryForm.errors.metadata"
+                                    class="keywords"
                                 ></v-combobox>
                             </v-col>
                             <v-col cols="12" class="text-end">
@@ -124,3 +144,8 @@ watch(openDialog, isOpen => {
         </template>
     </v-dialog>
 </template>
+<style scoped>
+:deep(.keywords) i {
+    display: none;
+}
+</style>

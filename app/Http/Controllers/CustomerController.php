@@ -39,7 +39,9 @@ class CustomerController extends Controller
             'selectedFolder' => 'nullable|exists:customer_note_folders,id',
         ]);
 
-        $selectedFolder = array_key_exists('selectedFolder', $validated) ? CustomerNoteFolder::find($validated['selectedFolder']) : $customer->customerNoteFolders()->first();
+        $selectedFolder = array_key_exists('selectedFolder', $validated)
+            ? CustomerNoteFolder::find($validated['selectedFolder'])
+            : $customer->customerNoteFolders()->first();
 
         return Inertia::render('Customer/CustomerShow', [
             'customer' => $customer->load('contacts'),
@@ -50,7 +52,7 @@ class CustomerController extends Controller
             ])->get(['id', 'name']),
             'customerNoteEntries' =>  $selectedFolder?->entries()
                 ->with(['user' => fn($q) => $q->select(['id', 'first_name', 'last_name'])])
-                ->get(['id', 'type', 'title', 'value', 'updated_at', 'modified_by']),
+                ->get(['id', 'type', 'title', 'value', 'updated_at', 'metadata', 'modified_by']),
             'can' => [
                 'customer' => [
                     'viewShow' => Gate::allows('viewShow', Customer::class),

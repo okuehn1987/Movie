@@ -23,6 +23,9 @@ class CustomerNoteEntryController extends Controller
             'value' => 'nullable|required_if:type,text|string|max:200',
             'file' => 'nullable|required_if:type,file|file',
             'selectedFolder' => 'required|exists:customer_note_folders,id',
+
+            'metadata' => 'nullable|array',
+            'metadata.*' => 'string'
         ]);
 
         if ($validated['type'] == 'file') {
@@ -34,6 +37,7 @@ class CustomerNoteEntryController extends Controller
                 'customer_note_folder_id' => $validated['selectedFolder'],
                 'title' => $validated['title'],
                 'value' => $path,
+                'metadata' => $validated['metadata'],
             ]);
         } else {
             $customer->customerNoteEntries()->create([
@@ -42,6 +46,7 @@ class CustomerNoteEntryController extends Controller
                 'customer_note_folder_id' => $validated['selectedFolder'],
                 'title' => $validated['title'],
                 'value' => $validated['value'],
+                'metadata' => $validated['metadata'],
             ]);
         }
 
@@ -58,6 +63,9 @@ class CustomerNoteEntryController extends Controller
             'value' => 'nullable|required_if:type,text|string|max:200',
             'file' => 'nullable|required_if:type,file|file',
             'selectedFolder' => 'required|int',
+
+            'metadata' => 'present|array',
+            'metadata.*' => 'string'
         ]);
 
         if ($validated['type'] == 'file') {
@@ -71,6 +79,7 @@ class CustomerNoteEntryController extends Controller
                 'modified_by' => $authUser->id,
                 'type' => $validated['type'],
                 'title' => $validated['title'],
+                'metadata' => $validated['metadata'],
                 ...(array_key_exists('file', $validated) && $validated['file'] ? ['value' =>  $path] : []),
             ]);
         } else {
@@ -83,6 +92,7 @@ class CustomerNoteEntryController extends Controller
                 'type' => $validated['type'],
                 'title' => $validated['title'],
                 'value' => $validated['value'],
+                'metadata' => $validated['metadata'],
             ]);
         }
 
