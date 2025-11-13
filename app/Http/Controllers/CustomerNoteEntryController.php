@@ -74,6 +74,10 @@ class CustomerNoteEntryController extends Controller
                 ...(array_key_exists('file', $validated) && $validated['file'] ? ['value' =>  $path] : []),
             ]);
         } else {
+            if ($customerNoteEntry->type == 'file' && $customerNoteEntry->value) {
+                Storage::disk('customer_note_files')->delete($customerNoteEntry->value);
+            }
+
             $customerNoteEntry->update([
                 'modified_by' => $authUser->id,
                 'type' => $validated['type'],
