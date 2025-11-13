@@ -215,3 +215,24 @@ export function getBrowser(): Browser {
 
     return browser;
 }
+
+export function useClickHandler() {
+    const singleClickTimer = ref<number | null>(null);
+    const handlerState = ref<unknown>();
+
+    function clickHandler(singleClickFunction: () => void, doubleClickFunction: (state?: unknown) => void, stateToAdd: unknown, delay: number = 200) {
+        if (!singleClickTimer.value) {
+            handlerState.value = stateToAdd;
+            singleClickTimer.value = setTimeout(() => {
+                singleClickFunction();
+                singleClickTimer.value = null;
+            }, delay);
+        } else {
+            doubleClickFunction(handlerState.value);
+            clearTimeout(singleClickTimer.value);
+            singleClickTimer.value = null;
+        }
+    }
+
+    return { clickHandler };
+}

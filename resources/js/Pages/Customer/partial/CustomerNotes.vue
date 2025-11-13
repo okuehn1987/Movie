@@ -2,7 +2,7 @@
 import { Customer, CustomerNoteEntry, CustomerNoteFolder, RelationPick, Tree } from '@/types/types';
 import { computed, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { filterTree, mapTree, throttle, useMaxScrollHeight } from '@/utils';
+import { filterTree, mapTree, throttle, useClickHandler, useMaxScrollHeight } from '@/utils';
 import { DateTime } from 'luxon';
 import CreateEditCustomerNoteFolder from './CreateEditCustomerNoteFolder.vue';
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
@@ -40,7 +40,7 @@ function openFile(note: CustomerNoteEntry) {
 
 const height = useMaxScrollHeight(48);
 
-const opened = ref([]);
+const opened = ref<CustomerNoteFolder['id'][]>([]);
 
 const noteFolders = computed(() => {
     const folders = filterTree(
@@ -55,10 +55,18 @@ const noteFolders = computed(() => {
     return folders;
 });
 
-const selected = ref();
-
+const { clickHandler: doubleClickHandler } = useClickHandler();
 function onActivate(value: CustomerNoteFolder['id']) {
-    selectedFolder.value = (value as CustomerNoteFolder['id'] | null) || null;
+    doubleClickHandler(
+        () => {
+            selectedFolder.value = (value as CustomerNoteFolder['id'] | null) ?? selectedFolder.value;
+        },
+        state => {
+            if (opened.value.includes(value ?? state)) opened.value = opened.value.filter(e => e != (value ?? state));
+            else opened.value.push(value ?? state);
+        },
+        value,
+    );
 }
 </script>
 <template>
@@ -74,16 +82,17 @@ function onActivate(value: CustomerNoteFolder['id']) {
                     <v-treeview
                         :indentLines="true"
                         v-model:opened="opened"
-                        v-model:selected="selected"
                         item-children="sub_folders"
                         :items="noteFolders"
-                        item-title="name"
                         item-value="id"
                         activatable
                         @update:activated="onActivate(($event as [CustomerNoteFolder['id']])[0])"
                     >
                         <template v-slot:prepend>
                             <v-icon icon="mdi-folder"></v-icon>
+                        </template>
+                        <template v-slot:title="{ item }">
+                            <span style="user-select: none">{{ item.name }}</span>
                         </template>
                         <template v-slot:append="{ item }">
                             <CreateEditCustomerNoteFolder v-if="item.level < 2" :createSubFolder="item" :customer></CreateEditCustomerNoteFolder>
