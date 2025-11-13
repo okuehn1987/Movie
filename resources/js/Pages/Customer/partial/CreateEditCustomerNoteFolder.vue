@@ -45,7 +45,7 @@ watch(openDialog, isOpen => {
                 :icon="'mdi-plus'"
                 title="Neuen Unterordner anlegen"
             ></v-btn>
-            <v-btn v-else v-bind="activatorProps" color="primary" variant="flat" title="Neuen Ordner anlegen">Ordner anlegen</v-btn>
+            <v-btn v-else v-bind="activatorProps" class="w-100" color="primary" variant="flat" title="Neuen Ordner anlegen">Ordner anlegen</v-btn>
         </template>
         <template v-slot:default="{ isActive }">
             <v-form
