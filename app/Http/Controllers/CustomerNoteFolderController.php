@@ -32,7 +32,7 @@ class CustomerNoteFolderController extends Controller
                 'nullable',
                 Rule::in($topLevelFolders->pluck('id')->merge($firstLevelSubfolders->pluck('id')))
             ]
-        ]);
+        ], ['name.required' => 'Bezeichnung ist erforderlich.']);
 
         $customerNoteFolder = $validated['customerNoteFolder'] ?? null;
 

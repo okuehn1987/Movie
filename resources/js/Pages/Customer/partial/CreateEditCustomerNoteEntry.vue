@@ -11,7 +11,7 @@ const props = defineProps<{
 const openDialog = ref(false);
 
 const noteEntryForm = useForm({
-    type: null as string | null,
+    type: 'text' as string,
     title: null as string | null,
     value: null as string | null,
     file: null as File | null,
@@ -101,7 +101,7 @@ watch(
                                         { title: 'Einzelnotiz', value: 'text' },
                                         { title: 'Datei', value: 'file' },
                                     ]"
-                                    clearable
+                                    :error-messages="noteEntryForm.errors.type"
                                 ></v-select>
                             </v-col>
                             <v-col cols="12">
@@ -124,7 +124,13 @@ watch(
                                 </v-alert>
                             </v-col>
                             <v-col cols="12" v-if="noteEntryForm.type == 'file'">
-                                <v-file-input label="Dateiupload" v-model="noteEntryForm.file" :error-messages="noteEntryForm.errors.value" />
+                                <v-file-input
+                                    prepend-icon=""
+                                    prepend-inner-icon="mdi-paperclip"
+                                    label="Dateiupload"
+                                    v-model="noteEntryForm.file"
+                                    :error-messages="noteEntryForm.errors.file"
+                                />
                             </v-col>
                             <v-col cols="12">
                                 <v-combobox

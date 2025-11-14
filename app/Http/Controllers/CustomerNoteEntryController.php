@@ -27,7 +27,7 @@ class CustomerNoteEntryController extends Controller
 
             'metadata' => 'nullable|array',
             'metadata.*' => 'nullable|string'
-        ]);
+        ], ['title.required' => 'Bezeichnung ist erforderlich.', 'file.required_if' => 'Datei ist erforderlich, wenn der Typ Datei ausgewählt ist.']);
 
         $path = array_key_exists('file', $validated) && $validated['file'] ?
             Storage::disk('customer_note_files')->putFile($validated['file']) :
