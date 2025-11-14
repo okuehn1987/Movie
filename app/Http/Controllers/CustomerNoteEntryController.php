@@ -8,6 +8,7 @@ use App\Models\CustomerNoteFolder;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 
@@ -25,30 +26,20 @@ class CustomerNoteEntryController extends Controller
             'selectedFolder' => 'required|exists:customer_note_folders,id',
 
             'metadata' => 'nullable|array',
-            'metadata.*' => 'string'
+            'metadata.*' => 'nullable|string'
         ]);
 
-        if ($validated['type'] == 'file') {
-            $path = $validated['file'] ? Storage::disk('customer_note_files')->putFile($validated['file']) : null;
+        $path = array_key_exists('file', $validated) && $validated['file'] ?
+            Storage::disk('customer_note_files')->putFile($validated['file']) :
+            $validated['value'];
 
-            $customer->customerNoteEntries()->create([
-                'type' => $validated['type'],
-                'modified_by' => $authUser->id,
-                'customer_note_folder_id' => $validated['selectedFolder'],
-                'title' => $validated['title'],
-                'value' => $path,
-                'metadata' => $validated['metadata'],
-            ]);
-        } else {
-            $customer->customerNoteEntries()->create([
-                'type' => $validated['type'],
-                'modified_by' => $authUser->id,
-                'customer_note_folder_id' => $validated['selectedFolder'],
-                'title' => $validated['title'],
-                'value' => $validated['value'],
-                'metadata' => $validated['metadata'],
-            ]);
-        }
+        $customer->customerNoteEntries()->create([
+            ...Arr::except($validated, ['selectedFolder', 'file']),
+            'modified_by' => $authUser->id,
+            'customer_note_folder_id' => $validated['selectedFolder'],
+            'value' => $path,
+            'metadata' => $validated['metadata'] ?? []
+        ]);
 
         return back()->with('success', 'Notiz wurde erfolgreich angelegt');
     }

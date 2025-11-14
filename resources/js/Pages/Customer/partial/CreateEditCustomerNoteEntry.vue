@@ -61,11 +61,13 @@ watch(
                                       isActive.value = false;
                                   },
                               })
-                        : noteEntryForm.post(route('customer.customerNoteEntry.store', { customer: customer.id, selectedFolder: selectedFolder }), {
-                              onSuccess: () => {
-                                  isActive.value = false;
-                              },
-                          })
+                        : noteEntryForm
+                              .transform(data => ({ ...data, metadata: data.metadata.length == 0 ? null : data.metadata }))
+                              .post(route('customer.customerNoteEntry.store', { customer: customer.id, selectedFolder: selectedFolder }), {
+                                  onSuccess: () => {
+                                      isActive.value = false;
+                                  },
+                              })
                 "
             >
                 <v-card :title="customerNoteEntry ? 'Kategorie &quot;' + customerNoteEntry?.title + '&quot; bearbeiten' : 'Notiz anlegen'">
