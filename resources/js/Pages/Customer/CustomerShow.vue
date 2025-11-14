@@ -13,10 +13,7 @@ defineProps<{
     customer: Customer & Pick<Relations<'customer'>, 'contacts'>;
     operatingSites: (CustomerOperatingSite & Pick<Relations<'customerOperatingSite'>, 'current_address'>)[];
     customerNoteFolders: Tree<Pick<CustomerNoteFolder, 'id' | 'customer_id' | 'name'>, 'sub_folders'>[];
-    customerNoteEntries: Record<
-        CustomerNoteFolder['id'],
-        (CustomerNoteEntry & RelationPick<'customerNoteEntry', 'user', 'first_name' | 'last_name'>)[]
-    >;
+    customerNoteEntries: (CustomerNoteEntry & RelationPick<'customerNoteEntry', 'user', 'first_name' | 'last_name'>)[];
 }>();
 
 const currentTab = ref('customerData');

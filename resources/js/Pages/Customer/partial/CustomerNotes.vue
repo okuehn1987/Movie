@@ -73,40 +73,45 @@ function onActivate(value: CustomerNoteFolder['id']) {
     <v-card :style="{ height }" title="Kundennotizen">
         <template #append></template>
         <v-divider></v-divider>
-        <div class="d-flex">
+        <v-alert color="warning" v-if="customerNoteFolders.length == 0">
+            <div class="d-flex align-center">
+                <v-icon icon="mdi-information" class="me-2"></v-icon>
+                <span class="me-2">Es existiert noch kein Ordner, hier kannst du einen anlegen:</span>
+                <CreateEditCustomerNoteFolder :customer :hasFolders="false"></CreateEditCustomerNoteFolder>
+            </div>
+        </v-alert>
+        <div v-else class="d-flex">
             <div class="flex-shrink-1" style="max-width: 40%">
-                <v-tabs direction="vertical">
-                    <div class="ma-2" @click.stop="() => {}">
-                        <CreateEditCustomerNoteFolder :customer></CreateEditCustomerNoteFolder>
-                    </div>
-                    <v-treeview
-                        :indentLines="true"
-                        v-model:opened="opened"
-                        item-children="sub_folders"
-                        :items="noteFolders"
-                        item-value="id"
-                        activatable
-                        @update:activated="onActivate(($event as [CustomerNoteFolder['id']])[0])"
-                    >
-                        <template v-slot:prepend>
-                            <v-icon icon="mdi-folder"></v-icon>
-                        </template>
-                        <template v-slot:title="{ item }">
-                            <span style="user-select: none">{{ item.name }}</span>
-                        </template>
-                        <template v-slot:append="{ item }">
-                            <CreateEditCustomerNoteFolder v-if="item.level < 2" :createSubFolder="item" :customer></CreateEditCustomerNoteFolder>
-                            <CreateEditCustomerNoteFolder :editNoteFolder="item" :customer="customer" />
-                            <ConfirmDelete
-                                :title="'Kategorie &quot;' + item.name + '&quot; löschen'"
-                                :content="
-                                    'Bist du dir sicher, dass du die Kategorie &quot;' + item.name + '&quot; mit all ihren Inhalten löschen möchtest?'
-                                "
-                                :route="route('customerNoteFolder.destroy', { customerNoteFolder: item.id })"
-                            ></ConfirmDelete>
-                        </template>
-                    </v-treeview>
-                </v-tabs>
+                <div class="ma-2">
+                    <CreateEditCustomerNoteFolder :customer :hasFolders="true"></CreateEditCustomerNoteFolder>
+                </div>
+                <v-treeview
+                    :indentLines="true"
+                    v-model:opened="opened"
+                    item-children="sub_folders"
+                    :items="noteFolders"
+                    item-value="id"
+                    activatable
+                    @update:activated="onActivate(($event as [CustomerNoteFolder['id']])[0])"
+                >
+                    <template v-slot:prepend>
+                        <v-icon icon="mdi-folder"></v-icon>
+                    </template>
+                    <template v-slot:title="{ item }">
+                        <span style="user-select: none">{{ item.name }}</span>
+                    </template>
+                    <template v-slot:append="{ item }">
+                        <CreateEditCustomerNoteFolder v-if="item.level < 2" :createSubFolder="item" :customer></CreateEditCustomerNoteFolder>
+                        <CreateEditCustomerNoteFolder :editNoteFolder="item" :customer="customer" />
+                        <ConfirmDelete
+                            :title="'Kategorie &quot;' + item.name + '&quot; löschen'"
+                            :content="
+                                'Bist du dir sicher, dass du die Kategorie &quot;' + item.name + '&quot; mit all ihren Inhalten löschen möchtest?'
+                            "
+                            :route="route('customerNoteFolder.destroy', { customerNoteFolder: item.id })"
+                        ></ConfirmDelete>
+                    </template>
+                </v-treeview>
             </div>
             <div class="flex-grow-1">
                 <v-skeleton-loader v-if="loading" type="table"></v-skeleton-loader>

@@ -63,9 +63,9 @@ class CustomerNoteFolderController extends Controller
     public function destroy(CustomerNoteFolder $customerNoteFolder)
     {
         Gate::authorize('publicAuth', User::class);
-        //TODO: when entrys work, have a look at entry deletion
+
         $customerNoteFolder->delete();
 
-        return back()->with('success', 'Kategorie erfolgreich gelöscht');
+        return redirect(route('customer.show', ['customer' => $customerNoteFolder->customer_id]))->with('success', 'Kategorie erfolgreich gelöscht');
     }
 }

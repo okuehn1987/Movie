@@ -117,6 +117,9 @@ watch(
                                     auto-grow
                                     :error-messages="noteEntryForm.errors.value"
                                 />
+                                <v-alert v-if="customerNoteEntry?.type == 'file' && noteEntryForm.type == 'text'" type="warning">
+                                    Wird der Anlegungstyp auf „Einzelnotiz“ geändert, wird beim Speichern die zuvor vorhandene Datei gelöscht.
+                                </v-alert>
                             </v-col>
                             <v-col cols="12" v-if="noteEntryForm.type == 'file'">
                                 <v-file-input label="Dateiupload" v-model="noteEntryForm.file" :error-messages="noteEntryForm.errors.value" />
@@ -124,14 +127,13 @@ watch(
                             <v-col cols="12">
                                 <v-combobox
                                     label="Suchbegriffe"
-                                    :items="customerNoteEntry?.metadata"
+                                    autocomplete="off"
                                     multiple
                                     chips
                                     closable-chips
                                     clearable
                                     v-model="noteEntryForm.metadata"
                                     :error-messages="noteEntryForm.errors.metadata"
-                                    class="keywords"
                                 ></v-combobox>
                             </v-col>
                             <v-col cols="12" class="text-end">
@@ -144,8 +146,4 @@ watch(
         </template>
     </v-dialog>
 </template>
-<style scoped>
-:deep(.keywords) i {
-    display: none;
-}
-</style>
+<style scoped></style>

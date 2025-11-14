@@ -6,6 +6,7 @@ const props = defineProps<{
     customer: Customer;
     editNoteFolder?: Tree<Pick<CustomerNoteFolder, 'id' | 'name'>, 'sub_folders'>;
     createSubFolder?: Tree<Pick<CustomerNoteFolder, 'id' | 'name'>, 'sub_folders'>;
+    hasFolders?: boolean;
 }>();
 
 const openDialog = ref(false);
@@ -45,7 +46,9 @@ watch(openDialog, isOpen => {
                 :icon="'mdi-plus'"
                 title="Neuen Unterordner anlegen"
             ></v-btn>
-            <v-btn v-else v-bind="activatorProps" class="w-100" color="primary" variant="flat" title="Neuen Ordner anlegen">Ordner anlegen</v-btn>
+            <v-btn v-else v-bind="activatorProps" :class="{ 'w-100': hasFolders }" color="primary" variant="flat" title="Neuen Ordner anlegen">
+                Ordner anlegen
+            </v-btn>
         </template>
         <template v-slot:default="{ isActive }">
             <v-form
