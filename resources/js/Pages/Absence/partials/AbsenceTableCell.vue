@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AbsenceType, Weekday } from '@/types/types';
+import { AbsenceType, HomeOfficeDay, Weekday } from '@/types/types';
 import { DateTime } from 'luxon';
 import { computed } from 'vue';
 import { AbsencePatchProp, AbsenceProp, getEntryState, UserProp } from '../utils';
@@ -10,6 +10,7 @@ const props = defineProps<{
     entries: (AbsenceProp | AbsencePatchProp)[];
     absenceTypes: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
     holidays: Record<string, string> | null;
+    homeOfficeDays: Pick<HomeOfficeDay, 'id' | 'user_id' | 'date' | 'status'>[];
 }>();
 
 const currentEntry = computed(() => props.entries.find(a => DateTime.fromSQL(a.start) <= props.date && props.date <= DateTime.fromSQL(a.end)));
@@ -23,6 +24,10 @@ function shouldUserWork(day: DateTime) {
         currentWorkingWeek[day.setLocale('en-US').weekdayLong?.toLowerCase() as Weekday] &&
         !props.holidays?.[props.date.toFormat('yyyy-MM-dd')]
     );
+}
+
+function hasHomeOfficeDay() {
+    return !!props.homeOfficeDays.find(d => d.date === props.date.toFormat('yyyy-MM-dd'));
 }
 </script>
 <template>
@@ -42,7 +47,11 @@ function shouldUserWork(day: DateTime) {
                 <span v-if="currentEntry.absence_type_id">{{ currentEntry.absence_type?.abbreviation }}</span>
             </div>
         </template>
-        <div v-else :style="{ backgroundColor: shouldUserWork(date) ? '' : 'lightgray' }" class="h-100 w-100 empty"></div>
+        <div
+            v-else
+            :style="{ backgroundColor: shouldUserWork(date) ? (hasHomeOfficeDay() ? '#a7e8f1' : '') : 'lightgray' }"
+            class="h-100 w-100 empty"
+        ></div>
     </td>
 </template>
 

@@ -8,7 +8,7 @@ const emit = defineEmits<{
 }>();
 const props = defineProps<{
     users: Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'>[];
-    absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
+    absenceTypes: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
     selectedAbsence: AbsenceProp | AbsencePatchProp;
     absenceUser: UserProp;
 }>();
@@ -69,7 +69,7 @@ function withdrawRequest() {
                             <v-col cols="12">
                                 <v-select
                                     label="Abwesenheitsgrund angeben"
-                                    :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
+                                    :items="absenceTypes.map(a => ({ title: a.name, value: a.id }))"
                                     :model-value="selectedAbsence.absence_type_id"
                                 ></v-select>
                             </v-col>

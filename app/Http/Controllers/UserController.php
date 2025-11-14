@@ -113,8 +113,6 @@ class UserController extends Controller
             }],
             'home_office_day_generators.*.end' => 'required|date|after_or_equal:home_office_day_generators.*.start',
 
-
-
             'user_working_hours' => 'present|array',
             'user_working_hours.*.id' => 'nullable|exists:user_working_hours,id',
             'user_working_hours.*.weekly_working_hours' => 'required|min:0|decimal:0,2',
@@ -188,6 +186,8 @@ class UserController extends Controller
                 }
             }],
             ...$additionalRules
+        ], [
+            'home_office_day_generators.*.end.after_or_equal' => 'Das Ende des gewählten Zeitraums darf nicht vor dem Startdatum sein.'
         ]);
     }
 
@@ -635,7 +635,6 @@ class UserController extends Controller
                     fn($i) => Carbon::parse($generator['start'])->subDays($i)
                 )->sort();
 
-                // dd($previousGeneratedDays, $daysToGenerate);
                 $daysToGenerate = collect();
 
                 foreach ($daysRangeToGenerate as $currentDay) {

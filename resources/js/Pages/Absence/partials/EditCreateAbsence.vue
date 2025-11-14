@@ -10,7 +10,7 @@ const emit = defineEmits<{
 }>();
 const props = defineProps<{
     users: UserProp[];
-    absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval'>[];
+    absenceTypes: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval'>[];
     selectedAbsence: AbsenceProp | AbsencePatchProp | null;
     selectedDate: DateTime | null;
 }>();
@@ -23,12 +23,14 @@ const absenceForm = useForm({
     user_id: props.selectedAbsence?.user_id ?? selectedUser.value,
     start: props.selectedAbsence?.start ?? props.selectedDate?.toFormat('yyyy-MM-dd') ?? null,
     end: props.selectedAbsence?.end ?? props.selectedDate?.toFormat('yyyy-MM-dd') ?? null,
-    absence_type_id: props.selectedAbsence?.absence_type_id ?? null,
+    absence_type_id: (props.selectedAbsence?.absence_type_id ?? null) as AbsenceType['id'] | null | 'homeOffice',
     absence_id: props.selectedAbsence && 'absence_id' in props.selectedAbsence ? props.selectedAbsence.absence_id : props.selectedAbsence?.id ?? null,
 });
 
 function saveAbsence() {
-    if (absenceForm.absence_id) {
+    if (absenceForm.absence_type_id == 'homeOffice') {
+        absenceForm.post(route('homeOfficeDay.store'));
+    } else if (absenceForm.absence_id) {
         absenceForm.post(route('absence.absencePatch.store', { absence: absenceForm.absence_id }), {
             onSuccess: () => {
                 absenceForm.reset();
@@ -63,7 +65,7 @@ function deleteAbsence() {
 }
 
 const requiresApproval = computed(() => {
-    const type = props.absence_types.find(a => a.id === absenceForm.absence_type_id);
+    const type = props.absenceTypes.find(a => a.id === absenceForm.absence_type_id);
     return !props.selectedAbsence || (type?.requires_approval && usePage().props.auth.user.supervisor_id);
 });
 </script>
@@ -107,7 +109,10 @@ const requiresApproval = computed(() => {
                             <v-col cols="12">
                                 <v-select
                                     label="Abwesenheitsgrund angeben"
-                                    :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
+                                    :items="[
+                                        ...absenceTypes.map(a => ({ title: a.name, value: a.id })),
+                                        { title: 'Homeoffice', value: 'homeOffice' },
+                                    ]"
                                     v-model="absenceForm.absence_type_id"
                                     :error-messages="absenceForm.errors.absence_type_id"
                                 ></v-select>

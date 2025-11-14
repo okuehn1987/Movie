@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class HomeOfficeDayGenerator extends Model
 {
+    use ScopeInOrganization;
+
     protected $guarded = [];
 
     public function user()

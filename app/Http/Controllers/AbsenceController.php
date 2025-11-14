@@ -6,6 +6,7 @@ use App\Models\Absence;
 use App\Models\AbsencePatch;
 use App\Models\AbsenceType;
 use App\Enums\Status;
+use App\Models\HomeOfficeDay;
 use App\Models\OperatingSite;
 use App\Models\Organization;
 use App\Models\User;
@@ -58,12 +59,18 @@ class AbsenceController extends Controller
 
 
         $visibleUsers = User::inOrganization()
-            ->where(function ($query) {
+            ->where(
+                fn($query) =>
                 $query->whereNull('resignation_date')
-                    ->orWhere('resignation_date', '>=', now()->startOfYear());
-            })
+                    ->orWhere('resignation_date', '>=', $date->copy()->startOfYear())
+            )
             ->get()
             ->filter(fn($u) =>  $authUser->can('viewShow', [Absence::class, $u]));
+
+        $homeOfficeDays = HomeOfficeDay::inOrganization()
+            ->whereIn('user_id', $visibleUsers->pluck('id'))
+            ->whereBetween('date', [$date->copy()->startOfMonth(), $date->copy()->endOfMonth()])
+            ->get(['id', 'user_id', 'date', 'status']);
 
         $absences = Absence::inOrganization()
             ->doesntHave('currentAcceptedPatch')
@@ -166,11 +173,12 @@ class AbsenceController extends Controller
                         ]
                     ]
                 ])->values(),
-            'absence_types' => fn() => AbsenceType::inOrganization()->get(['id', 'name', 'abbreviation', 'requires_approval']),
+            'absenceTypes' => fn() => AbsenceType::inOrganization()->get(['id', 'name', 'abbreviation', 'requires_approval']),
             'absences' =>  Inertia::merge(fn() => $absences),
             'absencePatches' =>  Inertia::merge(fn() => $absencePatches),
             'holidays' =>  Inertia::merge(fn() => $holidays->isEmpty() ? (object)[] : $holidays),
-            'user_absence_filters' => $authUser->userAbsenceFilters,
+            'userAbsenceFilters' => $authUser->userAbsenceFilters,
+            'homeOfficeDays' => Inertia::merge(fn() => $homeOfficeDays),
             'date' => $date,
             'can' => [
                 'user' => [

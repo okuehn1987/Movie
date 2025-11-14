@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { AbsenceType, DateString, Status, User, UserAbsenceFilter } from '@/types/types';
+import { AbsenceType, DateString, HomeOfficeDay, Status, User, UserAbsenceFilter } from '@/types/types';
 import { throttle, useMaxScrollHeight } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
@@ -16,10 +16,11 @@ const props = defineProps<{
     users: UserProp[];
     absences: AbsenceProp[];
     absencePatches: AbsencePatchProp[];
-    absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval' | 'type'>[];
+    absenceTypes: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval' | 'type'>[];
     holidays: Record<string, string> | null;
     date: DateString;
-    user_absence_filters: UserAbsenceFilter[];
+    userAbsenceFilters: UserAbsenceFilter[];
+    homeOfficeDays: Pick<HomeOfficeDay, 'id' | 'user_id' | 'date' | 'status'>[];
 }>();
 
 const dateParam = route().params['date'];
@@ -48,6 +49,12 @@ watch(
         else currentFilterForm.value = groupFilterForm;
     },
     { deep: true },
+);
+
+const currentMonthHomeOfficeDays = computed(() =>
+    props.homeOfficeDays.filter(
+        h => h.date >= currentDate.value.startOf('month').toFormat('yyyy-MM-dd') && h.date <= currentDate.value.endOf('month').toFormat('yyyy-MM-dd'),
+    ),
 );
 
 const currentMonthEntries = computed(() => {
@@ -159,7 +166,7 @@ const display = useDisplay();
     <AdminLayout title="Abwesenheiten">
         <EditCreateAbsence
             v-if="openEditCreateAbsenceModal && selectedUser"
-            :absence_types
+            :absenceTypes
             :users
             :selectedAbsence
             :selectedDate
@@ -169,7 +176,7 @@ const display = useDisplay();
         ></EditCreateAbsence>
         <ShowAbsenceModal
             v-if="openShowAbsenceModal && selectedAbsence && selectedAbsenceUser"
-            :absence_types
+            :absenceTypes
             :users
             :selectedAbsence
             :absenceUser="selectedAbsenceUser"
@@ -180,9 +187,9 @@ const display = useDisplay();
             <v-card-text class="px-sm-4 px-0">
                 <div class="d-flex align-center w-100" :class="display.mdAndUp.value ? 'justify-space-between' : 'justify-center'">
                     <AbsenceFilter
-                        :absence_types
+                        :absenceTypes
                         :users
-                        :user_absence_filters
+                        :userAbsenceFilters
                         v-model:filterForm="groupFilterForm"
                         v-model:singleFilterForm="singleFilterForm"
                     ></AbsenceFilter>
@@ -288,10 +295,11 @@ const display = useDisplay();
                                 v-else
                                 @click="can('absence', 'create', item) && createAbsenceModal(item.id, DateTime.fromISO(header.key!))"
                                 :holidays="holidays"
-                                :absenceTypes="absence_types"
+                                :absenceTypes="absenceTypes"
                                 :user="item"
                                 :date="DateTime.fromISO(header.key!)"
                                 :entries="currentEntries.filter(a => a.user_id === item.id)"
+                                :homeOfficeDays="currentMonthHomeOfficeDays.filter(u => u.user_id === item.id)"
                             ></AbsenceTableCell>
                         </template>
                     </tr>

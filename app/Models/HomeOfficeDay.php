@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class HomeOfficeDay extends Model
 {
     use SoftDeletes;
+    use ScopeInOrganization;
+
     protected $guarded = [];
 
     public function user()

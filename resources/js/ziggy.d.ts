@@ -198,6 +198,19 @@ declare module 'ziggy-js' {
             "required": true
         }
     ],
+    "homeOfficeDay.store": [],
+    "homeOfficeDay.update": [
+        {
+            "name": "homeOfficeDay",
+            "required": true
+        }
+    ],
+    "homeOfficeDay.destroy": [
+        {
+            "name": "homeOfficeDay",
+            "required": true
+        }
+    ],
     "operatingSite.index": [],
     "operatingSite.store": [],
     "operatingSite.show": [

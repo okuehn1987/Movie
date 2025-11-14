@@ -183,7 +183,7 @@ function submit() {
     }));
     const onError = () => {
         nextTick(() => {
-            const alerts = [...document.querySelectorAll('#userForm [role="alert"]')];
+            const alerts = [...document.querySelectorAll('#userForm [role="alert"] > .v-messages')];
             const error = alerts.filter(e => e.children.length > 0)[0] as HTMLElement | undefined;
 
             if (error) {
