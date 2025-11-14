@@ -1,0 +1,67 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Enums\Status;
+use App\Models\Absence;
+use App\Models\AbsencePatch;
+use App\Models\HomeOfficeDay;
+use App\Models\OperatingSite;
+use App\Models\User;
+use App\Notifications\DisputeStatusNotification;
+use App\Notifications\HomeOfficeDayDisputeStatusNotification;
+use App\Notifications\HomeOfficeDayNotification;
+use Carbon\Carbon;
+use Illuminate\Container\Attributes\CurrentUser;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
+
+class HomeOfficeDayController extends Controller
+{
+    public function store(Request $request, #[CurrentUser()] User $authUser)
+    {
+        $user = User::find($request['user_id']);
+        Gate::authorize('create', [Absence::class, $user]);
+        // dd($request->all());
+
+        $validated = $request->validate([
+            'start' => ['required', 'date', function ($attr, $val, $fail) use ($user, $request) {
+                if (
+                    AbsencePatch::getCurrentEntries($user, true)
+                    ->where('start', '<=', $request['end'])
+                    ->where('end', '>=', $request['start'])
+                    ->count() > 0
+                )
+                    $fail('In diesem Zeitraum besteht bereits eine Abwesenheit.');
+            }],
+            'end' => 'required|date|after_or_equal:start',
+
+            'user_id' => [
+                'required',
+                Rule::exists('users', 'id')->whereIn('operating_site_id', OperatingSite::inOrganization()->select('id'))
+            ]
+
+        ]);
+
+        $requires_approval = !!$authUser->supervisor_id;
+
+        $newHomeOfficeDays = collect();
+
+        for ($date = Carbon::parse($validated['start'])->copy(); $date->lte(Carbon::parse($validated['end'])); $date->addDay()) {
+            $newHomeOfficeDays->push(HomeOfficeDay::create([
+                'user_id' => $validated['user_id'],
+                'date' => $date,
+                'status' => Status::Created,
+            ]));
+        };
+
+        if ($authUser->id !== $validated['user_id']) {
+            $user->user->notify(new HomeOfficeDayDisputeStatusNotification($, $requires_approval ? Status::Created : Status::Accepted));
+        }
+        if ($requires_approval) $authUser->supervisor->notify(new HomeOfficeDayNotification($authUser, ));
+        else $newHomeOfficeDays->each->update(['status' => Status::Accepted]);
+
+        return back()->with('success', 'Abwesenheit erfolgreich beantragt.');
+    }
+}
