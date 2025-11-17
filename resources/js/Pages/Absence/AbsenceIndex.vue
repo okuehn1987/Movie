@@ -18,6 +18,7 @@ const props = defineProps<{
     absencePatches: AbsencePatchProp[];
     absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval' | 'type'>[];
     holidays: Record<string, string> | null;
+    schoolHolidays: Record<string, { name: string; start: DateString; end: DateString }[]>;
     date: DateString;
     user_absence_filters: UserAbsenceFilter[];
 }>();
@@ -139,7 +140,7 @@ const loading = ref(false);
 const reload = throttle(() => {
     if (loadedMonths.value.includes(currentDate.value.toFormat('yyyy-MM'))) return;
     router.reload({
-        only: ['absences', 'absencePatches', 'holidays'],
+        only: ['absences', 'absencePatches', 'holidays', 'schoolHolidays'],
         data: { date: currentDate.value.toFormat('yyyy-MM'), openAbsence: null, openAbsencePatch: null },
         onStart: () => {
             loadedMonths.value.push(currentDate.value.toFormat('yyyy-MM'));
@@ -154,6 +155,17 @@ watch(currentDate, reload);
 const absenceTableHeight = useMaxScrollHeight(80 + 1);
 
 const display = useDisplay();
+
+const currentSchoolHolidays = computed(() => {
+    return Object.entries(props.schoolHolidays)
+        .filter(([_key, value]) => value.length != 0)
+        .flatMap(([key, value]) =>
+            [...value].map(e => ({
+                ...e,
+                name: key + ' ' + DateTime.fromISO(e.start).toFormat('dd.MM.') + ' - ' + DateTime.fromISO(e.end).toFormat('dd.MM.'),
+            })),
+        );
+});
 </script>
 <template>
     <AdminLayout title="Abwesenheiten">
@@ -185,6 +197,7 @@ const display = useDisplay();
                         :user_absence_filters
                         v-model:filterForm="groupFilterForm"
                         v-model:singleFilterForm="singleFilterForm"
+                        :schoolHolidays
                     ></AbsenceFilter>
                     <div class="d-flex flex-wrap align-center">
                         <div class="d-flex">
@@ -260,7 +273,18 @@ const display = useDisplay();
                         sortable: false,
                         align: 'center',
                         width: (1/dayList.length * 100)+'%' ,
-                        headerProps:{ class: {'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate() }}
+                        headerProps:{ class: {'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate() ,
+                         'bg-grey': !(e.toISODate() === DateTime.local().toISODate()) && currentSchoolHolidays.some(h => {
+                            const start = DateTime.fromISO(h.start);
+                            const end = DateTime.fromISO(h.end);
+
+                            return e >= start && e <= end;
+                         }) }, title: currentSchoolHolidays.filter(h => {
+                            const start = DateTime.fromISO(h.start);
+                            const end = DateTime.fromISO(h.end);
+
+                            return e >= start && e <= end;
+                         }).map( d => d.name).join('\n') }
                     } as const)),
                 ]"
             >
