@@ -87,6 +87,8 @@ const disputes = {
     'App\\Notifications\\TicketFinishNotification': 'Ticket abgeschlossen',
     'App\\Notifications\\TicketDeletionNotification': 'Ticket gelöscht',
     'App\\Notifications\\TicketRecordCreationNotification': 'Ticket Update',
+    'App\\Notifications\\HomeOfficeDayNotification': 'neuer Antrag auf Homeoffice',
+    'App\\Notifications\\HomeOfficeDayDisputeStatusNotification': 'neue Korrektur für Homeoffice',
 } satisfies Record<Notification['type'], string>;
 </script>
 
