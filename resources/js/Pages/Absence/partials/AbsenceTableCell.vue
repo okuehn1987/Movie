@@ -41,7 +41,7 @@ function hasHomeOfficeDay() {
             <div
                 class="h-100 w-100 d-flex justify-center align-center"
                 :style="{
-                    backgroundColor: { accepted: '#f99', created: '#99f', declined: 'grey', hasOpenPatch: '#ff9' }[getEntryState(currentEntry)],
+                    backgroundColor: { accepted: '#f99', created: '#99f', declined: 'grey', hasOpenPatch: '#99f' }[getEntryState(currentEntry)],
                 }"
             >
                 <span v-if="currentEntry.absence_type_id">{{ currentEntry.absence_type?.abbreviation }}</span>
@@ -49,7 +49,7 @@ function hasHomeOfficeDay() {
         </template>
         <div
             v-else
-            :style="{ backgroundColor: shouldUserWork(date) ? (hasHomeOfficeDay() ? '#a7e8f1' : '') : 'lightgray' }"
+            :style="{ backgroundColor: shouldUserWork(date) ? (hasHomeOfficeDay() ? '#ff9' : '') : 'lightgray' }"
             class="h-100 w-100 empty"
         ></div>
     </td>
