@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { AbsenceType } from '@/types/types';
+import { AbsenceType, HomeOfficeDay, HomeOfficeDayGenerator, User } from '@/types/types';
 import AbsencePatchRequests from './partial/AbsencePatchRequests.vue';
 import AbsenceRequests from './partial/AbsenceRequests.vue';
-import { AbsencePatchProp, AbsenceProp, UserProp, WorkLogPatchProp, WorkLogProp } from './partial/disputeTypes';
+import { AbsencePatchProp, AbsenceProp, HomeOfficeDayProp, UserProp, WorkLogPatchProp, WorkLogProp } from './partial/disputeTypes';
 import WorkLogPatches from './partial/WorkLogPatches.vue';
 import AbsenceDeleteRequests from './partial/AbsenceDeleteRequests.vue';
 import WorkLogRequests from './partial/WorkLogRequests.vue';
+import HomeOfficeDayRequests from './partial/HomeOfficeDayRequests.vue';
 
 defineProps<{
     absenceRequests: (AbsenceProp & {
@@ -21,6 +22,10 @@ defineProps<{
     absenceDeleteRequests: (AbsenceProp & {
         absence_type: Pick<AbsenceType, 'id' | 'name'>;
         user: UserProp;
+    })[];
+    homeOfficeDayRequests: (HomeOfficeDayProp & {
+        user: Pick<User, 'id' | 'first_name' | 'last_name'>;
+        homeOfficeDayGenerator: Pick<HomeOfficeDayGenerator, 'id' | 'start' | 'end' | 'created_as_request'>;
     })[];
     workLogPatchRequests?: WorkLogPatchProp[];
     workLogRequests?: WorkLogProp[];
@@ -37,6 +42,7 @@ defineProps<{
                     ...absenceDeleteRequests,
                     ...absencePatchRequests,
                     ...(workLogRequests ? workLogRequests : []),
+                    ...homeOfficeDayRequests,
                 ].length == 0
             "
         >
@@ -48,6 +54,11 @@ defineProps<{
                     <v-col v-if="absenceRequests.length > 0" cols="12">
                         <v-card title="Abwesenheiten">
                             <AbsenceRequests :absenceRequests="absenceRequests" />
+                        </v-card>
+                    </v-col>
+                    <v-col v-if="homeOfficeDayRequests.length > 0" cols="12">
+                        <v-card title="HomeOffice">
+                            <HomeOfficeDayRequests :homeOfficeDayRequests="homeOfficeDayRequests" />
                         </v-card>
                     </v-col>
                     <v-col v-if="workLogPatchRequests && workLogPatchRequests.length > 0" cols="12">
