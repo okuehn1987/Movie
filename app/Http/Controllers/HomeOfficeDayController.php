@@ -6,6 +6,7 @@ use App\Enums\Status;
 use App\Models\Absence;
 use App\Models\AbsencePatch;
 use App\Models\HomeOfficeDay;
+use App\Models\HomeOfficeDayGenerator;
 use App\Models\OperatingSite;
 use App\Models\User;
 use App\Notifications\DisputeStatusNotification;
@@ -47,11 +48,20 @@ class HomeOfficeDayController extends Controller
 
         $newHomeOfficeDays = collect();
 
+        $newHomeOfficeDayGenerator = HomeOfficeDayGenerator::create([
+            'user_id' => $validated['user_id'],
+            'start' => $validated['start'],
+            'end' => $validated['end'],
+            'created_as_request' => true,
+        ]);
+
+
         for ($date = Carbon::parse($validated['start'])->copy(); $date->lte(Carbon::parse($validated['end'])); $date->addDay()) {
             $newHomeOfficeDays->push(HomeOfficeDay::create([
                 'user_id' => $validated['user_id'],
                 'date' => $date,
                 'status' => Status::Created,
+                'home_office_day_generator_id' => $newHomeOfficeDayGenerator->id,
             ]));
         };
 
