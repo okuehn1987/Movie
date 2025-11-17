@@ -28,24 +28,19 @@ const absenceForm = useForm({
 });
 
 function saveAbsence() {
+    const options = {
+        onSuccess: () => {
+            absenceForm.reset();
+            openModal.value = false;
+            emit('absenceReload');
+        },
+    };
     if (absenceForm.absence_type_id == 'homeOffice') {
-        absenceForm.post(route('homeOfficeDay.store'));
+        absenceForm.post(route('homeOfficeDay.store'), options);
     } else if (absenceForm.absence_id) {
-        absenceForm.post(route('absence.absencePatch.store', { absence: absenceForm.absence_id }), {
-            onSuccess: () => {
-                absenceForm.reset();
-                openModal.value = false;
-                emit('absenceReload');
-            },
-        });
+        absenceForm.post(route('absence.absencePatch.store', { absence: absenceForm.absence_id }), options);
     } else {
-        absenceForm.post(route('absence.store'), {
-            onSuccess: () => {
-                absenceForm.reset();
-                openModal.value = false;
-                emit('absenceReload');
-            },
-        });
+        absenceForm.post(route('absence.store'), options);
     }
 }
 const deleteAbsenceForm = useForm({});
