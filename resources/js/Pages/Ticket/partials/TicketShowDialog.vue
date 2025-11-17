@@ -55,7 +55,13 @@ const statusIcon = {
 } as const;
 
 function closeTicket() {
-    router.get(route('ticket.index', { tab: props.tab }));
+    if (route().current() === 'ticket.show') {
+        router.get(route('ticket.index', { tab: props.tab }));
+    } else {
+        const currentCustomer = route().routeParams['customer'];
+        if (currentCustomer) router.get(route('customer.show', { customer: currentCustomer, tab: props.tab }));
+        else showDialog.value = false;
+    }
 }
 
 function copyRecordToClipBoard(record: TicketRecord & { userName: string }) {

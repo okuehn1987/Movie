@@ -51,7 +51,6 @@ class CustomerController extends Controller
             'end' => 'nullable|date|required_with:start|after_or_equal:start',
             'openTicket' => ['nullable', Rule::exists('tickets', 'id')->whereIn('id', Ticket::inOrganization()->select('tickets.id'))],
         ]);
-
         $selectedFolder = array_key_exists('selectedFolder', $validated)
             ? CustomerNoteFolder::find($validated['selectedFolder'])
             : $customer->customerNoteFolders()->first();
@@ -66,6 +65,7 @@ class CustomerController extends Controller
             default => 'newTickets',
         };
 
+
         $ticketQuery = $customer->tickets()->with([
             'customer:id,name',
             'user:id,first_name,last_name',
@@ -74,7 +74,7 @@ class CustomerController extends Controller
             'records.files'
         ]);
         return Inertia::render('Customer/CustomerShow', [
-            'customer' => $customer->load('contact'),
+            'customer' => $customer->load('contacts'),
             'operatingSites' => $customer->customerOperatingSites()->with('currentAddress')->get(),
             'customerNoteFolders' => $customer->customerNoteFolders()->whereNull('customer_note_folder_id')->with([
                 'subFolders:id,name,customer_note_folder_id',
@@ -145,6 +145,7 @@ class CustomerController extends Controller
                         ])
                 ),
             'ticketTab' => Inertia::always(fn() => $tab),
+            'tab' => Inertia::always(fn() => array_key_exists('tab', $validated) && $validated['tab'] ? 'tickets' : 'customerData'),
             'can' => [
                 'customer' => [
                     'viewShow' => Gate::allows('viewShow', Customer::class),
