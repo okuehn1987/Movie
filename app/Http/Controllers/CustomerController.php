@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\Status;
 use App\Models\Customer;
+use App\Models\CustomerContact;
+use App\Models\CustomerNoteFolder;
 use App\Models\CustomerOperatingSite;
 use App\Models\OperatingSite;
 use App\Models\Organization;
@@ -40,6 +42,7 @@ class CustomerController extends Controller
         Gate::authorize('viewShow', Customer::class);
 
         $validated = $request->validate([
+            'selectedFolder' => 'nullable|exists:customer_note_folders,id',
             'tab' => 'nullable|string|in:archive,finishedTickets,newTickets,workingTickets',
             'customer_id' => 'nullable|exists:customers,id',
             'assignees' => 'nullable|array',
@@ -48,6 +51,10 @@ class CustomerController extends Controller
             'end' => 'nullable|date|required_with:start|after_or_equal:start',
             'openTicket' => ['nullable', Rule::exists('tickets', 'id')->whereIn('id', Ticket::inOrganization()->select('tickets.id'))],
         ]);
+
+        $selectedFolder = array_key_exists('selectedFolder', $validated)
+            ? CustomerNoteFolder::find($validated['selectedFolder'])
+            : $customer->customerNoteFolders()->first();
 
         $openTicket = array_key_exists('openTicket', $validated) && $validated['openTicket'] != null ? Ticket::find($validated['openTicket']) : null;
 
@@ -67,9 +74,15 @@ class CustomerController extends Controller
             'records.files'
         ]);
         return Inertia::render('Customer/CustomerShow', [
-            'customer' => $customer->load('tickets.assignees', 'tickets.user', 'tickets.customer', 'tickets.records.user', 'tickets.records.files'),
+            'customer' => $customer->load('contact'),
             'operatingSites' => $customer->customerOperatingSites()->with('currentAddress')->get(),
-            'customerNotes' => $customer->customerNotes,
+            'customerNoteFolders' => $customer->customerNoteFolders()->whereNull('customer_note_folder_id')->with([
+                'subFolders:id,name,customer_note_folder_id',
+                'subFolders.subFolders:id,name,customer_note_folder_id'
+            ])->get(['id', 'name']),
+            'customerNoteEntries' =>  $selectedFolder?->entries()
+                ->with(['user' => fn($q) => $q->select(['id', 'first_name', 'last_name'])])
+                ->get(['id', 'type', 'title', 'value', 'updated_at', 'metadata', 'modified_by']),
             'users' => User::inOrganization()->get(),
             'tickets' => fn() => (clone $ticketQuery)
                 ->whereNull('tickets.finished_at')
@@ -138,6 +151,16 @@ class CustomerController extends Controller
                     'update' => Gate::allows('update', Customer::class),
                     'delete' => Gate::allows('delete', Customer::class),
                     'create' => Gate::allows('create', Customer::class),
+                ],
+                'customerContact' => [
+                    'create' => Gate::allows('create', CustomerContact::class),
+                    'update' => Gate::allows('update', CustomerContact::class),
+                    'delete' => Gate::allows('delete', CustomerContact::class),
+                ],
+                'customerOperatingSite' => [
+                    'create' => Gate::allows('create', CustomerOperatingSite::class),
+                    'update' => Gate::allows('update', CustomerOperatingSite::class),
+                    'delete' => Gate::allows('delete', CustomerOperatingSite::class),
                 ]
             ],
         ]);
@@ -156,7 +179,7 @@ class CustomerController extends Controller
 
         Customer::create([
             ...$validated,
-            'organization_id' => Organization::id(),
+            'organization_id' => Organization::getCurrent()->id,
         ]);
 
         return back()->with('success', 'Der Kunde wurde erfolgreich angelegt.');

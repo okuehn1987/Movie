@@ -407,30 +407,72 @@ declare module 'ziggy-js' {
             "required": true
         }
     ],
-    "customer.customerNote.store": [
+    "customer.customerNoteFolder.store": [
         {
             "name": "customer",
             "required": true,
             "binding": "id"
         }
     ],
-    "customerNote.update": [
+    "customerNoteFolder.update": [
         {
-            "name": "customerNote",
+            "name": "customerNoteFolder",
             "required": true,
             "binding": "id"
         }
     ],
-    "customerNote.destroy": [
+    "customerNoteFolder.destroy": [
         {
-            "name": "customerNote",
+            "name": "customerNoteFolder",
             "required": true,
             "binding": "id"
         }
     ],
-    "customerNote.getFile": [
+    "customer.customerNoteEntry.store": [
         {
-            "name": "customerNote",
+            "name": "customer",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customerNoteEntry.update": [
+        {
+            "name": "customerNoteEntry",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customerNoteEntry.destroy": [
+        {
+            "name": "customerNoteEntry",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customerNoteEntry.getFile": [
+        {
+            "name": "customerNoteEntry",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customer.customerContact.store": [
+        {
+            "name": "customer",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customerContact.update": [
+        {
+            "name": "customerContact",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customerContact.destroy": [
+        {
+            "name": "customerContact",
             "required": true,
             "binding": "id"
         }

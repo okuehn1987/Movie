@@ -274,6 +274,7 @@ class UserController extends Controller
             ->whereYear('start', '<=', Carbon::now()->year)
             ->whereYear('end', '>=', Carbon::now()->year - 3)
             ->with(['absenceType:id,name', 'user:id,operating_site_id'])
+            ->where('status', Status::Accepted)
             ->get(['id', 'start', 'end', 'absence_type_id', 'status', 'user_id'])->append('usedDays');
 
         return Inertia::render('User/UserShow/Absences', [

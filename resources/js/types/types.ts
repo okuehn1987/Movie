@@ -27,6 +27,8 @@ export type Model =
     | 'organization'
     | 'operatingSite'
     | 'customer'
+    | 'customerContact'
+    | 'customerOperatingSite'
     | 'group'
     | 'user'
     | 'ticket'
@@ -162,6 +164,15 @@ export type Customer = DBObject<'customer'> &
         reference_number: string | null;
         organization_id: Organization['id'];
     };
+
+export type CustomerContact = DBObject<'customerContact'> & {
+    customer_id: Customer['id'];
+    name: string;
+    occupation: string;
+    email: string | null;
+    phone_number: string | null;
+    mobile_number: string | null;
+};
 
 export type Flag = 'auto_accept_travel_logs' | 'christmas_vacation_day' | 'new_year_vacation_day' | 'vacation_limitation_period' | 'night_surcharges';
 
@@ -350,6 +361,7 @@ export type UserAbsenceFilter = DBObject<'userAbcenceFilter'> & {
         absence_type_ids: AbsenceType['id'][];
         user_ids: User['id'][];
         statuses: Status[];
+        holidays_from_federal_states: FederalState[];
     };
 };
 
@@ -549,15 +561,21 @@ export type CustomerOperatingSite = DBObject<'customerOperatingSite'> & {
 
 export type JSON = string | number | boolean | null | { [x: string]: JSON } | JSON[];
 
-export type CustomerNote = DBObject<'customerNote'> & {
+export type CustomerNoteFolder = DBObject<'customerNoteFolder'> & {
     customer_id: Customer['id'];
-    modified_by: User['id'];
-    parent_id: CustomerNote['id'] | null;
-    type: 'complex' | 'primitive' | 'file';
-    key: string | null;
-    value: string;
-    file: File | null;
+    customer_note_folder_id: CustomerNoteFolder['id'] | null;
+    name: string;
 };
+
+export type CustomerNoteEntry = DBObject<'customerNoteEntry'> & {
+    type: 'text' | 'file';
+    customer_note_folder_id: CustomerNoteFolder['id'];
+    title: string;
+    value: string;
+    modified_by: User['id'];
+    metadata: string[];
+};
+
 export type TicketUser = DBObject<'ticket_user'> & {
     ticket_id: Ticket['id'];
     user_id: User['id'];
@@ -594,12 +612,21 @@ export type RelationMap = {
         organization: Organization;
         tickets: Ticket[];
         customer_operating_sites: CustomerOperatingSite[];
-        customer_notes: CustomerNote[];
+        customer_note_folders: CustomerNoteFolder[];
+        customer_note_entries: CustomerNoteEntry[];
+        contacts: CustomerContact[];
     };
-    customerNote: {
+    customerContact: {
         customer: Customer;
-        modified_by: User;
-        parent?: CustomerNote;
+    };
+    customerNoteFolder: {
+        customer: Customer;
+        entries: CustomerNoteEntry[];
+        subFolders: CustomerNoteFolder[];
+    };
+    customerNoteEntry: {
+        customer_note_folders: CustomerNoteFolder[];
+        user: User;
     };
     customerOperatingSite: {
         customer: Customer;

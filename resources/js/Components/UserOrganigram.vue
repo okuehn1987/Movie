@@ -37,7 +37,7 @@ const items = computed(() => {
 });
 </script>
 <template>
-    <VTreeview v-model:opened="opened" :items item-children="all_supervisees">
+    <VTreeview :indent-lines="true" v-model:opened="opened" :items item-children="all_supervisees">
         <template v-slot:prepend="{ item }">
             <v-icon icon="mdi-account" />
             <v-chip v-if="currentUser.id == item.value">{{ item.name }}</v-chip>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { AbsenceType, DateString, Status, User, UserAbsenceFilter } from '@/types/types';
+import { AbsenceType, DateString, FederalState, Status, User, UserAbsenceFilter } from '@/types/types';
 import { throttle, useMaxScrollHeight } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
@@ -18,8 +18,11 @@ const props = defineProps<{
     absencePatches: AbsencePatchProp[];
     absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval' | 'type'>[];
     holidays: Record<string, string> | null;
+    schoolHolidays: Record<string, { name: string; start: DateString; end: DateString }[]>;
     date: DateString;
     user_absence_filters: UserAbsenceFilter[];
+    federal_state: FederalState;
+    all_federal_states: FederalState;
 }>();
 
 const dateParam = route().params['date'];
@@ -30,6 +33,7 @@ const groupFilterForm = useForm({
     selected_users: [] as User['id'][],
     selected_absence_types: [] as AbsenceType['id'][],
     selected_statuses: ['created', 'accepted'] as Status[],
+    selected_holidays: [props.federal_state] as FederalState[],
 });
 
 const singleFilterForm = useForm({
@@ -37,6 +41,7 @@ const singleFilterForm = useForm({
     selected_users: [] as User['id'][],
     selected_absence_types: [] as AbsenceType['id'][],
     selected_statuses: ['created', 'accepted'] as Status[],
+    selected_holidays: [props.federal_state] as FederalState[],
 });
 
 const currentFilterForm = ref<null | typeof groupFilterForm | typeof singleFilterForm>(null);
@@ -139,7 +144,7 @@ const loading = ref(false);
 const reload = throttle(() => {
     if (loadedMonths.value.includes(currentDate.value.toFormat('yyyy-MM'))) return;
     router.reload({
-        only: ['absences', 'absencePatches', 'holidays'],
+        only: ['absences', 'absencePatches', 'holidays', 'schoolHolidays'],
         data: { date: currentDate.value.toFormat('yyyy-MM'), openAbsence: null, openAbsencePatch: null },
         onStart: () => {
             loadedMonths.value.push(currentDate.value.toFormat('yyyy-MM'));
@@ -154,6 +159,17 @@ watch(currentDate, reload);
 const absenceTableHeight = useMaxScrollHeight(80 + 1);
 
 const display = useDisplay();
+
+const currentSchoolHolidays = computed(() => {
+    return Object.entries(props.schoolHolidays)
+        .filter(([_key, value]) => value.length != 0)
+        .flatMap(([key, value]) =>
+            [...value].map(e => ({
+                ...e,
+                name: key + ' ' + DateTime.fromISO(e.start).toFormat('dd.MM.') + ' - ' + DateTime.fromISO(e.end).toFormat('dd.MM.'),
+            })),
+        );
+});
 </script>
 <template>
     <AdminLayout title="Abwesenheiten">
@@ -185,6 +201,9 @@ const display = useDisplay();
                         :user_absence_filters
                         v-model:filterForm="groupFilterForm"
                         v-model:singleFilterForm="singleFilterForm"
+                        :schoolHolidays
+                        :federal_state
+                        :all_federal_states
                     ></AbsenceFilter>
                     <div class="d-flex flex-wrap align-center">
                         <div class="d-flex">
@@ -260,7 +279,18 @@ const display = useDisplay();
                         sortable: false,
                         align: 'center',
                         width: (1/dayList.length * 100)+'%' ,
-                        headerProps:{ class: {'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate() }}
+                        headerProps:{ class: {'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate() ,
+                         'bg-grey': !(e.toISODate() === DateTime.local().toISODate()) && currentSchoolHolidays.some(h => {
+                            const start = DateTime.fromISO(h.start);
+                            const end = DateTime.fromISO(h.end);
+
+                            return e >= start && e <= end;
+                         }) }, title: currentSchoolHolidays.filter(h => {
+                            const start = DateTime.fromISO(h.start);
+                            const end = DateTime.fromISO(h.end);
+
+                            return e >= start && e <= end;
+                         }).map( d => d.name).join('\n') }
                     } as const)),
                 ]"
             >
