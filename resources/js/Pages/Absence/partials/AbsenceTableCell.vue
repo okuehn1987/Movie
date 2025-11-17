@@ -26,9 +26,7 @@ function shouldUserWork(day: DateTime) {
     );
 }
 
-function hasHomeOfficeDay() {
-    return !!props.homeOfficeDays.find(d => d.date === props.date.toFormat('yyyy-MM-dd'));
-}
+const currentHomeOfficeEntry = computed(() => props.homeOfficeDays.find(d => d.date === props.date.toFormat('yyyy-MM-dd')));
 </script>
 <template>
     <td
@@ -49,7 +47,13 @@ function hasHomeOfficeDay() {
         </template>
         <div
             v-else
-            :style="{ backgroundColor: shouldUserWork(date) ? (hasHomeOfficeDay() ? '#ff9' : '') : 'lightgray' }"
+            :style="{
+                backgroundColor: shouldUserWork(date)
+                    ? !!currentHomeOfficeEntry
+                        ? { accepted: '#ff9', created: '#99f', declined: 'grey' }[currentHomeOfficeEntry.status]
+                        : ''
+                    : 'lightgray',
+            }"
             class="h-100 w-100 empty"
         ></div>
     </td>

@@ -441,6 +441,24 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
               };
           }
         | {
+              type: 'App\\Notifications\\HomeOfficeDayDisputeStatusNotification';
+              data: {
+                  title: string;
+                  home_office_day_ids: HomeOfficeDay['id'][];
+                  start: DateString;
+                  type: 'delete' | 'create';
+              };
+          }
+        | {
+              type: 'App\\Notifications\\HomeOfficeDayNotification';
+              data: {
+                  title: string;
+                  home_office_day_ids: HomeOfficeDay['id'][];
+                  start: DateString;
+                  status: string;
+              };
+          }
+        | {
               type: 'App\\Notifications\\DisputeStatusNotification';
               data: {
                   title: string;
