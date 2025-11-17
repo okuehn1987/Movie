@@ -15,15 +15,17 @@ class HomeOfficeDayNotification extends Notification
 {
     use Queueable;
 
-    protected $user, $homeOfficeDays;
+    protected $start, $end, $home_office_day_ids, $type, $user;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(User $user,)
+    public function __construct(string $start, string $end, array $home_office_day_ids, User $user)
     {
+        $this->start = $start;
+        $this->end = $end;
+        $this->home_office_day_ids = $home_office_day_ids;
         $this->user = $user;
-        $this->homeOfficeDays = $homeOfficeDays;
     }
 
 
@@ -34,7 +36,7 @@ class HomeOfficeDayNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return $notifiable->notification_channels ?? ['database'];
     }
 
     /**
@@ -47,8 +49,8 @@ class HomeOfficeDayNotification extends Notification
         return (new MailMessage)
             ->subject('Herta Antrag auf Homeoffice')
             ->line('für den Nutzer "' . $this->user->name . '" liegt ein Antrag auf Homeoffice für den Zeitraum vom "' .
-                Carbon::parse($this->homeOfficeDay->start)->format('d.m.Y') . '" bis zum "' .
-                Carbon::parse($this->homeOfficeDay->end)->format('d.m.Y') . '" vor.')
+                Carbon::parse($this->start)->format('d.m.Y') . '" bis zum "' .
+                Carbon::parse($this->end)->format('d.m.Y') . '" vor.')
             ->line('Um fortzufahren, klicke bitte auf "' . $buttonText . '".')
             ->action($buttonText,  $this->getNotificationURL());
     }
@@ -62,15 +64,17 @@ class HomeOfficeDayNotification extends Notification
     {
         return [
             'title' => $this->user->name . ' hat Homeoffice beantragt.',
-            'absence_id' => $this->homeOfficeDay->id,
+            'home_office_day_ids' => $this->home_office_day_ids,
+            'start' => $this->start,
             'status' => Status::Created,
         ];
     }
 
     public function getNotificationURL()
     {
+
         return route('dispute.index', [
-            'openAbsence' => $this->homeOfficeDay->id,
+            'openHomeOfficeDays' => $this->home_office_day_ids,
         ]);
     }
 }

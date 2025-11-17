@@ -23,7 +23,6 @@ class HomeOfficeDayController extends Controller
     {
         $user = User::find($request['user_id']);
         Gate::authorize('create', [Absence::class, $user]);
-        // dd($request->all());
 
         $validated = $request->validate([
             'start' => ['required', 'date', function ($attr, $val, $fail) use ($user, $request) {
@@ -57,9 +56,21 @@ class HomeOfficeDayController extends Controller
         };
 
         if ($authUser->id !== $validated['user_id']) {
-            $user->user->notify(new HomeOfficeDayDisputeStatusNotification($, $requires_approval ? Status::Created : Status::Accepted));
+            $user->notify(new HomeOfficeDayDisputeStatusNotification(
+                $validated['start'],
+                $validated['end'],
+                $newHomeOfficeDays->pluck('id')->toArray(),
+                $requires_approval ? Status::Created : Status::Accepted
+            ));
         }
-        if ($requires_approval) $authUser->supervisor->notify(new HomeOfficeDayNotification($authUser, ));
+
+        if ($requires_approval)
+            $authUser->supervisor->notify(new HomeOfficeDayNotification(
+                $validated['start'],
+                $validated['end'],
+                $newHomeOfficeDays->pluck('id')->toArray(),
+                $authUser
+            ));
         else $newHomeOfficeDays->each->update(['status' => Status::Accepted]);
 
         return back()->with('success', 'Abwesenheit erfolgreich beantragt.');

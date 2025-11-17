@@ -17,17 +17,18 @@ class HomeOfficeDayDisputeStatusNotification extends Notification
 {
     use Queueable;
 
-    protected  $user, $status, $type, $url, $log;
+    protected $start, $end, $home_office_day_ids, $status, $type;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(Model $log, User $user, Status $status, string $type = 'create')
+    public function __construct(string $start, string $end, array $home_office_day_ids, Status $status, string $type = 'create')
     {
-        $this->user = $user;
         $this->status = $status;
         $this->type = $type;
-        $this->log = $log;
+        $this->start = $start;
+        $this->end = $end;
+        $this->home_office_day_ids = $home_office_day_ids;
     }
 
     /**
@@ -49,24 +50,22 @@ class HomeOfficeDayDisputeStatusNotification extends Notification
 
         $message = (new MailMessage)->subject('Herta Antragsaktualisierung');
 
-        $modelUserNotificationText = match (true) {
-            $this->log instanceof HomeOfficeDay => 'auf Homeoffice',
-        };
+        $modelUserNotificationText =  'auf Homeoffice';
 
         if ($this->status === Status::Declined) $message
             ->line('Dein Antrag ' . $modelUserNotificationText . ' für den Zeitraum vom "' .
-                Carbon::parse($this->log->start)->format('d.m.Y') . '" bis zum "' .
-                Carbon::parse($this->log->end)->format('d.m.Y') . '" wurde abgelehnt.')
+                Carbon::parse($this->start)->format('d.m.Y') . '" bis zum "' .
+                Carbon::parse($this->end)->format('d.m.Y') . '" wurde abgelehnt.')
             ->action($buttonText, $this->getNotificationURL())
             ->line('Um ihn zu öffnen, klicke bitte auf "' . $buttonText . '".');
         else if ($this->type === 'delete')  $message
             ->line('Dein Antrag auf Löschung einer Abwesenheit für den Zeitraum vom "' .
-                Carbon::parse($this->log->start)->format('d.m.Y') . '" bis zum "' .
-                Carbon::parse($this->log->end)->format('d.m.Y') . '" wurde akzeptiert.');
+                Carbon::parse($this->start)->format('d.m.Y') . '" bis zum "' .
+                Carbon::parse($this->end)->format('d.m.Y') . '" wurde akzeptiert.');
         else  $message
             ->line('Dein Antrag ' . $modelUserNotificationText . ' für den Zeitraum vom "' .
-                Carbon::parse($this->log->start)->format('d.m.Y') . '" bis zum "' .
-                Carbon::parse($this->log->end)->format('d.m.Y') . '" wurde akzeptiert.')
+                Carbon::parse($this->start)->format('d.m.Y') . '" bis zum "' .
+                Carbon::parse($this->end)->format('d.m.Y') . '" wurde akzeptiert.')
             ->action($buttonText, $this->getNotificationURL())
             ->line('Um ihn zu öffnen, klicke bitte auf "' . $buttonText . '".');
 
@@ -80,15 +79,7 @@ class HomeOfficeDayDisputeStatusNotification extends Notification
      */
     public function toArray($notifiable)
     {
-        $modelClass  = match (true) {
-            $this->log instanceof HomeOfficeDay
-            => HomeOfficeDay::class,
-            default => throw new Exception('Invalid model type for dispute notification.'),
-        };
-
-        $modelText = match ($modelClass) {
-            HomeOfficeDay::class => 'einer Homeoffice-Zeit',
-        };
+        $modelText = 'einer Homeoffice-Zeit';
 
 
         $text  = match ($this->type) {
@@ -98,21 +89,17 @@ class HomeOfficeDayDisputeStatusNotification extends Notification
 
         return [
             'title' => $text . ' ' . ($this->status === Status::Accepted ? 'akzeptiert.' : ($this->status == Status::Created ? 'beantragt.' : 'abgelehnt.')),
-            'log_id' => $this->log->id,
-            'log_model' => $modelClass,
+            'home_office_day_ids' => $this->home_office_day_ids,
+            'start' => $this->start,
             'type' => $this->type
         ];
     }
 
     public function getNotificationURL()
     {
-        return match (true) {
-            $this->log instanceof HomeOfficeDay =>
+        return
             route('absence.index', [
-                'openAbsence' => $this->log->id,
-            ]),
-        };
-
-        return null;
+                'date' => $this->start,
+            ]);
     }
 }
