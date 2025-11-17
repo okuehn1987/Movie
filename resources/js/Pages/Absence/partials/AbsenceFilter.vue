@@ -65,6 +65,7 @@ function selectExistingFilter(newValue: typeof groupFilterForm.value.set) {
         selected_users: selectedFilter.data.user_ids,
         selected_absence_types: selectedFilter.data.absence_type_ids,
         selected_statuses: selectedFilter.data.statuses,
+        selected_holidays: selectedFilter.data.holidays_from_federal_states,
     };
     groupFilterForm.value.defaults(data).reset();
 }
@@ -80,6 +81,7 @@ watch(
             selected_users: selectedFilter.data.user_ids,
             selected_absence_types: selectedFilter.data.absence_type_ids,
             selected_statuses: selectedFilter.data.statuses,
+            selected_holidays: selectedFilter.data.holidays_from_federal_states,
         });
         singleFilterForm.value.reset();
     },
@@ -104,6 +106,7 @@ function editFilter(filter: UserAbsenceFilter) {
         selected_users: filter.data.user_ids ?? [],
         selected_absence_types: filter.data.absence_type_ids ?? [],
         selected_statuses: filter.data.statuses ?? [],
+        selected_holidays: filter.data.holidays_from_federal_states ?? [],
     });
     groupFilterForm.value.set = set;
     groupFilterForm.value.reset();

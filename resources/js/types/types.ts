@@ -360,6 +360,7 @@ export type UserAbsenceFilter = DBObject<'userAbcenceFilter'> & {
         absence_type_ids: AbsenceType['id'][];
         user_ids: User['id'][];
         statuses: Status[];
+        holidays_from_federal_states: FederalState[];
     };
 };
 
