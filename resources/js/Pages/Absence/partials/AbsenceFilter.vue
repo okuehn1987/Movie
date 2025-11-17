@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AbsenceType, Status, User, UserAbsenceFilter } from '@/types/types';
+import { AbsenceType, DateString, FederalState, Status, User, UserAbsenceFilter } from '@/types/types';
 import { ref, watch } from 'vue';
 import { UserProp } from '../utils';
 import { useDisplay } from 'vuetify';
@@ -8,6 +8,9 @@ const props = defineProps<{
     user_absence_filters: UserAbsenceFilter[];
     users: UserProp[];
     absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval' | 'type'>[];
+    schoolHolidays: Record<string, { name: string; start: DateString; end: DateString }[]>;
+    federal_state: FederalState;
+    all_federal_states: FederalState;
 }>();
 
 const FORM_DEFAULT = {
@@ -15,6 +18,7 @@ const FORM_DEFAULT = {
     selected_users: [],
     selected_absence_types: [],
     selected_statuses: ['created', 'accepted'] as Status[],
+    selected_holidays: [props.federal_state] as FederalState[],
 };
 
 const display = useDisplay();
@@ -26,6 +30,7 @@ const groupFilterForm = defineModel<
             selected_users: User['id'][];
             selected_absence_types: AbsenceType['id'][];
             selected_statuses: Status[];
+            selected_holidays: FederalState[];
         }>
     >
 >('filterForm', { required: true });
@@ -37,6 +42,7 @@ const singleFilterForm = defineModel<
             selected_users: User['id'][];
             selected_absence_types: AbsenceType['id'][];
             selected_statuses: Status[];
+            selected_holidays: FederalState[];
         }>
     >
 >('singleFilterForm', { required: true });
@@ -166,6 +172,7 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                             chips
                                             multiple
                                             variant="underlined"
+                                            autocomplete="off"
                                         ></v-autocomplete>
                                     </v-col>
                                     <v-col cols="12">
@@ -192,6 +199,22 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                             clearable
                                             chips
                                             multiple
+                                        ></v-select>
+                                    </v-col>
+                                    <v-col cols="12">
+                                        <v-select
+                                            label="Ferien"
+                                            clearable
+                                            chips
+                                            multiple
+                                            v-model="singleFilterForm.selected_holidays"
+                                            :error-messages="singleFilterForm.errors.selected_holidays"
+                                            :items="
+                                                Object.entries(all_federal_states).map(([key, value]) => ({
+                                                    value: key,
+                                                    title: value,
+                                                }))
+                                            "
                                         ></v-select>
                                     </v-col>
                                     <v-col cols="12">
@@ -241,6 +264,7 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                                     chips
                                                     multiple
                                                     variant="underlined"
+                                                    autocomplete="off"
                                                 ></v-autocomplete>
                                             </v-col>
                                             <v-col cols="12">
@@ -269,6 +293,22 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                                     multiple
                                                 ></v-select>
                                             </v-col>
+                                            <v-col cols="12">
+                                                <v-select
+                                                    label="Ferien"
+                                                    clearable
+                                                    chips
+                                                    multiple
+                                                    v-model="groupFilterForm.selected_holidays"
+                                                    :error-messages="groupFilterForm.errors.selected_holidays"
+                                                    :items="
+                                                        Object.entries(all_federal_states).map(([key, value]) => ({
+                                                            value: key,
+                                                            title: value,
+                                                        }))
+                                                    "
+                                                ></v-select>
+                                            </v-col>
                                         </v-row>
                                     </v-col>
                                     <v-col cols="12" md="6">
@@ -287,6 +327,7 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                             <template #item.action="{ item }">
                                                 <v-row>
                                                     <v-col class="text-end">
+                                                        <!-- TODO: Mobile visuality fixen -->
                                                         <v-btn
                                                             :size="display.smAndDown.value ? 'small' : undefined"
                                                             class="me-2"

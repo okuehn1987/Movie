@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { AbsenceType, DateString, Status, User, UserAbsenceFilter } from '@/types/types';
+import { AbsenceType, DateString, FederalState, Status, User, UserAbsenceFilter } from '@/types/types';
 import { throttle, useMaxScrollHeight } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
@@ -21,6 +21,8 @@ const props = defineProps<{
     schoolHolidays: Record<string, { name: string; start: DateString; end: DateString }[]>;
     date: DateString;
     user_absence_filters: UserAbsenceFilter[];
+    federal_state: FederalState;
+    all_federal_states: FederalState;
 }>();
 
 const dateParam = route().params['date'];
@@ -31,6 +33,7 @@ const groupFilterForm = useForm({
     selected_users: [] as User['id'][],
     selected_absence_types: [] as AbsenceType['id'][],
     selected_statuses: ['created', 'accepted'] as Status[],
+    selected_holidays: [props.federal_state] as FederalState[],
 });
 
 const singleFilterForm = useForm({
@@ -38,6 +41,7 @@ const singleFilterForm = useForm({
     selected_users: [] as User['id'][],
     selected_absence_types: [] as AbsenceType['id'][],
     selected_statuses: ['created', 'accepted'] as Status[],
+    selected_holidays: [props.federal_state] as FederalState[],
 });
 
 const currentFilterForm = ref<null | typeof groupFilterForm | typeof singleFilterForm>(null);
@@ -198,6 +202,8 @@ const currentSchoolHolidays = computed(() => {
                         v-model:filterForm="groupFilterForm"
                         v-model:singleFilterForm="singleFilterForm"
                         :schoolHolidays
+                        :federal_state
+                        :all_federal_states
                     ></AbsenceFilter>
                     <div class="d-flex flex-wrap align-center">
                         <div class="d-flex">

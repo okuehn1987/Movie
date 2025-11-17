@@ -172,6 +172,8 @@ class AbsenceController extends Controller
             'schoolHolidays' =>  Inertia::merge(fn() => $schoolHolidays->isEmpty() ? (object)[] : $schoolHolidays),
             'user_absence_filters' => $authUser->userAbsenceFilters,
             'date' => $date,
+            'federal_state' => $authUser->operatingSite->currentAddress->federal_state,
+            'all_federal_states' => HolidayService::$COUNTRIES['DE']['regions'],
             'can' => [
                 'user' => [
                     'viewDisputes' => $authUser->can('viewDisputes', User::class),
