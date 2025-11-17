@@ -1,22 +1,24 @@
 <script setup lang="ts">
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Customer, CustomerOperatingSite, Relations, User } from '@/types/types';
+import { Customer, CustomerOperatingSite, Paginator, Relations, User } from '@/types/types';
 import { formatAddress } from '@/utils';
 import { ref } from 'vue';
 import TicketOverview from '../Ticket/partials/TicketOverview.vue';
-import { TicketProp } from '../Ticket/partials/ticketTypes';
+import { OperatingSiteProp, Tab, TicketProp, UserProp } from '../Ticket/partials/ticketTypes';
 import CreateEditCustomerOperatingSite from './partial/CreateEditCustomerOperatingSite.vue';
 import CustomerForm from './partial/CustomerForm.vue';
 import CustomerNotes from './partial/CustomerNotes.vue';
 
 defineProps<{
     customer: Customer;
-    users: User[];
+    users: UserProp[];
     operatingSites: (CustomerOperatingSite & Pick<Relations<'customerOperatingSite'>, 'current_address'>)[];
+    ticketableOperatingSites: OperatingSiteProp[];
     tickets: TicketProp[];
-    archiveTickets: TicketProp[];
+    archiveTickets: Paginator<TicketProp>;
     customerNotes: Relations<'customer'>['customer_notes'];
+    ticketTab: Tab;
 }>();
 
 const currentTab = ref('customerData');
@@ -60,7 +62,14 @@ const currentTab = ref('customerData');
                 <CustomerNotes :customer :customerNotes="customerNotes"></CustomerNotes>
             </v-tabs-window-item>
             <v-tabs-window-item value="tickets">
-                <TicketOverview :users :tickets tab="newTickets" :customers="[customer]" :archiveTickets></TicketOverview>
+                <TicketOverview
+                    :tickets
+                    :archiveTickets
+                    :customers="[customer]"
+                    :users
+                    :operatingSites="ticketableOperatingSites"
+                    :tab="ticketTab"
+                ></TicketOverview>
             </v-tabs-window-item>
         </v-tabs-window>
     </AdminLayout>

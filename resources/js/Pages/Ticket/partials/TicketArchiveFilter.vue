@@ -4,18 +4,19 @@ import { CustomerProp, OperatingSiteProp, UserProp } from './ticketTypes';
 import { router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
-defineProps<{
+const props = defineProps<{
     customers: CustomerProp[];
     users: UserProp[];
     operatingSites: OperatingSiteProp[];
 }>();
 
 const filterForm = useForm({
-    customer_id: null as Customer['id'] | null,
+    customer_id: props.customers.length == 1 ? props.customers[0]?.id ?? null : (null as Customer['id'] | null),
     assignees: [],
     start: null as string | null,
     end: null as string | null,
 });
+const userSearch = ref('');
 
 function resetFilter() {
     filterForm.reset();
@@ -60,7 +61,7 @@ const showDialog = ref(false);
                 <v-card-text>
                     <v-form @submit.prevent="search">
                         <v-row>
-                            <v-col cols="12">
+                            <v-col cols="12" v-if="customers.length > 1">
                                 <v-autocomplete
                                     clearable
                                     label="Kunde wählen"
@@ -83,6 +84,9 @@ const showDialog = ref(false);
                                     "
                                     :error-messages="filterForm.errors.assignees"
                                     v-model="filterForm.assignees"
+                                    auto-select-first
+                                    @keydown.enter="userSearch = ''"
+                                    v-model:search="userSearch"
                                 ></v-autocomplete>
                             </v-col>
                             <v-col cols="12" md="6">

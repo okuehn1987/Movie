@@ -2,12 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Status;
 use App\Models\Customer;
+use App\Models\CustomerOperatingSite;
+use App\Models\OperatingSite;
 use App\Models\Organization;
 use App\Models\Ticket;
 use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class CustomerController extends Controller
@@ -29,26 +35,103 @@ class CustomerController extends Controller
         ]);
     }
 
-    public function show(Customer $customer)
+    public function show(Request $request, Customer $customer, #[CurrentUser] User $authUser)
     {
         Gate::authorize('viewShow', Customer::class);
 
-        $ticketQuery = Ticket::inOrganization()->where('customer_id', $customer->id)
-            ->with(['customer:id,name', 'user:id,first_name,last_name', 'assignees:id,first_name,last_name', 'records.user', 'records.files']);
+        $validated = $request->validate([
+            'tab' => 'nullable|string|in:archive,finishedTickets,newTickets,workingTickets',
+            'customer_id' => 'nullable|exists:customers,id',
+            'assignees' => 'nullable|array',
+            'assignees.*' => ['nullable', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))],
+            'start' => 'nullable|date|required_with:end',
+            'end' => 'nullable|date|required_with:start|after_or_equal:start',
+            'openTicket' => ['nullable', Rule::exists('tickets', 'id')->whereIn('id', Ticket::inOrganization()->select('tickets.id'))],
+        ]);
 
+        $openTicket = array_key_exists('openTicket', $validated) && $validated['openTicket'] != null ? Ticket::find($validated['openTicket']) : null;
+
+        $tab = match (true) {
+            $openTicket && $openTicket->finished_at != null && !$openTicket->records()->whereNull('accounted_at')->exists() => 'archive',
+            $openTicket && $openTicket->finished_at != null && $openTicket->records()->whereNull('accounted_at')->exists() => 'finishedTickets',
+            $openTicket && $openTicket->finished_at == null && $openTicket->assignees()->where('status', 'accepted')->exists() => 'workingTickets',
+            array_key_exists('tab', $validated) && $validated['tab'] => $validated['tab'],
+            default => 'newTickets',
+        };
+
+        $ticketQuery = $customer->tickets()->with([
+            'customer:id,name',
+            'user:id,first_name,last_name',
+            'assignees:id,first_name,last_name',
+            'records.user',
+            'records.files'
+        ]);
         return Inertia::render('Customer/CustomerShow', [
             'customer' => $customer->load('tickets.assignees', 'tickets.user', 'tickets.customer', 'tickets.records.user', 'tickets.records.files'),
-            'tickets' => (clone $ticketQuery)
-                ->whereNull('tickets.finished_at')
-                ->orWhereHas('records', fn($q) => $q->whereNull('accounted_at'))
-                ->get(),
-            'archiveTickets' => (clone $ticketQuery)
-                ->whereNotNull('tickets.finished_at')
-                ->whereDoesntHave('records', fn($q) => $q->whereNull('accounted_at'))
-                ->get(),
             'operatingSites' => $customer->customerOperatingSites()->with('currentAddress')->get(),
             'customerNotes' => $customer->customerNotes,
             'users' => User::inOrganization()->get(),
+            'tickets' => fn() => (clone $ticketQuery)
+                ->whereNull('tickets.finished_at')
+                ->orWhereHas('records', fn($q) => $q->whereNull('accounted_at'))
+                ->get()
+                ->map(fn($t) => [
+                    ...$t->toArray(),
+                    'can' => [
+                        'ticket' => [
+                            'update' => Gate::allows('update', $t),
+                            'account' => Gate::allows('account', $t),
+                            'delete' => Gate::allows('update', $t),
+                        ],
+                    ],
+                    'records' => $t->records->map(
+                        fn($ticketRecord) => [
+                            ...$ticketRecord->toArray(),
+                            'can' => [
+                                'ticketRecord' => [
+                                    'update' => Gate::allows('update', $ticketRecord),
+                                ],
+                            ],
+                        ]
+                    )
+                ]),
+            'archiveTickets' => fn() => (clone $ticketQuery)
+                ->whereNotNull('tickets.finished_at')
+                ->whereDoesntHave('records', fn($q) => $q->whereNull('accounted_at'))
+                ->with('records')
+                ->when(
+                    array_key_exists('customer_id', $validated) && $validated['customer_id'] != null,
+                    fn($q) => $q->where('customer_id', $validated['customer_id'])
+                )
+                ->when(
+                    array_key_exists('assignees', $validated) && $validated['assignees'] != null,
+                    fn($q) => $q->whereHas('assignees', fn($q2) => $q2->where('status', Status::Accepted)->whereIn('users.id', $validated['assignees']))
+                )
+                ->when(
+                    array_key_exists('start', $validated) && array_key_exists('end', $validated) && $validated['start'] != null && $validated['end'] != null,
+                    fn($q) => $q->whereBetween('tickets.finished_at', [Carbon::parse($validated['start'])->startOfDay(), Carbon::parse($validated['end'])->endOfDay()])
+                )
+                ->paginate(13),
+            'ticketableOperatingSites' => fn() => collect([['title' => 'Homeoffice', 'value' => ['id' => $authUser->id, 'type' => User::class]]])
+                ->merge(
+                    $customer->customerOperatingSites()->with('currentAddress')
+                        ->get()
+                        ->map(fn($co) => [
+                            'title' => $co->name,
+                            'value' => ['id' => $co->id, 'type' => CustomerOperatingSite::class],
+                            'customer_id' => $co->customer_id,
+                            'address' => $co->currentAddress
+                        ])
+                )->merge(
+                    OperatingSite::inOrganization()->with('currentAddress')
+                        ->get()
+                        ->map(fn($os) => [
+                            'title' => $os->name,
+                            'value' => ['id' => $os->id, 'type' => OperatingSite::class],
+                            'address' => $os->currentAddress
+                        ])
+                ),
+            'ticketTab' => Inertia::always(fn() => $tab),
             'can' => [
                 'customer' => [
                     'viewShow' => Gate::allows('viewShow', Customer::class),
