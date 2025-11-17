@@ -247,7 +247,9 @@ const display = useDisplay();
                             ...u,
                             name: display.mdAndUp.value ? u.last_name + ', ' + u.first_name : u.first_name.substring(0, 1) + '.' + u.last_name,
                         }))
-                        .toSorted((a, b) => (b.id == $page.props.auth.user.id ? 1 : a.last_name.localeCompare(b.last_name)))
+                        .toSorted((a, b) =>
+                            b.id == $page.props.auth.user.id ? 1 : a.id == $page.props.auth.user.id ? -1 : a.last_name.localeCompare(b.last_name),
+                        )
                 "
                 :headers="[
                     {
