@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained();
             $table->date('start');
             $table->date('end');
+            $table->boolean('created_as_request')->default(false);
             $table->boolean('monday')->default(false);
             $table->boolean('tuesday')->default(false);
             $table->boolean('wednesday')->default(false);
