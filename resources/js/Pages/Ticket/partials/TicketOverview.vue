@@ -17,7 +17,6 @@ const props = defineProps<{
 watch(
     () => props.tab,
     () => {
-        console.log(1);
         currentTab.value = props.tab;
     },
 );
