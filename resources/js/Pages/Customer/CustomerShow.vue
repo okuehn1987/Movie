@@ -1,28 +1,46 @@
 <script setup lang="ts">
-import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Customer, CustomerNoteEntry, CustomerNoteFolder, CustomerOperatingSite, RelationPick, Relations, Tree } from '@/types/types';
-import { ref } from 'vue';
-import CustomerForm from './partial/CustomerForm.vue';
-import { formatAddress } from '@/utils';
-import CustomerNotes from './partial/CustomerNotes.vue';
-import CreateEditCustomerOperatingSite from './partial/CreateEditCustomerOperatingSite.vue';
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
-import CustomerContactDialog from './partial/CustomerContactDialog.vue';
+import AdminLayout from '@/Layouts/AdminLayout.vue';
+import {
+    Customer,
+    CustomerNoteEntry,
+    CustomerNoteFolder,
+    CustomerOperatingSite,
+    Paginator,
+    RelationPick,
+    Relations,
+    Tree,
+    User,
+} from '@/types/types';
+import { formatAddress } from '@/utils';
+import { ref } from 'vue';
+import TicketOverview from '../Ticket/partials/TicketOverview.vue';
+import { OperatingSiteProp, Tab as TicketTab, TicketProp, UserProp } from '../Ticket/partials/ticketTypes';
+import CreateEditCustomerOperatingSite from './partial/CreateEditCustomerOperatingSite.vue';
+import CustomerForm from './partial/CustomerForm.vue';
+import CustomerNotes from './partial/CustomerNotes.vue';
 
-defineProps<{
+type Tab = 'customerData' | 'customerNotes' | 'tickets';
+const props = defineProps<{
     customer: Customer & Pick<Relations<'customer'>, 'contacts'>;
     operatingSites: (CustomerOperatingSite & Pick<Relations<'customerOperatingSite'>, 'current_address'>)[];
     customerNoteFolders: Tree<Pick<CustomerNoteFolder, 'id' | 'customer_id' | 'name'>, 'sub_folders'>[];
     customerNoteEntries: (CustomerNoteEntry & RelationPick<'customerNoteEntry', 'user', 'first_name' | 'last_name'>)[];
+    users: UserProp[];
+    ticketableOperatingSites: OperatingSiteProp[];
+    tickets: TicketProp[];
+    archiveTickets: Paginator<TicketProp>;
+    ticketTab: TicketTab;
+    tab: Tab;
 }>();
-
-const currentTab = ref('customerData');
+const currentTab = ref<Tab>(props.tab);
 </script>
 <template>
     <AdminLayout :title="'Kunde: ' + customer.name" :backurl="route('customer.index')">
         <v-tabs v-model="currentTab">
             <v-tab value="customerData">Stammdaten</v-tab>
             <v-tab value="customerNotes">Unterlagen</v-tab>
+            <v-tab value="tickets">Tickets</v-tab>
         </v-tabs>
         <v-tabs-window :model-value="currentTab">
             <v-tabs-window-item value="customerData">
@@ -89,9 +107,18 @@ const currentTab = ref('customerData');
                     </v-data-table>
                 </v-card>
             </v-tabs-window-item>
-            <v-tabs-window-item value="operatingSites"></v-tabs-window-item>
             <v-tabs-window-item value="customerNotes">
                 <CustomerNotes :customerNoteEntries :customer :customerNoteFolders="customerNoteFolders"></CustomerNotes>
+            </v-tabs-window-item>
+            <v-tabs-window-item value="tickets">
+                <TicketOverview
+                    :tickets
+                    :archiveTickets
+                    :customers="[customer]"
+                    :users
+                    :operatingSites="ticketableOperatingSites"
+                    :tab="ticketTab"
+                ></TicketOverview>
             </v-tabs-window-item>
         </v-tabs-window>
     </AdminLayout>

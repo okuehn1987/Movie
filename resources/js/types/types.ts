@@ -40,8 +40,9 @@ export type Model =
     | 'timeAccount'
     | 'timeAccountTransaction'
     | 'workLogPatch'
+    | 'ticketRecord'
     | (string & NonNullable<unknown>);
-export type CanMethod = 'viewIndex' | 'viewShow' | 'create' | 'update' | 'delete' | (string & NonNullable<unknown>);
+export type CanMethod = 'viewIndex' | 'viewShow' | 'create' | 'update' | 'delete' | 'account' | (string & NonNullable<unknown>);
 
 export type Canable = {
     /**can the auth user execute this action in the current scope */
@@ -486,6 +487,7 @@ export type Ticket = DBObject<'ticket'> & {
     user_id: User['id'];
     accounted_at: DateTimeString | null;
     finished_at: DateTimeString | null;
+    appointment_at: DateTimeString | null;
     reference_prefix: string;
     readonly reference_number: string;
 };
@@ -497,6 +499,12 @@ export type TicketRecord = DBObject<'record'> & {
     description: string | null;
     resources: string | null;
     accounted_at: DateTimeString | null;
+};
+
+export type TicketRecordFile = DBObject<'ticketRecordFile'> & {
+    ticket_record_id: TicketRecord['id'];
+    path: string;
+    original_name: string;
 };
 
 export type PermissionValue = 'read' | 'write' | null;
@@ -511,6 +519,7 @@ export type Permission = {
         | 'timeAccountSetting_permission'
         | 'timeAccountTransaction_permission'
         | 'ticket_permission'
+        | 'ticket_accounting_permission'
         | 'absenceType_permission';
     organization: 'specialWorkingHoursFactor_permission' | 'organization_permission' | 'customer_permission';
     operatingSite: 'operatingSite_permission';
@@ -570,6 +579,7 @@ export type CustomerNoteEntry = DBObject<'customerNoteEntry'> & {
 export type TicketUser = DBObject<'ticket_user'> & {
     ticket_id: Ticket['id'];
     user_id: User['id'];
+    status: Status;
 };
 
 export type RelationMap = {
@@ -687,6 +697,10 @@ export type RelationMap = {
     ticketRecord: {
         ticket: Ticket;
         user: User;
+        files: TicketRecordFile[];
+    };
+    ticketRecordFile: {
+        ticketRecord: TicketRecord;
     };
     timeAccount: {
         user: User;

@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ticket_user', function (Blueprint $table) {
+        Schema::create('ticket_record_files', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('ticket_id')->onDelete('cascade');
-            $table->foreignId('user_id')->onDelete('cascade');
-            $table->enum('status', ["created", "declined", "accepted"]);
+            $table->string('path');
+            $table->foreignId('ticket_record_id')->constrained()->onDelete('cascade');
+            $table->string('original_name');
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ticket_user');
+        Schema::dropIfExists('ticket_record_files');
     }
 };

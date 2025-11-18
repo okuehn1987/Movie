@@ -431,25 +431,29 @@ declare module 'ziggy-js' {
     "customer.customerNoteEntry.store": [
         {
             "name": "customer",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "customerNoteEntry.update": [
         {
             "name": "customerNoteEntry",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "customerNoteEntry.destroy": [
         {
             "name": "customerNoteEntry",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "customerNoteEntry.getFile": [
         {
             "name": "customerNoteEntry",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "customer.customerContact.store": [
@@ -510,9 +514,37 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "ticket.accept": [
+        {
+            "name": "ticket",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "ticket.finish": [
         {
             "name": "ticket",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticket.unfinish": [
+        {
+            "name": "ticket",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticketRecordFile.download": [
+        {
+            "name": "ticketRecordFile",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticketRecordFile.deleteFile": [
+        {
+            "name": "ticketRecordFile",
             "required": true,
             "binding": "id"
         }

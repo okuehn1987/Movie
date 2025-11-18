@@ -37,6 +37,11 @@ class Ticket extends Model
 
     public function assignees()
     {
-        return $this->belongsToMany(User::class)->withTimestamps();
+        return $this->belongsToMany(User::class)->withTimestamps()->withPivot('status');
+    }
+
+    public function address()
+    {
+        return $this->belongsTo(Address::class);
     }
 }
