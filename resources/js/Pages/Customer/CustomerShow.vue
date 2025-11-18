@@ -10,7 +10,6 @@ import {
     RelationPick,
     Relations,
     Tree,
-    User,
 } from '@/types/types';
 import { formatAddress } from '@/utils';
 import { ref } from 'vue';
