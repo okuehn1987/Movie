@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('customer_operating_sites', function (Blueprint $table) {
+        Schema::create('ticket_record_files', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('customer_id')->constrained()->onDelete('cascade');
-            $table->string('name');
-            $table->string('email')->nullable();
-            $table->string('phone_number')->nullable();
+            $table->string('path');
+            $table->foreignId('ticket_record_id')->constrained()->onDelete('cascade');
+            $table->string('original_name');
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('customer_operating_sites');
+        Schema::dropIfExists('ticket_record_files');
     }
 };

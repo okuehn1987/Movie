@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class CustomerOperatingSite extends Model
 {
     use HasFactory, SoftDeletes;
-    use Addressable;
+    use Addressable, ScopeInOrganization;
 
     protected $guarded = [];
 

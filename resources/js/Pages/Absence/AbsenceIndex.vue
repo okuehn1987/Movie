@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { AbsenceType, DateString, Status, User, UserAbsenceFilter } from '@/types/types';
+import { AbsenceType, DateString, FederalState, Status, User, UserAbsenceFilter } from '@/types/types';
 import { throttle, useMaxScrollHeight } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
@@ -18,8 +18,11 @@ const props = defineProps<{
     absencePatches: AbsencePatchProp[];
     absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval' | 'type'>[];
     holidays: Record<string, string> | null;
+    schoolHolidays: Record<string, Record<string, { name: string; start: DateString; end: DateString }[]>>;
     date: DateString;
     user_absence_filters: UserAbsenceFilter[];
+    federal_state: FederalState;
+    all_federal_states: Record<FederalState, string>;
 }>();
 
 const dateParam = route().params['date'];
@@ -30,6 +33,7 @@ const groupFilterForm = useForm({
     selected_users: [] as User['id'][],
     selected_absence_types: [] as AbsenceType['id'][],
     selected_statuses: ['created', 'accepted'] as Status[],
+    selected_holidays: [props.federal_state] as FederalState[],
 });
 
 const singleFilterForm = useForm({
@@ -37,9 +41,10 @@ const singleFilterForm = useForm({
     selected_users: [] as User['id'][],
     selected_absence_types: [] as AbsenceType['id'][],
     selected_statuses: ['created', 'accepted'] as Status[],
+    selected_holidays: [props.federal_state] as FederalState[],
 });
 
-const currentFilterForm = ref<null | typeof groupFilterForm | typeof singleFilterForm>(null);
+const currentFilterForm = ref<null | typeof groupFilterForm | typeof singleFilterForm>(singleFilterForm);
 
 watch(
     [() => singleFilterForm.data(), () => groupFilterForm.set],
@@ -139,7 +144,7 @@ const loading = ref(false);
 const reload = throttle(() => {
     if (loadedMonths.value.includes(currentDate.value.toFormat('yyyy-MM'))) return;
     router.reload({
-        only: ['absences', 'absencePatches', 'holidays'],
+        only: ['absences', 'absencePatches', 'holidays', 'schoolHolidays'],
         data: { date: currentDate.value.toFormat('yyyy-MM'), openAbsence: null, openAbsencePatch: null },
         onStart: () => {
             loadedMonths.value.push(currentDate.value.toFormat('yyyy-MM'));
@@ -154,6 +159,25 @@ watch(currentDate, reload);
 const absenceTableHeight = useMaxScrollHeight(80 + 1);
 
 const display = useDisplay();
+
+const currentMonthHolidays = computed(() => props.schoolHolidays[currentDate.value.toFormat('yyyy-MM')] ?? {});
+
+const currentSchoolHolidays = computed(() => {
+    return Object.entries(currentMonthHolidays.value)
+        .filter(
+            ([key, value]) =>
+                (currentFilterForm.value?.selected_holidays.length == 0 ||
+                    currentFilterForm.value?.selected_holidays.includes(key as FederalState)) &&
+                value.length != 0,
+        )
+        .flatMap(([_key, value]) =>
+            [...value].filter(
+                e =>
+                    e.start <= currentDate.value.endOf('month').toFormat('yyyy-MM-dd') &&
+                    e.end >= currentDate.value.startOf('month').toFormat('yyyy-MM-dd'),
+            ),
+        );
+});
 </script>
 <template>
     <AdminLayout title="Abwesenheiten">
@@ -185,6 +209,9 @@ const display = useDisplay();
                         :user_absence_filters
                         v-model:filterForm="groupFilterForm"
                         v-model:singleFilterForm="singleFilterForm"
+                        :schoolHolidays="currentMonthHolidays"
+                        :federal_state
+                        :all_federal_states
                     ></AbsenceFilter>
                     <div class="d-flex flex-wrap align-center">
                         <div class="d-flex">
@@ -260,7 +287,18 @@ const display = useDisplay();
                         sortable: false,
                         align: 'center',
                         width: (1/dayList.length * 100)+'%' ,
-                        headerProps:{ class: {'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate() }}
+                        headerProps:{ class: {'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate() ,
+                         'bg-grey': !(e.toISODate() === DateTime.local().toISODate()) && currentSchoolHolidays.some(h => {
+                            const start = DateTime.fromISO(h.start);
+                            const end = DateTime.fromISO(h.end);
+
+                            return e >= start && e <= end;
+                         }) }, title: currentSchoolHolidays.filter(h => {
+                            const start = DateTime.fromISO(h.start);
+                            const end = DateTime.fromISO(h.end);
+
+                            return e >= start && e <= end;
+                         }).map( d => d.name).join('\n') }
                     } as const)),
                 ]"
             >

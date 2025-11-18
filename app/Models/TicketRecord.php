@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Traits\Addressable;
 use Illuminate\Database\Eloquent\Model;
 
 class TicketRecord extends Model
 {
+    use Addressable;
+
     protected $guarded = [];
 
     public function ticket()
@@ -16,5 +19,15 @@ class TicketRecord extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function files()
+    {
+        return $this->hasMany(TicketRecordFile::class);
+    }
+
+    public function address()
+    {
+        return $this->belongsTo(Address::class);
     }
 }

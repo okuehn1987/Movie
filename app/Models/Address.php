@@ -27,6 +27,11 @@ class Address extends Model
         return $this->morphTo();
     }
 
+    public function ticketRecords()
+    {
+        return $this->hasMany(TicketRecord::class);
+    }
+
     public static function addressablesWithName(MorphTo $morphTo)
     {
         return $morphTo->morphWith([

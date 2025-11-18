@@ -125,11 +125,9 @@ class AbsenceController extends Controller
             $authUser->operatingSite->currentAddress->country,
             $authUser->operatingSite->currentAddress->federal_state,
             $date
-        )
-            ->mapWithKeys(
-                fn($val, $key) => [Carbon::parse($key)->format('Y-m-d') => $val]
-            );
+        );
 
+        $schoolHolidays = HolidayService::getSchoolHolidaysForMonth($date);
         return Inertia::render('Absence/AbsenceIndex', [
             'users' => fn() =>
             User::whereIn('id', $visibleUsers->pluck('id'))
@@ -170,8 +168,11 @@ class AbsenceController extends Controller
             'absences' =>  Inertia::merge(fn() => $absences),
             'absencePatches' =>  Inertia::merge(fn() => $absencePatches),
             'holidays' =>  Inertia::merge(fn() => $holidays->isEmpty() ? (object)[] : $holidays),
+            'schoolHolidays' =>  Inertia::merge(fn() => $schoolHolidays->isEmpty() ? (object)[] : [$date->format('Y-m') => $schoolHolidays]),
             'user_absence_filters' => $authUser->userAbsenceFilters,
             'date' => $date,
+            'federal_state' => $authUser->operatingSite->currentAddress->federal_state,
+            'all_federal_states' => HolidayService::$COUNTRIES['DE']['regions'],
             'can' => [
                 'user' => [
                     'viewDisputes' => $authUser->can('viewDisputes', User::class),

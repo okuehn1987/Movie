@@ -1,23 +1,28 @@
 <script setup lang="ts">
-import { PRIORITIES } from '@/types/types';
-import { CustomerProp, UserProp } from './ticketTypes';
+import { Customer, PRIORITIES } from '@/types/types';
+import { formatAddress } from '@/utils';
 import { usePage } from '@inertiajs/vue3';
-import { Ref } from 'vue';
+import { Ref, watch } from 'vue';
+import { CustomerProp, OperatingSiteProp, UserProp } from './ticketTypes';
 
-defineProps<{
+const props = defineProps<{
     customers: CustomerProp[];
     users: UserProp[];
+    operatingSites: OperatingSiteProp[];
 }>();
 
 const ticketForm = useForm({
     title: '',
     description: '',
     priority: 'medium',
-    customer_id: null,
+    customer_id: null as Customer['id'] | null,
     assignees: [usePage().props.auth.user.id],
     start: null as string | null,
     duration: '00:00',
+    operatingSite: props.operatingSites.find(o => o.value.type === 'App\\Models\\OperatingSite')?.value,
     resources: '',
+    appointment_at: null as string | null,
+    files: [] as File[],
     tab: 'ticket' as 'ticket' | 'expressTicket',
 });
 
@@ -29,6 +34,13 @@ function submit(isActive: Ref<boolean>) {
         },
     });
 }
+
+watch(
+    () => ticketForm.customer_id,
+    () => {
+        ticketForm.reset('operatingSite');
+    },
+);
 </script>
 <template>
     <v-dialog max-width="600px">
@@ -50,7 +62,7 @@ function submit(isActive: Ref<boolean>) {
                     <v-tab class="w-50" value="ticket">Auftrag</v-tab>
                     <v-tab class="w-50" value="expressTicket">Einzelauftrag</v-tab>
                 </v-tabs>
-                <v-card-text>
+                <v-card-text style="max-height: 750px; overflow-y: auto">
                     <v-form @submit.prevent="submit(isActive)">
                         <v-tabs-window v-model="ticketForm.tab">
                             <v-tabs-window-item value="ticket">
@@ -102,7 +114,7 @@ function submit(isActive: Ref<boolean>) {
                                             v-model="ticketForm.assignees"
                                         ></v-autocomplete>
                                     </v-col>
-                                    <v-col cols="12">
+                                    <v-col cols="12" md="7">
                                         <v-text-field
                                             label="Betreff"
                                             required
@@ -110,7 +122,14 @@ function submit(isActive: Ref<boolean>) {
                                             v-model="ticketForm.title"
                                         ></v-text-field>
                                     </v-col>
-
+                                    <v-col cols="12" md="5">
+                                        <v-text-field
+                                            label="Termin (optional)"
+                                            type="datetime-local"
+                                            v-model="ticketForm.appointment_at"
+                                            :error-Messages="ticketForm.errors.appointment_at"
+                                        ></v-text-field>
+                                    </v-col>
                                     <v-col cols="12">
                                         <v-textarea
                                             label="Beschreibung"
@@ -152,6 +171,21 @@ function submit(isActive: Ref<boolean>) {
                                         ></v-text-field>
                                     </v-col>
                                     <v-col cols="12">
+                                        <v-autocomplete
+                                            label="Standort"
+                                            v-model="ticketForm.operatingSite"
+                                            :items="
+                                                operatingSites
+                                                    .filter(o => !('customer_id' in o) || o.customer_id === ticketForm.customer_id)
+                                                    .map(os => ({
+                                                        ...os,
+                                                        props: { subtitle: 'address' in os ? formatAddress(os.address) : '' },
+                                                    }))
+                                            "
+                                            :error-messages="ticketForm.errors.operatingSite"
+                                        ></v-autocomplete>
+                                    </v-col>
+                                    <v-col cols="12">
                                         <v-text-field
                                             label="Betreff"
                                             required
@@ -175,7 +209,17 @@ function submit(isActive: Ref<boolean>) {
                                             label="Ressourcen"
                                             :error-messages="ticketForm.errors.resources"
                                             v-model="ticketForm.resources"
+                                            auto-grow
                                         ></v-textarea>
+                                    </v-col>
+                                    <v-col cols="12">
+                                        <v-file-input
+                                            label="Dateien anhängen"
+                                            multiple
+                                            v-model="ticketForm.files"
+                                            :error-messages="ticketForm.errors['files.0']"
+                                            accept="image/jpg, image/png, image/jpeg, image/avif, image/tiff, image/svg+xml, application/pdf"
+                                        ></v-file-input>
                                     </v-col>
                                 </v-row>
                             </v-tabs-window-item>

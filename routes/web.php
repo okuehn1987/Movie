@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Middleware\CheckIfGateWasUsedToAuthorizeRequest;
 use App\Http\Middleware\HasOrganizationAccess;
 use App\Http\Middleware\isApp;
+use App\Models\CustomerNoteFolder;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard')->name('home');
@@ -79,13 +80,19 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     //timesheets specific routes
     Route::middleware(isApp::class . ':timesheets')->group(function () {
         Route::resource('customer', CustomerController::class)->only(['index', 'store', 'update', 'show', 'destroy']);
-        Route::resource('customer.customerNote', CustomerNoteController::class)->only(['store', 'update', 'destroy'])->shallow();
-        Route::get('/customerNote/{customerNote}/getFile', [CustomerNoteController::class, 'getFile'])->name('customerNote.getFile');
+        Route::resource('customer.customerNoteFolder', CustomerNoteFolderController::class)->only(['store', 'update', 'destroy'])->shallow();
+        Route::resource('customer.customerNoteEntry', CustomerNoteEntryController::class)->only(['store', 'update', 'destroy'])->shallow();
+        Route::get('/customerNoteEntry/{customerNoteEntry}/getFile', [CustomerNoteEntryController::class, 'getFile'])->name('customerNoteEntry.getFile');
+        Route::resource('customer.customerContact', CustomerContactController::class)->only(['store', 'update', 'destroy'])->shallow();
 
         Route::resource('customer.customerOperatingSite', CustomerOperatingSiteController::class)->only(['store', 'update', 'destroy'])->shallow();
 
         Route::resource('ticket', TicketController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::patch('ticket/{ticket}/accept', [TicketController::class, 'accept'])->name('ticket.accept');
         Route::patch('/ticket/{ticket}/finish', [TicketController::class, 'finish'])->name('ticket.finish');
+        Route::patch('/ticket/{ticket}/unfinish', [TicketController::class, 'unfinish'])->name('ticket.unfinish');
+        Route::get('/ticket/{ticketRecordFile}/download', [TicketRecordController::class, 'download'])->name('ticketRecordFile.download');
+        Route::delete('/ticket/{ticketRecordFile}/deleteFile', [TicketRecordController::class, 'deleteFile'])->name('ticketRecordFile.deleteFile');
         Route::resource('ticket.ticketRecord', TicketRecordController::class)->only(['store', 'update', 'destroy'])->shallow();
     });
 });
