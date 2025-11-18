@@ -20,17 +20,19 @@ const noteEntryForm = useForm({
 });
 
 watch(openDialog, isOpen => {
-    if (!isOpen) return noteEntryForm.reset();
-
-    const entry = props.customerNoteEntry;
-
-    if (entry) {
-        noteEntryForm.type = entry.type ?? '';
-        noteEntryForm.title = entry.title ?? '';
-        noteEntryForm.value = entry.value ?? '';
-        noteEntryForm.metadata = entry.metadata ?? [];
-    } else {
+    if (!isOpen) { 
         noteEntryForm.reset();
+    } else {        
+        const entry = props.customerNoteEntry;
+        
+        if (entry) {
+            noteEntryForm.type = entry.type ?? '';
+            noteEntryForm.title = entry.title ?? '';
+            noteEntryForm.value = entry.value ?? '';
+            noteEntryForm.metadata = entry.metadata ?? [];
+        } else {
+            noteEntryForm.reset();
+        }
     }
 });
 
