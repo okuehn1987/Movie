@@ -7,6 +7,7 @@ use App\Models\AbsencePatch;
 use App\Models\AbsenceType;
 use App\Enums\Status;
 use App\Models\HomeOfficeDay;
+use App\Models\HomeOfficeDayGenerator;
 use App\Models\OperatingSite;
 use App\Models\Organization;
 use App\Models\User;
@@ -70,7 +71,8 @@ class AbsenceController extends Controller
         $homeOfficeDays = HomeOfficeDay::inOrganization()
             ->whereIn('user_id', $visibleUsers->pluck('id'))
             ->whereBetween('date', [$date->copy()->startOfMonth(), $date->copy()->endOfMonth()])
-            ->get(['id', 'user_id', 'date', 'status']);
+            ->with('homeOfficeDayGenerator:id,start,end,created_as_request')
+            ->get(['id', 'user_id', 'date', 'status', 'home_office_day_generator_id']);
 
         $absences = Absence::inOrganization()
             ->doesntHave('currentAcceptedPatch')

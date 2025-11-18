@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { AbsenceType, HomeOfficeDay, Weekday } from '@/types/types';
+import { AbsenceType, Weekday } from '@/types/types';
 import { DateTime } from 'luxon';
 import { computed } from 'vue';
-import { AbsencePatchProp, AbsenceProp, getEntryState, UserProp } from '../utils';
+import { AbsencePatchProp, AbsenceProp, getEntryState, HomeOfficeDayProp, UserProp } from '../utils';
 
 const props = defineProps<{
     user: UserProp;
@@ -10,7 +10,7 @@ const props = defineProps<{
     entries: (AbsenceProp | AbsencePatchProp)[];
     absenceTypes: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
     holidays: Record<string, string> | null;
-    homeOfficeDays: Pick<HomeOfficeDay, 'id' | 'user_id' | 'date' | 'status'>[];
+    homeOfficeDays: HomeOfficeDayProp[];
 }>();
 
 const currentEntry = computed(() => props.entries.find(a => DateTime.fromSQL(a.start) <= props.date && props.date <= DateTime.fromSQL(a.end)));

@@ -6,6 +6,7 @@ use App\Enums\Status;
 use App\Models\Absence;
 use App\Models\AbsencePatch;
 use App\Models\HomeOfficeDay;
+use App\Models\HomeOfficeDayGenerator;
 use App\Models\User;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
@@ -151,15 +152,12 @@ class DisputeController extends Controller
     {
         $authUser = request()->user();
 
-        return HomeOfficeDay::inOrganization()
-            ->where('status', Status::Created)
+        return HomeOfficeDayGenerator::inOrganization()
+            ->whereHas('homeOfficeDays', Status::Created)
             ->with([
                 'user' => fn($q) => $q->select(['id', 'first_name', 'last_name', 'operating_site_id', 'supervisor_id'])->withTrashed()
             ])
             ->get(['id', 'user_id', 'date'])
-            ->with([
-                'homeOfficeDayGenerators' => fn($q) => $q->select(['id', 'user_id', 'start', 'end', 'created_as_request'])
-            ])
             ->filter(fn($log) => $authUser->can('update', [WorkLog::class, $log->user]))
             ->values();
     }

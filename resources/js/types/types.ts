@@ -644,7 +644,7 @@ export type RelationMap = {
     };
     homeOfficeDay: {
         user: User;
-        home_office_day_generator: HomeOfficeDayGenerator | null;
+        home_office_day_generator: HomeOfficeDayGenerator;
     };
     operatingSite: {
         organization: Organization;

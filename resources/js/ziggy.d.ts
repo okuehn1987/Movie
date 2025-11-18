@@ -211,6 +211,12 @@ declare module 'ziggy-js' {
             "required": true
         }
     ],
+    "homeOfficeDayGenerator.destroy": [
+        {
+            "name": "homeOfficeDayGenerator",
+            "required": true
+        }
+    ],
     "operatingSite.index": [],
     "operatingSite.store": [],
     "operatingSite.show": [

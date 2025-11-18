@@ -17,7 +17,7 @@ class HomeOfficeDay extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function homeOfficeDayGenerators()
+    public function homeOfficeDayGenerator()
     {
         return $this->belongsTo(HomeOfficeDayGenerator::class);
     }

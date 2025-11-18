@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Middleware\CheckIfGateWasUsedToAuthorizeRequest;
 use App\Http\Middleware\HasOrganizationAccess;
 use App\Http\Middleware\isApp;
+use App\Models\HomeOfficeDayGenerator;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard')->name('home');
@@ -43,6 +44,7 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::resource('group', GroupController::class)->only(['index', 'store', 'update', 'destroy']);
 
     Route::resource('homeOfficeDay', HomeOfficeDayController::class)->only(['store', 'update', 'destroy']);
+    Route::resource('homeOfficeDayGenerator', HomeOfficeDayGenerator::class)->only(['destroy']);
 
     Route::resource('operatingSite', OperatingSiteController::class)->only(['index', 'store', 'destroy', 'update', 'show']);
     Route::resource('operatingSite.operatingTime', OperatingTimeController::class)->only(['store', 'destroy'])->shallow();

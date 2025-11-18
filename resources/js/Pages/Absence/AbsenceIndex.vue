@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { AbsenceType, DateString, HomeOfficeDay, Status, User, UserAbsenceFilter } from '@/types/types';
+import { AbsenceType, DateString, Status, User, UserAbsenceFilter } from '@/types/types';
 import { throttle, useMaxScrollHeight } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
@@ -10,7 +10,8 @@ import AbsenceFilter from './partials/AbsenceFilter.vue';
 import AbsenceTableCell from './partials/AbsenceTableCell.vue';
 import EditCreateAbsence from './partials/EditCreateAbsence.vue';
 import ShowAbsenceModal from './partials/ShowAbsenceModal.vue';
-import { AbsencePatchProp, AbsenceProp, getEntryState, UserProp } from './utils';
+import ShowHomeOfficeModal from './partials/ShowHomeOfficeModal.vue';
+import { AbsencePatchProp, AbsenceProp, getEntryState, HomeOfficeDayProp, UserProp } from './utils';
 
 const props = defineProps<{
     users: UserProp[];
@@ -20,7 +21,7 @@ const props = defineProps<{
     holidays: Record<string, string> | null;
     date: DateString;
     userAbsenceFilters: UserAbsenceFilter[];
-    homeOfficeDays: Pick<HomeOfficeDay, 'id' | 'user_id' | 'date' | 'status'>[];
+    homeOfficeDays: HomeOfficeDayProp[];
 }>();
 
 const dateParam = route().params['date'];
@@ -90,7 +91,9 @@ const currentEntries = computed(() => {
 
 const openEditCreateAbsenceModal = ref(false);
 const openShowAbsenceModal = ref(false);
+const openShowHomeOfficeModal = ref(false);
 const selectedAbsence = ref<null | AbsenceProp | AbsencePatchProp>(null);
+const selectedHomeOffice = ref<null | HomeOfficeDayProp>(null);
 const selectedUser = ref<null | User['id']>(null);
 const selectedDate = ref<DateTime | null>(null);
 const selectedAbsenceUser = computed(() => props.users.find(u => u.id === selectedAbsence.value?.user_id));
@@ -116,10 +119,18 @@ function createAbsenceModal(user_id: User['id'], start?: DateTime) {
         .filter(a => a.user_id === user_id)
         .find(a => start && DateTime.fromSQL(a.start) <= start && start <= DateTime.fromSQL(a.end));
 
+    const homeOfficeToEdit = props.homeOfficeDays
+        .filter(u => u.user_id === user_id && u.home_office_day_generator.created_as_request)
+        .find(
+            a => start && DateTime.fromSQL(a.home_office_day_generator.start) <= start && start <= DateTime.fromSQL(a.home_office_day_generator.end),
+        );
     selectedDate.value = start ?? null;
     selectedAbsence.value = absenceToEdit ?? null;
+    selectedHomeOffice.value = homeOfficeToEdit ?? null;
     if (absenceToEdit && ['hasOpenPatch', 'created'].includes(getEntryState(absenceToEdit))) {
         openShowAbsenceModal.value = true;
+    } else if (homeOfficeToEdit) {
+        openShowHomeOfficeModal.value = true;
     } else {
         openEditCreateAbsenceModal.value = true;
     }
@@ -183,6 +194,13 @@ const display = useDisplay();
             v-model="openShowAbsenceModal"
             @absenceReload="loadedMonths = [currentDate.toFormat('yyyy-MM')]"
         ></ShowAbsenceModal>
+        <ShowHomeOfficeModal
+            v-if="openShowHomeOfficeModal && selectedUser && selectedHomeOffice"
+            :selectedHomeOffice
+            :users
+            v-model:selectedUser="selectedUser"
+            v-model="openShowHomeOfficeModal"
+        ></ShowHomeOfficeModal>
         <v-card>
             <v-card-text class="px-sm-4 px-0">
                 <div class="d-flex align-center w-100" :class="display.mdAndUp.value ? 'justify-space-between' : 'justify-center'">

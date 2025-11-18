@@ -53,8 +53,7 @@ function withdrawRequest() {
                     (selectedAbsence.user_id != $page.props.auth.user.id
                         ? ' von ' +
                           users.map(u => ({ ...u, name: u.first_name + ' ' + u.last_name })).find(u => u.id === selectedAbsence.user_id)?.name
-                        : '') +
-                    ' beantragen'
+                        : '')
                 "
             >
                 <template #append>

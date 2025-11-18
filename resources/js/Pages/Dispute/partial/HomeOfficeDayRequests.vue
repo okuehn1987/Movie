@@ -14,7 +14,7 @@ const props = defineProps<{
 }>();
 
 const homeOfficeDayDialog = ref<HomeOfficeDayProp | null>(
-    props.homeOfficeDayRequests?.find(homeOfficeDay => homeOfficeDay.homeOfficeDayGenerator.id == Number(route().params['openAbsence'])) ?? null,
+    props.homeOfficeDayRequests?.find(homeOfficeDay => homeOfficeDay.homeOfficeDayGenerator.id == Number(route().params['openHomeOffice'])) ?? null,
 );
 const showHomeOfficeDayDialog = ref(!!homeOfficeDayDialog.value);
 const submitAbsenceSuccess = ref(false);
