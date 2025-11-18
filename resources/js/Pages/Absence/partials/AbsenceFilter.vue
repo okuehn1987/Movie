@@ -10,7 +10,7 @@ const props = defineProps<{
     absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval' | 'type'>[];
     schoolHolidays: Record<string, { name: string; start: DateString; end: DateString }[]>;
     federal_state: FederalState;
-    all_federal_states: FederalState;
+    all_federal_states: Record<FederalState, string>;
 }>();
 
 const FORM_DEFAULT = {

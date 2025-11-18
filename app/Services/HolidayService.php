@@ -99,18 +99,27 @@ class HolidayService
     public static function getSchoolHolidaysForMonth(CarbonInterface $date)
     {
         return collect(self::getSchoolHolidays())->map(
-            fn($federalState) => collect($federalState)->filter(
+            fn($federalState, $stateName) => collect($federalState)->filter(
                 fn($entry) =>
                 Carbon::parse($entry['start'])->lte($date->copy()->endOfMonth()) &&
                     Carbon::parse($entry['end'])->gte($date->copy()->startOfMonth())
-            )->values()
+            )->map(function ($entry) use ($stateName) {
+                $start = Carbon::parse($entry['start']);
+                $end = Carbon::parse($entry['end']);
+
+                return [
+                    'name' => self::$COUNTRIES['DE']['regions'][$stateName] . ' ' . $start->format('d.m.') . ' - ' . $end->format('d.m.'),
+                    'start' => $start->format('Y-m-d'),
+                    'end' => $end->format('Y-m-d'),
+                ];
+            })->values()
         );
     }
 
     private static function getSchoolHolidays()
     {
         return [
-            "Baden-Württemberg" => [
+            "BW" => [
                 [
                     "name" => "Herbst 2025",
                     "start" => "2025-10-27",
@@ -207,7 +216,7 @@ class HolidayService
                     "end" => "2028-09-09"
                 ]
             ],
-            "Bayern" => [
+            "BY" => [
                 [
                     "name" => "Herbst 2025",
                     "start" => "2025-11-03",
@@ -299,7 +308,7 @@ class HolidayService
                     "end" => "2028-09-11"
                 ]
             ],
-            "Berlin" => [
+            "BE" => [
                 [
                     "name" => "Herbst 2025",
                     "start" => "2025-10-20",
@@ -406,7 +415,7 @@ class HolidayService
                     "end" => "2028-08-12"
                 ]
             ],
-            "Brandenburg" => [
+            "BB" => [
                 [
                     "name" => "Herbst 2025",
                     "start" => "2025-10-20",
@@ -493,7 +502,7 @@ class HolidayService
                     "end" => "2028-08-12"
                 ]
             ],
-            "Bremen" => [
+            "HB" => [
                 [
                     "name" => "Herbst 2025",
                     "start" => "2025-10-13",
@@ -600,7 +609,7 @@ class HolidayService
                     "end" => "2028-08-30"
                 ]
             ],
-            "Hamburg" => [
+            "HH" => [
                 [
                     "name" => "Herbst 2025",
                     "start" => "2025-10-20",
@@ -692,7 +701,7 @@ class HolidayService
                     "end" => "2028-08-11"
                 ]
             ],
-            "Hessen" => [
+            "HE" => [
                 [
                     "name" => "Herbst 2025",
                     "start" => "2025-10-06",
@@ -754,7 +763,7 @@ class HolidayService
                     "end" => "2028-08-11"
                 ]
             ],
-            "Mecklenburg-Vorpommern" => [
+            "MV" => [
                 [
                     "name" => "Herbst 2025",
                     "start" => "2025-10-02",
@@ -876,7 +885,7 @@ class HolidayService
                     "end" => "2028-08-05"
                 ]
             ],
-            "Niedersachsen" => [
+            "NI" => [
                 [
                     "name" => "Herbst 2025",
                     "start" => "2025-10-13",
@@ -983,7 +992,7 @@ class HolidayService
                     "end" => "2028-08-30"
                 ]
             ],
-            "Nordrhein-Westfalen" => [
+            "NW" => [
                 [
                     "name" => "Herbst 2025",
                     "start" => "2025-10-13",
@@ -1055,7 +1064,7 @@ class HolidayService
                     "end" => "2028-08-22"
                 ]
             ],
-            "Rheinland-Pfalz" => [
+            "RP" => [
                 [
                     "name" => "Herbst 2025",
                     "start" => "2025-10-13",
@@ -1117,7 +1126,7 @@ class HolidayService
                     "end" => "2028-08-11"
                 ]
             ],
-            "Saarland" => [
+            "SL" => [
                 [
                     "name" => "Herbst 2025",
                     "start" => "2025-10-13",
@@ -1194,7 +1203,7 @@ class HolidayService
                     "end" => "2028-08-11"
                 ]
             ],
-            "Sachsen" => [
+            "SN" => [
                 [
                     "name" => "Herbst 2025",
                     "start" => "2025-10-06",
@@ -1291,7 +1300,7 @@ class HolidayService
                     "end" => "2028-09-01"
                 ]
             ],
-            "Sachsen-Anhalt" => [
+            "ST" => [
                 [
                     "name" => "Herbst 2025",
                     "start" => "2025-10-13",
@@ -1383,7 +1392,7 @@ class HolidayService
                     "end" => "2028-09-01"
                 ]
             ],
-            "Schleswig-Holstein" => [
+            "SH" => [
                 [
                     "name" => "Herbst 2025",
                     "start" => "2025-10-20",
@@ -1460,7 +1469,7 @@ class HolidayService
                     "end" => "2028-08-04"
                 ]
             ],
-            "Thüringen" => [
+            "TH" => [
                 [
                     "name" => "Herbst 2025",
                     "start" => "2025-10-06",

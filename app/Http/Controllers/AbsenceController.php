@@ -128,7 +128,6 @@ class AbsenceController extends Controller
         );
 
         $schoolHolidays = HolidayService::getSchoolHolidaysForMonth($date);
-
         return Inertia::render('Absence/AbsenceIndex', [
             'users' => fn() =>
             User::whereIn('id', $visibleUsers->pluck('id'))
@@ -169,7 +168,7 @@ class AbsenceController extends Controller
             'absences' =>  Inertia::merge(fn() => $absences),
             'absencePatches' =>  Inertia::merge(fn() => $absencePatches),
             'holidays' =>  Inertia::merge(fn() => $holidays->isEmpty() ? (object)[] : $holidays),
-            'schoolHolidays' =>  Inertia::merge(fn() => $schoolHolidays->isEmpty() ? (object)[] : $schoolHolidays),
+            'schoolHolidays' =>  Inertia::merge(fn() => $schoolHolidays->isEmpty() ? (object)[] : [$date->format('Y-m') => $schoolHolidays]),
             'user_absence_filters' => $authUser->userAbsenceFilters,
             'date' => $date,
             'federal_state' => $authUser->operatingSite->currentAddress->federal_state,
