@@ -494,6 +494,8 @@ export type Ticket = DBObject<'ticket'> & {
 
 export type TicketRecord = DBObject<'record'> & {
     ticket_id: Ticket['id'];
+    user_id: User['id'];
+    address_id: Address['id'];
     start: DateTimeString;
     duration: number;
     description: string | null;
@@ -602,6 +604,7 @@ export type RelationMap = {
     };
     address: {
         addressable: User | OperatingSite | CustomAddress;
+        ticket_records: TicketRecord[];
     };
     customAddress: {
         organization: Organization;
@@ -698,6 +701,7 @@ export type RelationMap = {
         ticket: Ticket;
         user: User;
         files: TicketRecordFile[];
+        address: Address;
     };
     ticketRecordFile: {
         ticketRecord: TicketRecord;
