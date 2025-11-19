@@ -16,14 +16,15 @@ const createNoteFolderForm = useForm({
 });
 
 watch(openDialog, isOpen => {
-    if (!isOpen) return createNoteFolderForm.reset();
+    if (!isOpen) createNoteFolderForm.reset();
+    else {
+        const folder = props.editNoteFolder;
 
-    const folder = props.editNoteFolder;
-
-    if (folder) {
-        createNoteFolderForm.name = folder.name ?? '';
-    } else {
-        createNoteFolderForm.reset();
+        if (folder) {
+            createNoteFolderForm.name = folder.name ?? '';
+        } else {
+            createNoteFolderForm.reset();
+        }
     }
 });
 </script>
