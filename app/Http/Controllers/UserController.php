@@ -33,6 +33,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
@@ -261,6 +262,7 @@ class UserController extends Controller
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
             'can' => self::getUserShowCans($user),
+            'users' => User::inOrganization()->get(['id', 'first_name', 'last_name', 'job_role']),
         ]);
     }
 
@@ -849,6 +851,18 @@ class UserController extends Controller
         $fileNameDate = $validated['start'] == $validated['end'] ? $validated['start'] : $validated['start'] . '-' . $validated['end'];
         $pdf = PDF::loadView('print.timeStatement', $props)->setPaper('a4', 'landscape');
         return $pdf->stream($user->last_name . '_' . $user->first_name . '_' . $fileNameDate . '_Zeitnachweis.pdf');
+    }
+
+    public function updateSubstitutes(Request $request, #[CurrentUser] User $authUser)
+    {
+        $validated = $request->validate([
+            'substitute_ids' => 'present|array',
+            'substitute_ids.*' => ['required', Rule::exists('users', 'id')->whereIn('id', User::inOrganization()->select('id'))],
+        ]);
+
+        $authUser->isSubstitutedBy()->sync($validated['substitute_ids']);
+
+        return back()->with('success', 'Vertretungen erfolgreich aktualisiert.');
     }
 
     private function getUserShowCans(User $user)

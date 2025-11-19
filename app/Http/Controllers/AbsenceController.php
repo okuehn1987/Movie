@@ -220,8 +220,13 @@ class AbsenceController extends Controller
         if ($authUser->id !== $absence->user_id) {
             $absence->user->notify(new DisputeStatusNotification($absence, $requires_approval ? Status::Created : Status::Accepted));
         }
-        if ($requires_approval) $authUser->supervisor->notify(new AbsenceNotification($authUser, $absence));
-        else $absence->accept();
+        if ($requires_approval) {
+            collect($authUser->supervisor->isSubstitutedBy)
+                ->merge([$authUser->supervisor])
+                ->unique('id')
+                ->each
+                ->notify(new AbsenceNotification($authUser, $absence));
+        } else $absence->accept();
 
         return back()->with('success', 'Abwesenheit erfolgreich beantragt.');
     }
@@ -250,8 +255,9 @@ class AbsenceController extends Controller
                 'data->status' => $is_accepted ? Status::Accepted : Status::Declined
             ]);
 
-        if ($absence->user->id !== $authUser->id)
+        if ($absence->user->id !== $authUser->id) {
             $absence->user->notify(new DisputeStatusNotification($absence, $is_accepted ? Status::Accepted : Status::Declined));
+        }
 
         if ($is_accepted) $absence->accept();
         else $absence->decline();
@@ -293,7 +299,11 @@ class AbsenceController extends Controller
 
             return back()->with('success', 'Die Abwesenheit wurde erfolgreich gelöscht.');
         } else {
-            $authUser->supervisor->notify(new AbsenceDeleteNotification($authUser, $absence));
+            collect($authUser->supervisor->isSubstitutedBy)
+                ->merge([$authUser->supervisor])
+                ->unique('id')
+                ->each
+                ->notify(new AbsenceDeleteNotification($authUser, $absence));
             return back()->with('success', 'Der Antrag auf Löschung wurder erfolgreich eingeleitet.');
         }
     }

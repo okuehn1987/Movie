@@ -192,7 +192,11 @@ class TicketController extends Controller
                 ]);
             }
         }
-        $ticket->assignees->filter(fn($u) => !$authUser->is($u))->each->notify(new TicketCreationNotification($authUser, $ticket));
+        $users = $ticket->assignees->filter(fn($u) => !$authUser->is($u));
+        $users->merge($users->flatMap(fn($u) => $u->isSubstitutedBy))
+            ->unique('id')
+            ->each
+            ->notify(new TicketCreationNotification($authUser, $ticket));
 
         return back()->with('success', 'Ticket erfolgreich erstellt.');
     }
@@ -229,8 +233,9 @@ class TicketController extends Controller
             $ticket->assignees->pluck('id')->diff($validated["assignees"])->isNotEmpty()
         );
 
-        $ticket->assignees
-            ->filter(fn($a) => collect($validated["assignees"])->doesntContain($a->id))
+        $users = $ticket->assignees->filter(fn($a) => collect($validated["assignees"])->doesntContain($a->id));
+        $users->merge($users->flatMap(fn($u) => $u->isSubstitutedBy))
+            ->unique('id')
             ->each
             ->notify(new RemovedFromTicketNotification($ticket));
 
@@ -239,8 +244,13 @@ class TicketController extends Controller
         $ticket->update(collect($validated)->except(['selected', 'assignees'])->toArray());
         $ticket->assignees()->sync($validated['assignees']);
 
-        if ($notifyAssignees)
-            $ticket->fresh('assignees')->assignees->filter(fn($u) => !$authUser->is($u))->each->notify(new TicketUpdateNotification($authUser, $ticket));
+        if ($notifyAssignees) {
+            $users = $ticket->fresh('assignees')->assignees->filter(fn($u) => !$authUser->is($u));
+            $users->merge($users->flatMap(fn($u) => $u->isSubstitutedBy))
+                ->unique('id')
+                ->each
+                ->notify(new TicketUpdateNotification($authUser, $ticket));
+        }
 
         return back()->with('success', 'Änderungen erfolgreich gespeichert.');
     }
@@ -256,7 +266,11 @@ class TicketController extends Controller
             $userToNotify = $userToNotify->merge(User::inOrganization()->get()->filter(fn($u) => $u->can('account', $ticket)));
         }
 
-        $userToNotify->filter(fn($u) => !$u->is($authUser))->unique()->each->notify(new TicketFinishNotification($authUser, $ticket));
+        $users = $userToNotify->filter(fn($u) => !$u->is($authUser));
+        $users->merge($users->flatMap(fn($u) => $u->isSubstitutedBy))
+            ->unique('id')
+            ->each
+            ->notify(new TicketFinishNotification($authUser, $ticket));
 
         return back()->with('success', 'Ticket erfolgreich abgeschlossen.');
     }
@@ -267,7 +281,11 @@ class TicketController extends Controller
 
         $ticket->update(['finished_at' => null]);
 
-        $ticket->assignees->filter(fn($u) => !$u->is($authUser))->each->notify(new TicketUpdateNotification($authUser, $ticket));
+        $users = $ticket->assignees->filter(fn($u) => !$u->is($authUser));
+        $users->merge($users->flatMap(fn($u) => $u->isSubstitutedBy))
+            ->unique('id')
+            ->each
+            ->notify(new TicketUpdateNotification($authUser, $ticket));
 
         return back()->with('success', 'Ticket erfolgreich als unbearbeitet markiert.');
     }
@@ -285,7 +303,12 @@ class TicketController extends Controller
                 ->where('data->ticket_id', $ticket->id)
                 ->delete();
         }
-        $ticket->assignees->filter(fn($u) => !$u->is($authUser))->each->notify(new TicketDeletionNotification($authUser, $ticket));
+
+        $users = $ticket->assignees->filter(fn($u) => !$u->is($authUser));
+        $users->merge($users->flatMap(fn($u) => $u->isSubstitutedBy))
+            ->unique('id')
+            ->each
+            ->notify(new TicketDeletionNotification($authUser, $ticket));
 
 
         return back()->with('success', 'Ticket erfolgreich gelöscht.');

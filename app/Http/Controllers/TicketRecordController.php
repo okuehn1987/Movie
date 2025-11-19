@@ -61,8 +61,9 @@ class TicketRecordController extends Controller
             ]);
         }
 
-        Organization::getCurrent()->users
-            ->filter(fn($u) => !$authUser->is($u) && $u->can('update', $ticket))
+        $users = Organization::getCurrent()->users->filter(fn($u) => !$authUser->is($u) && $u->can('update', $ticket));
+        $users->merge($users->flatMap(fn($u) => $u->isSubstitutedBy))
+            ->unique('id')
             ->each
             ->notify(new TicketRecordCreationNotification($authUser, $ticket));
 
@@ -98,8 +99,10 @@ class TicketRecordController extends Controller
             ]);
         }
 
-        Organization::getCurrent()->users
-            ->filter(fn($u) => !$authUser->is($u) && $u->can('update', $ticketRecord->ticket))
+
+        $users = Organization::getCurrent()->users->filter(fn($u) => !$authUser->is($u) && $u->can('update', $ticketRecord->ticket));
+        $users->merge($users->flatMap(fn($u) => $u->isSubstitutedBy))
+            ->unique('id')
             ->each
             ->notify(new TicketRecordCreationNotification($authUser, $ticketRecord->ticket));
 

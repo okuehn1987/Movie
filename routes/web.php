@@ -57,6 +57,7 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::get('/user/{user}/documents', [UserController::class, 'documents'])->name('user.documents');
     Route::get('/user/{user}/userOrganigram', [UserController::class, 'userOrganigram'])->name('user.userOrganigram');
     Route::get('/user/profile', [UserController::class, 'profile'])->name('user.profile');
+    Route::post('substitutes', [UserController::class, 'updateSubstitutes'])->name('substitute.update');
 
     //herta specific routes
     Route::middleware(isApp::class . ':herta')->group(function () {
