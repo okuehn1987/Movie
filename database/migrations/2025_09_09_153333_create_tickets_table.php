@@ -20,7 +20,6 @@ return new class extends Migration
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->dateTime('finished_at')->nullable();
-            $table->dateTime('appointment_at')->nullable();
             $table->timestamps();
         });
 
