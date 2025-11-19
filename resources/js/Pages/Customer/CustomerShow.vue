@@ -1,16 +1,7 @@
 <script setup lang="ts">
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import {
-    Customer,
-    CustomerNoteEntry,
-    CustomerNoteFolder,
-    CustomerOperatingSite,
-    Paginator,
-    RelationPick,
-    Relations,
-    Tree,
-} from '@/types/types';
+import { Customer, CustomerNoteEntry, CustomerNoteFolder, CustomerOperatingSite, Paginator, RelationPick, Relations, Tree } from '@/types/types';
 import { formatAddress } from '@/utils';
 import { ref } from 'vue';
 import TicketOverview from '../Ticket/partials/TicketOverview.vue';
@@ -18,6 +9,7 @@ import { OperatingSiteProp, Tab as TicketTab, TicketProp, UserProp } from '../Ti
 import CreateEditCustomerOperatingSite from './partial/CreateEditCustomerOperatingSite.vue';
 import CustomerForm from './partial/CustomerForm.vue';
 import CustomerNotes from './partial/CustomerNotes.vue';
+import CustomerContactDialog from './partial/CustomerContactDialog.vue';
 
 type Tab = 'customerData' | 'customerNotes' | 'tickets';
 const props = defineProps<{
