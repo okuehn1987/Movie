@@ -173,6 +173,7 @@ export type Organization = DBObject<'organization'> &
         commercial_registration_id: string | null;
         website: string | null;
         logo: string | null;
+        isa_active: boolean;
     };
 
 export type OperatingSite = DBObject<'operatingSite'> &
@@ -500,13 +501,19 @@ export type Permission = {
         | 'timeAccountTransaction_permission'
         | 'ticket_permission'
         | 'absenceType_permission';
-    organization: 'specialWorkingHoursFactor_permission' | 'organization_permission' | 'customer_permission';
+    organization:
+        | 'specialWorkingHoursFactor_permission'
+        | 'organization_permission'
+        | 'customer_permission'
+        | 'chatAssistant_permission'
+        | 'chatFile_permission'
+        | 'isaPayment_permission';
     operatingSite: 'operatingSite_permission';
     group: 'group_permission';
 };
 
 export type UserPermission = {
-    [key in keyof Permission]: { name: Permission[key]; label: string };
+    [key in keyof Permission]: { name: Permission[key]; label: string; except?: PermissionValue };
 };
 
 export type OrganizationUser = DBObject<'organizationUser'> &
@@ -578,9 +585,10 @@ export type ChatMessage = Prettify<
     DBObject<'chatMessage'> &
         SoftDelete & {
             msg: string;
-            chat_id: Chat['id'];
             role: 'user' | 'assistant' | 'system' | 'annotation';
+            chat_id: Chat['id'];
             assistant_api_message_id: string;
+            open_ai_tokens_used: number;
         }
 >;
 
@@ -594,6 +602,16 @@ export type ChatFile = Prettify<
             organization_id: Organization['id'];
         }
 >;
+
+export type Year = string & { __year__: void };
+export type Month = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+export type Minutes = number & { __minutes__: void };
+export type MonthStats = {
+    month: Month;
+    year: Year;
+    chat_cost: number;
+    chats: number;
+};
 
 export type RelationMap = {
     absence: {

@@ -62,6 +62,9 @@ class User extends Authenticatable
             ['name' => 'ticket_permission', 'label' => 'Tickets verwalten'],
         ],
         'organization' => [
+            ['name' => 'chatFile_permission', 'label' => 'ISA Dateien verwalten'],
+            ['name' => 'chatAssistant_permission', 'label' => 'ISA verwalten'],
+            ['name' => 'isaPayment_permission', 'label' => 'ISA Kostenübersicht einsehen', 'except' => 'write'],
             ['name' => 'absenceType_permission', 'label' => 'Abwesenheitsgründe verwalten'],
             ['name' => 'specialWorkingHoursFactor_permission', 'label' => 'Sonderarbeitszeitfaktoren verwalten'],
             ['name' => 'organization_permission', 'label' => 'Organisation verwalten'],

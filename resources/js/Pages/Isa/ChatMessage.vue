@@ -40,7 +40,7 @@ watchEffect(() => {
 <template>
     <v-list-item class="mb-2 p-0 rounded">
         <div class="d-flex w-100 align-center">
-            <v-img style="flex-grow: 0; flex-basis: 30px" v-if="!isUser" width="30px" height="30px" src="/img/Isa-klein.png" class="me-2"></v-img>
+            <div style="flex-grow: 0; flex-basis: 30px" v-if="!isUser" width="30px" height="30px" class="me-2 flex-0"></div>
             <div v-else class="flex-grow-1" style="min-width: 60px"></div>
             <div
                 class="pa-2 rounded speech flex-shrink-1 me-2 text-black"

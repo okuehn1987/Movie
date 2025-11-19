@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { ChatAssistant, ChatFile, RelationPick } from '@/types/types';
+import { ChatAssistant, ChatFile, RelationPick, Month, MonthStats, Year } from '@/types/types';
 import { router, useForm } from '@inertiajs/vue3';
 import { ref, toRefs } from 'vue';
 import { DateTime } from 'luxon';
-import { useDisplay } from 'vuetify';
+import PaymentTable from '@/Pages/Isa/PaymentTable.vue';
 
 const props = defineProps<{
     chatAssistant: Pick<ChatAssistant, 'id' | 'created_at' | 'updated_at' | 'monthly_cost_limit'> &
@@ -12,9 +12,8 @@ const props = defineProps<{
             current_monthly_cost: number;
         };
     files: Pick<ChatFile, 'created_at' | 'id' | 'name'>[];
+    stats: Record<Year, Record<Month, MonthStats>>;
 }>();
-
-const display = useDisplay();
 
 const assistantForm = useForm({
     chatFile_ids: props.chatAssistant.chat_files.map(f => f.id),
@@ -26,6 +25,8 @@ const { files: filesProp } = toRefs(props);
 const fileForm = useForm<{ files: ChatFile[] }>({
     files: [],
 });
+
+const chatAssistantId = props.chatAssistant.id;
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
@@ -56,14 +57,14 @@ function limitColor(current: number, limit: number): string {
 </script>
 
 <template>
-    <AdminLayout :title="display.mdAndUp.value ? 'Ihr Interner-Such-Assistent' : 'Ihre ISA'" tooltip="TooltipChatAssistantIndex">
-        <v-card class="mb-4">
-            <v-card-title class="my-6">Einstellungen für ISA</v-card-title>
+    <AdminLayout title="Einstellungen für ISA" tooltip="TooltipChatAssistantIndex">
+        <v-card v-if="!can('chatAssistant', 'showPaymentInfo')" class="mb-4">
+            <v-card-title class="my-4">Kostenverwaltung</v-card-title>
             <v-card-text>
-                {{ display.mdAndUp }}
-                <v-form @submit.prevent="assistantForm.patch(route('isa.update', { isa: chatAssistant.id }))">
+                <v-form v-if="!can('chatAssistant', 'update')" @submit.prevent="assistantForm.patch(route('isa.update', { isa: chatAssistant.id }))">
                     <v-row>
-                        <v-col cols="12">
+                        <v-card-subtitle class="mt-4">Aktuelle Verbrauchsanzeige</v-card-subtitle>
+                        <v-col class="pt-2 mb-4" cols="12">
                             <v-progress-linear
                                 :title="
                                     ' ' +
@@ -77,19 +78,69 @@ function limitColor(current: number, limit: number): string {
                                 height="15"
                             ></v-progress-linear>
                         </v-col>
-                        <v-col cols="12">
+                        <v-col cols="11">
                             <v-text-field
                                 v-model="assistantForm.monthly_cost_limit"
                                 label="Monatliches Kostenlimit in €"
                                 required
                                 :errorMessages="assistantForm.errors.monthly_cost_limit"
                                 hide-details
+                                variant="outlined"
+                                density="compact"
                             ></v-text-field>
                         </v-col>
-                        <v-col cols="12">
+                        <v-col cols="1" class="text-end">
+                            <v-btn color="primary" type="submit" :disabled="assistantForm.processing" :loading="assistantForm.processing">
+                                <v-icon size="large">mdi-content-save</v-icon>
+                            </v-btn>
+                        </v-col>
+                    </v-row>
+                </v-form>
+                <v-row v-else>
+                    <v-card-subtitle class="mt-4">Aktuelle Verbrauchsanzeige</v-card-subtitle>
+                    <v-col class="pt-2 mb-4" cols="12">
+                        <v-progress-linear
+                            :title="
+                                ' ' +
+                                Math.floor((chatAssistant.current_monthly_cost / chatAssistant.monthly_cost_limit) * 100) +
+                                '% des monatlichen Kostenlimits sind erreicht'
+                            "
+                            rounded
+                            :max="chatAssistant.monthly_cost_limit"
+                            v-model="chatAssistant.current_monthly_cost"
+                            :color="limitColor(chatAssistant.current_monthly_cost, chatAssistant.monthly_cost_limit)"
+                            height="15"
+                        ></v-progress-linear>
+                    </v-col>
+                    <v-col cols="12">
+                        <v-text-field
+                            v-model="assistantForm.monthly_cost_limit"
+                            label="Monatliches Kostenlimit in €"
+                            required
+                            :errorMessages="assistantForm.errors.monthly_cost_limit"
+                            hide-details
+                            variant="outlined"
+                            density="compact"
+                        ></v-text-field>
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <v-card-subtitle class="mt-8">Verbrauchsübersicht</v-card-subtitle>
+                    <v-col cols="12">
+                        <PaymentTable :stats :chatAssistantId></PaymentTable>
+                    </v-col>
+                </v-row>
+            </v-card-text>
+        </v-card>
+        <v-card class="mb-4">
+            <v-card-title class="my-4">Dateiverwaltung</v-card-title>
+            <v-card-subtitle class="mt-4">Verwendete Dateien</v-card-subtitle>
+            <v-card-text class="pt-0">
+                <v-form v-if="!can('chatAssistant', 'update')" @submit.prevent="assistantForm.patch(route('isa.update', { isa: chatAssistant.id }))">
+                    <v-row>
+                        <v-col cols="11">
                             <v-select
                                 color="primary"
-                                label="Dateien"
                                 :items="files.map(f => ({ title: f.name, value: f.id }))"
                                 v-model="assistantForm.chatFile_ids"
                                 multiple
@@ -97,18 +148,31 @@ function limitColor(current: number, limit: number): string {
                                 no-data-text="Es wurden keine Dateien hochgeladen"
                                 :errorMessages="assistantForm.errors.chatFile_ids"
                                 hide-details
+                                density="comfortable"
                             ></v-select>
                         </v-col>
-                        <v-col cols="12" class="text-end">
+                        <v-col cols="1" class="text-end">
                             <v-btn color="primary" type="submit" :disabled="assistantForm.processing" :loading="assistantForm.processing">
-                                Speichern
+                                <v-icon size="large">mdi-content-save</v-icon>
                             </v-btn>
                         </v-col>
                     </v-row>
                 </v-form>
+                <v-row v-else>
+                    <v-col cols="12">
+                        <v-select
+                            color="primary"
+                            :items="files.map(f => ({ title: f.name, value: f.id }))"
+                            v-model="assistantForm.chatFile_ids"
+                            multiple
+                            chips
+                            hide-details
+                            density="comfortable"
+                        ></v-select>
+                    </v-col>
+                </v-row>
             </v-card-text>
-        </v-card>
-        <v-card>
+            <v-card-subtitle class="mt-6">Dateiübersicht</v-card-subtitle>
             <input
                 hidden
                 ref="fileInputRef"
@@ -152,12 +216,15 @@ function limitColor(current: number, limit: number): string {
                     })
                 "
             >
-                <template v-slot:header.actions>
+                <template v-if="!can('chatAssistant', 'editChatFiles')" v-slot:header.actions>
                     <v-btn title="Neue Datei hochladen" color="primary" @click.stop="openFileInput"><v-icon icon="mdi-plus"></v-icon></v-btn>
                 </template>
                 <template v-slot:item.actions="{ item }">
-                    <v-btn :href="route('file.show', { file: item.id.toString() })" color="darkPrimary">Anzeigen</v-btn>
+                    <v-btn v-if="!can('chatAssistant', 'showChatFiles')" :href="route('file.show', { file: item.id.toString() })">
+                        <v-icon icon="mdi-eye" color="primary"></v-icon>
+                    </v-btn>
                     <v-btn
+                        v-if="!can('chatAssistant', 'editChatFiles')"
                         :disabled="item.is_used"
                         @click.stop="deleteFile(item)"
                         class="ms-2"

@@ -55,14 +55,6 @@ class Chat extends Model
         OpenAIService::generateAIResponse($this, $msg, $retryLastRun);
     }
 
-
-    public function trackOpenAiTokensUsed(float $number)
-    {
-        $this->forceFill([
-            'open_ai_tokens_used' => DB::raw('open_ai_tokens_used + ' . $number),
-        ])->save();
-    }
-
     public function getDurationAttribute()
     {
         $chatMessages = $this->chatMessages()->latest()->get(["id", "created_at"]);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\ChatAssistant;
 use App\Models\ChatMessage;
 use App\Models\Customer;
 use App\Models\Group;
@@ -107,6 +108,9 @@ class HandleInertiaRequests extends Middleware
                 ],
                 'dispute' => [
                     'viewIndex' => !!$request->user()?->is_supervisor,
+                ],
+                'chatAssistant' => [
+                    'viewIndex' => Gate::allows('viewIndex', ChatAssistant::class),
                 ],
             ],
             ...match (AppModuleService::currentAppModule()) {

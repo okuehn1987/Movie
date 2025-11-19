@@ -19,6 +19,7 @@ return new class extends Migration
             $table->enum('role', ['user', 'assistant', 'system', 'annotation']);
             $table->foreignId('chat_id')->constrained()->onDelete('cascade');
             $table->string('assistant_api_message_id')->nullable();
+            $table->integer("open_ai_tokens_used")->default(0);
         });
     }
 

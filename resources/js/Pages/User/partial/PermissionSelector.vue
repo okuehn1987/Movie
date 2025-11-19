@@ -1,8 +1,8 @@
 <script setup lang="ts" generic="T extends Partial<Record<Permission[keyof Permission], PermissionValue>>">
-import { Permission, PermissionValue } from '@/types/types';
+import { Permission, PermissionValue, UserPermission } from '@/types/types';
 
 defineProps<{
-    permissions: { name: Permission[keyof Partial<Permission>]; label: string }[];
+    permissions: UserPermission[keyof UserPermission][];
     label: string;
     errors: Record<string, string | undefined>;
     objKey: string;
@@ -28,7 +28,8 @@ const permissionObj = defineModel<T>({ required: true });
                                 @update:model-value="
                                     val => {
                                         item.keys.forEach(key => {
-                                            permissionObj[key] = val;
+                                            const remove = permissions.find(p => p.name == key)?.except;
+                                            permissionObj[key] = remove && val == remove ? ['read', 'write'].filter(e => e != remove)[0] : val;
                                         });
                                     }
                                 "
@@ -67,11 +68,13 @@ const permissionObj = defineModel<T>({ required: true });
             <v-col cols="12" md="6" v-for="item in items.filter(i => i.keys.length == 1)" :key="item.label">
                 <v-select
                     :label="permissions.find(p => p.name == item.keys[0])?.label"
-                    :items="[
-                        { title: 'Keine Rechte', value: null },
-                        { title: 'Lesen', value: 'read' },
-                        { title: 'Schreiben', value: 'write' },
-                    ]"
+                    :items="
+                        [
+                            { title: 'Keine Rechte', value: null },
+                            { title: 'Lesen', value: 'read' },
+                            { title: 'Schreiben', value: 'write' },
+                        ].filter(e => e.value == null || e.value != permissions.find(p => p.name == item.keys[0])?.except)
+                    "
                     v-model="permissionObj[item.keys[0] as Permission[keyof Permission]]"
                     :error-messages="
                                         Object.entries(errors)

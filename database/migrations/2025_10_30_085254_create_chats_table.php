@@ -18,7 +18,6 @@ return new class extends Migration
             $table->softDeletes();
             $table->foreignId('chat_assistant_id')->constrained()->onDelete('cascade');
             $table->string('assistant_api_thread_id')->nullable();
-            $table->integer("open_ai_tokens_used")->default(0);
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
         });
     }

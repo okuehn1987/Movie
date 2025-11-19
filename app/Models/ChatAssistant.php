@@ -47,11 +47,11 @@ class ChatAssistant extends Model
 
     public function getTotalTokensForCurrentMonth()
     {
-        return DB::table('chats')
-            ->select(DB::raw('(SUM(open_ai_tokens_used)) as tokens'))
-            ->where('chat_assistant_id', $this->id)
+        return ChatMessage::whereHas('chat', function ($q) {
+            $q->where('chat_assistant_id', $this->id);
+        })
             ->whereMonth('created_at', date('m'))
             ->whereYear('created_at', date('Y'))
-            ->first()->tokens;
+            ->sum('open_ai_tokens_used');
     }
 }

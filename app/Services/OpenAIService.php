@@ -7,9 +7,11 @@ use App\Exceptions\OpenAIServerException;
 use App\Models\ChatAssistant;
 use App\Models\Chat;
 use App\Models\ChatFile;
+use App\Models\ChatMessage;
 use Illuminate\Support\Facades\Log;
 use OpenAI;
 use App\Models\Organization;
+use Illuminate\Support\Facades\Storage;
 
 class OpenAIService
 {
@@ -199,29 +201,36 @@ class OpenAIService
             $chat->save();
         }
 
-        self::trackTokens($chat, (float)$inputTokens, (float)$outputTokens, "previous_chatMessage: {$chat->chatMessages()->latest()->first()->id}");
-
         if ($finalText !== '') {
-            $chat->chatMessages()->create([
+            $assistantMessage = $chat->chatMessages()->create([
                 'msg' => $finalText,
                 'role' => 'assistant',
                 'assistant_api_message_id' => $lastResponseId ?? null,
             ]);
+
+            self::trackTokens(
+                $assistantMessage,
+                (float)$inputTokens,
+                (float)$outputTokens,
+                "assistant_message_id: {$assistantMessage->id}"
+            );
+
             return;
         }
 
         throw new OpenAIServerException("OpenAI ist zurzeit leider nicht erreichbar. Bitte versuchen Sie es später erneut.", 503, 'OPENAI_SERVER_ERROR');
     }
 
-    private static function trackTokens(Chat $chat, float $promptTokens, float $completionTokens, string $logMessage)
+
+    private static function trackTokens(ChatMessage $message, float $promptTokens, float $completionTokens, string $logMessage)
     {
-        Log::info("Tracking tokens for chat $chat->id: promptTokens: $promptTokens, completionTokens: $completionTokens - $logMessage");
+        Log::info("Tracking tokens for message {$message->id}: promptTokens: $promptTokens, completionTokens: $completionTokens - $logMessage");
 
         $baseTokenPrice = self::$BASE_TOKEN_PRICE['input_token_price'];
-        $promptTokenUsage = $promptTokens * self::$CURRENT_MODEL_TOKEN_PRICE['input_token_price'] / $baseTokenPrice;
+        $promptTokenUsage     = $promptTokens    * self::$CURRENT_MODEL_TOKEN_PRICE['input_token_price']  / $baseTokenPrice;
         $completionTokenUsage = $completionTokens * self::$CURRENT_MODEL_TOKEN_PRICE['output_token_price'] / $baseTokenPrice;
 
-        $chat->trackOpenAiTokensUsed($promptTokenUsage + $completionTokenUsage);
+        $message->trackOpenAiTokensUsed($promptTokenUsage + $completionTokenUsage);
     }
 
     private static function noSourceDisclosureRule(): string
@@ -278,7 +287,7 @@ class OpenAIService
             if (!$file->assistant_api_file_id) {
                 $file->assistant_api_file_id = self::getOrganizationClient()->files()->upload([
                     'purpose' => 'assistants',
-                    'file' => fopen(storage_path('app/' . $file->file_name), 'r'),
+                    'file' => fopen(Storage::disk('chat_files')->path($file->file_name), 'r'),
                 ])->id;
                 $file->save();
             }
@@ -301,12 +310,14 @@ class OpenAIService
 
     public static function getMockResponse(Chat $chat, string $msg)
     {
-        $chat->trackOpenAiTokensUsed(random_int(1000, 10000));
-        $chat->chatMessages()->create([
+        $assistantMessage = $chat->chatMessages()->create([
             'assistant_api_message_id' => 'mock-response-id' . uniqid(),
             'role' => 'assistant',
             'msg' => "Dies ist eine Mock-Antwort auf Ihre Nachricht: '$msg'",
         ]);
+
+        $mockTokens = (float) random_int(1000, 10000);
+        self::trackTokens($assistantMessage, 0.0, $mockTokens, 'mock');
     }
 
     public static function hasReachedTokenLimit(ChatAssistant $chatAssistant)

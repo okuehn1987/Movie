@@ -78,7 +78,6 @@ function deleteChat() {
 <template>
     <v-app>
         <Head :title="title"></Head>
-
         <v-navigation-drawer color="background" style="border: none" v-model="showDrawer" image="/img/loggedin-background.png">
             <v-list v-if="currentApp">
                 <v-list-item @click.stop="setCurrentApp($page.props.currentAppModule == 'herta' ? 'timesheets' : 'herta')" class="pe-2">
@@ -141,7 +140,7 @@ function deleteChat() {
             <AppbarActions />
         </v-app-bar>
         <v-main class="postion-relative">
-            <v-container class="pt-0" fluid>
+            <v-container class="pt-0"  style="padding-bottom: calc(60px + 16px + 4px)" fluid>
                 <v-alert v-if="$page.props.flash.error" type="error" closable class="mb-6" :key="Math.random()">
                     {{ $page.props.flash.error }}
                 </v-alert>
@@ -163,18 +162,14 @@ function deleteChat() {
             <transition name="chat-pop">
                 <div v-show="showChat" class="chat-space bg-white elevation-12">
                     <div class="chat-header">
-                        <div class="chat-button" role="button" @click.stop="closeChat">
-                            <img src="/img/Isa-klein.png" alt="ISA Logo"></img>
-                        </div>
-                        <div>
-                            <v-btn
-                                icon="mdi-window-minimize"
-                                color="primary"
-                                variant="text"
-                                @click.stop="closeChat"
-                                title="Chat minimieren"
-                            />
-                            <v-btn icon="mdi-delete" color="error"  variant="text" @click.stop="deleteChat" title="Chat löschen" />
+                            <div class="d-flex align-center gap-2 chat-button">
+                                <img  src="/img/Isa-klein.png" alt="ISA Logo"></img>
+                                <v-card-subtitle class="text-h6">ISA</v-card-subtitle>
+                            </div>
+                        
+                        <div style="width: fit-content">
+                            <v-btn icon="mdi-window-minimize" color="primary" variant="text" @click.stop="closeChat" title="Chat minimieren" />
+                            <v-btn icon="mdi-chat-plus" color="primary" variant="text" @click.stop="deleteChat" title="Neuer Chat" />
                         </div>
                     </div>
                     <div class="chat-body">
