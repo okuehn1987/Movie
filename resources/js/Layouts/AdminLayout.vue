@@ -51,9 +51,9 @@ const currentApp = computed(() => page.props.appModules.find(m => m.value === pa
                 <v-list-item @click.stop="setCurrentApp($page.props.currentAppModule == 'tide' ? 'flow' : 'tide')" class="pe-2">
                     <template v-slot:prepend>
                         <div class="posiion-relative" v-if="page.props.appModules.length == 2" style="width: 56px">
-                            <img src="/img/logo-symbol.png" id="tide-logo" :class="{ ActiveLogo: currentApp.value == 'tide' }" />
+                            <img src="/img/Tide-Logo.webp" id="tide-logo" :class="{ ActiveLogo: currentApp.value == 'tide' }" />
                             <v-icon icon="mdi-undo" style="top: 0; position: absolute; rotate: -20deg; scale: 0.8"></v-icon>
-                            <img src="/img/TS_Logo.png" id="flow-logo" :class="{ ActiveLogo: currentApp.value == 'flow' }" />
+                            <img src="/img/Flow-Logo.webp" id="flow-logo" :class="{ ActiveLogo: currentApp.value == 'flow' }" />
                             <v-icon icon="mdi-undo" style="top: 25px; left: 40px; position: absolute; rotate: 140deg; scale: 0.8"></v-icon>
                         </div>
                         <template v-else>
