@@ -5,11 +5,11 @@ import { Customer, CustomerNoteEntry, CustomerNoteFolder, CustomerOperatingSite,
 import { formatAddress } from '@/utils';
 import { ref } from 'vue';
 import TicketOverview from '../Ticket/partials/TicketOverview.vue';
-import { OperatingSiteProp, Tab as TicketTab, TicketProp, UserProp } from '../Ticket/partials/ticketTypes';
+import { OperatingSiteProp, TicketProp, Tab as TicketTab, UserProp } from '../Ticket/partials/ticketTypes';
 import CreateEditCustomerOperatingSite from './partial/CreateEditCustomerOperatingSite.vue';
+import CustomerContactDialog from './partial/CustomerContactDialog.vue';
 import CustomerForm from './partial/CustomerForm.vue';
 import CustomerNotes from './partial/CustomerNotes.vue';
-import CustomerContactDialog from './partial/CustomerContactDialog.vue';
 
 type Tab = 'customerData' | 'customerNotes' | 'tickets';
 const props = defineProps<{
@@ -53,6 +53,14 @@ const currentTab = ref<Tab>(props.tab);
                             ></CreateEditCustomerOperatingSite>
                         </template>
                         <template #item.actions="{ item }">
+                            <v-btn
+                                color="primary"
+                                variant="text"
+                                target="_blank"
+                                :href="`https://www.google.com/maps/place/${formatAddress(item.current_address)}/`"
+                            >
+                                <v-icon>mdi-map-marker-multiple</v-icon>
+                            </v-btn>
                             <CreateEditCustomerOperatingSite
                                 v-if="can('customerOperatingSite', 'update')"
                                 :customer="customer"
@@ -74,6 +82,7 @@ const currentTab = ref<Tab>(props.tab);
                             { title: 'Name', key: 'name', sortable: false },
                             { title: 'Tätigkeit', key: 'occupation', sortable: false },
                             { title: 'Telefonnummer', key: 'phone_number', sortable: false },
+                            { title: 'Telefonnummer', key: 'mobile_number', sortable: false },
                             { title: 'Email', key: 'email', sortable: false },
                             { title: '', key: 'actions', align: 'end' },
                         ]"
@@ -81,6 +90,24 @@ const currentTab = ref<Tab>(props.tab);
                     >
                         <template #header.actions>
                             <CustomerContactDialog v-if="can('customerContact', 'create')" :customer="customer"></CustomerContactDialog>
+                        </template>
+                        <template #item.phone_number="{ item }">
+                            <a class="text-decoration-none text-black py-1" :href="`tel:${item.phone_number}`">
+                                <v-icon variant="text">mdi-phone</v-icon>
+                                {{ item.phone_number }}
+                            </a>
+                        </template>
+                        <template #item.mobile_number="{ item }">
+                            <a class="text-decoration-none text-black py-1" :href="`tel:${item.mobile_number}`">
+                                <v-icon variant="text">mdi-phone</v-icon>
+                                {{ item.mobile_number }}
+                            </a>
+                        </template>
+                        <template #item.email="{ item }">
+                            <a class="text-decoration-none text-black py-1" :href="`mailto:${item.email}`">
+                                <v-icon variant="text">mdi-email</v-icon>
+                                {{ item.email }}
+                            </a>
                         </template>
                         <template #item.actions="{ item }">
                             <CustomerContactDialog

@@ -159,8 +159,6 @@ export type UserLeaveDays = DBObject<'userLeaveDays'> &
 export type Customer = DBObject<'customer'> &
     SoftDelete & {
         name: string;
-        email: string | null;
-        phone: string | null;
         reference_number: string | null;
         organization_id: Organization['id'];
     };

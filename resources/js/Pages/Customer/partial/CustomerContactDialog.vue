@@ -19,14 +19,14 @@ const form = useForm({
 
 function submit(isActive: Ref<boolean>) {
     if (mode.value === 'edit' && props.contact) {
-        form.put(route('customer.contact.update', { contact: props.contact.id }), {
+        form.put(route('customerContact.update', { customerContact: props.contact.id }), {
             onSuccess: () => {
                 form.reset();
                 isActive.value = false;
             },
         });
     } else {
-        form.post(route('customer.contact.store', { customer: props.customer.id }), {
+        form.post(route('customer.customerContact.store', { customer: props.customer.id }), {
             onSuccess: () => {
                 form.reset();
                 isActive.value = false;
