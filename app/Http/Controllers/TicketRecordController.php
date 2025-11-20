@@ -61,7 +61,7 @@ class TicketRecordController extends Controller
             ]);
         }
 
-        $users = Organization::getCurrent()->users->filter(fn($u) => !$authUser->is($u) && $u->can('update', $ticket));
+        $users = Organization::getCurrent()->users->filter(fn($u) => !$authUser->is($u) && $u->can('account', $ticket));
         $users->merge($users->flatMap(fn($u) => $u->isSubstitutedBy))
             ->unique('id')
             ->each
@@ -100,7 +100,7 @@ class TicketRecordController extends Controller
         }
 
 
-        $users = Organization::getCurrent()->users->filter(fn($u) => !$authUser->is($u) && $u->can('update', $ticketRecord->ticket));
+        $users = Organization::getCurrent()->users->filter(fn($u) => !$authUser->is($u) && $u->can('account', $ticketRecord->ticket));
         $users->merge($users->flatMap(fn($u) => $u->isSubstitutedBy))
             ->unique('id')
             ->each
