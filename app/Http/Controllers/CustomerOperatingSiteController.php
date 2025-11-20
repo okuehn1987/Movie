@@ -13,7 +13,7 @@ class CustomerOperatingSiteController extends Controller
 
     public function store(Request $request, Customer $customer)
     {
-        Gate::authorize('create', Customer::class);
+        Gate::authorize('create', CustomerOperatingSite::class);
 
         $validated = $request->validate([
             'name' => 'required|string',
@@ -38,7 +38,7 @@ class CustomerOperatingSiteController extends Controller
 
     public function update(Request $request, CustomerOperatingSite $customerOperatingSite)
     {
-        Gate::authorize('update', Customer::class);
+        Gate::authorize('update', CustomerOperatingSite::class);
 
         $validated = $request->validate([
             'name' => 'required|string',
@@ -68,7 +68,7 @@ class CustomerOperatingSiteController extends Controller
 
     public function destroy(CustomerOperatingSite $customerOperatingSite)
     {
-        Gate::authorize('delete', Customer::class);
+        Gate::authorize('delete', CustomerOperatingSite::class);
 
         $customerOperatingSite->delete();
 

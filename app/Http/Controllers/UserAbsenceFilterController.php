@@ -7,6 +7,7 @@ use App\Models\AbsenceType;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use App\Models\UserAbsenceFilter;
+use App\Services\HolidayService;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -28,6 +29,9 @@ class UserAbsenceFilterController extends Controller
 
             "selected_statuses" => 'present|array',
             "selected_statuses.*" => Rule::enum(Status::class),
+
+            "selected_holidays" => 'present|array',
+            "selected_holidays.*" => Rule::in(array_keys(HolidayService::$COUNTRIES['DE']['regions']))
         ]);
 
         UserAbsenceFilter::create([
@@ -38,6 +42,7 @@ class UserAbsenceFilterController extends Controller
                 'user_ids' => $validated['selected_users'],
                 'absence_type_ids' => $validated['selected_absence_types'],
                 'statuses' => $validated['selected_statuses'],
+                'holidays_from_federal_states' => $validated['selected_holidays'],
             ],
         ]);
 
@@ -57,6 +62,9 @@ class UserAbsenceFilterController extends Controller
 
             "selected_statuses" => 'present|array',
             "selected_statuses.*" => Rule::enum(Status::class),
+
+            "selected_holidays" => 'present|array',
+            "selected_holidays.*" => Rule::in(array_keys(HolidayService::$COUNTRIES['DE']['regions']))
         ]);
 
         $userAbsenceFilter->update([
@@ -64,6 +72,7 @@ class UserAbsenceFilterController extends Controller
                 'user_ids' => $validated['selected_users'],
                 'absence_type_ids' => $validated['selected_absence_types'],
                 'statuses' => $validated['selected_statuses'],
+                'holidays_from_federal_states' => $validated['selected_holidays'],
             ]
         ]);
 

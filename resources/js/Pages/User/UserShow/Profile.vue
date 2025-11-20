@@ -9,11 +9,16 @@ const props = defineProps<{
     mustVerifyEmail?: boolean;
     status?: string;
     user: User;
+    users: Pick<User, 'id' | 'first_name' | 'last_name' | 'job_role'>[];
 }>();
 
 const notificationForm = useForm({
     mail_notifications: (props.user.notification_channels ?? []).includes('mail'),
     app_notifications: (props.user.notification_channels ?? []).includes('database'),
+});
+
+const substituteForm = useForm({
+    substitute_ids: [] as User['id'][],
 });
 </script>
 <template>
@@ -51,6 +56,41 @@ const notificationForm = useForm({
             </v-col>
             <v-col cols="12" md="6">
                 <v-row>
+                    <v-col cols="12">
+                        <v-card>
+                            <v-card-title>Vertretungen</v-card-title>
+                            <v-card-text>
+                                <v-form @submit.prevent="substituteForm.post(route('substitute.update'))">
+                                    <v-row>
+                                        <v-col cols="12">
+                                            <v-autocomplete
+                                                autocomplete="off"
+                                                multiple
+                                                v-model="substituteForm.substitute_ids"
+                                                :error-messages="substituteForm.errors.substitute_ids"
+                                                chips
+                                                :items="
+                                                    users.map(u => ({
+                                                        title: `${u.first_name} ${u.last_name}`,
+                                                        value: u.id,
+                                                        props: { subtitle: u.job_role ?? '' },
+                                                    }))
+                                                "
+                                                label="Vertretungen wählen"
+                                            ></v-autocomplete>
+                                        </v-col>
+                                        <v-col cols="12">
+                                            <v-alert color="warning">
+                                                Vertretungen erhalten all Ihre Befugnisse und Benachrichtigungen solange sie als Vertretung aufgeführt
+                                                sind
+                                            </v-alert>
+                                        </v-col>
+                                    </v-row>
+                                    <div class="d-flex justify-end mt-4"><v-btn color="primary" type="submit">Speichern</v-btn></div>
+                                </v-form>
+                            </v-card-text>
+                        </v-card>
+                    </v-col>
                     <v-col cols="12">
                         <UpdatePasswordForm />
                     </v-col>

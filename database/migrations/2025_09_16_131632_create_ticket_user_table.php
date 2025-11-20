@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('ticket_id')->onDelete('cascade');
             $table->foreignId('user_id')->onDelete('cascade');
+            $table->enum('status', ["created", "declined", "accepted"]);
             $table->timestamps();
         });
     }
