@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Enums\Status;
 use App\Models\HomeOfficeDay;
+use App\Models\HomeOfficeDayGenerator;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
@@ -15,16 +16,16 @@ class HomeOfficeDayNotification extends Notification
 {
     use Queueable;
 
-    protected $start, $end, $home_office_day_ids, $type, $user;
+    protected $start, $end, $home_office_day_generator_id, $type, $user;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(string $start, string $end, array $home_office_day_ids, User $user)
+    public function __construct(string $start, string $end, HomeOfficeDayGenerator $home_office_day_generator, User $user)
     {
         $this->start = $start;
         $this->end = $end;
-        $this->home_office_day_ids = $home_office_day_ids;
+        $this->home_office_day_generator_id = $home_office_day_generator->id;
         $this->user = $user;
     }
 
@@ -64,7 +65,7 @@ class HomeOfficeDayNotification extends Notification
     {
         return [
             'title' => $this->user->name . ' hat Homeoffice beantragt.',
-            'home_office_day_ids' => $this->home_office_day_ids,
+            'home_office_day_generator_id' => $this->home_office_day_generator_id,
             'start' => $this->start,
             'status' => Status::Created,
         ];
@@ -74,7 +75,7 @@ class HomeOfficeDayNotification extends Notification
     {
 
         return route('dispute.index', [
-            'openHomeOfficeDays' => $this->home_office_day_ids,
+            'openHomeOfficeDays' => $this->home_office_day_generator_id,
         ]);
     }
 }

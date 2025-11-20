@@ -1,27 +1,26 @@
 <script setup lang="ts">
-import { HomeOfficeDay, HomeOfficeDayGenerator, User } from '@/types/types';
+import { HomeOfficeDayGenerator, User } from '@/types/types';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { ref } from 'vue';
 
-type HomeOfficeDayProp = Pick<HomeOfficeDay, 'id' | 'user_id' | 'date'> & {
-    user: Pick<User, 'id' | 'first_name' | 'last_name'>;
-    homeOfficeDayGenerator: Pick<HomeOfficeDayGenerator, 'id' | 'start' | 'end' | 'created_as_request'>;
+type HomeOfficeDaygeneratorProp = Pick<HomeOfficeDayGenerator, 'id' | 'user_id' | 'start' | 'end'> & {
+    user: Pick<User, 'id' | 'first_name' | 'last_name' | 'operating_site_id' | 'supervisor_id'>;
 };
 
 const props = defineProps<{
-    homeOfficeDayRequests: HomeOfficeDayProp[];
+    homeOfficeDayRequests: HomeOfficeDaygeneratorProp[];
 }>();
 
-const homeOfficeDayDialog = ref<HomeOfficeDayProp | null>(
-    props.homeOfficeDayRequests?.find(homeOfficeDay => homeOfficeDay.homeOfficeDayGenerator.id == Number(route().params['openHomeOffice'])) ?? null,
+const homeOfficeDayDialog = ref<HomeOfficeDaygeneratorProp | null>(
+    props.homeOfficeDayRequests.find(h => h.id == Number(route().params['openHomeOffice'])) ?? null,
 );
 const showHomeOfficeDayDialog = ref(!!homeOfficeDayDialog.value);
 const submitAbsenceSuccess = ref(false);
 
 const currentPage = ref(1);
 
-function openAbsence(_: unknown, row: { item: { id: HomeOfficeDayProp['id'] } }) {
+function openAbsence(_: unknown, row: { item: { id: HomeOfficeDaygeneratorProp['id'] } }) {
     const homeOfficeDay = props.homeOfficeDayRequests?.find(p => p.id === row.item.id);
     if (!homeOfficeDay) return;
     homeOfficeDayDialog.value = homeOfficeDay;
@@ -31,7 +30,7 @@ function openAbsence(_: unknown, row: { item: { id: HomeOfficeDayProp['id'] } })
 function changeAbsenceStatus(accepted: boolean) {
     if (!homeOfficeDayDialog.value) return;
     router.patch(
-        route('homeOfficeDay.update', { homeOfficeDay: homeOfficeDayDialog.value.id }),
+        route('homeOfficeDay.updateStatus', { homeOfficeDayGenerator: homeOfficeDayDialog.value.id }),
         { accepted },
         {
             onSuccess: () => {
@@ -50,11 +49,11 @@ function changeAbsenceStatus(accepted: boolean) {
         no-data-text="keine Abwesenheitsanträge vorhanden."
         @click:row="openAbsence"
         :items="
-            homeOfficeDayRequests.map(homeOfficeDay => ({
-                id: homeOfficeDay.id,
-                user: homeOfficeDay.user.first_name + ' ' + homeOfficeDay.user.last_name,
-                start: DateTime.fromSQL(homeOfficeDay.homeOfficeDayGenerator.start).toFormat('dd.MM.yyyy'),
-                end: DateTime.fromSQL(homeOfficeDay.homeOfficeDayGenerator.end).toFormat('dd.MM.yyyy'),
+            homeOfficeDayRequests.map(h => ({
+                id: h.id,
+                user: h.user.first_name + ' ' + h.user.last_name,
+                start: DateTime.fromSQL(h.start).toFormat('dd.MM.yyyy'),
+                end: DateTime.fromSQL(h.end).toFormat('dd.MM.yyyy'),
             }))
         "
         :headers="[
@@ -82,20 +81,17 @@ function changeAbsenceStatus(accepted: boolean) {
             <v-divider></v-divider>
             <v-card-text>
                 <v-row>
-                    <!-- <v-col cols="12">
-                        <v-text-field label="Abwesenheitsgrund" v-model="homeOfficeDayDialog.absence_type.name" readonly>Homeoffice</v-text-field>
-                    </v-col> -->
                     <v-col cols="12" md="6">
                         <v-text-field
                             label="Von:"
-                            :model-value="DateTime.fromSQL(homeOfficeDayDialog.homeOfficeDayGenerator.start).toFormat('dd.MM.yyyy')"
+                            :model-value="DateTime.fromSQL(homeOfficeDayDialog.start).toFormat('dd.MM.yyyy')"
                             readonly
                         ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-text-field
                             label="Bis:"
-                            :model-value="DateTime.fromSQL(homeOfficeDayDialog.homeOfficeDayGenerator.end).toFormat('dd.MM.yyyy')"
+                            :model-value="DateTime.fromSQL(homeOfficeDayDialog.end).toFormat('dd.MM.yyyy')"
                             readonly
                         ></v-text-field>
                     </v-col>

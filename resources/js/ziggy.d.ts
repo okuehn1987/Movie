@@ -211,6 +211,13 @@ declare module 'ziggy-js' {
             "required": true
         }
     ],
+    "homeOfficeDay.updateStatus": [
+        {
+            "name": "homeOfficeDayGenerator",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "homeOfficeDayGenerator.destroy": [
         {
             "name": "homeOfficeDayGenerator",

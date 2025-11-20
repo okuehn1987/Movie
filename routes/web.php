@@ -44,6 +44,7 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::resource('group', GroupController::class)->only(['index', 'store', 'update', 'destroy']);
 
     Route::resource('homeOfficeDay', HomeOfficeDayController::class)->only(['store', 'update', 'destroy']);
+    Route::patch('/homeOfficeDay/{homeOfficeDayGenerator}/updateStatus', [HomeOfficeDayController::class, 'updateStatus'])->name('homeOfficeDay.updateStatus');
     Route::resource('homeOfficeDayGenerator', HomeOfficeDayGenerator::class)->only(['destroy']);
 
     Route::resource('operatingSite', OperatingSiteController::class)->only(['index', 'store', 'destroy', 'update', 'show']);

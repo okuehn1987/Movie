@@ -4,6 +4,7 @@ namespace App\Notifications;
 
 use App\Enums\Status;
 use App\Models\HomeOfficeDay;
+use App\Models\HomeOfficeDayGenerator;
 use App\Models\User;
 use Carbon\Carbon;
 use Exception;
@@ -17,18 +18,18 @@ class HomeOfficeDayDisputeStatusNotification extends Notification
 {
     use Queueable;
 
-    protected $start, $end, $home_office_day_ids, $status, $type;
+    protected $start, $end, $home_office_day_generator_id, $status, $type;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(string $start, string $end, array $home_office_day_ids, Status $status, string $type = 'create')
+    public function __construct(HomeOfficeDayGenerator $home_office_day_generator, string $start, string $end, Status $status, string $type = 'create')
     {
         $this->status = $status;
         $this->type = $type;
         $this->start = $start;
         $this->end = $end;
-        $this->home_office_day_ids = $home_office_day_ids;
+        $this->home_office_day_generator_id = $home_office_day_generator->id;
     }
 
     /**
@@ -89,7 +90,7 @@ class HomeOfficeDayDisputeStatusNotification extends Notification
 
         return [
             'title' => $text . ' ' . ($this->status === Status::Accepted ? 'akzeptiert.' : ($this->status == Status::Created ? 'beantragt.' : 'abgelehnt.')),
-            'home_office_day_ids' => $this->home_office_day_ids,
+            'home_office_day_generator_id' => $this->home_office_day_generator_id,
             'start' => $this->start,
             'type' => $this->type
         ];

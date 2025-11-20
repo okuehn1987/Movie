@@ -444,7 +444,7 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
               type: 'App\\Notifications\\HomeOfficeDayDisputeStatusNotification';
               data: {
                   title: string;
-                  home_office_day_ids: HomeOfficeDay['id'][];
+                  home_office_day_generator_id: HomeOfficeDayGenerator['id'];
                   start: DateString;
                   type: 'delete' | 'create';
               };
@@ -453,7 +453,7 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
               type: 'App\\Notifications\\HomeOfficeDayNotification';
               data: {
                   title: string;
-                  home_office_day_ids: HomeOfficeDay['id'][];
+                  home_office_day_generator_id: HomeOfficeDayGenerator['id'];
                   start: DateString;
                   status: string;
               };
@@ -572,7 +572,7 @@ export type TicketUser = DBObject<'ticket_user'> & {
     user_id: User['id'];
 };
 
-export type HomeOfficeDayGenerator = DBObject<'home_office-day-generators'> & {
+export type HomeOfficeDayGenerator = DBObject<'home_office_day_generators'> & {
     user_id: User['id'];
     start: DateString;
     end: DateString;

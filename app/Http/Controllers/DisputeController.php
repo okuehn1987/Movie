@@ -26,7 +26,7 @@ class DisputeController extends Controller
             'absenceRequests' => self::getAbsenceRequests(),
             'absencePatchRequests' => self::getAbsencePatchRequests(),
             'absenceDeleteRequests' => self::getAbsenceDeleteRequests(),
-            'homeOfficeDayRequest' => self::getHomeOfficeDayRequests(),
+            'homeOfficeDayRequests' => self::getHomeOfficeDayRequests(),
             ...(AppModuleService::hasAppModule('herta') ? [
                 'workLogPatchRequests' => self::getWorkLogPatchRequests(),
                 'workLogRequests' => self::getWorkLogRequests(),
@@ -135,7 +135,7 @@ class DisputeController extends Controller
             ->where('data->status', Status::Created)
             ->get();
 
-        $requestesdAbsences = count($openDeleteNotifications) > 0 ?
+        $requestedAbsences = count($openDeleteNotifications) > 0 ?
             Absence::inOrganization()
             ->whereIn('id', $openDeleteNotifications->pluck('data.absence_id'))
             ->with([
@@ -145,7 +145,7 @@ class DisputeController extends Controller
             ->get(['id', 'start', 'end', 'user_id', 'absence_type_id']) :
             collect();
 
-        return $requestesdAbsences->filter(fn(Absence $a) => $authUser->can('delete', $a))->values();
+        return $requestedAbsences->filter(fn(Absence $a) => $authUser->can('delete', $a))->values();
     }
 
     public function getHomeOfficeDayRequests()
@@ -153,11 +153,11 @@ class DisputeController extends Controller
         $authUser = request()->user();
 
         return HomeOfficeDayGenerator::inOrganization()
-            ->whereHas('homeOfficeDays', Status::Created)
+            ->whereHas('homeOfficeDays', fn($q) => $q->where('status', Status::Created))
             ->with([
                 'user' => fn($q) => $q->select(['id', 'first_name', 'last_name', 'operating_site_id', 'supervisor_id'])->withTrashed()
             ])
-            ->get(['id', 'user_id', 'date'])
+            ->get(['id', 'user_id', 'start', 'end'])
             ->filter(fn($log) => $authUser->can('update', [WorkLog::class, $log->user]))
             ->values();
     }
