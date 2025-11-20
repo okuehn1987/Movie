@@ -16,7 +16,7 @@ const timestatementForm = useForm({
 <template>
     <AdminLayout :title="user.first_name + ' ' + user.last_name">
         <UserShowNavBar :user tab="documents" />
-        <v-card title="Zeitnachweise" v-if="can('app', 'herta')">
+        <v-card title="Zeitnachweise" v-if="can('app', 'tide')">
             <v-card-text>
                 <v-row>
                     <v-col cols="12" md="5">

@@ -7,6 +7,7 @@ use Illuminate\Bus\Queueable;
 use App\Models\User;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class TicketRecordCreationNotification extends Notification
 {
@@ -54,6 +55,8 @@ class TicketRecordCreationNotification extends Notification
             'title' => $this->user->name . ' hat einen neuen Eintrag zu einem Ticket erstellt.',
             'ticket_id' => $this->ticket->id,
             'status' => 'created',
+            'url' =>  $this->getNotificationURL(),
+            'triggered_by' => Auth::id()
         ];
     }
 

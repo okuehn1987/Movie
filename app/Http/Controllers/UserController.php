@@ -225,7 +225,7 @@ class UserController extends Controller
             'userLeaveDays' => function ($q) {
                 $q->where('type', 'annual')->orderBy('active_since', 'desc');
             },
-            ...(AppModuleService::hasAppModule('herta') ?
+            ...(AppModuleService::hasAppModule('tide') ?
                 [
                     'userWorkingHours' => function ($q) {
                         $q->orderBy('active_since', 'desc');
@@ -867,7 +867,7 @@ class UserController extends Controller
 
     private function getUserShowCans(User $user)
     {
-        $canHerta = AppModuleService::hasAppModule('herta');
+        $canTide = AppModuleService::hasAppModule('tide');
 
         return [
             'absences' => [
@@ -879,14 +879,14 @@ class UserController extends Controller
                 'viewIndex' => Gate::allows('viewIndex', User::class),
             ],
             'timeAccount' => [
-                'viewIndex' => $canHerta && Gate::allows('viewIndex', [TimeAccount::class, $user]),
-                'create' => $canHerta && Gate::allows('create', [TimeAccount::class, $user]),
-                'update' => $canHerta && Gate::allows('update', [TimeAccount::class, $user]),
-                'delete' => $canHerta && Gate::allows('delete', [TimeAccount::class, $user]),
+                'viewIndex' => $canTide && Gate::allows('viewIndex', [TimeAccount::class, $user]),
+                'create' => $canTide && Gate::allows('create', [TimeAccount::class, $user]),
+                'update' => $canTide && Gate::allows('update', [TimeAccount::class, $user]),
+                'delete' => $canTide && Gate::allows('delete', [TimeAccount::class, $user]),
             ],
             'timeAccountTransaction' => [
-                'viewIndex' => $canHerta &&  Gate::allows('viewIndex', [TimeAccountTransaction::class, $user]),
-                'create' => $canHerta && Gate::allows('create', [TimeAccountTransaction::class, $user]),
+                'viewIndex' => $canTide &&  Gate::allows('viewIndex', [TimeAccountTransaction::class, $user]),
+                'create' => $canTide && Gate::allows('create', [TimeAccountTransaction::class, $user]),
             ]
         ];
     }

@@ -18,7 +18,7 @@ class OrganizationModuleFactory extends Factory
     {
         return [
             'activated_at' => now()->startOfYear(),
-            'module' => 'herta',
+            'module' => 'tide',
         ];
     }
 }

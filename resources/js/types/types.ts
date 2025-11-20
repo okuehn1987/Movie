@@ -375,11 +375,12 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
     notifiable_type: 'App\\Models\\User';
     notifiable_id: User['id'];
     read_at: DateTimeString | null;
-} & (
+    created_at: DateTimeString;
+    updated_at: DateTimeString;
+} & { data: { url: string; triggered_by: User['id']; title: string } } & (
         | {
               type: 'App\\Notifications\\WorkLogNotification';
               data: {
-                  title: string;
                   work_log_id: WorkLog['id'];
                   status: Status;
               };
@@ -387,7 +388,6 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
         | {
               type: 'App\\Notifications\\WorkLogPatchNotification';
               data: {
-                  title: string;
                   work_log_patch_id: WorkLogPatch['id'];
                   status: Status;
               };
@@ -395,7 +395,6 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
         | {
               type: 'App\\Notifications\\AbsenceNotification';
               data: {
-                  title: string;
                   absence_id: Absence['id'];
                   status: Status;
               };
@@ -403,7 +402,6 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
         | {
               type: 'App\\Notifications\\AbsencePatchNotification';
               data: {
-                  title: string;
                   absence_patch_id: AbsencePatch['id'];
                   status: Status;
               };
@@ -411,7 +409,6 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
         | {
               type: 'App\\Notifications\\AbsenceDeleteNotification';
               data: {
-                  title: string;
                   absence_id: Absence['id'];
                   status: Status;
               };
@@ -454,7 +451,6 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
         | {
               type: 'App\\Notifications\\DisputeStatusNotification';
               data: {
-                  title: string;
                   type: 'delete' | 'create';
               } & (
                   | {
@@ -550,7 +546,7 @@ export type GroupUser = DBObject<'groupUser'> &
 
 export type AppModule = DBObject<'appModule'> & {
     organization_id: Organization['id'];
-    module: 'herta' | 'timesheets';
+    module: 'tide' | 'flow';
     activated_at: DateTimeString | null;
 };
 
