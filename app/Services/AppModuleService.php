@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\Session;
 class AppModuleService
 {
     public static $APP_MODULES = [
-        'herta' => 'Herta',
-        'timesheets' => 'Timesheets'
+        'tide' => 'Flow',
+        'flow' => 'Tide'
     ];
 
     public static function getAppModules()
@@ -18,7 +18,7 @@ class AppModuleService
     }
 
     /**
-     * @return 'herta' | 'timesheets'
+     * @return 'tide' | 'flow'
      */
     public static function currentAppModule()
     {
@@ -26,8 +26,8 @@ class AppModuleService
             return session('app_module');
         } else {
             self::setCurrentAppModule(match (true) {
-                self::hasAppModule('herta') => 'herta',
-                self::hasAppModule('timesheets') => 'timesheets',
+                self::hasAppModule('tide') => 'tide',
+                self::hasAppModule('flow') => 'flow',
                 default => throw new \Exception('No app module available for this organization'),
             });
             return session('app_module');
@@ -35,7 +35,7 @@ class AppModuleService
     }
 
     /**
-     * @param 'herta' | 'timesheets' $module 
+     * @param 'tide' | 'flow' $module 
      */
     public static function setCurrentAppModule($module)
     {
@@ -46,7 +46,7 @@ class AppModuleService
 
     /**
      * @return bool
-     * @param 'herta' | 'timesheets' $module 
+     * @param 'tide' | 'flow' $module 
      */
     public static function hasAppModule($module)
     {

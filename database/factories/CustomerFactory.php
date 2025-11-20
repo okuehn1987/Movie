@@ -18,8 +18,6 @@ class CustomerFactory extends Factory
     {
         return [
             'name' => $this->faker->company(),
-            'email' => fake()->unique()->safeEmail(),
-            'phone' => $this->faker->phoneNumber(),
             'reference_number' => $this->faker->unique()->numerify('CUST-#####'),
         ];
     }

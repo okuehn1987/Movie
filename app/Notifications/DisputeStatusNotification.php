@@ -16,6 +16,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class DisputeStatusNotification extends Notification
 {
@@ -50,7 +51,7 @@ class DisputeStatusNotification extends Notification
     {
         $buttonText = 'Antrag einsehen';
 
-        $message = (new MailMessage)->subject('Herta Antragsaktualisierung');
+        $message = (new MailMessage)->subject('Tide Antragsaktualisierung');
 
         $modelUserNotificationText = match (true) {
             $this->log instanceof WorkLog => 'auf Arbeitszeitbuchung',
@@ -132,7 +133,9 @@ class DisputeStatusNotification extends Notification
             'title' => $text . ' ' . ($this->status === Status::Accepted ? 'akzeptiert.' : ($this->status == Status::Created ? 'beantragt.' : 'abgelehnt.')),
             'log_id' => $this->log->id,
             'log_model' => $modelClass,
-            'type' => $this->type
+            'type' => $this->type,
+            'url' =>  $this->getNotificationURL(),
+            'triggered_by' => Auth::id()
         ];
     }
 

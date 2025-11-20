@@ -1,7 +1,7 @@
 import { router, usePage } from '@inertiajs/vue3';
 import { DateTime, Duration } from 'luxon';
 import { computed, onMounted, onUnmounted, ref, Ref, watch } from 'vue';
-import { Country, Paginator, FederalState, TimeAccountSetting, Tree, Address } from './types/types';
+import { Country, Paginator, FederalState, TimeAccountSetting, Tree, Address, Notification } from './types/types';
 
 export function useNow() {
     const now = ref(DateTime.now());
@@ -45,7 +45,7 @@ export function usePagination<
     TProps extends Record<TKey, Ref<Paginator<TData>>>,
     TKey extends keyof TProps & string,
     TData = TProps extends Record<TKey, Ref<Paginator<infer Data>>> ? Data : unknown,
->(props: TProps, key: TKey, routeProps: Record<string, unknown> = {}) {
+>(props: TProps, key: TKey, routeProps: Record<string, unknown> = {}, reloadKey?: string) {
     const currentPage = ref(props[key].value.current_page);
     const lastPage = computed(() => props[key].value.last_page);
     const data = computed(() => props[key].value.data);
@@ -61,7 +61,7 @@ export function usePagination<
                 ...routeProps,
             }),
             {
-                only: [key],
+                only: [reloadKey ?? key],
             },
         );
     });
@@ -125,9 +125,10 @@ export function filterTree<K extends keyof T, T extends { [x in K]?: T[] }>(tree
 export const mapTree = <K extends string & keyof T, T extends { [x in K]?: T[] }, MappedType>(
     tree: T[],
     k: K,
-    fn: (e: Omit<T, K>) => MappedType,
+    fn: (e: Omit<T, K>, level: number) => MappedType,
+    level: number = 0,
 ): Tree<MappedType, K>[] => {
-    return tree.map(e => ({ ...fn(e), [k]: e[k] ? mapTree(e[k], k, fn) : [] } as Tree<MappedType, K>));
+    return tree.map(e => ({ ...fn(e, level), [k]: e[k] ? mapTree(e[k], k, fn, level + 1) : [] } as Tree<MappedType, K>));
 };
 
 export function getStates(country: Country, countries: { title: string; value: Country; regions: Record<FederalState, string> }[]) {
@@ -213,4 +214,62 @@ export function getBrowser(): Browser {
     }
 
     return browser;
+}
+
+export function getNotificationUrl(notification: Notification) {
+    const page = usePage();
+
+    if (notification.type == 'App\\Notifications\\WorkLogPatchNotification')
+        return route('dispute.index', { openPatch: notification.data.work_log_patch_id });
+    else if (notification.type == 'App\\Notifications\\WorkLogNotification')
+        return route('dispute.index', { openWorkLog: notification.data.work_log_id });
+    else if (notification.type == 'App\\Notifications\\AbsenceNotification')
+        return route('dispute.index', { openAbsence: notification.data.absence_id });
+    else if (notification.type == 'App\\Notifications\\AbsencePatchNotification')
+        return route('dispute.index', { openAbsencePatch: notification.data.absence_patch_id });
+    else if (notification.type == 'App\\Notifications\\AbsenceDeleteNotification')
+        return route('dispute.index', { openAbsenceDelete: notification.data.absence_id });
+    else if (
+        'ticket_id' in notification.data &&
+        [
+            'App\\Notifications\\TicketCreationNotification',
+            'App\\Notifications\\TicketRecordCreationNotification',
+            'App\\Notifications\\TicketUpdateNotification',
+            'App\\Notifications\\TicketDeletionNotification',
+            'App\\Notifications\\TicketFinishNotification',
+        ].includes(notification.type)
+    )
+        return route('ticket.index', { openTicket: notification.data.ticket_id });
+    else if (notification.type == 'App\\Notifications\\DisputeStatusNotification') {
+        if (notification.data.type == 'delete') return '';
+        if (notification.data.log_model == 'App\\Models\\Absence') return route('absence.index', { openAbsence: notification.data.log_id });
+        else if (notification.data.log_model == 'App\\Models\\AbsencePatch')
+            return route('absence.index', { openAbsencePatch: notification.data.log_id });
+        else if (notification.data.log_model == 'App\\Models\\WorkLogPatch')
+            return route('user.workLog.index', { user: page.props.auth.user.id, openWorkLogPatch: notification.data.log_id });
+        else if (notification.data.log_model == 'App\\Models\\WorkLog')
+            return route('user.workLog.index', { user: page.props.auth.user.id, workLog: notification.data.log_id });
+    }
+    return '';
+}
+
+export function useClickHandler() {
+    const singleClickTimer = ref<number | null>(null);
+    const handlerState = ref<unknown>();
+
+    function clickHandler(singleClickFunction: () => void, doubleClickFunction: (state?: unknown) => void, stateToAdd: unknown, delay: number = 200) {
+        if (!singleClickTimer.value) {
+            handlerState.value = stateToAdd;
+            singleClickTimer.value = setTimeout(() => {
+                singleClickFunction();
+                singleClickTimer.value = null;
+            }, delay);
+        } else {
+            doubleClickFunction(handlerState.value);
+            clearTimeout(singleClickTimer.value);
+            singleClickTimer.value = null;
+        }
+    }
+
+    return { clickHandler };
 }

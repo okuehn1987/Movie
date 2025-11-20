@@ -82,8 +82,8 @@ class HandleInertiaRequests extends Middleware
             ],
             'globalCan' => [
                 'app' => [
-                    'herta' => $accessableModules->pluck('value')->contains('herta'),
-                    'timesheets' => $accessableModules->pluck('value')->contains('timesheets'),
+                    'tide' => $accessableModules->pluck('value')->contains('tide'),
+                    'flow' => $accessableModules->pluck('value')->contains('flow'),
                 ],
                 'absence' => [
                     'viewIndex' => Gate::allows('publicAuth', User::class),
@@ -106,8 +106,8 @@ class HandleInertiaRequests extends Middleware
                 ],
             ],
             ...match (AppModuleService::currentAppModule()) {
-                'herta' => $this->shareHerta($request),
-                'timesheets' => $this->shareTimesheets($request),
+                'tide' => $this->shareHerta($request),
+                'flow' => $this->shareTimesheets($request),
                 default => $this->shareHerta($request),
             }
         ];
