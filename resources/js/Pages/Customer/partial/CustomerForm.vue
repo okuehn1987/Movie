@@ -14,8 +14,6 @@ const emit = defineEmits<{
 }>();
 const customerForm = useForm({
     name: props.customer?.name ?? '',
-    email: props.customer?.email ?? '',
-    phone: props.customer?.phone ?? '',
     reference_number: props.customer?.reference_number ?? '',
 });
 </script>
@@ -40,22 +38,6 @@ const customerForm = useForm({
                             label="Name"
                             v-model="customerForm.name"
                             :error-messages="customerForm.errors.name"
-                            :disabled="!can('customer', 'update')"
-                        ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" md="6">
-                        <v-text-field
-                            label="E-Mail (optional)"
-                            v-model="customerForm.email"
-                            :error-messages="customerForm.errors.email"
-                            :disabled="!can('customer', 'update')"
-                        ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" md="6">
-                        <v-text-field
-                            label="Telefonnummer (optional)"
-                            v-model="customerForm.phone"
-                            :error-messages="customerForm.errors.phone"
                             :disabled="!can('customer', 'update')"
                         ></v-text-field>
                     </v-col>

@@ -8,6 +8,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class RemovedFromTicketNotification extends Notification
 {
@@ -52,6 +53,15 @@ class RemovedFromTicketNotification extends Notification
     {
         return [
             'title' => 'Du wurdest vom Ticket ' . $this->ticket->referenceNumber . ' entfernt',
+            'url' =>  $this->getNotificationURL(),
+            'triggered_by' => Auth::id()
         ];
+    }
+
+    public function getNotificationURL()
+    {
+        return  route('ticket.index', [
+            'openTicket' => $this->ticket->id,
+        ]);
     }
 }

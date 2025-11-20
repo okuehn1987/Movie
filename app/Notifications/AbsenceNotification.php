@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class AbsenceNotification extends Notification
 {
@@ -43,7 +44,7 @@ class AbsenceNotification extends Notification
         $buttonText = 'Antrag einsehen';
 
         return (new MailMessage)
-            ->subject('Herta Abwesenheitsantrag')
+            ->subject('Tide Abwesenheitsantrag')
             ->line('für den Nutzer "' . $this->user->name . '" liegt ein Antrag auf Abwesenheit für den Zeitraum vom "' .
                 Carbon::parse($this->absence->start)->format('d.m.Y') . '" bis zum "' .
                 Carbon::parse($this->absence->end)->format('d.m.Y') . '" vor.')
@@ -62,6 +63,8 @@ class AbsenceNotification extends Notification
             'title' => $this->user->name . ' hat eine Abwesenheit beantragt.',
             'absence_id' => $this->absence->id,
             'status' => Status::Created,
+            'url' =>  $this->getNotificationURL(),
+            'triggered_by' => Auth::id()
         ];
     }
 

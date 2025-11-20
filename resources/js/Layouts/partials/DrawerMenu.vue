@@ -9,7 +9,7 @@ import { router } from '@inertiajs/vue3';
         :items="
             [
                 { props: { active: route().current('dashboard'), prependIcon: 'mdi-view-dashboard' }, value: route('dashboard'), title: 'Dashboard' },
-                ...($page.props.currentAppModule == 'herta'
+                ...($page.props.currentAppModule == 'tide'
                     ? [
                           can('workLog', 'viewIndex') && {
                               props: { active: route().current('workLog.index'), prependIcon: 'mdi-clock-outline' },
@@ -18,7 +18,7 @@ import { router } from '@inertiajs/vue3';
                           },
                       ]
                     : []),
-                ...($page.props.currentAppModule == 'timesheets'
+                ...($page.props.currentAppModule == 'flow'
                     ? [
                           can('customer', 'viewIndex') && {
                               props: { active: route().current('customer.index'), prependIcon: 'mdi-folder-account-outline' },

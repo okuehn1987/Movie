@@ -10,6 +10,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class WorkLogPatchNotification extends Notification
 {
@@ -43,7 +44,7 @@ class WorkLogPatchNotification extends Notification
     {
         $buttonText = 'Antrag einsehen';
         return (new MailMessage)
-            ->subject('Herta Zeitkorrekturantrag')
+            ->subject('Tide Zeitkorrekturantrag')
             ->line('für den Nutzer "' . $this->user->name . '" liegt ein Antrag auf eine Zeitkorrektur für den Zeitraum vom "' .
                 Carbon::parse($this->patch->start)->format('d.m.Y') . '" bis zum "' .
                 Carbon::parse($this->patch->end)->format('d.m.Y') . '" vor.')
@@ -62,6 +63,8 @@ class WorkLogPatchNotification extends Notification
             'title' => $this->user->name . ' hat eine Zeitkorrektur beantragt.',
             'work_log_patch_id' => $this->patch->id,
             'status' => Status::Created,
+            'url' =>  $this->getNotificationURL(),
+            'triggered_by' => Auth::id()
         ];
     }
 

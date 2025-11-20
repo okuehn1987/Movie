@@ -8,6 +8,7 @@ use App\Models\Ticket;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class TicketFinishNotification extends Notification
 {
@@ -54,6 +55,8 @@ class TicketFinishNotification extends Notification
         return [
             'title' => $this->user->name . ' hat ein Ticket abgeschlossen.',
             'ticket_id' => $this->ticket->id,
+            'url' =>  $this->getNotificationURL(),
+            'triggered_by' => Auth::id()
         ];
     }
 

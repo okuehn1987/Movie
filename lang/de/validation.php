@@ -84,6 +84,12 @@ return [
         'string' => ':attribute darf nicht mehr als :value Zeichen enthalten.',
     ],
     'mac_address' => ':attribute muss eine gültige MAC-Adresse sein.',
+    'max' => [
+        'array' => ':attribute darf nicht mehr als :max Einträge haben.',
+        'file' => ':attribute darf nicht größer als :max Kilobytes sein.',
+        'numeric' => ':attribute darf nicht größer als :max sein.',
+        'string' => ':attribute darf nicht mehr als :max Zeichen enthalten.',
+    ],
     'max_digits' => ':attribute darf nicht mehr als :max Ziffern haben.',
     'min' => [
         'array' => ':attribute muss mindestens :min Einträge haben.',
@@ -206,7 +212,15 @@ return [
         'set_name' => 'Filtername',
         'extra_charge' => 'Faktor Zuschlag',
         'customer_id' => 'Kunde',
-        'tab' => 'Auswahl'
+        'tab' => 'Auswahl',
+        'duration' => 'Dauer',
+        'priority' => 'Priorität',
+        'resources' => 'Ressourcen',
+        'assignees' => 'Zuständige',
+        'ticket' => 'Ticket',
+        'record' => 'Eintrag',
+        'files' => 'Dateien',
+        'file' => 'Datei',
     ],
 
     'values' => [

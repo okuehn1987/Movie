@@ -119,9 +119,4 @@ class Organization extends Model
             default => 'MBD',
         };
     }
-
-    public static function id()
-    {
-        return self::getCurrent()->id;
-    }
 }
