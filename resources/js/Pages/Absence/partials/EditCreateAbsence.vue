@@ -162,9 +162,17 @@ const requiresApproval = computed(() => {
                                         >
                                             löschen
                                         </v-btn>
-                                        <v-btn v-else @click.stop="deleteAbsence()" color="error">Löschung beantragen</v-btn>
+                                        <v-btn v-else-if="selectedAbsence.status !== 'declined'" @click.stop="deleteAbsence()" color="error">
+                                            Löschung beantragen
+                                        </v-btn>
                                     </template>
-                                    <v-btn :loading="absenceForm.processing" type="submit" color="primary" :disabled="!absenceForm.isDirty">
+                                    <v-btn
+                                        v-if="!selectedAbsence || selectedAbsence.status !== 'declined'"
+                                        :loading="absenceForm.processing"
+                                        type="submit"
+                                        color="primary"
+                                        :disabled="!absenceForm.isDirty"
+                                    >
                                         {{
                                             can(
                                                 'absence',

@@ -34,6 +34,21 @@ function withdrawRequest() {
         options,
     );
 }
+const deleteHomeOfficeForm = useForm({});
+function deleteHomeOfficeDay() {
+    if (!props.selectedHomeOffice) return;
+    deleteHomeOfficeForm.delete(
+        route('homeOfficeDay.destroy', {
+            homeOfficeDay: props.selectedHomeOffice.id,
+        }),
+        {
+            onSuccess: () => {
+                openModal.value = false;
+                emit('homeOfficeReload');
+            },
+        },
+    );
+}
 </script>
 <template>
     <v-dialog max-width="1000" v-model="openModal">
@@ -69,12 +84,23 @@ function withdrawRequest() {
                                 <v-text-field type="date" label="Bis" :model-value="selectedHomeOffice.home_office_day_generator.end"></v-text-field>
                             </v-col>
                             <v-col cols="12" class="text-end">
-                                <v-btn v-if="can('user', 'viewDisputes')" @click.stop="openDispute" type="button" color="primary">
-                                    Antrag öffnen
-                                </v-btn>
-                                <v-btn v-else-if="can('absence', 'deleteDispute')" @click.stop="withdrawRequest" type="button" color="primary">
-                                    Antrag zurückziehen
-                                </v-btn>
+                                <template v-if="selectedHomeOffice.status == 'created'">
+                                    <v-btn v-if="can('user', 'viewDisputes')" @click.stop="openDispute" type="button" color="primary">
+                                        Antrag öffnen
+                                    </v-btn>
+                                    <v-btn
+                                        v-else-if="$page.props.auth.user.id == selectedHomeOffice.user_id"
+                                        @click.stop="withdrawRequest"
+                                        type="button"
+                                        color="primary"
+                                    >
+                                        Antrag zurückziehen
+                                    </v-btn>
+                                </template>
+                                <template v-else-if="selectedHomeOffice.status !== 'declined'">
+                                    {{ selectedHomeOffice }}
+                                    <v-btn @click.stop="deleteHomeOfficeDay()" color="error">Löschung beantragen</v-btn>
+                                </template>
                             </v-col>
                         </v-row>
                     </v-form>

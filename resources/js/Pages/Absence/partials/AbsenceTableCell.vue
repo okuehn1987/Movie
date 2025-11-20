@@ -55,7 +55,9 @@ const currentHomeOfficeEntry = computed(() => props.homeOfficeDays.find(d => d.d
                     : 'lightgray',
             }"
             class="h-100 w-100 empty"
-        ></div>
+        >
+            {{ props.homeOfficeDays.filter(d => d.date === props.date.toFormat('yyyy-MM-dd')).length }}
+        </div>
     </td>
 </template>
 

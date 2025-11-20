@@ -115,24 +115,28 @@ if (openAbsenceFromRoute) {
 
 function createAbsenceModal(user_id: User['id'], start?: DateTime) {
     selectedUser.value = user_id;
+    selectedDate.value = start ?? null;
+
     const absenceToEdit = currentEntries.value
         .filter(a => a.user_id === user_id)
         .find(a => start && DateTime.fromSQL(a.start) <= start && start <= DateTime.fromSQL(a.end));
 
-    const homeOfficeToEdit = props.homeOfficeDays
-        .filter(u => u.user_id === user_id && u.home_office_day_generator.created_as_request)
-        .find(
-            a => start && DateTime.fromSQL(a.home_office_day_generator.start) <= start && start <= DateTime.fromSQL(a.home_office_day_generator.end),
-        );
-    selectedDate.value = start ?? null;
-    selectedAbsence.value = absenceToEdit ?? null;
-    selectedHomeOffice.value = homeOfficeToEdit ?? null;
-    if (absenceToEdit && ['hasOpenPatch', 'created'].includes(getEntryState(absenceToEdit))) {
-        openShowAbsenceModal.value = true;
-    } else if (homeOfficeToEdit) {
-        openShowHomeOfficeModal.value = true;
+    if (absenceToEdit) {
+        selectedAbsence.value = absenceToEdit ?? null;
+        if (['hasOpenPatch', 'created'].includes(getEntryState(absenceToEdit))) {
+            openShowAbsenceModal.value = true;
+        } else {
+            openEditCreateAbsenceModal.value = true;
+        }
     } else {
-        openEditCreateAbsenceModal.value = true;
+        const homeOfficeToEdit = props.homeOfficeDays.filter(u => u.user_id === user_id).find(h => start && h.date === start.toFormat('yyyy-MM-dd'));
+
+        selectedHomeOffice.value = homeOfficeToEdit ?? null;
+        if (homeOfficeToEdit) {
+            openShowHomeOfficeModal.value = true;
+        } else {
+            openEditCreateAbsenceModal.value = true;
+        }
     }
 }
 
@@ -200,6 +204,7 @@ const display = useDisplay();
             :users
             v-model:selectedUser="selectedUser"
             v-model="openShowHomeOfficeModal"
+            @homeOfficeReload="loadedMonths = [currentDate.toFormat('yyyy-MM')]"
         ></ShowHomeOfficeModal>
         <v-card>
             <v-card-text class="px-sm-4 px-0">

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { AbsenceType, HomeOfficeDay, HomeOfficeDayGenerator, User } from '@/types/types';
+import { AbsenceType, HomeOfficeDayGenerator, User } from '@/types/types';
+import AbsenceDeleteRequests from './partial/AbsenceDeleteRequests.vue';
 import AbsencePatchRequests from './partial/AbsencePatchRequests.vue';
 import AbsenceRequests from './partial/AbsenceRequests.vue';
 import { AbsencePatchProp, AbsenceProp, HomeOfficeDayProp, UserProp, WorkLogPatchProp, WorkLogProp } from './partial/disputeTypes';
-import WorkLogPatches from './partial/WorkLogPatches.vue';
-import AbsenceDeleteRequests from './partial/AbsenceDeleteRequests.vue';
-import WorkLogRequests from './partial/WorkLogRequests.vue';
 import HomeOfficeDayRequests from './partial/HomeOfficeDayRequests.vue';
+import WorkLogPatches from './partial/WorkLogPatches.vue';
+import WorkLogRequests from './partial/WorkLogRequests.vue';
 
 defineProps<{
     absenceRequests: (AbsenceProp & {
