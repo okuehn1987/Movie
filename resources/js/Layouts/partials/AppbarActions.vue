@@ -30,9 +30,9 @@ function openNotification(notification: Notification) {
         else if (notification.type == 'App\\Notifications\\AbsenceDeleteNotification')
             return route('dispute.index', { openAbsenceDelete: notification.data.absence_id });
         else if (notification.type == 'App\\Notifications\\HomeOfficeDayDisputeStatusNotification')
-            return route('absence.index', { date: DateTime.fromISO(notification.data.start).toFormat('yyyy-MM') });
+            return route('dispute.index', { date: DateTime.fromISO(notification.data.start).toFormat('yyyy-MM') });
         else if (notification.type == 'App\\Notifications\\HomeOfficeDayNotification')
-            return route('absence.index', { date: DateTime.fromISO(notification.data.start).toFormat('yyyy-MM') });
+            return route('dispute.index', { date: DateTime.fromISO(notification.data.start).toFormat('yyyy-MM') });
         else if (
             'ticket_id' in notification.data &&
             [
