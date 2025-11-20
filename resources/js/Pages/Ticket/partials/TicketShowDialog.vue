@@ -306,7 +306,7 @@ function copyRecordToClipBoard(record: TicketRecord & { userName: string }) {
                                     {{ tab === 'newTickets' ? 'Änderungen und Abrechnungen speichern' : 'Abrechnungen speichern' }}
                                 </v-btn>
                                 <v-btn
-                                    v-else-if="tab === 'newTickets'"
+                                    v-else-if="['newTickets', 'workingTickets'].includes(tab)"
                                     color="primary"
                                     type="submit"
                                     :loading="form.processing"
