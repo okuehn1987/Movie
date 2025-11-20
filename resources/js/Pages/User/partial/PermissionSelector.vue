@@ -29,7 +29,7 @@ const permissionObj = defineModel<T>({ required: true });
                                     val => {
                                         item.keys.forEach(key => {
                                             const remove = permissions.find(p => p.name == key)?.except;
-                                            permissionObj[key] = remove && val == remove ? ['read', 'write'].filter(e => e != remove)[0] : val;
+                                            permissionObj[key] = remove && val == remove ? ['read', 'write'].find(e => e != remove) : val;
                                         });
                                     }
                                 "
@@ -45,11 +45,13 @@ const permissionObj = defineModel<T>({ required: true });
                             <v-col cols="12" sm="6" md="3" v-if="item.keys.includes(key as Permission[keyof Permission])">
                                 <v-select
                                     :label="permissions.find(p => p.name == key)?.label"
-                                    :items="[
-                                        { title: 'Keine Rechte', value: null },
-                                        { title: 'Lesen', value: 'read' },
-                                        { title: 'Schreiben', value: 'write' },
-                                    ]"
+                                    :items="
+                                        [
+                                            { title: 'Keine Rechte', value: null },
+                                            { title: 'Lesen', value: 'read' },
+                                            { title: 'Schreiben', value: 'write' },
+                                        ].filter(e => e.value == null || e.value != permissions.find(p => p.name == key)?.except)
+                                    "
                                     v-model="permissionObj[key]"
                                     :error-messages="
                                         Object.entries(errors)
