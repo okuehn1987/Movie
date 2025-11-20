@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\Session;
 class AppModuleService
 {
     public static $APP_MODULES = [
-        'tide' => 'Flow',
-        'flow' => 'Tide'
+        'tide' => 'Tide',
+        'flow' => 'Flow'
     ];
 
     public static function getAppModules()
