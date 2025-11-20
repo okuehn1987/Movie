@@ -51,7 +51,7 @@ class DisputeStatusNotification extends Notification
     {
         $buttonText = 'Antrag einsehen';
 
-        $message = (new MailMessage)->subject('Herta Antragsaktualisierung');
+        $message = (new MailMessage)->subject('Tide Antragsaktualisierung');
 
         $modelUserNotificationText = match (true) {
             $this->log instanceof WorkLog => 'auf Arbeitszeitbuchung',

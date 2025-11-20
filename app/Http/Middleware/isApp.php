@@ -14,7 +14,7 @@ class isApp
      * Handle an incoming request.
      *
      * @param \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     * @param string $app as 'herta' | 'timesheets'
+     * @param string $app as 'tide' | 'flow'
      */
     public function handle(Request $request, Closure $next, string $app): Response
     {

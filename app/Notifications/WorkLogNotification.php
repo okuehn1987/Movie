@@ -43,7 +43,7 @@ class WorkLogNotification extends Notification
     {
         $buttonText = 'Antrag einsehen';
         return (new MailMessage)
-            ->subject('Herta Buchungsantrag')
+            ->subject('Tide Buchungsantrag')
             ->line('für den Nutzer "' . $this->user->name . '" liegt ein Antrag auf eine Buchung für den Zeitraum vom "' .
                 Carbon::parse($this->log->start)->format('d.m.Y') . '" bis zum "' .
                 Carbon::parse($this->log->end)->format('d.m.Y') . '" vor.')

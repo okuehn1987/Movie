@@ -24,7 +24,7 @@ class DisputeController extends Controller
             'absenceRequests' => self::getAbsenceRequests(),
             'absencePatchRequests' => self::getAbsencePatchRequests(),
             'absenceDeleteRequests' => self::getAbsenceDeleteRequests(),
-            ...(AppModuleService::hasAppModule('herta') ? [
+            ...(AppModuleService::hasAppModule('tide') ? [
                 'workLogPatchRequests' => self::getWorkLogPatchRequests(),
                 'workLogRequests' => self::getWorkLogRequests(),
             ] : [])

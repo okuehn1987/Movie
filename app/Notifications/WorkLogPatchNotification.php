@@ -44,7 +44,7 @@ class WorkLogPatchNotification extends Notification
     {
         $buttonText = 'Antrag einsehen';
         return (new MailMessage)
-            ->subject('Herta Zeitkorrekturantrag')
+            ->subject('Tide Zeitkorrekturantrag')
             ->line('für den Nutzer "' . $this->user->name . '" liegt ein Antrag auf eine Zeitkorrektur für den Zeitraum vom "' .
                 Carbon::parse($this->patch->start)->format('d.m.Y') . '" bis zum "' .
                 Carbon::parse($this->patch->end)->format('d.m.Y') . '" vor.')

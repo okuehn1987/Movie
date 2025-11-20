@@ -546,7 +546,7 @@ export type GroupUser = DBObject<'groupUser'> &
 
 export type AppModule = DBObject<'appModule'> & {
     organization_id: Organization['id'];
-    module: 'herta' | 'timesheets';
+    module: 'tide' | 'flow';
     activated_at: DateTimeString | null;
 };
 

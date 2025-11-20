@@ -25,7 +25,7 @@ use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
-    public static $flowNotificationTypes = [
+    public static $tideNotificationTypes = [
         AbsenceNotification::class,
         AbsenceDeleteNotification::class,
         AbsencePatchNotification::class,
@@ -34,7 +34,7 @@ class NotificationController extends Controller
         WorkLogPatchNotification::class
     ];
 
-    public static $tideNotificationTypes = [
+    public static $flowNotificationTypes = [
         TicketFinishNotification::class,
         TicketUpdateNotification::class,
         TicketCreationNotification::class,
@@ -43,7 +43,7 @@ class NotificationController extends Controller
         RemovedFromTicketNotification::class
     ];
 
-    public function index(Request $request, #[CurrentUser] User $authUser)
+    public function index(#[CurrentUser] User $authUser)
     {
 
         $archiveNotifications = $authUser->notifications()->paginate(10);

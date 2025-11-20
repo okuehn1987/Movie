@@ -44,7 +44,7 @@ class AbsenceNotification extends Notification
         $buttonText = 'Antrag einsehen';
 
         return (new MailMessage)
-            ->subject('Herta Abwesenheitsantrag')
+            ->subject('Tide Abwesenheitsantrag')
             ->line('für den Nutzer "' . $this->user->name . '" liegt ein Antrag auf Abwesenheit für den Zeitraum vom "' .
                 Carbon::parse($this->absence->start)->format('d.m.Y') . '" bis zum "' .
                 Carbon::parse($this->absence->end)->format('d.m.Y') . '" vor.')

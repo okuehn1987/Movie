@@ -44,7 +44,7 @@ class AbsencePatchNotification extends Notification
         $buttonText = 'Antrag einsehen';
 
         return (new MailMessage)
-            ->subject('Herta Abwesenheitskorrekturantrag')
+            ->subject('Tide Abwesenheitskorrekturantrag')
             ->line('für den Nutzer "' . $this->user->name . '" liegt ein Antrag auf Korrektur einer Abwesenheit für den Zeitraum vom "' .
                 Carbon::parse($this->absencePatch->start)->format('d.m.Y') . '" bis zum "' .
                 Carbon::parse($this->absencePatch->end)->format('d.m.Y') . '" vor.')

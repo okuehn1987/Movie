@@ -43,7 +43,7 @@ class AbsenceDeleteNotification extends Notification
     {
         $buttonText = 'Antrag einsehen';
         return (new MailMessage)
-            ->subject('Herta Nutzerabwesenheitslöschung')
+            ->subject('Tide Nutzerabwesenheitslöschung')
             ->line('für den Nutzer "' . $this->user->name . '" liegt ein Antrag auf Löschung einer Abwesenheit für den Zeitraum vom "' .
                 Carbon::parse($this->absence->start)->format('d.m.Y') . '" bis zum "' .
                 Carbon::parse($this->absence->end)->format('d.m.Y') . '" vor.')

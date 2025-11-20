@@ -296,7 +296,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
             </template>
         </v-card>
 
-        <HertaUserFormSections v-if="can('app', 'herta')" :mode :user v-model:user-form="userForm"></HertaUserFormSections>
+        <HertaUserFormSections v-if="can('app', 'tide')" :mode :user v-model:user-form="userForm"></HertaUserFormSections>
 
         <v-card class="mb-4">
             <v-card-item>
