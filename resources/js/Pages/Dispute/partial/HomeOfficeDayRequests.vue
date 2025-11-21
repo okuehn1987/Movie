@@ -13,7 +13,7 @@ const props = defineProps<{
 }>();
 
 const homeOfficeDayDialog = ref<HomeOfficeDaygeneratorProp | null>(
-    props.homeOfficeDayRequests.find(h => h.id == Number(route().params['openHomeOffice'])) ?? null,
+    props.homeOfficeDayRequests.find(h => h.id == Number(route().params['openHomeOfficeDay'])) ?? null,
 );
 const showHomeOfficeDayDialog = ref(!!homeOfficeDayDialog.value);
 const submitAbsenceSuccess = ref(false);

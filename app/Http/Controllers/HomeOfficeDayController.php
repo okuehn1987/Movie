@@ -69,9 +69,9 @@ class HomeOfficeDayController extends Controller
 
         if ($authUser->id !== $validated['user_id']) {
             $user->notify(new HomeOfficeDayDisputeStatusNotification(
+                $newHomeOfficeDayGenerator,
                 $validated['start'],
                 $validated['end'],
-                $newHomeOfficeDayGenerator,
                 $requires_approval ? Status::Created : Status::Accepted
             ));
         }

@@ -34,7 +34,7 @@ function openNotification(notification: Notification) {
         else if (notification.type == 'App\\Notifications\\HomeOfficeDayNotification')
             return route('dispute.index', { openHomeOfficeDay: notification.data.home_office_day_generator_id });
         else if (notification.type == 'App\\Notifications\\HomeOfficeDeleteNotification')
-            return route('dispute.index', { openHomeOfficeDay: notification.data.home_office_day_id });
+            return route('dispute.index', { openHomeOfficeDayDelete: notification.data.home_office_day_id });
         else if (
             'ticket_id' in notification.data &&
             [

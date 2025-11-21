@@ -173,15 +173,15 @@ class DisputeController extends Controller
             ->where('data->status', Status::Created)
             ->get();
 
-        $requestedAbsences = count($openHomeOfficeDayDeleteNotifications) > 0 ?
+        $requestedHomeOfficeDays = count($openHomeOfficeDayDeleteNotifications) > 0 ?
             HomeOfficeDayGenerator::inOrganization()
-            ->whereIn('id', $openHomeOfficeDayDeleteNotifications->pluck('home_office_day_generator_id'))
+            ->whereIn('id', $openHomeOfficeDayDeleteNotifications->pluck('data.home_office_day_id'))
             ->with([
                 'user' => fn($q) => $q->select(['id', 'first_name', 'last_name', 'operating_site_id', 'supervisor_id'])->withTrashed(),
             ])
             ->get(['id', 'start', 'end', 'user_id']) :
             collect();
 
-        return $requestedAbsences->filter(fn(Absence $a) => $authUser->can('delete', $a))->values();
+        return $requestedHomeOfficeDays->filter(fn(HomeOfficeDayGenerator $a) => $authUser->can('delete', $a))->values();
     }
 }

@@ -59,7 +59,7 @@ class HomeOfficeDeleteNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'title' => $this->user->name . ' hat die Löschung von HomeOffice beantragt.',
+            'title' => $this->user->name . ' hat die Löschung von Homeoffice beantragt.',
             'home_office_day_id' => $this->home_office_day_id,
             'status' => Status::Created,
         ];

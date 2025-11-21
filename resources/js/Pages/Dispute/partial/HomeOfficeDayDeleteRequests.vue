@@ -48,6 +48,7 @@ function denyHomeOfficeDelete() {
 }
 </script>
 <template>
+    <!-- laut Dev Tools geht nix weil start nicht bekannt ist -->
     <v-data-table
         hover
         items-per-page="5"
