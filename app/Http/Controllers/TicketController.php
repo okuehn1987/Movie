@@ -193,7 +193,7 @@ class TicketController extends Controller
             }
         }
         $users = $ticket->assignees->filter(fn($u) => !$authUser->is($u));
-        $users->merge($users->flatMap(fn($u) => $u->isSubstitutedBy))
+        $users->merge($users->flatMap(fn($u) => $u->loadMissing('isSubstitutedBy')->isSubstitutedBy))
             ->unique('id')
             ->each
             ->notify(new TicketCreationNotification($authUser, $ticket));
@@ -234,7 +234,7 @@ class TicketController extends Controller
         );
 
         $users = $ticket->assignees->filter(fn($a) => collect($validated["assignees"])->doesntContain($a->id));
-        $users->merge($users->flatMap(fn($u) => $u->isSubstitutedBy))
+        $users->merge($users->flatMap(fn($u) => $u->loadMissing('isSubstitutedBy')->isSubstitutedBy))
             ->unique('id')
             ->each
             ->notify(new RemovedFromTicketNotification($ticket));
@@ -246,7 +246,7 @@ class TicketController extends Controller
 
         if ($notifyAssignees) {
             $users = $ticket->fresh('assignees')->assignees->filter(fn($u) => !$authUser->is($u));
-            $users->merge($users->flatMap(fn($u) => $u->isSubstitutedBy))
+            $users->merge($users->flatMap(fn($u) => $u->loadMissing('isSubstitutedBy')->isSubstitutedBy))
                 ->unique('id')
                 ->each
                 ->notify(new TicketUpdateNotification($authUser, $ticket));
@@ -267,7 +267,7 @@ class TicketController extends Controller
         }
 
         $users = $userToNotify->filter(fn($u) => !$u->is($authUser));
-        $users->merge($users->flatMap(fn($u) => $u->isSubstitutedBy))
+        $users->merge($users->flatMap(fn($u) => $u->loadMissing('isSubstitutedBy')->isSubstitutedBy))
             ->unique('id')
             ->each
             ->notify(new TicketFinishNotification($authUser, $ticket));
@@ -282,7 +282,7 @@ class TicketController extends Controller
         $ticket->update(['finished_at' => null]);
 
         $users = $ticket->assignees->filter(fn($u) => !$u->is($authUser));
-        $users->merge($users->flatMap(fn($u) => $u->isSubstitutedBy))
+        $users->merge($users->flatMap(fn($u) => $u->loadMissing('isSubstitutedBy')->isSubstitutedBy))
             ->unique('id')
             ->each
             ->notify(new TicketUpdateNotification($authUser, $ticket));
@@ -305,7 +305,7 @@ class TicketController extends Controller
         }
 
         $users = $ticket->assignees->filter(fn($u) => !$u->is($authUser));
-        $users->merge($users->flatMap(fn($u) => $u->isSubstitutedBy))
+        $users->merge($users->flatMap(fn($u) => $u->loadMissing('isSubstitutedBy')->isSubstitutedBy))
             ->unique('id')
             ->each
             ->notify(new TicketDeletionNotification($authUser, $ticket));

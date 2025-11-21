@@ -268,6 +268,7 @@ function copyRecordToClipBoard(record: TicketRecord & { userName: string }) {
                                                                     target="_blank"
                                                                     color="primary"
                                                                     icon="mdi-download"
+                                                                    :download="file.original_name"
                                                                 ></v-btn>
                                                             </td>
                                                             <td style="width: 1px; padding: 0">
