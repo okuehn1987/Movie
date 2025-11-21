@@ -145,6 +145,13 @@ export type UserWorkingHours = DBObject<'userWorkingHours'> &
         active_since: DateString;
     };
 
+export type UserTrustWorkingHours = DBObject<'userTrustWorkingHours'> &
+    SoftDelete & {
+        user_id: User['id'];
+        has_trust_working_hours: boolean;
+        active_since: DateString;
+    };
+
 export type UserLeaveDays = DBObject<'userLeaveDays'> &
     SoftDelete & {
         user_id: User['id'];

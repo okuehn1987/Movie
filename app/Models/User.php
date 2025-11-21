@@ -246,6 +246,11 @@ class User extends Authenticatable
         return $this->hasMany(UserWorkingHour::class);
     }
 
+    public function userTrustWorkingHours()
+    {
+        return $this->hasMany(UserTrustWorkingHours::class);
+    }
+
     public function currentWorkingHours()
     {
         return $this->userWorkingHours()->one()->ofMany(['active_since' => 'Max'], fn($q) => $q->whereDate('active_since', '<=', now()));

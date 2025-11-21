@@ -11,6 +11,7 @@ import {
     Relations,
     User,
     UserLeaveDays,
+    UserTrustWorkingHours,
     UserWorkingHours,
     UserWorkingWeek,
     Weekday,
@@ -49,6 +50,11 @@ export type FormData = {
     home_office_hours_per_week: null | number; //TODO: check if we need active_since
 
     user_working_hours: (Pick<UserWorkingHours, 'weekly_working_hours'> & { active_since: string; id: UserWorkingHours['id'] | null })[];
+
+    user_trust_working_hours: (Pick<UserTrustWorkingHours, 'has_trust_working_hours'> & {
+        active_since: string;
+        id: UserTrustWorkingHours['id'] | null;
+    })[];
 
     user_leave_days: (Pick<UserLeaveDays, 'leave_days'> & { active_since: string; id: UserLeaveDays['id'] | null })[];
 

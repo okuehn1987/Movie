@@ -109,6 +109,20 @@ class UserController extends Controller
                 }
             }],
 
+            'user_trust_working_hours' => 'present|array',
+            'user_trust_working_hours.*.id' => 'nullable|exists:user_trust_working_hours,id',
+            'user_trust_working_hours.*.has_trust_working_hours' => 'required|boolean',
+            'user_trust_working_hours.*.active_since' => ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
+                $index = explode('.', $attribute)[1];
+                $currentTrustWorkingHour = $request['user_trust_working_hours'][$index];
+                if ($mode == 'update' && !isset($currentTrustWorkingHour['id']) && Carbon::parse($currentTrustWorkingHour['active_since'])->lt(Carbon::now()->endOfDay())) {
+                    $fail('validation.after')->translate([
+                        'attribute' => __('validation.attributes.active_since'),
+                        'date' => Carbon::now()->format('d.M.Y')
+                    ]);
+                }
+            }],
+
             'user_working_weeks' => 'present|array',
             'user_working_weeks.*.id' => 'nullable|exists:user_working_weeks,id',
             'user_working_weeks.*.weekdays' => 'required|array',

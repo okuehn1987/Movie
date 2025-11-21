@@ -55,6 +55,8 @@ const userForm = useForm<FormData>({
     user_working_weeks: [],
     initialRemainingLeaveDays: 0,
 
+    user_trust_working_hours: [],
+
     overtime_calculations_start: DateTime.now().toFormat('yyyy-MM-dd') as DateString,
     organizationUser: {
         organization_permission: null,
@@ -297,7 +299,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
 
         <v-card class="mb-4">
             <v-card-item>
-                <v-card-title class="mb-2">Arbeitswoche</v-card-title>
+                <v-card-title class="mb-2">Vertrauensarbeitszeit</v-card-title>
             </v-card-item>
             <v-card-text>
                 <v-row>
@@ -306,11 +308,11 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                     </v-col>
                     <v-col cols="12">
                         <v-data-table-virtual
-                            :items="userForm.user_working_hours"
+                            :items="userForm.user_trust_working_hours"
                             :headers="[
                                 {
                                     title: 'Stunden pro Woche',
-                                    key: 'weekly_working_hours',
+                                    key: 'has_trust_working_hours',
                                     width: '50%',
                                     sortable: false,
                                 },
@@ -331,23 +333,19 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                                 <v-btn
                                     v-if="!user || can('user', 'update')"
                                     color="primary"
-                                    @click.stop="userForm.user_working_hours.push({ active_since: '', id: null, weekly_working_hours: 0 })"
+                                    @click.stop="
+                                        userForm.user_trust_working_hours.push({ active_since: '', id: null, has_trust_working_hours: false })
+                                    "
                                 >
                                     <v-icon icon="mdi-plus"></v-icon>
                                 </v-btn>
                             </template>
-                            <template v-slot:item.weekly_working_hours="{ item, index }">
-                                <v-text-field
-                                    data-testid="userWorkingHours-hours"
-                                    type="number"
+                            <template v-slot:item.has_trust_working_hours="{ item }">
+                                <v-checkbox
+                                    label="Darf der Mitarbeiter Vertrauensarbeitszeit haben?"
                                     variant="underlined"
-                                    v-model="item.weekly_working_hours"
-                                    :error-messages="userForm.errors[`user_working_hours.${index}.weekly_working_hours`]"
-                                    :disabled="
-                                        (user && !can('user', 'update')) ||
-                                        (!!item.active_since && item.active_since < DateTime.now().toFormat('yyyy-MM-dd'))
-                                    "
-                                ></v-text-field>
+                                    v-model="item.has_trust_working_hours"
+                                ></v-checkbox>
                             </template>
                             <template v-slot:item.active_since="{ item, index }">
                                 <v-text-field
@@ -735,7 +733,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" v-if="can('user', 'update')">
+        <v-card class="mb-4" v-if="user && can('user', 'update')">
             <v-card-title>Kündigungseinstellungen</v-card-title>
             <v-card-text>
                 <v-row>
