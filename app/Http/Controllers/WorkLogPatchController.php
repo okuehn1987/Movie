@@ -44,7 +44,7 @@ class WorkLogPatchController extends Controller
         $requiresApproval = $supervisor && !$authUser->can('update', [WorkLogPatch::class, $user]);
         if (!$requiresApproval) $patch->accept();
         else {
-            collect($supervisor->isSubstitutedBy)
+            collect($supervisor->loadMissing('isSubstitutedBy')->isSubstitutedBy)
                 ->merge([$supervisor])
                 ->unique('id')
                 ->each

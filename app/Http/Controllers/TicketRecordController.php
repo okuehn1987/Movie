@@ -62,7 +62,7 @@ class TicketRecordController extends Controller
         }
 
         $users = Organization::getCurrent()->users->filter(fn($u) => !$authUser->is($u) && $u->can('account', $ticket));
-        $users->merge($users->flatMap(fn($u) => $u->isSubstitutedBy))
+        $users->merge($users->flatMap(fn($u) => $u->loadMissing('isSubstitutedBy')->isSubstitutedBy))
             ->unique('id')
             ->each
             ->notify(new TicketRecordCreationNotification($authUser, $ticket));
@@ -101,31 +101,11 @@ class TicketRecordController extends Controller
 
 
         $users = Organization::getCurrent()->users->filter(fn($u) => !$authUser->is($u) && $u->can('account', $ticketRecord->ticket));
-        $users->merge($users->flatMap(fn($u) => $u->isSubstitutedBy))
+        $users->merge($users->flatMap(fn($u) => $u->loadMissing('isSubstitutedBy')->isSubstitutedBy))
             ->unique('id')
             ->each
             ->notify(new TicketRecordCreationNotification($authUser, $ticketRecord->ticket));
 
         return back()->with('success', 'Eintrag erfolgreich bearbeitet.');
-    }
-
-    public function download(TicketRecordFile $ticketRecordFile)
-    {
-        Gate::authorize('publicAuth', User::class);
-
-        return response()->file(Storage::disk('ticket_record_files')->path($ticketRecordFile->path));
-    }
-
-    public function deleteFile(TicketRecordFile $ticketRecordFile)
-    {
-        Gate::authorize('publicAuth', User::class);
-
-        if (Storage::disk('ticket_record_files')->exists($ticketRecordFile->path)) {
-            Storage::disk('ticket_record_files')->delete($ticketRecordFile->path);
-        }
-
-        $ticketRecordFile->delete();
-
-        return back()->with('success', 'Datei erfolgreich gelöscht.');
     }
 }

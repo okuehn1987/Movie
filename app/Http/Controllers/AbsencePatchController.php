@@ -49,7 +49,7 @@ class AbsencePatchController extends Controller
             $absence->user->notify(new DisputeStatusNotification($absencePatch, Status::Created));
         }
         if ($requires_approval) {
-            collect($authUser->supervisor->isSubstitutedBy)
+            collect($authUser->supervisor->loadMissing('isSubstitutedBy')->isSubstitutedBy)
                 ->merge([$authUser->supervisor])
                 ->unique('id')
                 ->eachr->notify(new AbsencePatchNotification($authUser, $absencePatch));

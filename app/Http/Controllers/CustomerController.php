@@ -145,7 +145,7 @@ class CustomerController extends Controller
                         ])
                 ),
             'ticketTab' => Inertia::always(fn() => $tab),
-            'tab' => Inertia::always(fn() => array_key_exists('tab', $validated) && $validated['tab'] ? 'tickets' : 'customerData'),
+            'tab' => Inertia::always(fn() => $openTicket || array_key_exists('tab', $validated) &&  $tab ? 'tickets' : 'customerData'),
             'can' => [
                 'customer' => [
                     'viewShow' => Gate::allows('viewShow', Customer::class),
