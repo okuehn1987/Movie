@@ -77,8 +77,11 @@ class HandleInertiaRequests extends Middleware
                 'location' => $request->url(),
             ]),
             'organization' => Organization::getCurrent(),
-            'reachedMonthlyTokenLimit' => false ?? Organization::getCurrent()->chatAssistant ? OpenAIService::hasReachedTokenLimit(Organization::getCurrent()->chatAssistant) : false,
-            'currentUserChat' => $request->user()?->chats()->with('chatMessages:id,chat_id,role,assistant_api_message_id,created_at,msg')->first(),
+            'reachedMonthlyTokenLimit' =>
+            Organization::getCurrent()->isa_active && Organization::getCurrent()->chatAssistant ?
+                OpenAIService::hasReachedTokenLimit(Organization::getCurrent()->chatAssistant) : false,
+            'currentUserChat' =>  Organization::getCurrent()->isa_active ?
+                $request->user()?->chats()->with('chatMessages:id,chat_id,role,assistant_api_message_id,created_at,msg')->first() : null,
             'currentAppModule' => AppModuleService::currentAppModule(),
             'appModules' => $accessableModules,
             'flash' => [

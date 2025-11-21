@@ -2,7 +2,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "dev": "concurrently -k -c \"green,red,grey.bold\" \"npm run dev:vite\" \"npm run backend\" \"npm run websocket\" \"npm run schedule\" \"php artisan pail\" --names=vite,laravel,websocket,schedule,logs",
+        "dev": "concurrently -c \"green,red,grey.bold\" \"npm run dev:vite\" \"npm run backend\" \"npm run websocket\" \"npm run schedule\" \"php artisan pail\" --names=vite,laravel,websocket,schedule,logs",
         "dev:vite": "vite",
         "backend": "php artisan serve",
         "test": "playwright test",

@@ -68,7 +68,7 @@ import { router } from '@inertiajs/vue3';
                     title: 'Organigramm',
                 },
                 can('chatAssistant', 'viewIndex') &&
-                    $page.props.organization?.isa_active && {
+                    $page.props.organization.isa_active && {
                         props: { prependIcon: 'mdi-chat-question-outline', active: route().current('isa.index') },
                         value: route('isa.index'),
                         title: 'ISA',

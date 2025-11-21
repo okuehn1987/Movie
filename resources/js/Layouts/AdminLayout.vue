@@ -149,38 +149,40 @@ function deleteChat() {
                 </v-alert>
                 <slot />
             </v-container>
-            <v-btn
-                v-show="!showChat"
-                class="chat-button"
-                style="position: fixed; bottom: 20px; right: 20px"
-                type="button"
-                title="Chat öffnen"
-                @click.stop="openChat"
-            >
-                <img src="/img/Isa-klein.png" alt="" />
-            </v-btn>
-            <transition name="chat-pop">
-                <div v-show="showChat" class="chat-space bg-white elevation-12">
-                    <div class="chat-header">
-                            <div class="d-flex align-center gap-2 chat-button">
-                                <img  src="/img/Isa-klein.png" alt="ISA Logo"></img>
-                                <v-card-subtitle class="text-h6">ISA</v-card-subtitle>
+            <div v-if="$page.props.organization.isa_active">
+                <v-btn
+                    v-show="!showChat"
+                    class="chat-button"
+                    style="position: fixed; bottom: 20px; right: 20px"
+                    type="button"
+                    title="Chat öffnen"
+                    @click.stop="openChat"
+                >
+                    <img src="/img/Isa-klein.png" alt="" />
+                </v-btn>
+                <transition name="chat-pop">
+                    <div v-show="showChat" class="chat-space bg-white elevation-12">
+                        <div class="chat-header">
+                                <div class="d-flex align-center gap-2 chat-button">
+                                    <img  src="/img/Isa-klein.png" alt="ISA Logo"></img>
+                                    <v-card-subtitle class="text-h6">ISA</v-card-subtitle>
+                                </div>
+                
+                            <div style="width: fit-content">
+                                <v-btn icon="mdi-window-minimize" color="primary" variant="text" @click.stop="closeChat" title="Chat minimieren" />
+                                <v-btn icon="mdi-chat-plus" color="primary" variant="text" @click.stop="deleteChat" title="Neuer Chat" />
                             </div>
-                        
-                        <div style="width: fit-content">
-                            <v-btn icon="mdi-window-minimize" color="primary" variant="text" @click.stop="closeChat" title="Chat minimieren" />
-                            <v-btn icon="mdi-chat-plus" color="primary" variant="text" @click.stop="deleteChat" title="Neuer Chat" />
+                        </div>
+                        <div class="chat-body">
+                            <ChatDetails
+                            :showChat
+                                :chat="$page.props.currentUserChat ? $page.props.currentUserChat : INITIAL_USER_CHAT"
+                                :reachedMonthlyTokenLimit="$page.props.reachedMonthlyTokenLimit"
+                            />
                         </div>
                     </div>
-                    <div class="chat-body">
-                        <ChatDetails
-                        :showChat
-                            :chat="$page.props.currentUserChat ? $page.props.currentUserChat : INITIAL_USER_CHAT"
-                            :reachedMonthlyTokenLimit="$page.props.reachedMonthlyTokenLimit"
-                        />
-                    </div>
-                </div>
-            </transition>
+                </transition>
+            </div>
         </v-main>
     </v-app>
 </template>
