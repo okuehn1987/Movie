@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Notifications\DisputeStatusNotification;
 use App\Notifications\HomeOfficeDayDisputeStatusNotification;
 use App\Notifications\HomeOfficeDayNotification;
+use App\Notifications\HomeOfficeDeleteNotification;
 use Carbon\Carbon;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
@@ -116,5 +117,77 @@ class HomeOfficeDayController extends Controller
         }
 
         return back()->with('success',  "Abwesenheit erfolgreich " . ($is_accepted ? 'akzeptiert' : 'abgelehnt') . ".");
+    }
+
+    public function destroy(HomeOfficeDay $homeOfficeDay, #[CurrentUser] User $authUser)
+    // WIP
+    {
+        // Gate::authorize('deleteRequestable',  $homeOfficeDay);
+
+        $homeOfficeDayGenerator = $homeOfficeDay->homeOfficeDayGenerator;
+
+        if (Gate::allows('delete', $homeOfficeDay)) {
+            $homeOfficeDay->delete();
+
+            DB::table('notifications')->where('type', HomeOfficeDeleteNotification::class)
+                ->where('data->status', Status::Created)
+                ->where('data->home_office_day_generator_id', $homeOfficeDayGenerator->id)
+                ->update([
+                    'read_at' => now(),
+                    'data->status' => Status::Accepted
+                ]);
+
+            if ($homeOfficeDay->user->id !== $authUser->id)
+                $homeOfficeDay->user->notify(new HomeOfficeDayDisputeStatusNotification($homeOfficeDayGenerator->id, $homeOfficeDayGenerator->start, $homeOfficeDayGenerator->end, Status::Accepted, 'delete'));
+
+
+            return back()->with('success', 'Die Abwesenheit wurde erfolgreich gelöscht.');
+        } else {
+            $authUser->supervisor->notify(new HomeOfficeDeleteNotification($authUser, $homeOfficeDay, $homeOfficeDay->date));
+            return back()->with('success', 'Der Antrag auf Löschung wurder erfolgreich eingeleitet.');
+        }
+    }
+
+    public function destroyDispute(HomeOfficeDay $homeOfficeDay)
+    // Works except for gate
+    {
+        // Gate::authorize('deleteDispute', $homeOfficeDay);
+
+        $homeOfficeDayGenerator_id = $homeOfficeDay->homeOfficeDayGenerator->id;
+
+        if ($homeOfficeDay->deleteQuietly()) {
+            DB::table('notifications')->where('type', HomeOfficeDayNotification::class)
+                ->where('data->status', Status::Created)
+                ->where('data->home_office_day_generator_id', $homeOfficeDayGenerator_id)
+                ->delete();
+        }
+
+        if ($homeOfficeDay->deleteQuietly()) {
+            DB::table('home_office_days')->where('home_office_day_generator_id', $homeOfficeDayGenerator_id)->delete();
+        }
+
+        return back()->with('success', 'Antrag auf HomeOffice erfolgreich zurückgezogen');
+    }
+
+    public function denyDestroy(HomeOfficeDay $homeOfficeDay, #[CurrentUser] User $authUser)
+    // WIP not tested/started
+    {
+        Gate::allows('delete', $homeOfficeDay);
+
+        $homeOfficeDayGenerator = $homeOfficeDay->homeOfficeDayGenerator;
+
+        DB::table('notifications')->where('type', HomeOfficeDeleteNotification::class)
+            ->where('data->status', Status::Created)
+            ->where('data->home_office_day_generator_id', $homeOfficeDayGenerator->id)
+            ->update([
+                'read_at' => now(),
+                'data->status' => Status::Declined
+            ]);
+
+        if ($homeOfficeDay->user->id !== $authUser->id)
+            $homeOfficeDay->user->notify(new HomeOfficeDayDisputeStatusNotification($homeOfficeDayGenerator->id, $homeOfficeDayGenerator->start, $homeOfficeDayGenerator->end, Status::Declined, 'delete'));
+
+
+        return back()->with('success', 'Der Antrag auf Löschung wurde abgelehnt.');
     }
 }

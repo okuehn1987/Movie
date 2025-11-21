@@ -33,6 +33,8 @@ function openNotification(notification: Notification) {
             return route('absence.index', { date: DateTime.fromISO(notification.data.start).toFormat('yyyy-MM') });
         else if (notification.type == 'App\\Notifications\\HomeOfficeDayNotification')
             return route('dispute.index', { openHomeOfficeDay: notification.data.home_office_day_generator_id });
+        else if (notification.type == 'App\\Notifications\\HomeOfficeDeleteNotification')
+            return route('dispute.index', { openHomeOfficeDay: notification.data.home_office_day_id });
         else if (
             'ticket_id' in notification.data &&
             [
@@ -89,6 +91,7 @@ const disputes = {
     'App\\Notifications\\TicketRecordCreationNotification': 'Ticket Update',
     'App\\Notifications\\HomeOfficeDayNotification': 'neuer Antrag auf Homeoffice',
     'App\\Notifications\\HomeOfficeDayDisputeStatusNotification': 'neue Korrektur für Homeoffice',
+    'App\\Notifications\\HomeOfficeDeleteNotification': 'Antrag auf Löschung von für Homeoffice',
 } satisfies Record<Notification['type'], string>;
 </script>
 

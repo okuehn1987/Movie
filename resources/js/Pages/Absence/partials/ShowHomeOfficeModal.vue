@@ -29,10 +29,7 @@ function withdrawRequest() {
         },
     };
 
-    router.delete(
-        route('homeOfficeDayGenerator.destroy', { homeOfficeDayGenerator: props.selectedHomeOffice.home_office_day_generator_id }),
-        options,
-    );
+    router.delete(route('homeOfficeDay.destroyDispute', { homeOfficeDay: props.selectedHomeOffice.id }), options);
 }
 const deleteHomeOfficeForm = useForm({});
 function deleteHomeOfficeDay() {
@@ -53,6 +50,7 @@ function deleteHomeOfficeDay() {
 <template>
     <v-dialog max-width="1000" v-model="openModal">
         <template #default="{ isActive }">
+            {{ props.selectedHomeOffice.id }}
             <v-card
                 :title="
                     'Abwesenheit' +
@@ -73,19 +71,38 @@ function deleteHomeOfficeDay() {
                             <v-col cols="12">
                                 <v-text-field>Homeoffice</v-text-field>
                             </v-col>
-                            <v-col cols="12" md="6">
-                                <v-text-field
-                                    type="date"
-                                    label="Von"
-                                    :model-value="selectedHomeOffice.home_office_day_generator.start"
-                                ></v-text-field>
-                            </v-col>
-                            <v-col cols="12" md="6">
-                                <v-text-field type="date" label="Bis" :model-value="selectedHomeOffice.home_office_day_generator.end"></v-text-field>
-                            </v-col>
+                            <template v-if="selectedHomeOffice.home_office_day_generator.created_as_request">
+                                <v-col cols="12" md="6">
+                                    <v-text-field
+                                        type="date"
+                                        label="Von"
+                                        :model-value="selectedHomeOffice.home_office_day_generator.start"
+                                    ></v-text-field>
+                                </v-col>
+                                <v-col cols="12" md="6">
+                                    <v-text-field
+                                        type="date"
+                                        label="Bis"
+                                        :model-value="selectedHomeOffice.home_office_day_generator.end"
+                                    ></v-text-field>
+                                </v-col>
+                            </template>
+                            <template v-else>
+                                <v-col cols="12" md="6">
+                                    <v-text-field type="date" label="Von" :model-value="selectedHomeOffice.date"></v-text-field>
+                                </v-col>
+                                <v-col cols="12" md="6">
+                                    <v-text-field type="date" label="Bis" :model-value="selectedHomeOffice.date"></v-text-field>
+                                </v-col>
+                            </template>
                             <v-col cols="12" class="text-end">
                                 <template v-if="selectedHomeOffice.status == 'created'">
-                                    <v-btn v-if="can('user', 'viewDisputes')" @click.stop="openDispute" type="button" color="primary">
+                                    <v-btn
+                                        v-if="can('user', 'viewDisputes') && $page.props.auth.user.id != selectedHomeOffice.user_id"
+                                        @click.stop="openDispute"
+                                        type="button"
+                                        color="primary"
+                                    >
                                         Antrag öffnen
                                     </v-btn>
                                     <v-btn
@@ -98,7 +115,6 @@ function deleteHomeOfficeDay() {
                                     </v-btn>
                                 </template>
                                 <template v-else-if="selectedHomeOffice.status !== 'declined'">
-                                    {{ selectedHomeOffice }}
                                     <v-btn @click.stop="deleteHomeOfficeDay()" color="error">Löschung beantragen</v-btn>
                                 </template>
                             </v-col>

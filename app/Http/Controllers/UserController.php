@@ -244,7 +244,9 @@ class UserController extends Controller
             'userLeaveDays' => function ($q) {
                 $q->where('type', 'annual')->orderBy('active_since', 'desc');
             },
-            'homeOfficeDayGenerators',
+            'homeOfficeDayGenerators' => function ($q) {
+                $q->where('created_as_request', false);
+            },
             ...(AppModuleService::hasAppModule('herta') ?
                 [
                     'userWorkingHours' => function ($q) {

@@ -208,7 +208,22 @@ declare module 'ziggy-js' {
     "homeOfficeDay.destroy": [
         {
             "name": "homeOfficeDay",
-            "required": true
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "homeOfficeDay.denyDestroy": [
+        {
+            "name": "homeOfficeDay",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "homeOfficeDay.destroyDispute": [
+        {
+            "name": "homeOfficeDay",
+            "required": true,
+            "binding": "id"
         }
     ],
     "homeOfficeDay.updateStatus": [
@@ -216,12 +231,6 @@ declare module 'ziggy-js' {
             "name": "homeOfficeDayGenerator",
             "required": true,
             "binding": "id"
-        }
-    ],
-    "homeOfficeDayGenerator.destroy": [
-        {
-            "name": "homeOfficeDayGenerator",
-            "required": true
         }
     ],
     "operatingSite.index": [],

@@ -120,7 +120,7 @@ function createAbsenceModal(user_id: User['id'], start?: DateTime) {
     const absenceToEdit = currentEntries.value
         .filter(a => a.user_id === user_id)
         .find(a => start && DateTime.fromSQL(a.start) <= start && start <= DateTime.fromSQL(a.end));
-
+        
     if (absenceToEdit) {
         selectedAbsence.value = absenceToEdit ?? null;
         if (['hasOpenPatch', 'created'].includes(getEntryState(absenceToEdit))) {
@@ -129,6 +129,7 @@ function createAbsenceModal(user_id: User['id'], start?: DateTime) {
             openEditCreateAbsenceModal.value = true;
         }
     } else {
+        selectedAbsence.value = null;
         const homeOfficeToEdit = props.homeOfficeDays.filter(u => u.user_id === user_id).find(h => start && h.date === start.toFormat('yyyy-MM-dd'));
 
         selectedHomeOffice.value = homeOfficeToEdit ?? null;
@@ -161,7 +162,7 @@ const loading = ref(false);
 const reload = throttle(() => {
     if (loadedMonths.value.includes(currentDate.value.toFormat('yyyy-MM'))) return;
     router.reload({
-        only: ['absences', 'absencePatches', 'holidays'],
+        only: ['absences', 'absencePatches', 'holidays', 'homeOfficeDays'],
         data: { date: currentDate.value.toFormat('yyyy-MM'), openAbsence: null, openAbsencePatch: null },
         onStart: () => {
             loadedMonths.value.push(currentDate.value.toFormat('yyyy-MM'));

@@ -8,6 +8,7 @@ import { AbsencePatchProp, AbsenceProp, HomeOfficeDayProp, UserProp, WorkLogPatc
 import HomeOfficeDayRequests from './partial/HomeOfficeDayRequests.vue';
 import WorkLogPatches from './partial/WorkLogPatches.vue';
 import WorkLogRequests from './partial/WorkLogRequests.vue';
+import HomeOfficeDayDeleteRequests from './partial/HomeOfficeDayDeleteRequests.vue';
 
 defineProps<{
     absenceRequests: (AbsenceProp & {
@@ -27,6 +28,10 @@ defineProps<{
         user: Pick<User, 'id' | 'first_name' | 'last_name'>;
         homeOfficeDayGenerator: Pick<HomeOfficeDayGenerator, 'id' | 'start' | 'end' | 'created_as_request'>;
     })[];
+    homeOfficeDayDeleteRequests: (HomeOfficeDayProp & {
+        user: Pick<User, 'id' | 'first_name' | 'last_name'>;
+        homeOfficeDayGenerator: Pick<HomeOfficeDayGenerator, 'id' | 'start' | 'end' | 'created_as_request'>;
+    })[];
     workLogPatchRequests?: WorkLogPatchProp[];
     workLogRequests?: WorkLogProp[];
 }>();
@@ -43,6 +48,7 @@ defineProps<{
                     ...absencePatchRequests,
                     ...(workLogRequests ? workLogRequests : []),
                     ...homeOfficeDayRequests,
+                    ...homeOfficeDayDeleteRequests,
                 ].length == 0
             "
         >
@@ -50,6 +56,7 @@ defineProps<{
         </v-alert>
         <v-row v-else>
             <v-col cols="12" md="6">
+                {{ homeOfficeDayDeleteRequests }}
                 <v-row>
                     <v-col v-if="absenceRequests.length > 0" cols="12">
                         <v-card title="Abwesenheiten">
@@ -57,7 +64,7 @@ defineProps<{
                         </v-card>
                     </v-col>
                     <v-col v-if="homeOfficeDayRequests.length > 0" cols="12">
-                        <v-card title="HomeOffice">
+                        <v-card title="Homeoffice">
                             <HomeOfficeDayRequests :homeOfficeDayRequests="homeOfficeDayRequests" />
                         </v-card>
                     </v-col>
@@ -67,6 +74,11 @@ defineProps<{
                     <v-col v-if="absenceDeleteRequests.length > 0" cols="12">
                         <v-card title="Abwesenheitslöschungen">
                             <AbsenceDeleteRequests :requestedDeletes="absenceDeleteRequests" />
+                        </v-card>
+                    </v-col>
+                    <v-col v-if="homeOfficeDayDeleteRequests.length > 0" cols="12">
+                        <v-card title="Homeofficelöschungen">
+                            <HomeOfficeDayDeleteRequests :requestedDeletes="homeOfficeDayDeleteRequests" />
                         </v-card>
                     </v-col>
                     <!-- <v-col cols="12">
