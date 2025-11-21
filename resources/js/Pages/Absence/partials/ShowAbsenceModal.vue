@@ -79,7 +79,12 @@ function withdrawRequest() {
                                 <v-text-field type="date" label="Bis" :model-value="selectedAbsence.end"></v-text-field>
                             </v-col>
                             <v-col cols="12" class="text-end">
-                                <v-btn v-if="can('user', 'viewDisputes')" @click.stop="openDispute" type="button" color="primary">
+                                <v-btn
+                                    v-if="can('user', 'viewDisputes') && $page.props.auth.user.id != selectedAbsence.user_id"
+                                    @click.stop="openDispute"
+                                    type="button"
+                                    color="primary"
+                                >
                                     Antrag öffnen
                                 </v-btn>
                                 <v-btn
