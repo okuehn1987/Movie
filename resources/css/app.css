@@ -2,6 +2,9 @@
 html {
     overflow-y: auto !important;
 }
+body {
+    margin-bottom: 0px !important;
+}
 
 /* it wasnt clear if the input was disabled or not. so we make it more obvious by setting the opactiy */
 .v-theme--lightTheme {

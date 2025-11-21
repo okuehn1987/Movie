@@ -27,6 +27,8 @@ export type Model =
     | 'organization'
     | 'operatingSite'
     | 'customer'
+    | 'customerContact'
+    | 'customerOperatingSite'
     | 'group'
     | 'user'
     | 'ticket'
@@ -38,8 +40,9 @@ export type Model =
     | 'timeAccount'
     | 'timeAccountTransaction'
     | 'workLogPatch'
+    | 'ticketRecord'
     | (string & NonNullable<unknown>);
-export type CanMethod = 'viewIndex' | 'viewShow' | 'create' | 'update' | 'delete' | (string & NonNullable<unknown>);
+export type CanMethod = 'viewIndex' | 'viewShow' | 'create' | 'update' | 'delete' | 'account' | (string & NonNullable<unknown>);
 
 export type Canable = {
     /**can the auth user execute this action in the current scope */
@@ -163,11 +166,18 @@ export type UserLeaveDays = DBObject<'userLeaveDays'> &
 export type Customer = DBObject<'customer'> &
     SoftDelete & {
         name: string;
-        email: string | null;
-        phone: string | null;
         reference_number: string | null;
         organization_id: Organization['id'];
     };
+
+export type CustomerContact = DBObject<'customerContact'> & {
+    customer_id: Customer['id'];
+    name: string;
+    occupation: string;
+    email: string | null;
+    phone_number: string | null;
+    mobile_number: string | null;
+};
 
 export type Flag = 'auto_accept_travel_logs' | 'christmas_vacation_day' | 'new_year_vacation_day' | 'vacation_limitation_period' | 'night_surcharges';
 
@@ -356,6 +366,7 @@ export type UserAbsenceFilter = DBObject<'userAbcenceFilter'> & {
         absence_type_ids: AbsenceType['id'][];
         user_ids: User['id'][];
         statuses: Status[];
+        holidays_from_federal_states: FederalState[];
     };
 };
 
@@ -371,11 +382,12 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
     notifiable_type: 'App\\Models\\User';
     notifiable_id: User['id'];
     read_at: DateTimeString | null;
-} & (
+    created_at: DateTimeString;
+    updated_at: DateTimeString;
+} & { data: { url: string; triggered_by: User['id']; title: string } } & (
         | {
               type: 'App\\Notifications\\WorkLogNotification';
               data: {
-                  title: string;
                   work_log_id: WorkLog['id'];
                   status: Status;
               };
@@ -383,7 +395,6 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
         | {
               type: 'App\\Notifications\\WorkLogPatchNotification';
               data: {
-                  title: string;
                   work_log_patch_id: WorkLogPatch['id'];
                   status: Status;
               };
@@ -391,7 +402,6 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
         | {
               type: 'App\\Notifications\\AbsenceNotification';
               data: {
-                  title: string;
                   absence_id: Absence['id'];
                   status: Status;
               };
@@ -399,7 +409,6 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
         | {
               type: 'App\\Notifications\\AbsencePatchNotification';
               data: {
-                  title: string;
                   absence_patch_id: AbsencePatch['id'];
                   status: Status;
               };
@@ -407,7 +416,6 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
         | {
               type: 'App\\Notifications\\AbsenceDeleteNotification';
               data: {
-                  title: string;
                   absence_id: Absence['id'];
                   status: Status;
               };
@@ -450,7 +458,6 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
         | {
               type: 'App\\Notifications\\DisputeStatusNotification';
               data: {
-                  title: string;
                   type: 'delete' | 'create';
               } & (
                   | {
@@ -481,17 +488,26 @@ export type Ticket = DBObject<'ticket'> & {
     user_id: User['id'];
     accounted_at: DateTimeString | null;
     finished_at: DateTimeString | null;
+    appointment_at: DateTimeString | null;
     reference_prefix: string;
     readonly reference_number: string;
 };
 
 export type TicketRecord = DBObject<'record'> & {
     ticket_id: Ticket['id'];
+    user_id: User['id'];
+    address_id: Address['id'];
     start: DateTimeString;
     duration: number;
     description: string | null;
     resources: string | null;
     accounted_at: DateTimeString | null;
+};
+
+export type TicketRecordFile = DBObject<'ticketRecordFile'> & {
+    ticket_record_id: TicketRecord['id'];
+    path: string;
+    original_name: string;
 };
 
 export type PermissionValue = 'read' | 'write' | null;
@@ -506,6 +522,7 @@ export type Permission = {
         | 'timeAccountSetting_permission'
         | 'timeAccountTransaction_permission'
         | 'ticket_permission'
+        | 'ticket_accounting_permission'
         | 'absenceType_permission';
     organization: 'specialWorkingHoursFactor_permission' | 'organization_permission' | 'customer_permission';
     operatingSite: 'operatingSite_permission';
@@ -536,7 +553,7 @@ export type GroupUser = DBObject<'groupUser'> &
 
 export type AppModule = DBObject<'appModule'> & {
     organization_id: Organization['id'];
-    module: 'herta' | 'timesheets';
+    module: 'tide' | 'flow';
     activated_at: DateTimeString | null;
 };
 
@@ -547,18 +564,25 @@ export type CustomerOperatingSite = DBObject<'customerOperatingSite'> & {
 
 export type JSON = string | number | boolean | null | { [x: string]: JSON } | JSON[];
 
-export type CustomerNote = DBObject<'customerNote'> & {
+export type CustomerNoteFolder = DBObject<'customerNoteFolder'> & {
     customer_id: Customer['id'];
-    modified_by: User['id'];
-    parent_id: CustomerNote['id'] | null;
-    type: 'complex' | 'primitive' | 'file';
-    key: string | null;
-    value: string;
-    file: File | null;
+    customer_note_folder_id: CustomerNoteFolder['id'] | null;
+    name: string;
 };
+
+export type CustomerNoteEntry = DBObject<'customerNoteEntry'> & {
+    type: 'text' | 'file';
+    customer_note_folder_id: CustomerNoteFolder['id'];
+    title: string;
+    value: string;
+    modified_by: User['id'];
+    metadata: string[];
+};
+
 export type TicketUser = DBObject<'ticket_user'> & {
     ticket_id: Ticket['id'];
     user_id: User['id'];
+    status: Status;
 };
 
 export type RelationMap = {
@@ -581,6 +605,7 @@ export type RelationMap = {
     };
     address: {
         addressable: User | OperatingSite | CustomAddress;
+        ticket_records: TicketRecord[];
     };
     customAddress: {
         organization: Organization;
@@ -591,12 +616,21 @@ export type RelationMap = {
         organization: Organization;
         tickets: Ticket[];
         customer_operating_sites: CustomerOperatingSite[];
-        customer_notes: CustomerNote[];
+        customer_note_folders: CustomerNoteFolder[];
+        customer_note_entries: CustomerNoteEntry[];
+        contacts: CustomerContact[];
     };
-    customerNote: {
+    customerContact: {
         customer: Customer;
-        modified_by: User;
-        parent?: CustomerNote;
+    };
+    customerNoteFolder: {
+        customer: Customer;
+        entries: CustomerNoteEntry[];
+        subFolders: CustomerNoteFolder[];
+    };
+    customerNoteEntry: {
+        customer_note_folders: CustomerNoteFolder[];
+        user: User;
     };
     customerOperatingSite: {
         customer: Customer;
@@ -667,6 +701,11 @@ export type RelationMap = {
     ticketRecord: {
         ticket: Ticket;
         user: User;
+        files: TicketRecordFile[];
+        address: Address;
+    };
+    ticketRecordFile: {
+        ticketRecord: TicketRecord;
     };
     timeAccount: {
         user: User;

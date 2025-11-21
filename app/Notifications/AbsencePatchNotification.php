@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class AbsencePatchNotification extends Notification
 {
@@ -43,7 +44,7 @@ class AbsencePatchNotification extends Notification
         $buttonText = 'Antrag einsehen';
 
         return (new MailMessage)
-            ->subject('Herta Abwesenheitskorrekturantrag')
+            ->subject('Tide Abwesenheitskorrekturantrag')
             ->line('für den Nutzer "' . $this->user->name . '" liegt ein Antrag auf Korrektur einer Abwesenheit für den Zeitraum vom "' .
                 Carbon::parse($this->absencePatch->start)->format('d.m.Y') . '" bis zum "' .
                 Carbon::parse($this->absencePatch->end)->format('d.m.Y') . '" vor.')
@@ -62,6 +63,8 @@ class AbsencePatchNotification extends Notification
             'title' => $this->user->name . ' hat eine Abwesenheitskorrektur beantragt.',
             'absence_patch_id' => $this->absencePatch->id,
             'status' => Status::Created,
+            'url' =>  $this->getNotificationURL(),
+            'triggered_by' => Auth::id()
         ];
     }
 

@@ -72,6 +72,7 @@ const userForm = useForm<FormData>({
         workLogPatch_permission: null,
         workLog_permission: null,
         ticket_permission: null,
+        ticket_accounting_permission: null,
         customer_permission: null,
     },
     groupUser: {
@@ -85,6 +86,7 @@ const userForm = useForm<FormData>({
         workLogPatch_permission: null,
         workLog_permission: null,
         ticket_permission: null,
+        ticket_accounting_permission: null,
     },
     operatingSiteUser: {
         absenceType_permission: null,
@@ -97,6 +99,7 @@ const userForm = useForm<FormData>({
         workLog_permission: null,
         workLogPatch_permission: null,
         ticket_permission: null,
+        ticket_accounting_permission: null,
     },
 });
 
@@ -295,7 +298,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
             </template>
         </v-card>
 
-        <HertaUserFormSections v-if="can('app', 'herta')" :mode :user v-model:user-form="userForm"></HertaUserFormSections>
+        <HertaUserFormSections v-if="can('app', 'tide')" :mode :user v-model:user-form="userForm"></HertaUserFormSections>
 
         <v-card class="mb-4">
             <v-card-item>
@@ -626,7 +629,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             { label: 'Abwesenheiten', keys: ['absence_permission', 'absenceType_permission'] },
                             { label: 'Mitarbeiter', keys: ['user_permission'] },
                             { label: 'Organisation', keys: ['organization_permission'] },
-                            { label: 'Ticket', keys: ['ticket_permission'] },
+                            { label: 'Ticket', keys: ['ticket_permission', 'ticket_accounting_permission'] },
                             { label: 'Kunden', keys: ['customer_permission'] },
                         ]"
                     />
@@ -667,7 +670,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             { label: 'Abwesenheiten', keys: ['absence_permission', 'absenceType_permission'] },
                             { label: 'Mitarbeiter', keys: ['user_permission'] },
                             { label: 'Betriebsstätte', keys: ['operatingSite_permission'] },
-                            { label: 'Ticket', keys: ['ticket_permission'] },
+                            { label: 'Ticket', keys: ['ticket_permission', 'ticket_accounting_permission'] },
                         ]"
                     />
                 </v-row>
@@ -708,7 +711,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             { label: 'Abwesenheiten', keys: ['absence_permission', 'absenceType_permission'] },
                             { label: 'Mitarbeiter', keys: ['user_permission'] },
                             { label: 'Abteilung', keys: ['group_permission'] },
-                            { label: 'Ticket', keys: ['ticket_permission'] },
+                            { label: 'Ticket', keys: ['ticket_permission', 'ticket_accounting_permission'] },
                         ]"
                     />
                 </v-row>

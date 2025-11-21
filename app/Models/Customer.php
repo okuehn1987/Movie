@@ -29,13 +29,18 @@ class Customer extends Model
         return $this->hasMany(CustomerOperatingSite::class);
     }
 
-    public function customerNotes()
+    public function customerNoteFolders()
     {
-        return $this->hasMany(CustomerNote::class);
+        return $this->hasMany(CustomerNoteFolder::class);
     }
 
-    public function rootNotes()
+    public function customerNoteEntries()
     {
-        return $this->customerNotes()->whereNull('parent_id');
+        return $this->hasManyThrough(CustomerNoteEntry::class, CustomerNoteFolder::class);
+    }
+
+    public function contacts()
+    {
+        return $this->hasMany(CustomerContact::class);
     }
 }

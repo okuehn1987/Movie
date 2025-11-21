@@ -27,7 +27,7 @@ class DashboardController extends Controller
 
 
         $hertaProps = [];
-        if (AppModuleService::hasAppModule('herta')) {
+        if (AppModuleService::hasAppModule('tide')) {
             $lastWeekEntries =
                 $user->currentWeekShifts
                 ->flatMap

@@ -92,8 +92,13 @@ class WorkLogController extends Controller
         $supervisor = $workLog->user->supervisor;
         $requiresApproval = $supervisor && $supervisor->id != $authUser->id;
         if (!$requiresApproval) $workLog->accept();
-        else $supervisor->notify(new WorkLogNotification($workLog->user, $workLog));
-
+        else {
+            collect($supervisor->loadMissing('isSubstitutedBy')->isSubstitutedBy)
+                ->merge([$supervisor])
+                ->unique('id')
+                ->each
+                ->notify(new WorkLogNotification($workLog->user, $workLog));
+        }
         return back()->with('success', 'Buchung erfolgreich ' . ($requiresApproval ? 'beantragt.' : 'gespeichert.'));
     }
 
