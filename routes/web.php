@@ -92,8 +92,8 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
         Route::patch('ticket/{ticket}/accept', [TicketController::class, 'accept'])->name('ticket.accept');
         Route::patch('/ticket/{ticket}/finish', [TicketController::class, 'finish'])->name('ticket.finish');
         Route::patch('/ticket/{ticket}/unfinish', [TicketController::class, 'unfinish'])->name('ticket.unfinish');
-        Route::get('/ticket/{ticketRecordFile}/download', [TicketRecordController::class, 'download'])->name('ticketRecordFile.download');
-        Route::delete('/ticket/{ticketRecordFile}/deleteFile', [TicketRecordController::class, 'deleteFile'])->name('ticketRecordFile.deleteFile');
+        Route::get('/ticketRecordFile/{ticketRecordFile}/download', [TicketRecordController::class, 'download'])->name('ticketRecordFile.download');
+        Route::delete('/ticketRecordFile/{ticketRecordFile}/deleteFile', [TicketRecordController::class, 'deleteFile'])->name('ticketRecordFile.deleteFile');
         Route::resource('ticket.ticketRecord', TicketRecordController::class)->only(['store', 'update', 'destroy'])->shallow();
     });
 });

@@ -235,6 +235,7 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "notification.index": [],
     "notification.update": [
         {
             "name": "notification",
@@ -289,6 +290,7 @@ declare module 'ziggy-js' {
         }
     ],
     "user.profile": [],
+    "substitute.update": [],
     "user.timeAccounts": [
         {
             "name": "user",
