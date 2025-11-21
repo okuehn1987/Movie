@@ -13,7 +13,7 @@ defineProps<{
         </div>
     </AdminLayout>
 </template>
-<style lang="scss" scoped>
+<style scoped>
 .full-page-layout,
 .embed-wrapper {
     height: calc(100vh - 64px);
