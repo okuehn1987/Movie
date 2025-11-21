@@ -93,7 +93,7 @@ class WorkLogController extends Controller
         $requiresApproval = $supervisor && $supervisor->id != $authUser->id;
         if (!$requiresApproval) $workLog->accept();
         else {
-            collect($supervisor->isSubstitutedBy)
+            collect($supervisor->loadMissing('isSubstitutedBy')->isSubstitutedBy)
                 ->merge([$supervisor])
                 ->unique('id')
                 ->each

@@ -221,7 +221,7 @@ class AbsenceController extends Controller
             $absence->user->notify(new DisputeStatusNotification($absence, $requires_approval ? Status::Created : Status::Accepted));
         }
         if ($requires_approval) {
-            collect($authUser->supervisor->isSubstitutedBy)
+            collect($authUser->supervisor->loadMissing('isSubstitutedBy')->isSubstitutedBy)
                 ->merge([$authUser->supervisor])
                 ->unique('id')
                 ->each
@@ -299,7 +299,7 @@ class AbsenceController extends Controller
 
             return back()->with('success', 'Die Abwesenheit wurde erfolgreich gelöscht.');
         } else {
-            collect($authUser->supervisor->isSubstitutedBy)
+            collect($authUser->supervisor->loadMissing('isSubstitutedBy')->isSubstitutedBy)
                 ->merge([$authUser->supervisor])
                 ->unique('id')
                 ->each
