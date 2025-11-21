@@ -537,20 +537,6 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
-    "ticketRecordFile.download": [
-        {
-            "name": "ticketRecordFile",
-            "required": true,
-            "binding": "id"
-        }
-    ],
-    "ticketRecordFile.deleteFile": [
-        {
-            "name": "ticketRecordFile",
-            "required": true,
-            "binding": "id"
-        }
-    ],
     "ticket.ticketRecord.store": [
         {
             "name": "ticket",
@@ -569,6 +555,27 @@ declare module 'ziggy-js' {
         {
             "name": "ticketRecord",
             "required": true
+        }
+    ],
+    "ticketRecordFile.show": [
+        {
+            "name": "ticketRecordFile",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticketRecordFile.destroy": [
+        {
+            "name": "ticketRecordFile",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticketRecordFile.getContent": [
+        {
+            "name": "ticketRecordFile",
+            "required": true,
+            "binding": "id"
         }
     ],
     "login": [],

@@ -108,24 +108,4 @@ class TicketRecordController extends Controller
 
         return back()->with('success', 'Eintrag erfolgreich bearbeitet.');
     }
-
-    public function download(TicketRecordFile $ticketRecordFile)
-    {
-        Gate::authorize('publicAuth', User::class);
-
-        return response()->file(Storage::disk('ticket_record_files')->path($ticketRecordFile->path));
-    }
-
-    public function deleteFile(TicketRecordFile $ticketRecordFile)
-    {
-        Gate::authorize('publicAuth', User::class);
-
-        if (Storage::disk('ticket_record_files')->exists($ticketRecordFile->path)) {
-            Storage::disk('ticket_record_files')->delete($ticketRecordFile->path);
-        }
-
-        $ticketRecordFile->delete();
-
-        return back()->with('success', 'Datei erfolgreich gelöscht.');
-    }
 }
