@@ -82,7 +82,7 @@ const currentTab = ref<Tab>(props.tab);
                             { title: 'Name', key: 'name', sortable: false },
                             { title: 'Tätigkeit', key: 'occupation', sortable: false },
                             { title: 'Telefonnummer', key: 'phone_number', sortable: false },
-                            { title: 'Telefonnummer', key: 'mobile_number', sortable: false },
+                            { title: 'Mobiltelefonnummer', key: 'mobile_number', sortable: false },
                             { title: 'Email', key: 'email', sortable: false },
                             { title: '', key: 'actions', align: 'end' },
                         ]"

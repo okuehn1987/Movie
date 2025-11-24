@@ -36,7 +36,7 @@ class CustomerOperatingSiteController extends Controller
 
         $customerOperatingSite = CustomerOperatingSite::create([
             'customer_id' => $customer->id,
-            'name' => $validated['name'] ?? ($validated['street'] . ' ' . $validated['house_number'] . ', ' . $validated['zip'] . ' ' . $validated['city']),
+            'name' => $validated['name'] ?? '',
         ]);
 
         $customerOperatingSite->addresses()->create(collect($validated)->only(Address::$ADDRESS_KEYS)->toArray());
@@ -68,7 +68,7 @@ class CustomerOperatingSiteController extends Controller
         }
 
         $customerOperatingSite->update([
-            'name' => $validated['name'] ?? ($validated['street'] . ' ' . $validated['house_number'] . ', ' . $validated['zip'] . ' ' . $validated['city']),
+            'name' => $validated['name'] ?? '',
         ]);
 
         foreach (Address::$ADDRESS_KEYS as $key) {
