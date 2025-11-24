@@ -15,11 +15,15 @@ class CustomerContactController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string',
-            'occupation' => 'required|string',
+            'occupation' => 'nullable|string',
             'email' => 'nullable|email',
             'phone_number' => 'nullable|string',
             'mobile_number' => 'nullable|string',
         ]);
+
+        if (empty($validated['occupation'])) {
+            $validated['occupation'] = '';
+        }
 
         $customer->contacts()->create($validated);
 
@@ -32,11 +36,15 @@ class CustomerContactController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string',
-            'occupation' => 'required|string',
+            'occupation' => 'nullable|string',
             'email' => 'nullable|email',
             'phone_number' => 'nullable|string',
             'mobile_number' => 'nullable|string',
         ]);
+
+        if (empty($validated['occupation'])) {
+            $validated['occupation'] = '';
+        }
 
         $customerContact->update($validated);
 
