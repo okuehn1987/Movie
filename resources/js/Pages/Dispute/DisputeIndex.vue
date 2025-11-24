@@ -75,7 +75,6 @@ defineProps<{
                             <AbsenceDeleteRequests :requestedDeletes="absenceDeleteRequests" />
                         </v-card>
                     </v-col>
-                    {{ homeOfficeDayDeleteRequests }}
                     <v-col v-if="homeOfficeDayDeleteRequests.length > 0" cols="12">
                         <v-card title="Homeofficelöschungen">
                             <HomeOfficeDayDeleteRequests :requestedDeletes="homeOfficeDayDeleteRequests" />

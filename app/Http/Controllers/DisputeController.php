@@ -167,21 +167,23 @@ class DisputeController extends Controller
     public function getHomeOfficeDayDeleteRequests()
     {
         $authUser = request()->user();
-
         $openHomeOfficeDayDeleteNotifications = $authUser->notifications()
             ->where('type', HomeOfficeDeleteNotification::class)
             ->where('data->status', Status::Created)
             ->get();
 
         $requestedHomeOfficeDays = count($openHomeOfficeDayDeleteNotifications) > 0 ?
-            HomeOfficeDayGenerator::inOrganization()
+            HomeOfficeDay::inOrganization()
             ->whereIn('id', $openHomeOfficeDayDeleteNotifications->pluck('data.home_office_day_id'))
             ->with([
                 'user' => fn($q) => $q->select(['id', 'first_name', 'last_name', 'operating_site_id', 'supervisor_id'])->withTrashed(),
             ])
-            ->get(['id', 'start', 'end', 'user_id']) :
-            collect();
+            ->get(['id', 'date', 'user_id'])
+            : collect();
 
-        return $requestedHomeOfficeDays->filter(fn(HomeOfficeDayGenerator $a) => $authUser->can('delete', $a))->values();
+        //TODO: Warum haben wir eine HomeOfficeDayGeneratorPolicy erstellt?Wir wollen nur einzelne Tage löschen, keine Generators,oder?
+
+        // return $requestedHomeOfficeDays->filter(fn(HomeOfficeDay $a) => $authUser->can('delete', $a))->values();
+        return $requestedHomeOfficeDays;
     }
 }

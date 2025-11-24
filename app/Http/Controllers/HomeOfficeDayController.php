@@ -120,13 +120,14 @@ class HomeOfficeDayController extends Controller
     }
 
     public function destroy(HomeOfficeDay $homeOfficeDay, #[CurrentUser] User $authUser)
-    // WIP
+    // WIP TODO: Löschung beantragen Gate muss eingerichtete werden, sonst kann jeder User selber löschen
     {
         // Gate::authorize('deleteRequestable',  $homeOfficeDay);
 
         $homeOfficeDayGenerator = $homeOfficeDay->homeOfficeDayGenerator;
 
-        if (Gate::allows('delete', $homeOfficeDay)) {
+        // if (Gate::allows('delete', $homeOfficeDay)) {
+        if ($homeOfficeDay) {
             $homeOfficeDay->delete();
 
             DB::table('notifications')->where('type', HomeOfficeDeleteNotification::class)
@@ -138,7 +139,7 @@ class HomeOfficeDayController extends Controller
                 ]);
 
             if ($homeOfficeDay->user->id !== $authUser->id)
-                $homeOfficeDay->user->notify(new HomeOfficeDayDisputeStatusNotification($homeOfficeDayGenerator->id, $homeOfficeDayGenerator->start, $homeOfficeDayGenerator->end, Status::Accepted, 'delete'));
+                $homeOfficeDay->user->notify(new HomeOfficeDayDisputeStatusNotification($homeOfficeDayGenerator, $homeOfficeDayGenerator->start, $homeOfficeDayGenerator->end, Status::Accepted, 'delete'));
 
 
             return back()->with('success', 'Die Abwesenheit wurde erfolgreich gelöscht.');
@@ -170,9 +171,9 @@ class HomeOfficeDayController extends Controller
     }
 
     public function denyDestroy(HomeOfficeDay $homeOfficeDay, #[CurrentUser] User $authUser)
-    // WIP not tested/started
+    // WIP not tested/started TODO:Gate
     {
-        Gate::allows('delete', $homeOfficeDay);
+        // Gate::allows('delete', $homeOfficeDay);
 
         $homeOfficeDayGenerator = $homeOfficeDay->homeOfficeDayGenerator;
 
@@ -185,7 +186,7 @@ class HomeOfficeDayController extends Controller
             ]);
 
         if ($homeOfficeDay->user->id !== $authUser->id)
-            $homeOfficeDay->user->notify(new HomeOfficeDayDisputeStatusNotification($homeOfficeDayGenerator->id, $homeOfficeDayGenerator->start, $homeOfficeDayGenerator->end, Status::Declined, 'delete'));
+            $homeOfficeDay->user->notify(new HomeOfficeDayDisputeStatusNotification($homeOfficeDayGenerator, $homeOfficeDayGenerator->start, $homeOfficeDayGenerator->end, Status::Declined, 'delete'));
 
 
         return back()->with('success', 'Der Antrag auf Löschung wurde abgelehnt.');

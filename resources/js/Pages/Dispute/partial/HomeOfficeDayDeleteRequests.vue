@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { HomeOfficeDayGenerator, User } from '@/types/types';
+import { User } from '@/types/types';
 import { DateTime } from 'luxon';
 import { ref } from 'vue';
 import { HomeOfficeDayProp } from './disputeTypes';
 
 type HomeOfficeDayDeleteProp = HomeOfficeDayProp & {
     user: Pick<User, 'id' | 'first_name' | 'last_name'>;
-    homeOfficeDayGenerator: Pick<HomeOfficeDayGenerator, 'id' | 'start' | 'end' | 'created_as_request'>;
 };
 
 const props = defineProps<{
@@ -14,7 +13,7 @@ const props = defineProps<{
 }>();
 
 const homeOfficeToDelete = ref<HomeOfficeDayDeleteProp | null>(
-    props.requestedDeletes?.find(h => h.home_office_day_generator_id == Number(route().params['openHomeOfficeDayDelete'])) ?? null,
+    props.requestedDeletes?.find(h => h.id == Number(route().params['openHomeOfficeDayDelete'])) ?? null,
 );
 const showHomeOfficeDialog = ref(!!homeOfficeToDelete.value);
 
@@ -40,7 +39,7 @@ function deleteHomeOffice() {
 const denyDeleteHomeOfficeForm = useForm({});
 function denyHomeOfficeDelete() {
     if (!homeOfficeToDelete.value) return;
-    denyDeleteHomeOfficeForm.delete(route('homeOffice.denyDestroy', { homeOfficeDay: homeOfficeToDelete.value.id }), {
+    denyDeleteHomeOfficeForm.delete(route('homeOfficeDay.denyDestroy', { homeOfficeDay: homeOfficeToDelete.value.id }), {
         onSuccess: () => {
             showHomeOfficeDialog.value = false;
         },
@@ -48,7 +47,6 @@ function denyHomeOfficeDelete() {
 }
 </script>
 <template>
-    <!-- laut Dev Tools geht nix weil start nicht bekannt ist -->
     <v-data-table
         hover
         items-per-page="5"
@@ -57,10 +55,10 @@ function denyHomeOfficeDelete() {
         @click:row="(_:unknown,row:Record<'item',HomeOfficeDayDeleteProp>) => openHomeOfficePatch(row.item)"
         :items="
             requestedDeletes.map(h => ({
-                id: h.home_office_day_generator_id,
+                id: h.id,
                 user: h.user.first_name + ' ' + h.user.last_name,
-                start: DateTime.fromSQL(h.homeOfficeDayGenerator.start).toFormat('dd.MM.yyyy'),
-                end: DateTime.fromSQL(h.homeOfficeDayGenerator.end).toFormat('dd.MM.yyyy'),
+                start: DateTime.fromSQL(h.date).toFormat('dd.MM.yyyy'),
+                end: DateTime.fromSQL(h.date).toFormat('dd.MM.yyyy'),
             }))
         "
         :headers="[
@@ -85,19 +83,19 @@ function denyHomeOfficeDelete() {
             <v-card-text>
                 <v-row>
                     <v-col cols="12">
-                        <v-text-field label="Abwesenheitsgrund" readonly>Homeoffice</v-text-field>
+                        <v-text-field readonly>Homeoffice</v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-text-field
                             label="Von:"
-                            :model-value="DateTime.fromSQL(homeOfficeToDelete.homeOfficeDayGenerator.start).toFormat('dd.MM.yyyy')"
+                            :model-value="DateTime.fromSQL(homeOfficeToDelete.date).toFormat('dd.MM.yyyy')"
                             readonly
                         ></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-text-field
                             label="Bis:"
-                            :model-value="DateTime.fromSQL(homeOfficeToDelete.homeOfficeDayGenerator.end).toFormat('dd.MM.yyyy')"
+                            :model-value="DateTime.fromSQL(homeOfficeToDelete.date).toFormat('dd.MM.yyyy')"
                             readonly
                         ></v-text-field>
                     </v-col>
