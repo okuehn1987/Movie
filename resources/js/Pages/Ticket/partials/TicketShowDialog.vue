@@ -263,9 +263,16 @@ function copyRecordToClipBoard(record: TicketRecord & { userName: string }) {
                                                             <td class="py-2">{{ file.original_name }}</td>
                                                             <td style="width: 1px; padding: 0">
                                                                 <v-btn
+                                                                    v-if="file.original_name.endsWith('.pdf')"
                                                                     variant="text"
-                                                                    :href="route('ticketRecordFile.download', { ticketRecordFile: file.id })"
-                                                                    target="_blank"
+                                                                    :href="route('ticketRecordFile.show', { ticketRecordFile: file.id })"
+                                                                    color="primary"
+                                                                    icon="mdi-eye"
+                                                                ></v-btn>
+                                                                <v-btn
+                                                                    v-else
+                                                                    variant="text"
+                                                                    :href="route('ticketRecordFile.getContent', { ticketRecordFile: file.id })"
                                                                     color="primary"
                                                                     icon="mdi-download"
                                                                     :download="file.original_name"
@@ -275,7 +282,7 @@ function copyRecordToClipBoard(record: TicketRecord & { userName: string }) {
                                                                 <ConfirmDelete
                                                                     title="Datei löschen"
                                                                     content="Bist du dir sicher, dass du diese Datei löschen möchtest?"
-                                                                    :route="route('ticketRecordFile.deleteFile', { ticketRecordFile: file.id })"
+                                                                    :route="route('ticketRecordFile.destroy', { ticketRecordFile: file.id })"
                                                                 ></ConfirmDelete>
                                                             </td>
                                                         </tr>
