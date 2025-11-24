@@ -92,19 +92,19 @@ const currentTab = ref<Tab>(props.tab);
                             <CustomerContactDialog v-if="can('customerContact', 'create')" :customer="customer"></CustomerContactDialog>
                         </template>
                         <template #item.phone_number="{ item }">
-                            <a class="text-decoration-none text-black py-1" :href="`tel:${item.phone_number}`">
+                            <a v-if="item.phone_number" class="text-decoration-none text-black py-1" :href="`tel:${item.phone_number}`">
                                 <v-icon variant="text">mdi-phone</v-icon>
                                 {{ item.phone_number }}
                             </a>
                         </template>
                         <template #item.mobile_number="{ item }">
-                            <a class="text-decoration-none text-black py-1" :href="`tel:${item.mobile_number}`">
+                            <a v-if="item.mobile_number" class="text-decoration-none text-black py-1" :href="`tel:${item.mobile_number}`">
                                 <v-icon variant="text">mdi-phone</v-icon>
                                 {{ item.mobile_number }}
                             </a>
                         </template>
                         <template #item.email="{ item }">
-                            <a class="text-decoration-none text-black py-1" :href="`mailto:${item.email}`">
+                            <a v-if="item.email" class="text-decoration-none text-black py-1" :href="`mailto:${item.email}`">
                                 <v-icon variant="text">mdi-email</v-icon>
                                 {{ item.email }}
                             </a>
