@@ -21,6 +21,7 @@ use App\Models\TravelLog;
 use App\Models\TravelLogPatch;
 use App\Models\User;
 use App\Models\UserLeaveDay;
+use App\Models\UserTrustWorkingHour;
 use App\Models\UserWorkingHour;
 use App\Models\UserWorkingWeek;
 use App\Services\AppModuleService;
@@ -59,6 +60,7 @@ class UserController extends Controller
                 "nullable",
                 Rule::exists('groups', 'id')->where('organization_id', Organization::getCurrent()->id)
             ],
+            //TODO: mopsen für active in trust working hours
             'operating_site_id' => [
                 "required",
                 Rule::exists('operating_sites', 'id')->where('organization_id', Organization::getCurrent()->id)
@@ -112,17 +114,33 @@ class UserController extends Controller
 
             'user_trust_working_hours' => 'present|array',
             'user_trust_working_hours.*.id' => 'nullable|exists:user_trust_working_hours,id',
-            'user_trust_working_hours.*.has_trust_working_hours' => 'required|boolean',
-            'user_trust_working_hours.*.active_since' => ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
+            'user_trust_working_hours.*.active_since' => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) use ($request, $mode) {
+                    $index = explode('.', $attribute)[1];
+                    $currentTrustWorkingHour = $request['user_trust_working_hours'][$index];
+                    if ($mode == 'update' && !isset($currentTrustWorkingHour['id']) && Carbon::parse($currentTrustWorkingHour['active_since'])->lt(Carbon::now()->endOfDay())) {
+                        $fail('validation.after')->translate([
+                            'attribute' => __('validation.attributes.active_since'),
+                            'date' => Carbon::now()->format('d.M.Y')
+                        ]);
+                    }
+                }
+            ],
+            'user_trust_working_hours.*.active_until' => ['nullable', 'date', function ($attribute, $value, $fail) use ($request) {
+                if ($value == null) return;
+
                 $index = explode('.', $attribute)[1];
                 $currentTrustWorkingHour = $request['user_trust_working_hours'][$index];
-                if ($mode == 'update' && !isset($currentTrustWorkingHour['id']) && Carbon::parse($currentTrustWorkingHour['active_since'])->lt(Carbon::now()->endOfDay())) {
-                    $fail('validation.after')->translate([
-                        'attribute' => __('validation.attributes.active_since'),
-                        'date' => Carbon::now()->format('d.M.Y')
-                    ]);
+                if (isset($currentTrustWorkingHour['active_since']) && Carbon::parse($value)->lt(Carbon::parse($currentTrustWorkingHour['active_since']))) {
+                    $fail(__('validation.after_or_equal', [
+                        'attribute' => __('validation.attributes.active_until'),
+                        'date' => $currentTrustWorkingHour['active_since'],
+                    ]));
                 }
             }],
+
 
             'user_working_weeks' => 'present|array',
             'user_working_weeks.*.id' => 'nullable|exists:user_working_weeks,id',
@@ -226,7 +244,6 @@ class UserController extends Controller
     public function generalInformation(User $user)
     {
         Gate::authorize('viewShow', $user);
-
         $user->load([
             'groupUser',
             'operatingSiteUser',
@@ -243,6 +260,9 @@ class UserController extends Controller
                 [
                     'userWorkingHours' => function ($q) {
                         $q->orderBy('active_since', 'desc');
+                    },
+                    'userTrustWorkingHours' => function ($q) {
+                        $q->orderBy('active_since', 'desc');
                     }
                 ] :
                 []
@@ -251,7 +271,6 @@ class UserController extends Controller
 
         return Inertia::render('User/UserShow/GeneralInformation', [
             'user' => $user,
-
             'operating_sites' => OperatingSite::inOrganization()->get(),
             'groups' => Group::inOrganization()->get(),
 
@@ -418,6 +437,13 @@ class UserController extends Controller
                 'active_since' => Carbon::parse($workingHour['active_since'])
             ]);
         }
+        foreach ($validated['user_trust_working_hours'] as $trustWorkingHour) {
+            UserTrustWorkingHour::create([
+                'user_id' => $user->id,
+                'active_since' => Carbon::parse($trustWorkingHour['active_since']),
+                'active_until' => Carbon::parse($trustWorkingHour['active_until']),
+            ]);
+        }
         foreach ($validated['user_working_weeks'] as $workingWeek) {
             UserWorkingWeek::create([
                 'user_id' => $user->id,
@@ -573,6 +599,24 @@ class UserController extends Controller
                 'active_since' => Carbon::parse($workingHour['active_since']),
                 'user_id' => $user->id,
                 'weekly_working_hours' => $workingHour['weekly_working_hours'],
+            ]);
+        }
+
+        $user->userTrustWorkingHours()
+            ->whereDate('active_since', '>', Carbon::now())
+            ->whereNotIn('id', collect($validated['user_trust_working_hours'])->map(fn($e) => $e['id'])->toArray())
+            ->delete();
+
+        foreach ($validated['user_trust_working_hours'] as $trustWorkingHour) {
+            if (Carbon::now()->startOfDay()->gt(Carbon::parse($trustWorkingHour['active_since'])))
+                continue;
+
+            UserTrustWorkingHour::updateOrCreate([
+                'id' => $trustWorkingHour['id'],
+            ], [
+                'active_since' => Carbon::parse($trustWorkingHour['active_since']),
+                'user_id' => $user->id,
+                'active_until' => Carbon::parse($trustWorkingHour['active_until']),
             ]);
         }
 

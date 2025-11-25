@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('user_trust_working_hours', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->onDelete('cascade');
-            $table->boolean('has_trust_working_hours');
             $table->date('active_since');
+            $table->date('active_until');
             $table->timestamps();
         });
     }

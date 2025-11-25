@@ -11,7 +11,7 @@ import {
     Relations,
     User,
     UserLeaveDays,
-    UserTrustWorkingHours,
+    UserTrustWorkingHour,
     UserWorkingHours,
     UserWorkingWeek,
     Weekday,
@@ -21,7 +21,13 @@ export type UserProp = User &
     RelationPick<'user', 'supervisor', 'id'> &
     Pick<
         Relations<'user'>,
-        'organization_user' | 'operating_site_user' | 'group_user' | 'user_working_hours' | 'user_working_weeks' | 'current_address'
+        | 'organization_user'
+        | 'operating_site_user'
+        | 'group_user'
+        | 'user_working_hours'
+        | 'user_working_weeks'
+        | 'current_address'
+        | 'user_trust_working_hours'
     > & {
         user_leave_days: (UserLeaveDays | null)[];
     };
@@ -51,10 +57,7 @@ export type FormData = {
 
     user_working_hours: (Pick<UserWorkingHours, 'weekly_working_hours'> & { active_since: string; id: UserWorkingHours['id'] | null })[];
 
-    user_trust_working_hours: (Pick<UserTrustWorkingHours, 'has_trust_working_hours'> & {
-        active_since: string;
-        id: UserTrustWorkingHours['id'] | null;
-    })[];
+    user_trust_working_hours: { id: UserTrustWorkingHour['id'] | null; active_since: string; active_until: string | null }[];
 
     user_leave_days: (Pick<UserLeaveDays, 'leave_days'> & { active_since: string; id: UserLeaveDays['id'] | null })[];
 

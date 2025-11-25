@@ -148,11 +148,11 @@ export type UserWorkingHours = DBObject<'userWorkingHours'> &
         active_since: DateString;
     };
 
-export type UserTrustWorkingHours = DBObject<'userTrustWorkingHours'> &
+export type UserTrustWorkingHour = DBObject<'userTrustWorkingHour'> &
     SoftDelete & {
         user_id: User['id'];
-        has_trust_working_hours: boolean;
         active_since: DateString;
+        active_until: DateString | null;
     };
 
 export type UserLeaveDays = DBObject<'userLeaveDays'> &
@@ -761,6 +761,7 @@ export type RelationMap = {
         organization_user: OrganizationUser;
         owns: Organization | null;
         user_working_hours: UserWorkingHours[];
+        user_trust_working_hours: UserTrustWorkingHour[];
         current_working_hours: UserWorkingHours | null;
         user_leave_days: UserLeaveDays[];
         current_leave_days: UserLeaveDays | null;
