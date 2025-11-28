@@ -36,7 +36,7 @@ class TicketRecordController extends Controller
             }],
             'duration' => 'required|date_format:H:i',
             'description' => 'required|string|max:1000',
-            'resources' => 'nullable|string|max:1000',
+            'resources' => 'nullable|string|max:5000',
             'files' => 'present|array',
             'files.*' => 'required|file|mimes:jpg,png,jpeg,avif,tiff,svg+xml,pdf|max:5120',
         ], [
