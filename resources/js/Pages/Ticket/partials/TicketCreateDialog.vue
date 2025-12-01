@@ -136,6 +136,8 @@ watch(
                                             reqiuired
                                             :error-messages="ticketForm.errors.description"
                                             v-model="ticketForm.description"
+                                            max-rows="13"
+                                            auto-grow
                                         ></v-textarea>
                                     </v-col>
                                 </v-row>
@@ -196,20 +198,23 @@ watch(
 
                                     <v-col cols="12">
                                         <v-textarea
-                                            auto-grow
                                             label="Beschreibung"
                                             required
+                                            max-rows="10"
+                                            rows="2"
+                                            auto-grow
                                             :error-messages="ticketForm.errors.description"
                                             v-model="ticketForm.description"
                                         ></v-textarea>
                                     </v-col>
                                     <v-col cols="12">
                                         <v-textarea
-                                            rows="1"
+                                            max-rows="5"
+                                            auto-grow
+                                            rows="2"
                                             label="Ressourcen"
                                             :error-messages="ticketForm.errors.resources"
                                             v-model="ticketForm.resources"
-                                            auto-grow
                                         ></v-textarea>
                                     </v-col>
                                     <v-col cols="12">
