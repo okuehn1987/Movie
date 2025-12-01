@@ -8,6 +8,7 @@ use App\Models\Ticket;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class TicketDeletionNotification extends Notification
 {
@@ -55,6 +56,8 @@ class TicketDeletionNotification extends Notification
             'title' => $this->user->name . ' hat das Ticket (' . $this->ticket->referenceNumber . ') gelöscht.',
             'ticket_id' => $this->ticket->id,
             'status' => 'created',
+            'url' =>  $this->getNotificationURL(),
+            'triggered_by' => Auth::id()
         ];
     }
 

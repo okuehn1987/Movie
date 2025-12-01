@@ -13,22 +13,30 @@ class CustomerOperatingSiteController extends Controller
 
     public function store(Request $request, Customer $customer)
     {
-        Gate::authorize('create', Customer::class);
+        Gate::authorize('create', CustomerOperatingSite::class);
 
         $validated = $request->validate([
-            'name' => 'required|string',
+            'name' => 'nullable|string',
             'street' => 'required|string',
             'house_number' => 'required|string',
             'address_suffix' => 'nullable|string',
-            'country' => 'required|string',
+            'country' => 'nullable|string',
             'city' => 'required|string',
             'zip' => 'required|string',
-            'federal_state' => 'required|string',
+            'federal_state' => 'nullable|string',
         ]);
+
+        if (empty($validated['country'])) {
+            $validated['country'] = 'DE';
+        }
+
+        if (empty($validated['federal_state'])) {
+            $validated['federal_state'] = '';
+        }
 
         $customerOperatingSite = CustomerOperatingSite::create([
             'customer_id' => $customer->id,
-            'name' => $validated['name'],
+            'name' => $validated['name'] ?? '',
         ]);
 
         $customerOperatingSite->addresses()->create(collect($validated)->only(Address::$ADDRESS_KEYS)->toArray());
@@ -38,21 +46,29 @@ class CustomerOperatingSiteController extends Controller
 
     public function update(Request $request, CustomerOperatingSite $customerOperatingSite)
     {
-        Gate::authorize('update', Customer::class);
+        Gate::authorize('update', CustomerOperatingSite::class);
 
         $validated = $request->validate([
-            'name' => 'required|string',
+            'name' => 'nullable|string',
             'street' => 'required|string',
             'house_number' => 'required|string',
             'address_suffix' => 'nullable|string',
-            'country' => 'required|string',
+            'country' => 'nullable|string',
             'city' => 'required|string',
             'zip' => 'required|string',
-            'federal_state' => 'required|string',
+            'federal_state' => 'nullable|string',
         ]);
 
+        if (empty($validated['country'])) {
+            $validated['country'] = 'DE';
+        }
+
+        if (empty($validated['federal_state'])) {
+            $validated['federal_state'] = '';
+        }
+
         $customerOperatingSite->update([
-            'name' => $validated['name'],
+            'name' => $validated['name'] ?? '',
         ]);
 
         foreach (Address::$ADDRESS_KEYS as $key) {
@@ -68,7 +84,7 @@ class CustomerOperatingSiteController extends Controller
 
     public function destroy(CustomerOperatingSite $customerOperatingSite)
     {
-        Gate::authorize('delete', Customer::class);
+        Gate::authorize('delete', CustomerOperatingSite::class);
 
         $customerOperatingSite->delete();
 

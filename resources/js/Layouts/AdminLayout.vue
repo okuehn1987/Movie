@@ -48,12 +48,12 @@ const currentApp = computed(() => page.props.appModules.find(m => m.value === pa
 
         <v-navigation-drawer color="background" style="border: none" v-model="showDrawer" image="/img/loggedin-background.png">
             <v-list v-if="currentApp">
-                <v-list-item @click.stop="setCurrentApp($page.props.currentAppModule == 'herta' ? 'timesheets' : 'herta')" class="pe-2">
+                <v-list-item @click.stop="setCurrentApp($page.props.currentAppModule == 'tide' ? 'flow' : 'tide')" class="pe-2">
                     <template v-slot:prepend>
                         <div class="posiion-relative" v-if="page.props.appModules.length == 2" style="width: 56px">
-                            <img src="/img/logo-symbol.png" id="herta-logo" :class="{ ActiveLogo: currentApp.value == 'herta' }" />
+                            <img src="/img/Tide-Logo.webp" id="tide-logo" :class="{ ActiveLogo: currentApp.value == 'tide' }" />
                             <v-icon icon="mdi-undo" style="top: 0; position: absolute; rotate: -20deg; scale: 0.8"></v-icon>
-                            <img src="/img/TS_Logo.png" id="timesheets-logo" :class="{ ActiveLogo: currentApp.value == 'timesheets' }" />
+                            <img src="/img/Flow-Logo.webp" id="flow-logo" :class="{ ActiveLogo: currentApp.value == 'flow' }" />
                             <v-icon icon="mdi-undo" style="top: 25px; left: 40px; position: absolute; rotate: 140deg; scale: 0.8"></v-icon>
                         </div>
                         <template v-else>
@@ -122,7 +122,7 @@ const currentApp = computed(() => page.props.appModules.find(m => m.value === pa
 </template>
 
 <style scoped>
-#herta-logo {
+#tide-logo {
     position: absolute;
     z-index: 1;
     width: 16px;
@@ -131,7 +131,7 @@ const currentApp = computed(() => page.props.appModules.find(m => m.value === pa
     transition: all 0.3s ease;
 }
 
-#timesheets-logo {
+#flow-logo {
     position: absolute;
     z-index: 1;
     width: 16px;
@@ -140,8 +140,8 @@ const currentApp = computed(() => page.props.appModules.find(m => m.value === pa
     transition: all 0.3s ease;
 }
 
-#herta-logo.ActiveLogo,
-#timesheets-logo.ActiveLogo {
+#tide-logo.ActiveLogo,
+#flow-logo.ActiveLogo {
     width: 24px;
     left: 16px;
     top: 50%;

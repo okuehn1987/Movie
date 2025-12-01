@@ -31,7 +31,10 @@ class User extends Authenticatable
      */
     public function sendPasswordResetNotification($token): void
     {
-        $url = route('password.reset', ['token' => $token]);
+        $url = url(route('password.reset', [
+            'token' => $token,
+            'email' => $this->email,
+        ], false));
         $this->notify(new PasswordResetNotification($url, $this));
     }
 
@@ -60,6 +63,7 @@ class User extends Authenticatable
             ['name' => 'timeAccountSetting_permission', 'label' => 'Zeitkontovarianten verwalten'],
             ['name' => 'timeAccountTransaction_permission', 'label' => 'Zeitkontotransaktionen verwalten'],
             ['name' => 'ticket_permission', 'label' => 'Tickets verwalten'],
+            ['name' => 'ticket_accounting_permission', 'label' => 'Tickets abrechnen'],
         ],
         'organization' => [
             ['name' => 'absenceType_permission', 'label' => 'Abwesenheitsgründe verwalten'],
@@ -213,7 +217,7 @@ class User extends Authenticatable
 
     public function tickets()
     {
-        return $this->belongsToMany(Ticket::class)->withTimestamps();
+        return $this->belongsToMany(Ticket::class)->withTimestamps()->withPivot('status');
     }
 
     public function group()

@@ -1,36 +1,42 @@
 <script setup lang="ts">
-import { PRIORITIES, User } from '@/types/types';
+import ConfirmDelete from '@/Components/ConfirmDelete.vue';
+import { Canable, PRIORITIES, TicketRecord } from '@/types/types';
+import { router } from '@inertiajs/vue3';
 import { formatDuration } from '@/utils';
 import { DateTime } from 'luxon';
-import { computed, ref, watchEffect } from 'vue';
-import { CustomerProp, TicketProp, UserProp } from './ticketTypes';
+import { computed, ref, watch } from 'vue';
 import RecordCreateDialog from './RecordCreateDialog.vue';
+import { CustomerProp, OperatingSiteProp, Tab, TicketProp, UserProp } from './ticketTypes';
 
 const props = defineProps<{
-    ticket: TicketProp;
+    ticket: TicketProp & Canable;
     customers: CustomerProp[];
     users: UserProp[];
-    tab: 'archive' | 'finishedTickets' | 'newTickets';
+    tab: Tab;
+    operatingSites: OperatingSiteProp[];
 }>();
 
 const form = useForm({
     priority: props.ticket.priority,
-    assignees: [] as User['id'][],
+    assignees: props.ticket.assignees.map(a => a.id),
     title: props.ticket.title,
     description: props.ticket.description,
     selected: props.ticket.records.filter(tr => tr.accounted_at).map(r => r.id),
 });
 
-watchEffect(() => {
-    form.defaults({
-        priority: props.ticket.priority,
-        assignees: props.ticket.assignees.map(a => a.id) ?? [],
-        title: props.ticket.title,
-        description: props.ticket.description,
-        selected: props.ticket.records.filter(tr => tr.accounted_at).map(r => r.id),
-    });
-    form.reset();
-});
+watch(
+    props.ticket,
+    () => {
+        form.defaults({
+            priority: props.ticket.priority,
+            assignees: props.ticket.assignees.map(a => a.id) ?? [],
+            title: props.ticket.title,
+            description: props.ticket.description,
+            selected: props.ticket.records.filter(tr => tr.accounted_at).map(r => r.id),
+        }).reset();
+    },
+    { deep: true },
+);
 
 const showDialog = ref(Number(route().params['openTicket']) == props.ticket.id);
 
@@ -41,6 +47,34 @@ const durationSum = computed(() => props.ticket.records.reduce((a, c) => a + c.d
 const selectedDurationSum = computed(() =>
     props.ticket.records.filter(tr => form.selected.find(s => s === tr.id)).reduce((a, c) => a + c.duration, 0),
 );
+
+const statusIcon = {
+    accepted: 'mdi-check',
+    created: 'mdi-timer-sand',
+    declined: 'mdi-close',
+} as const;
+
+function closeTicket() {
+    if (route().current() === 'ticket.show') {
+        router.get(route('ticket.index', { tab: props.tab }));
+    } else {
+        const currentCustomer = route().routeParams['customer'];
+        if (currentCustomer) router.get(route('customer.show', { customer: currentCustomer, tab: props.tab }));
+        else showDialog.value = false;
+    }
+}
+
+function copyRecordToClipBoard(record: TicketRecord & { userName: string }) {
+    navigator.clipboard.writeText(
+        DateTime.fromSQL(record.start).toFormat('dd.MM.yyyy HH:mm') +
+            ' - ' +
+            DateTime.fromSQL(record.start).plus({ seconds: record.duration }).toFormat('HH:mm') +
+            ' Uhr, ' +
+            record.userName +
+            '\n\n' +
+            (record.description ?? ''),
+    );
+}
 </script>
 <template>
     <v-dialog max-width="1000px" height="800px" v-model="showDialog">
@@ -56,13 +90,21 @@ const selectedDurationSum = computed(() =>
                         onSuccess: () => {
                             form.reset();
                             isActive.value = false;
+                            closeTicket();
                         },
                     })
                 "
             >
                 <v-card title="Auftrag anzeigen">
                     <template #append>
-                        <v-btn icon variant="text" @click="isActive.value = false">
+                        <v-btn
+                            icon
+                            variant="text"
+                            @click.stop="
+                                isActive.value = false;
+                                closeTicket();
+                            "
+                        >
                             <v-icon>mdi-close</v-icon>
                         </v-btn>
                     </template>
@@ -94,13 +136,15 @@ const selectedDurationSum = computed(() =>
                                     </template>
                                 </v-select>
                             </v-col>
-                            <v-col cols="12">
+                            <v-col cols="12" md="12">
                                 <v-autocomplete
                                     label="Zuweisung"
-                                    :disabled="tab !== 'newTickets'"
+                                    :disabled="tab !== 'newTickets' && tab !== 'workingTickets'"
                                     required
                                     multiple
                                     chips
+                                    v-model="form.assignees"
+                                    :error-messages="form.errors.assignees"
                                     :items="
                                         users.map(u => ({
                                             value: u.id,
@@ -108,9 +152,28 @@ const selectedDurationSum = computed(() =>
                                             props: { subtitle: u.job_role ?? '' },
                                         }))
                                     "
-                                    :error-messages="form.errors.assignees"
-                                    v-model="form.assignees"
-                                ></v-autocomplete>
+                                >
+                                    <template v-slot:chip="{ item }">
+                                        <v-chip
+                                            :prepend-icon="statusIcon[ticket.assignees.find(u => u.id === item.value)?.pivot.status ?? 'created']"
+                                        ></v-chip>
+                                    </template>
+                                    <template #append>
+                                        <v-tooltip>
+                                            <template v-slot:activator="{ props }">
+                                                <v-icon v-bind="props" icon="mdi-information-outline" variant="text" color="primary"></v-icon>
+                                            </template>
+                                            <v-icon>mdi-check</v-icon>
+                                            : angenommen
+                                            <br />
+                                            <v-icon>mdi-timer-sand</v-icon>
+                                            : zugewiesen
+                                            <br />
+                                            <v-icon>mdi-close</v-icon>
+                                            : abgelehnt
+                                        </v-tooltip>
+                                    </template>
+                                </v-autocomplete>
                             </v-col>
                             <v-col cols="12">
                                 <v-text-field
@@ -144,7 +207,7 @@ const selectedDurationSum = computed(() =>
                                         }))
                                     "
                                     show-expand
-                                    :show-select="tab !== 'archive'"
+                                    :show-select="tab !== 'archive' && can('ticket', 'account', ticket)"
                                 >
                                     <template v-slot:item.start="{ item }">
                                         {{ DateTime.fromSQL(item.start).toFormat('dd.MM.yyyy HH:mm') }}
@@ -155,7 +218,18 @@ const selectedDurationSum = computed(() =>
                                     </template>
 
                                     <template v-slot:item.actions="{ item }">
-                                        <RecordCreateDialog :ticket="ticket" :users="users" :record="item" mode="update"></RecordCreateDialog>
+                                        <div class="d-flex ga-2">
+                                            <v-btn variant="text" color="primary" title="Eintrag kopieren" @click.stop="copyRecordToClipBoard(item)">
+                                                <v-icon icon="mdi-content-copy"></v-icon>
+                                            </v-btn>
+                                            <RecordCreateDialog
+                                                v-if="tab != 'finishedTickets' && tab !== 'archive'"
+                                                :ticket="ticket"
+                                                :users="users"
+                                                :record="item"
+                                                :operatingSites
+                                            ></RecordCreateDialog>
+                                        </div>
                                     </template>
                                     <template v-slot:item.data-table-expand="{ internalItem, isExpanded, toggleExpand }">
                                         <v-btn size="small" variant="text" border @click="toggleExpand(internalItem)">
@@ -166,23 +240,58 @@ const selectedDurationSum = computed(() =>
                                         <tr>
                                             <td :colspan="columns.length" class="py-2">
                                                 <v-table density="compact">
-                                                    <thead class="bg-surface-light">
-                                                        <tr>
+                                                    <tbody class="bg-surface-medium">
+                                                        <tr class="bg-surface-light">
                                                             <th>Ressourcen</th>
                                                             <td class="py-2">{{ item.resources }}</td>
+                                                            <td></td>
+                                                            <td></td>
                                                         </tr>
-                                                    </thead>
-                                                    <tbody class="bg-surface-medium">
                                                         <tr>
                                                             <th>Beschreibung</th>
                                                             <td class="py-2">{{ item.description }}</td>
+                                                            <td></td>
+                                                            <td></td>
+                                                        </tr>
+                                                        <tr
+                                                            v-for="(file, index) in item.files"
+                                                            :class="{ 'bg-surface-light': index % 2 == 0 }"
+                                                            :key="index"
+                                                        >
+                                                            <th v-if="index == 0">Anhang</th>
+                                                            <th v-else></th>
+                                                            <td class="py-2">{{ file.original_name }}</td>
+                                                            <td style="width: 1px; padding: 0">
+                                                                <v-btn
+                                                                    v-if="file.original_name.endsWith('.pdf')"
+                                                                    variant="text"
+                                                                    :href="route('ticketRecordFile.show', { ticketRecordFile: file.id })"
+                                                                    color="primary"
+                                                                    icon="mdi-eye"
+                                                                ></v-btn>
+                                                                <v-btn
+                                                                    v-else
+                                                                    variant="text"
+                                                                    :href="route('ticketRecordFile.getContent', { ticketRecordFile: file.id })"
+                                                                    color="primary"
+                                                                    icon="mdi-download"
+                                                                    :download="file.original_name"
+                                                                ></v-btn>
+                                                            </td>
+                                                            <td style="width: 1px; padding: 0">
+                                                                <ConfirmDelete
+                                                                    title="Datei löschen"
+                                                                    content="Bist du dir sicher, dass du diese Datei löschen möchtest?"
+                                                                    :route="route('ticketRecordFile.destroy', { ticketRecordFile: file.id })"
+                                                                ></ConfirmDelete>
+                                                            </td>
                                                         </tr>
                                                     </tbody>
                                                 </v-table>
                                             </td>
                                         </tr>
                                     </template>
-                                    <template v-slot:bottom v-if="tab !== 'archive'">
+                                    <template v-slot:bottom v-if="tab !== 'archive' && can('ticket', 'account', ticket)">
                                         <v-row class="text-end" no-gutters>
                                             <template v-if="true">
                                                 <v-col cols="12" md="11">Ausgewählte Auftragsdauer</v-col>
@@ -195,8 +304,23 @@ const selectedDurationSum = computed(() =>
                                 </v-data-table-virtual>
                             </template>
                             <v-col v-if="tab !== 'archive'" cols="12" class="text-end">
-                                <v-btn color="primary" type="submit" :loading="form.processing" :disabled="!form.isDirty">
+                                <v-btn
+                                    v-if="can('ticket', 'account', ticket)"
+                                    color="primary"
+                                    type="submit"
+                                    :loading="form.processing"
+                                    :disabled="!form.isDirty"
+                                >
                                     {{ tab === 'newTickets' ? 'Änderungen und Abrechnungen speichern' : 'Abrechnungen speichern' }}
+                                </v-btn>
+                                <v-btn
+                                    v-else-if="['newTickets', 'workingTickets'].includes(tab)"
+                                    color="primary"
+                                    type="submit"
+                                    :loading="form.processing"
+                                    :disabled="!form.isDirty"
+                                >
+                                    Änderungen speichern
                                 </v-btn>
                             </v-col>
                         </v-row>

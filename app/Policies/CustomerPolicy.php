@@ -19,7 +19,7 @@ class CustomerPolicy
 
     public function viewShow(User $user): bool
     {
-        return $user->hasPermissionOrDelegation(null, 'customer_permission', 'read');
+        return true;
     }
 
     public function create(User $user): bool

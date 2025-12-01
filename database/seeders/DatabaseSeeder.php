@@ -61,7 +61,7 @@ class DatabaseSeeder extends Seeder
 
         OrganizationModule::create([
             'organization_id' => $org->id,
-            'module' => 'timesheets',
+            'module' => 'flow',
             'activated_at' => now(),
         ]);
 

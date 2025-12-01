@@ -29,14 +29,14 @@ class DisputeController extends Controller
             'absenceDeleteRequests' => self::getAbsenceDeleteRequests(),
             'homeOfficeDayRequests' => self::getHomeOfficeDayRequests(),
             'homeOfficeDayDeleteRequests' => self::getHomeOfficeDayDeleteRequests(),
-            ...(AppModuleService::hasAppModule('herta') ? [
+            ...(AppModuleService::hasAppModule('tide') ? [
                 'workLogPatchRequests' => self::getWorkLogPatchRequests(),
                 'workLogRequests' => self::getWorkLogRequests(),
             ] : [])
         ]);
     }
 
-    private function getWorkLogPatchRequests()
+    private function getWorkLogPatchRequests(array $statuses = ['created'])
     {
         $authUser = request()->user();
 
@@ -51,7 +51,7 @@ class DisputeController extends Controller
             ->values();
     }
 
-    private function getWorkLogRequests()
+    private function getWorkLogRequests(array $statuses = ['created'])
     {
         $authUser = request()->user();
 
@@ -65,7 +65,7 @@ class DisputeController extends Controller
             ->values();
     }
 
-    private function getAbsenceRequests()
+    private function getAbsenceRequests(array $statuses = ['created'])
     {
         $authUser = request()->user();
 
@@ -96,7 +96,7 @@ class DisputeController extends Controller
 
         return $absenceRequests;
     }
-    private function getAbsencePatchRequests()
+    private function getAbsencePatchRequests(array $statuses = ['created'])
     {
         $authUser = request()->user();
 
@@ -128,7 +128,7 @@ class DisputeController extends Controller
         return $absencePatchRequests;
     }
 
-    public function getAbsenceDeleteRequests()
+    public function getAbsenceDeleteRequests(array $statuses = ['created'])
     {
         $authUser = request()->user();
 

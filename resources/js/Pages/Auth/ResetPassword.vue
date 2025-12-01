@@ -28,6 +28,16 @@ const submit = () => {
             <v-row>
                 <v-col cols="12">
                     <v-text-field
+                        v-model="form.email"
+                        id="email"
+                        :errorMessages="form.errors.email"
+                        class="mt-1 mb-3"
+                        required
+                        type="email"
+                        autocomplete="username"
+                        label="Email"
+                    />
+                    <v-text-field
                         v-model="form.password"
                         :readonly="form.processing"
                         :errorMessages="form.errors.password"

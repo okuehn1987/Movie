@@ -233,6 +233,12 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "homeOfficeDayGenerator.destroy": [
+        {
+            "name": "homeOfficeDayGenerator",
+            "required": true
+        }
+    ],
     "operatingSite.index": [],
     "operatingSite.store": [],
     "operatingSite.show": [
@@ -270,6 +276,7 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "notification.index": [],
     "notification.update": [
         {
             "name": "notification",
@@ -324,6 +331,7 @@ declare module 'ziggy-js' {
         }
     ],
     "user.profile": [],
+    "substitute.update": [],
     "user.timeAccounts": [
         {
             "name": "user",
@@ -442,30 +450,72 @@ declare module 'ziggy-js' {
             "required": true
         }
     ],
-    "customer.customerNote.store": [
+    "customer.customerNoteFolder.store": [
         {
             "name": "customer",
             "required": true,
             "binding": "id"
         }
     ],
-    "customerNote.update": [
+    "customerNoteFolder.update": [
         {
-            "name": "customerNote",
+            "name": "customerNoteFolder",
             "required": true,
             "binding": "id"
         }
     ],
-    "customerNote.destroy": [
+    "customerNoteFolder.destroy": [
         {
-            "name": "customerNote",
+            "name": "customerNoteFolder",
             "required": true,
             "binding": "id"
         }
     ],
-    "customerNote.getFile": [
+    "customer.customerNoteEntry.store": [
         {
-            "name": "customerNote",
+            "name": "customer",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customerNoteEntry.update": [
+        {
+            "name": "customerNoteEntry",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customerNoteEntry.destroy": [
+        {
+            "name": "customerNoteEntry",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customerNoteEntry.getFile": [
+        {
+            "name": "customerNoteEntry",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customer.customerContact.store": [
+        {
+            "name": "customer",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customerContact.update": [
+        {
+            "name": "customerContact",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "customerContact.destroy": [
+        {
+            "name": "customerContact",
             "required": true,
             "binding": "id"
         }
@@ -507,7 +557,21 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "ticket.accept": [
+        {
+            "name": "ticket",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "ticket.finish": [
+        {
+            "name": "ticket",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticket.unfinish": [
         {
             "name": "ticket",
             "required": true,
@@ -532,6 +596,27 @@ declare module 'ziggy-js' {
         {
             "name": "ticketRecord",
             "required": true
+        }
+    ],
+    "ticketRecordFile.show": [
+        {
+            "name": "ticketRecordFile",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticketRecordFile.destroy": [
+        {
+            "name": "ticketRecordFile",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticketRecordFile.getContent": [
+        {
+            "name": "ticketRecordFile",
+            "required": true,
+            "binding": "id"
         }
     ],
     "login": [],

@@ -46,10 +46,14 @@ class AbsencePatchController extends Controller
         ]);
 
         if ($authUser->id !== $absencePatch->user_id) {
-            $authUser->notify(new DisputeStatusNotification($absencePatch, Status::Created));
+            $absence->user->notify(new DisputeStatusNotification($absencePatch, Status::Created));
         }
-        if ($requires_approval) $authUser->supervisor->notify(new AbsencePatchNotification($authUser, $absencePatch));
-        else $absencePatch->accept();
+        if ($requires_approval) {
+            collect($authUser->supervisor->loadMissing('isSubstitutedBy')->isSubstitutedBy)
+                ->merge([$authUser->supervisor])
+                ->unique('id')
+                ->eachr->notify(new AbsencePatchNotification($authUser, $absencePatch));
+        } else $absencePatch->accept();
 
         return back()->with('success', 'Korrektur erfolgreich ' . ($requires_approval ? 'beantragt' : 'eingetragen'));
     }

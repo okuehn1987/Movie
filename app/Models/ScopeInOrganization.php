@@ -36,9 +36,13 @@ trait ScopeInOrganization
             return $builder->where('organization_id', $org->id);
         }
         if (
-            new self instanceof \App\Models\CustomerNote || new self instanceof \App\Models\CustomerOperatingSite
+            new self instanceof \App\Models\CustomerOperatingSite || new self instanceof \App\Models\CustomerNoteFolder ||
+            new self instanceof \App\Models\Ticket
         ) {
             return $builder->whereIn('customer_id', Customer::select('id')->inOrganization());
+        }
+        if (new self instanceof \App\Models\CustomerNoteEntry) {
+            return $builder->whereIn('customer_note_folder_id', CustomerNoteFolder::select('id')->inOrganization());
         }
         abort(501);
     }

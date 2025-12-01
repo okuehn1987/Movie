@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class WorkLogNotification extends Notification
 {
@@ -42,7 +43,7 @@ class WorkLogNotification extends Notification
     {
         $buttonText = 'Antrag einsehen';
         return (new MailMessage)
-            ->subject('Herta Buchungsantrag')
+            ->subject('Tide Buchungsantrag')
             ->line('für den Nutzer "' . $this->user->name . '" liegt ein Antrag auf eine Buchung für den Zeitraum vom "' .
                 Carbon::parse($this->log->start)->format('d.m.Y') . '" bis zum "' .
                 Carbon::parse($this->log->end)->format('d.m.Y') . '" vor.')
@@ -61,6 +62,8 @@ class WorkLogNotification extends Notification
             'title' => $this->user->name . ' hat eine neue Buchung beantragt.',
             'work_log_id' => $this->log->id,
             'status' => Status::Created,
+            'url' =>  $this->getNotificationURL(),
+            'triggered_by' => Auth::id()
         ];
     }
 

@@ -10,7 +10,7 @@ class AppModuleController extends Controller
     public function switchAppModule(Request $request)
     {
         $module = $request->validate([
-            'module' => 'required|string|in:herta,timesheets',
+            'module' => 'required|string|in:tide,flow',
         ])['module'];
 
         AppModuleService::setCurrentAppModule($module);
