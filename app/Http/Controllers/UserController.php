@@ -263,6 +263,7 @@ class UserController extends Controller
             'status' => session('status'),
             'can' => self::getUserShowCans($user),
             'users' => User::inOrganization()->get(['id', 'first_name', 'last_name', 'job_role']),
+            'substitute_ids' => DB::table('substitutes')->where('user_id', $user->id)->pluck('substitute_id')
         ]);
     }
 

@@ -292,7 +292,8 @@ const tableHeight = useMaxScrollHeight(0);
                                             :error-messages="workLogForm.errors.comment"
                                             :disabled="workLogForm.status == 'created'"
                                             variant="filled"
-                                            rows="3"
+                                            max-rows="10"
+                                            auto-grow
                                         ></v-textarea>
                                     </v-col>
                                     <v-col cols="12" md="3">

@@ -95,7 +95,7 @@ function changePatchStatus(accepted: boolean) {
                         ></v-data-table-virtual>
                     </v-col>
                     <v-col cols="12">
-                        <v-textarea v-model="patchDialog.comment" readonly label="Bemerkung" variant="filled" rows="3"></v-textarea>
+                        <v-textarea v-model="patchDialog.comment" readonly label="Bemerkung" variant="filled" max-rows="10" auto-grow></v-textarea>
                     </v-col>
                 </v-row>
             </v-card-text>
