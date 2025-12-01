@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class HomeOfficeDeleteNotification extends Notification
 {
@@ -62,6 +63,7 @@ class HomeOfficeDeleteNotification extends Notification
             'title' => $this->user->name . ' hat die Löschung von Homeoffice beantragt.',
             'home_office_day_id' => $this->home_office_day_id,
             'status' => Status::Created,
+            'triggered_by' => Auth::id(),
         ];
     }
 

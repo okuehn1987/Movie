@@ -13,6 +13,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class HomeOfficeDayDisputeStatusNotification extends Notification
 {
@@ -23,12 +24,12 @@ class HomeOfficeDayDisputeStatusNotification extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct(HomeOfficeDayGenerator $home_office_day_generator, string $start, string $end, Status $status, string $type = 'create')
+    public function __construct(HomeOfficeDayGenerator $home_office_day_generator, Status $status, string $type = 'create')
     {
         $this->status = $status;
         $this->type = $type;
-        $this->start = $start;
-        $this->end = $end;
+        $this->start = $home_office_day_generator->start;
+        $this->end = $home_office_day_generator->end;
         $this->home_office_day_generator_id = $home_office_day_generator->id;
     }
 
@@ -92,7 +93,8 @@ class HomeOfficeDayDisputeStatusNotification extends Notification
             'title' => $text . ' ' . ($this->status === Status::Accepted ? 'akzeptiert.' : ($this->status == Status::Created ? 'beantragt.' : 'abgelehnt.')),
             'home_office_day_generator_id' => $this->home_office_day_generator_id,
             'start' => $this->start,
-            'type' => $this->type
+            'type' => $this->type,
+            'triggered_by' => Auth::id(),
         ];
     }
 

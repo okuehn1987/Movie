@@ -50,7 +50,6 @@ function deleteHomeOfficeDay() {
 <template>
     <v-dialog max-width="1000" v-model="openModal">
         <template #default="{ isActive }">
-            {{ props.selectedHomeOffice.id }}
             <v-card
                 :title="
                     'Abwesenheit' +

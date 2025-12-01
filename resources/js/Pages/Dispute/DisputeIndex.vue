@@ -24,9 +24,8 @@ defineProps<{
         absence_type: Pick<AbsenceType, 'id' | 'name'>;
         user: UserProp;
     })[];
-    homeOfficeDayRequests: (HomeOfficeDayProp & {
-        user: Pick<User, 'id' | 'first_name' | 'last_name'>;
-        homeOfficeDayGenerator: Pick<HomeOfficeDayGenerator, 'id' | 'start' | 'end' | 'created_as_request'>;
+    homeOfficeDayRequests: (Pick<HomeOfficeDayGenerator, 'id' | 'start' | 'end' | 'created_as_request' | 'user_id'> & {
+        user: Pick<User, 'id' | 'first_name' | 'last_name' | 'operating_site_id' | 'supervisor_id'>;
     })[];
     homeOfficeDayDeleteRequests: (HomeOfficeDayProp & {
         user: Pick<User, 'id' | 'first_name' | 'last_name'>;

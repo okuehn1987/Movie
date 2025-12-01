@@ -160,7 +160,7 @@ class DisputeController extends Controller
                 'user' => fn($q) => $q->select(['id', 'first_name', 'last_name', 'operating_site_id', 'supervisor_id'])->withTrashed()
             ])
             ->get(['id', 'user_id', 'start', 'end'])
-            ->filter(fn($log) => $authUser->can('update', [WorkLog::class, $log->user]))
+            ->filter(fn($log) => $authUser->can('update', [Absence::class, $log->user]))
             ->values();
     }
 
@@ -181,9 +181,6 @@ class DisputeController extends Controller
             ->get(['id', 'date', 'user_id'])
             : collect();
 
-        //TODO: Warum haben wir eine HomeOfficeDayGeneratorPolicy erstellt?Wir wollen nur einzelne Tage löschen, keine Generators,oder?
-
-        // return $requestedHomeOfficeDays->filter(fn(HomeOfficeDay $a) => $authUser->can('delete', $a))->values();
-        return $requestedHomeOfficeDays;
+        return $requestedHomeOfficeDays->filter(fn(HomeOfficeDay $homeOfficeDay) => $authUser->can('deleteHomeOffice', [Absence::class, $homeOfficeDay]))->values();
     }
 }

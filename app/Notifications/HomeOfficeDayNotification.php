@@ -11,6 +11,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 
 class HomeOfficeDayNotification extends Notification
 {
@@ -21,11 +22,11 @@ class HomeOfficeDayNotification extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct(string $start, string $end, HomeOfficeDayGenerator $home_office_day_generator, User $user)
+    public function __construct(HomeOfficeDayGenerator $homeOfficeDayGenerator, User $user)
     {
-        $this->start = $start;
-        $this->end = $end;
-        $this->home_office_day_generator_id = $home_office_day_generator->id;
+        $this->start = $homeOfficeDayGenerator->start;
+        $this->end = $homeOfficeDayGenerator->end;
+        $this->home_office_day_generator_id = $homeOfficeDayGenerator->id;
         $this->user = $user;
     }
 
@@ -67,6 +68,7 @@ class HomeOfficeDayNotification extends Notification
             'title' => $this->user->name . ' hat Homeoffice beantragt.',
             'home_office_day_generator_id' => $this->home_office_day_generator_id,
             'start' => $this->start,
+            'triggered_by' => Auth::id(),
             'status' => Status::Created,
         ];
     }
