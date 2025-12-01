@@ -97,6 +97,9 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
 
         Route::resource('ticketRecordFile', TicketRecordFileController::class)->only(['show', 'destroy']);
         Route::get('ticketRecordFile/{ticketRecordFile}/getContent', [TicketRecordFileController::class, 'getContent'])->name('ticketRecordFile.getContent');
+
+        Route::resource('ticketFile', TicketFileController::class)->only(['show', 'destroy']);
+        Route::get('ticketFile/{ticketFile}/getContent', [TicketFileController::class, 'getContent'])->name('ticketFile.getContent');
     });
 });
 

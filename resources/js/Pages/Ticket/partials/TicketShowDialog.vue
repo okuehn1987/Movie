@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
-import { Canable, PRIORITIES, TicketRecord } from '@/types/types';
+import { Canable, DATETIME_LOCAL_FORMAT, PRIORITIES, TicketRecord } from '@/types/types';
 import { router } from '@inertiajs/vue3';
 import { formatDuration } from '@/utils';
 import { DateTime } from 'luxon';
@@ -22,6 +22,8 @@ const form = useForm({
     title: props.ticket.title,
     description: props.ticket.description,
     selected: props.ticket.records.filter(tr => tr.accounted_at).map(r => r.id),
+    appointment_at: props.ticket.appointment_at ? DateTime.fromSQL(props.ticket.appointment_at).toFormat(DATETIME_LOCAL_FORMAT) : null,
+    files: [] as File[],
 });
 
 watch(
@@ -175,12 +177,21 @@ function copyRecordToClipBoard(record: TicketRecord & { userName: string }) {
                                     </template>
                                 </v-autocomplete>
                             </v-col>
-                            <v-col cols="12">
+                            <v-col cols="12" md="9">
                                 <v-text-field
                                     label="Betreff"
                                     v-model="form.title"
                                     :disabled="tab === 'finishedTickets' || tab === 'archive'"
                                     :error-messages="form.errors.title"
+                                ></v-text-field>
+                            </v-col>
+                            <v-col cols="12" md="3">
+                                <v-text-field
+                                    type="datetime-local"
+                                    label="Termin"
+                                    v-model="form.appointment_at"
+                                    :errorMessages="form.errors.appointment_at"
+                                    :disabled="tab !== 'newTickets' && tab !== 'workingTickets'"
                                 ></v-text-field>
                             </v-col>
                             <v-col cols="12">
@@ -193,6 +204,42 @@ function copyRecordToClipBoard(record: TicketRecord & { userName: string }) {
                                     :error-messages="form.errors.description"
                                 ></v-textarea>
                             </v-col>
+                            <template v-if="ticket.files.length > 0">
+                                <v-col cols="12">
+                                    <v-data-table-virtual
+                                        :items="ticket.files"
+                                        :headers="[
+                                            { title: 'Anhang', value: 'original_name' },
+                                            { title: '', value: 'actions', width: '1px' },
+                                        ]"
+                                    >
+                                        <template #item.actions="{ item }">
+                                            <div class="d-flex">
+                                                <v-btn
+                                                    v-if="item.original_name.endsWith('.pdf')"
+                                                    variant="text"
+                                                    :href="route('ticketFile.show', { ticketFile: item.id })"
+                                                    color="primary"
+                                                    icon="mdi-eye"
+                                                ></v-btn>
+                                                <v-btn
+                                                    v-else
+                                                    variant="text"
+                                                    :href="route('ticketFile.getContent', { ticketFile: item.id })"
+                                                    color="primary"
+                                                    icon="mdi-download"
+                                                    :download="item.original_name"
+                                                ></v-btn>
+                                                <ConfirmDelete
+                                                    title="Datei löschen"
+                                                    content="Bist du dir sicher, dass du diese Datei löschen möchtest?"
+                                                    :route="route('ticketFile.destroy', { ticketFile: item.id })"
+                                                ></ConfirmDelete>
+                                            </div>
+                                        </template>
+                                    </v-data-table-virtual>
+                                </v-col>
+                            </template>
                             <template v-if="hasRecords">
                                 <v-data-table-virtual
                                     v-model="form.selected"

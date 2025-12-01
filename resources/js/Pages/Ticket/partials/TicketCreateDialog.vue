@@ -140,6 +140,15 @@ watch(
                                             auto-grow
                                         ></v-textarea>
                                     </v-col>
+                                    <v-col cols="12">
+                                        <v-file-input
+                                            label="Dateien anhängen"
+                                            multiple
+                                            v-model="ticketForm.files"
+                                            :error-messages="ticketForm.errors['files.0']"
+                                            accept="image/jpg, image/png, image/jpeg, image/avif, image/tiff, image/svg+xml, application/pdf"
+                                        ></v-file-input>
+                                    </v-col>
                                 </v-row>
                             </v-tabs-window-item>
                             <v-tabs-window-item value="expressTicket">
