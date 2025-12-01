@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Status;
 use App\Models\User;
+use App\Models\UserTrustWorkingHour;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
 use App\Notifications\DisputeStatusNotification;
@@ -69,9 +70,16 @@ class WorkLogController extends Controller
         Gate::authorize('create', [WorkLog::class, $authUser]);
 
         $validated = $request->validate([
-            'start' => ['required', 'date', function ($attr, $value, $fail) {
+            'start' => ['required', 'date', function ($attr, $value, $fail) use ($request, $user) {
                 if (Carbon::parse($value) > Carbon::now()->endOfDay()) {
                     $fail('Der Startzeitpunkt darf nicht in der Zukunft liegen.');
+                }
+                if (UserTrustWorkingHour::checkCollisions([
+                    'start' => $value,
+                    'end' => $request['end'],
+                    'user_id' => $user->id
+                ])) {
+                    $fail('In dem Zeitraum besteht Vertrauensarbeit.');
                 }
             }],
             'end' => ['required', 'date', 'after:start', function ($attr, $value, $fail) use ($user) {

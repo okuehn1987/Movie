@@ -716,6 +716,39 @@ class CalculationTest extends TestCase
         $this->assertEquals(12 * 60 + 40, $this->tim->defaultTimeAccount->fresh()->balance);
     }
 
+    public function test_user_trust_working_hours()
+    {
+        $date = now()->subDays(6);
+        // user trust working hours für einen tag
+        // travelto tag
+        // $this->oldUser->removeMissingWorkTimeForDate($date);
+        // dasselbe mit einer abwesenheit an diesem tag -> ergebnis sollte dasselbe sein
+        $this->oldUser->removeMissingWorkTimeForDate($date);
+
+        $workLog = $this->oldUser->workLogs()->create([
+            'start' =>  $date,
+            'end' =>  $date->copy()->addHours(6),
+            'status' => 'accepted',
+            'accepted_at' => $date
+        ]);
+
+        $this->assertEquals(- (1 * 3600 + 30 * 60), $this->oldUser->defaultTimeAccount->fresh()->balance);
+
+        $absence = $this->oldUser->absences()->create([
+            'start' =>  $date,
+            'end' =>  $date,
+            'status' => 'accepted',
+            'accepted_at' =>  now(),
+            'absence_type_id' => 10,
+        ]);
+
+        $this->assertEquals(0, $this->oldUser->defaultTimeAccount->fresh()->balance);
+
+        $absence->fresh()->delete();
+
+        $this->assertEquals(- (1 * 3600 + 30 * 60), $this->oldUser->defaultTimeAccount->fresh()->balance);
+    }
+
     // public function test_missing_break_in_absence()
     // {
     //  TODO: martin break 16.1.25 && 17.1.25

@@ -584,7 +584,7 @@ class User extends Authenticatable
 
     public function getSollsekundenForDate(CarbonInterface $date)
     {
-        if ($this->resignation_date && $date->gt(Carbon::parse($this->resignation_date))) {
+        if ($this->resignation_date && $date->gt(Carbon::parse($this->resignation_date)) || UserTrustWorkingHour::checkCollisions(['start' => $date, 'end' => $date, 'user_id' => $this->id])) {
             return 0;
         }
 
