@@ -16,7 +16,6 @@ class CustomerContactController extends Controller
         $validated = $request->validate([
             'name'          => 'nullable|string',
             'occupation'    => 'nullable|string',
-
             'email'         => 'nullable|email|required_without_all:phone_number,mobile_number',
             'phone_number'  => 'nullable|string|required_without_all:email,mobile_number',
             'mobile_number' => 'nullable|string|required_without_all:email,phone_number',
@@ -46,7 +45,6 @@ class CustomerContactController extends Controller
         $validated = $request->validate([
             'name'          => 'nullable|string',
             'occupation'    => 'nullable|string',
-
             'email'         => 'nullable|email|required_without_all:phone_number,mobile_number',
             'phone_number'  => 'nullable|string|required_without_all:email,mobile_number',
             'mobile_number' => 'nullable|string|required_without_all:email,phone_number',

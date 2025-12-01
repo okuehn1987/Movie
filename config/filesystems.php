@@ -48,6 +48,12 @@ return [
             'throw' => false,
         ],
 
+        'ticket_files' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/ticket_files'),
+            'throw' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

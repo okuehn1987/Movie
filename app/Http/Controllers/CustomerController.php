@@ -71,6 +71,7 @@ class CustomerController extends Controller
             'user:id,first_name,last_name',
             'assignees:id,first_name,last_name',
             'records.user',
+            'files',
             'records.files'
         ]);
         return Inertia::render('Customer/CustomerShow', [

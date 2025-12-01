@@ -76,7 +76,7 @@ function submit() {
                     </v-btn>
                 </template>
                 <v-divider></v-divider>
-                <v-card-text style="max-height: 600px; overflow-y: auto">
+                <v-card-text>
                     <v-form @submit.prevent="submit">
                         <v-row>
                             <v-col cols="12" md="6">
@@ -113,6 +113,8 @@ function submit() {
                             <v-col cols="12">
                                 <v-textarea
                                     label="Beschreibung"
+                                    max-rows="10"
+                                    rows="2"
                                     v-model="recordForm.description"
                                     :error-messages="recordForm.errors.description"
                                     auto-grow
@@ -121,7 +123,8 @@ function submit() {
                             <v-col cols="12">
                                 <v-textarea
                                     label="Ressourcen"
-                                    rows="1"
+                                    max-rows="10"
+                                    rows="2"
                                     v-model="recordForm.resources"
                                     :error-messages="recordForm.errors.resources"
                                     auto-grow
