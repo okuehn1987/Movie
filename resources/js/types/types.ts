@@ -762,6 +762,7 @@ export type RelationMap = {
         owns: Organization | null;
         user_working_hours: UserWorkingHours[];
         user_trust_working_hours: UserTrustWorkingHour[];
+        current_trust_working_hours: UserTrustWorkingHour | null;
         current_working_hours: UserWorkingHours | null;
         user_leave_days: UserLeaveDays[];
         current_leave_days: UserLeaveDays | null;

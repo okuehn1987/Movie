@@ -12,4 +12,13 @@ class UserTrustWorkingHour extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    // /** 
+    //  * @param Log|Patch $model 
+    //  */
+    // public static function checkCollisions($model)
+    // {
+
+    //     return self::where('user_id', $model->user_id)->where(fn($q) => $q->where)
+    // }
 }

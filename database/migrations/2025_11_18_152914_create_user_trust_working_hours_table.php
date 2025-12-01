@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->onDelete('cascade');
             $table->date('active_since');
-            $table->date('active_until');
+            $table->date('active_until')->nullable();
             $table->timestamps();
         });
     }

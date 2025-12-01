@@ -14,6 +14,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
+use function Symfony\Component\Clock\now;
+
 class WorkLogController extends Controller
 {
     public function index(#[CurrentUser] User $authUser)
@@ -67,10 +69,18 @@ class WorkLogController extends Controller
         Gate::authorize('create', [WorkLog::class, $authUser]);
 
         $validated = $request->validate([
-            'start' => 'required|date',
+            'start' => ['required', 'date', function ($attr, $value, $fail) {
+                if (Carbon::parse($value) > Carbon::now()->endOfDay()) {
+                    $fail('Der Startzeitpunkt darf nicht in der Zukunft liegen.');
+                }
+            }],
             'end' => ['required', 'date', 'after:start', function ($attr, $value, $fail) use ($user) {
                 $last = $user->latestWorkLog;
                 $lastEnded = $last?->end != null;
+
+                if (Carbon::parse($value) > Carbon::now()->endOfDay()) {
+                    $fail('Der Endzeitpunkt darf nicht in der Zukunft liegen.');
+                }
 
                 if ($last && !$lastEnded && $value > $last->shift->start) {
                     $fail('Der Eintrag muss vor der aktiven Schicht enden.');

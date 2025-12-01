@@ -76,6 +76,7 @@ function submit() {
                                     :error-messages="newWorkLogForm.errors.start"
                                     v-model="newWorkLogForm.start"
                                     variant="plain"
+                                    :max="DateTime.now().toFormat('yyyy-MM-dd')"
                                     style="height: 73px"
                                 ></v-date-input>
                             </v-col>

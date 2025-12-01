@@ -10,7 +10,7 @@ import WorkingHours from './partial/WorkingHours.vue';
 
 defineProps<{
     user: User &
-        Pick<Relations<'user'>, 'latest_work_log'> & {
+        Pick<Relations<'user'>, 'latest_work_log' | 'current_trust_working_hours'> & {
             current_shift: (Pick<Shift, 'id' | 'start' | 'end'> & { current_work_duration: Seconds }) | null;
         };
     supervisor: Pick<User, 'id' | 'first_name' | 'last_name'>;
@@ -28,7 +28,18 @@ const currentPage = ref(1);
         <v-row>
             <v-col cols="12" lg="6">
                 <v-row>
-                    <v-col cols="12" v-if="can('app', 'tide')">
+                    <v-col
+                        cols="12"
+                        v-if="
+                            can('app', 'tide') &&
+                            !(
+                                !!user.current_trust_working_hours &&
+                                DateTime.now() >= DateTime.fromSQL(user.current_trust_working_hours.active_since) &&
+                                (!user.current_trust_working_hours.active_until ||
+                                    DateTime.now() <= DateTime.fromSQL(user.current_trust_working_hours.active_until))
+                            )
+                        "
+                    >
                         <WorkingHours :user :overtime :workingHours />
                     </v-col>
                     <v-col cols="12" v-if="can('app', 'tide')">
