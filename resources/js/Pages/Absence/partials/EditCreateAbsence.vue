@@ -104,10 +104,12 @@ const requiresApproval = computed(() => {
                             <v-col cols="12">
                                 <v-select
                                     label="Abwesenheitsgrund angeben"
-                                    :items="[
-                                        ...absenceTypes.map(a => ({ title: a.name, value: a.id })),
-                                        { title: 'Homeoffice', value: 'homeOffice' },
-                                    ]"
+                                    :items="
+                                        [
+                                            ...absenceTypes.map(a => ({ title: a.name, value: a.id })),
+                                            $page.props.auth.user.home_office && { title: 'Homeoffice', value: 'homeOffice' },
+                                        ].filter(Boolean)
+                                    "
                                     v-model="absenceForm.absence_type_id"
                                     :error-messages="absenceForm.errors.absence_type_id"
                                 ></v-select>
