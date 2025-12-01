@@ -179,17 +179,19 @@ function copyRecordToClipBoard(record: TicketRecord & { userName: string }) {
                                 <v-text-field
                                     label="Betreff"
                                     v-model="form.title"
-                                    :disabled="tab !== 'newTickets'"
+                                    :disabled="tab === 'finishedTickets' || tab === 'archive'"
                                     :error-messages="form.errors.title"
                                 ></v-text-field>
                             </v-col>
                             <v-col cols="12">
-                                <v-text-field
+                                <v-textarea
                                     label="Beschreibung"
                                     v-model="form.description"
-                                    :disabled="tab !== 'newTickets'"
+                                    :disabled="tab === 'finishedTickets' || tab === 'archive'"
+                                    max-rows="11"
+                                    auto-grow
                                     :error-messages="form.errors.description"
-                                ></v-text-field>
+                                ></v-textarea>
                             </v-col>
                             <template v-if="hasRecords">
                                 <v-data-table-virtual

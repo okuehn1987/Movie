@@ -57,6 +57,8 @@ const bugForm = useForm({
                             </v-col>
                             <v-col cols="12">
                                 <v-textarea
+                                    max-rows="16"
+                                    auto-grow
                                     v-model="bugForm.description"
                                     :errorMessages="bugForm.errors.description"
                                     label="Zusätzliche Informationen zum Fehler"
