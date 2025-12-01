@@ -700,6 +700,9 @@ export type RelationMap = {
         records: TicketRecord[];
         files: TicketFile[];
     };
+    ticketFile: {
+        ticket: Ticket;
+    },
     ticketRecord: {
         ticket: Ticket;
         user: User;

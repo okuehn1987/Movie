@@ -21,7 +21,7 @@ class TicketFileController extends Controller
                 'name' => $ticketFile->original_name,
                 'type' => 'ticketFile',
             ],
-            'backurl' => route('customer.show', ['customer' => $ticketFile->ticket->customer_id, 'openTicket' => $ticketFile->ticket->id]),
+            'backurl' => route('customer.show', ['customer' => $ticketFile->ticket->customer_id, 'openTicket' => $ticketFile->ticket_id]),
         ]);
     }
     public function getContent(TicketFile $ticketFile)
