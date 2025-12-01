@@ -17,7 +17,7 @@ class ChatFileController extends Controller
 
     public function store(Request $request, #[CurrentUser] User $user)
     {
-        Gate::authorize('addChatFiles', ChatAssistant::class);
+        Gate::authorize('editChatFiles', ChatAssistant::class);
 
         $validated = $request->validate([
             'files' => 'required|array',
@@ -44,7 +44,7 @@ class ChatFileController extends Controller
 
     public function destroy(ChatFile $file)
     {
-        Gate::authorize('deleteChatFiles', ChatAssistant::class);
+        Gate::authorize('editChatFiles', ChatAssistant::class);
 
         if ($file->chat_assistant_id != null) {
             return back()->withErrors(['file is in use']);

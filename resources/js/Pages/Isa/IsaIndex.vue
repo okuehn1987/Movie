@@ -58,10 +58,10 @@ function limitColor(current: number, limit: number): string {
 
 <template>
     <AdminLayout title="Einstellungen für ISA" tooltip="TooltipChatAssistantIndex">
-        <v-card v-if="!can('chatAssistant', 'showPaymentInfo')" class="mb-4">
+        <v-card v-if="can('chatAssistant', 'showPaymentInfo')" class="mb-4">
             <v-card-title class="my-4">Kostenverwaltung</v-card-title>
             <v-card-text>
-                <v-form v-if="!can('chatAssistant', 'update')" @submit.prevent="assistantForm.patch(route('isa.update', { isa: chatAssistant.id }))">
+                <v-form v-if="can('chatAssistant', 'update')" @submit.prevent="assistantForm.patch(route('isa.update', { isa: chatAssistant.id }))">
                     <v-row>
                         <v-card-subtitle class="mt-4">Aktuelle Verbrauchsanzeige</v-card-subtitle>
                         <v-col class="pt-2 mb-4" cols="12">
@@ -84,7 +84,6 @@ function limitColor(current: number, limit: number): string {
                                 label="Monatliches Kostenlimit in €"
                                 required
                                 :errorMessages="assistantForm.errors.monthly_cost_limit"
-                                hide-details
                                 variant="outlined"
                                 density="compact"
                             ></v-text-field>
@@ -136,7 +135,7 @@ function limitColor(current: number, limit: number): string {
             <v-card-title class="my-4">Dateiverwaltung</v-card-title>
             <v-card-subtitle class="mt-4">Verwendete Dateien</v-card-subtitle>
             <v-card-text class="pt-0">
-                <v-form v-if="!can('chatAssistant', 'update')" @submit.prevent="assistantForm.patch(route('isa.update', { isa: chatAssistant.id }))">
+                <v-form v-if="can('chatAssistant', 'update')" @submit.prevent="assistantForm.patch(route('isa.update', { isa: chatAssistant.id }))">
                     <v-row>
                         <v-col cols="11">
                             <v-select
@@ -216,15 +215,15 @@ function limitColor(current: number, limit: number): string {
                     })
                 "
             >
-                <template v-if="!can('chatAssistant', 'editChatFiles')" v-slot:header.actions>
+                <template v-if="can('chatAssistant', 'editChatFiles')" v-slot:header.actions>
                     <v-btn title="Neue Datei hochladen" color="primary" @click.stop="openFileInput"><v-icon icon="mdi-plus"></v-icon></v-btn>
                 </template>
                 <template v-slot:item.actions="{ item }">
-                    <v-btn v-if="!can('chatAssistant', 'showChatFiles')" :href="route('file.show', { file: item.id.toString() })">
+                    <v-btn v-if="can('chatAssistant', 'showChatFiles')" :href="route('file.show', { file: item.id.toString() })">
                         <v-icon icon="mdi-eye" color="primary"></v-icon>
                     </v-btn>
                     <v-btn
-                        v-if="!can('chatAssistant', 'editChatFiles')"
+                        v-if="can('chatAssistant', 'editChatFiles')"
                         :disabled="item.is_used"
                         @click.stop="deleteFile(item)"
                         class="ms-2"

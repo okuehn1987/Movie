@@ -221,6 +221,7 @@ return [
         'record' => 'Eintrag',
         'files' => 'Dateien',
         'file' => 'Datei',
+        'monthly_cost_limit' => 'Monatliches Kostenlimit',
     ],
 
     'values' => [

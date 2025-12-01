@@ -62,7 +62,7 @@ class IsaController extends Controller
         Gate::authorize('update', ChatAssistant::class);
 
         $validated = $request->validate([
-            'monthly_cost_limit' => 'required|numeric|min:0',
+            'monthly_cost_limit' => 'required|int|min:0',
             'chatFile_ids' => 'present|array',
             'chatFile_ids.*' => ['required', Rule::exists('chat_files', 'id')->where('organization_id', Organization::getCurrent()->id)],
         ]);
