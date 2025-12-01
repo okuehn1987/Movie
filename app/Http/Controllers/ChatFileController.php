@@ -47,7 +47,7 @@ class ChatFileController extends Controller
         Gate::authorize('editChatFiles', ChatAssistant::class);
 
         if ($file->chat_assistant_id != null) {
-            return back()->withErrors(['file is in use']);
+            return back()->withErrors(['Die Datei wird von ISA verwendet und kann nicht gelöscht werden.']);
         };
         if (OpenAIService::deleteFile($file)) {
             Storage::disk('chat_files')->delete($file->file_name);
