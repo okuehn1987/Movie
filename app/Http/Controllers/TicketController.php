@@ -56,6 +56,7 @@ class TicketController extends Controller
             'customer:id,name',
             'user:id,first_name,last_name',
             'assignees:id,first_name,last_name',
+            'files',
             'records.user',
             'records.files'
         ]);
@@ -183,15 +184,18 @@ class TicketController extends Controller
                 'address_id' => $address->id,
             ]);
             $ticket->update(['finished_at' => now()]);
-
-            foreach ($validated['files'] as $file) {
-                $path = Storage::disk('ticket_record_files')->putFile($file);
-                $record->files()->create([
-                    'path' => $path,
-                    'original_name' => $file->getClientOriginalName(),
-                ]);
-            }
         }
+
+        $model = $ticket;
+        if (isset($record)) $model = $record;
+        foreach ($validated['files'] as $file) {
+            $path = Storage::disk($validated["tab"] === "expressTicket" ? 'ticket_record_files' : 'ticket_files')->putFile($file);
+            $model->files()->create([
+                'path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+            ]);
+        }
+
         $users = $ticket->assignees->filter(fn($u) => !$authUser->is($u));
         $users->merge($users->flatMap(fn($u) => $u->loadMissing('isSubstitutedBy')->isSubstitutedBy))
             ->unique('id')
@@ -209,6 +213,7 @@ class TicketController extends Controller
             'priority' => 'required|in:lowest,low,medium,high,highest',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
+            'appointment_at' => 'nullable|date',
             'assignees' => 'present|array',
             'assignees.*' => ['required_if:tab,ticket', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))],
             'selected' => 'present|array',

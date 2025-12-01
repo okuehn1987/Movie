@@ -578,6 +578,27 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "ticketFile.show": [
+        {
+            "name": "ticketFile",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticketFile.destroy": [
+        {
+            "name": "ticketFile",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticketFile.getContent": [
+        {
+            "name": "ticketFile",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "login": [],
     "password.request": [],
     "password.email": [],

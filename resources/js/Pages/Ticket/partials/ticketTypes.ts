@@ -2,7 +2,7 @@ import { Address, Canable, Customer, CustomerOperatingSite, OperatingSite, Relat
 
 export type TicketProp = Ticket &
     Canable &
-    Pick<Relations<'ticket'>, 'user' | 'assignees' | 'customer'> & {
+    Pick<Relations<'ticket'>, 'user' | 'assignees' | 'customer' | 'files'> & {
         records: (TicketRecord & Canable & Pick<Relations<'ticketRecord'>, 'files'> & { user: Relations<'ticketRecord'>['user'] })[];
     };
 export type CustomerProp = Pick<Customer, 'id' | 'name'>;
