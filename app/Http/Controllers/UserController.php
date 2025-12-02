@@ -115,7 +115,7 @@ class UserController extends Controller
             'home_office_day_generators.*.end' => ['required', 'date', 'after_or_equal:home_office_day_generators.*.start', function ($attribute, $value, $fail) use ($request) {
                 if (!$request['home_office'] && Carbon::parse($value)->gt(Carbon::now()->startOfDay())) $fail('The ' . $attribute . ' is invalid.');
             }],
-            +'user_working_hours' => 'present|array',
+            'user_working_hours' => 'present|array',
             'user_working_hours.*.id' => 'nullable|exists:user_working_hours,id',
             'user_working_hours.*.weekly_working_hours' => 'required|min:0|decimal:0,2',
             'user_working_hours.*.active_since' => ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
