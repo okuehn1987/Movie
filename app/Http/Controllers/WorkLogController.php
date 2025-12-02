@@ -15,8 +15,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
-use function Symfony\Component\Clock\now;
-
 class WorkLogController extends Controller
 {
     public function index(#[CurrentUser] User $authUser)
