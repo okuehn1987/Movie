@@ -88,20 +88,22 @@ class Organization extends Model
     public static function getCurrent(): Organization
     {
         if (Auth::check()) return Auth::user()->organization;
-        return Organization::where('name', self::getOrganizationNameByDomain())->first() ?? Organization::first();
+        return Organization::whereId(self::getOrganizationIdByDomain())->first() ?? Organization::first();
     }
 
-    public static function getOrganizationNameByDomain(): string
+    public static function getOrganizationIdByDomain(): string
     {
         if (app()->environment('local')) {
             if (request()->organization) session(['org' => request()->organization]);
-            return session('org') ?? 'MBD';
+            return session('org') ?? 1;
         }
         $domain = str_replace('www.', '', request()->getHost());
 
         return match ($domain) {
-            'staging.herta.mbd-team.de' => 'MBD',
-            default => 'MBD',
+            'staging.herta.mbd-team.de' => 1,
+            'sbl.tide-hrta.de' => 2,
+            'bsp.tide-hrta.de' => 3,
+            default => 1,
         };
     }
 }

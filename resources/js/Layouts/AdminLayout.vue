@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, router, usePage, usePoll } from '@inertiajs/vue3';
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 import AppbarActions from './partials/AppbarActions.vue';
 import { AppModule } from '@/types/types';
@@ -15,13 +15,22 @@ const page = usePage();
 const isMobile = useDisplay().smAndDown;
 const showDrawer = ref(!isMobile.value);
 
-usePoll(
+const { start, stop } = usePoll(
     1000 * 60 * 2,
     {
         only: ['unreadNotifications'],
     },
     { keepAlive: true },
 );
+onMounted(() => {
+    start();
+});
+router.on('before', () => {
+    stop();
+});
+router.on('finish', () => {
+    start();
+});
 
 const showOrgImg = ref(!!page.props.organization.logo);
 watch(
