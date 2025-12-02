@@ -101,8 +101,8 @@ class Organization extends Model
 
         return match ($domain) {
             'staging.herta.mbd-team.de' => 1,
-            'sbl.tide-hrta.de' => 2,
-            'bsp.tide-hrta.de' => 3,
+            'sbl.tide-hrta.de' => 5,
+            'bsp.tide-hrta.de' => 6,
             default => 1,
         };
     }

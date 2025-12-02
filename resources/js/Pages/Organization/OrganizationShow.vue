@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { AbsenceType, Flag, OperatingSite, OperatingTime, Organization, SpecialWorkingHoursFactor, TimeAccountSetting } from '@/types/types';
+import { AbsenceType, Flag, OperatingSite, Organization, SpecialWorkingHoursFactor, TimeAccountSetting } from '@/types/types';
 import { ref } from 'vue';
 import OrganizationGeneralInformationSettings from './OrganizationGeneralInformationSettings.vue';
 import SWHFIndex from '../SWHF/SWHFIndex.vue';
@@ -12,7 +12,6 @@ defineProps<{
     organization: Organization;
     flags: Record<Flag, string>;
     operating_sites: OperatingSite[];
-    operating_times: OperatingTime[];
     special_working_hours_factors: SpecialWorkingHoursFactor[];
     absence_types: AbsenceType[];
     absence_type_defaults: string[];
