@@ -113,6 +113,8 @@ function submit() {
                             <v-col cols="12">
                                 <v-textarea
                                     label="Beschreibung"
+                                    max-rows="10"
+                                    rows="2"
                                     v-model="recordForm.description"
                                     :error-messages="recordForm.errors.description"
                                     auto-grow
@@ -121,7 +123,8 @@ function submit() {
                             <v-col cols="12">
                                 <v-textarea
                                     label="Ressourcen"
-                                    rows="1"
+                                    max-rows="10"
+                                    rows="2"
                                     v-model="recordForm.resources"
                                     :error-messages="recordForm.errors.resources"
                                     auto-grow

@@ -36,9 +36,18 @@ class HasOrganizationAccess
                 $instanceObject instanceof \App\Models\Absence, $instanceObject instanceof \App\Models\AbsencePatch
                 => $instanceObject->absenceType()->select('organization_id')->first()->organization_id,
 
-                $instanceObject instanceof \App\Models\CustomerOperatingSite, $instanceObject instanceof \App\Models\CustomerNote,
+                $instanceObject instanceof \App\Models\CustomerOperatingSite,
                 $instanceObject instanceof \App\Models\Ticket
                 => $instanceObject->customer()->select('organization_id')->first()->organization_id,
+
+                $instanceObject instanceof \App\Models\TicketRecordFile
+                => $instanceObject->ticketRecord->ticket->customer()->select('organization_id')->first()->organization_id,
+
+                $instanceObject instanceof \App\Models\TicketFile
+                => $instanceObject->ticket->customer()->select('organization_id')->first()->organization_id,
+
+                $instanceObject instanceof \App\Models\CustomerNoteEntry
+                => $instanceObject->customerNoteFolder->customer()->select('organization_id')->first()->organization_id,
 
                 $instanceObject instanceof \App\Models\TimeAccount
                 => $instanceObject->timeAccountSetting()->select('organization_id')->first()->organization_id,

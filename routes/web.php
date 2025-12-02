@@ -6,6 +6,7 @@ use App\Http\Middleware\CheckIfGateWasUsedToAuthorizeRequest;
 use App\Http\Middleware\HasOrganizationAccess;
 use App\Http\Middleware\isApp;
 use App\Models\HomeOfficeDayGenerator;
+use App\Models\CustomerNoteFolder;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard')->name('home');
@@ -103,6 +104,9 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
 
         Route::resource('ticketRecordFile', TicketRecordFileController::class)->only(['show', 'destroy']);
         Route::get('ticketRecordFile/{ticketRecordFile}/getContent', [TicketRecordFileController::class, 'getContent'])->name('ticketRecordFile.getContent');
+
+        Route::resource('ticketFile', TicketFileController::class)->only(['show', 'destroy']);
+        Route::get('ticketFile/{ticketFile}/getContent', [TicketFileController::class, 'getContent'])->name('ticketFile.getContent');
     });
 });
 

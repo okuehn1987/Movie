@@ -530,6 +530,12 @@ export type TicketRecordFile = DBObject<'ticketRecordFile'> & {
     original_name: string;
 };
 
+export type TicketFile = DBObject<'ticketFile'> & {
+    ticket_id: Ticket['id'];
+    path: string;
+    original_name: string;
+};
+
 export type PermissionValue = 'read' | 'write' | null;
 
 export type Permission = {
@@ -583,6 +589,8 @@ export type CustomerOperatingSite = DBObject<'customerOperatingSite'> & {
 };
 
 export type JSON = string | number | boolean | null | { [x: string]: JSON } | JSON[];
+
+export type FileType = 'ticketRecordFile' | 'ticketFile';
 
 export type CustomerNoteFolder = DBObject<'customerNoteFolder'> & {
     customer_id: Customer['id'];
@@ -740,6 +748,10 @@ export type RelationMap = {
             pivot: TicketUser;
         })[];
         records: TicketRecord[];
+        files: TicketFile[];
+    };
+    ticketFile: {
+        ticket: Ticket;
     };
     ticketRecord: {
         ticket: Ticket;

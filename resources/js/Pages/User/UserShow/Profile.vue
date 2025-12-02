@@ -10,6 +10,7 @@ const props = defineProps<{
     status?: string;
     user: User;
     users: Pick<User, 'id' | 'first_name' | 'last_name' | 'job_role'>[];
+    substitute_ids: User['id'][];
 }>();
 
 const notificationForm = useForm({
@@ -18,7 +19,7 @@ const notificationForm = useForm({
 });
 
 const substituteForm = useForm({
-    substitute_ids: [] as User['id'][],
+    substitute_ids: props.substitute_ids,
 });
 </script>
 <template>

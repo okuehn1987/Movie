@@ -1,15 +1,23 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
+import { FileType } from '@/types/types';
 
 defineProps<{
-    file: { id: number; name: string; type: 'ticketRecordFile' };
+    file: { id: number; name: string; type: FileType };
     backurl: string;
 }>();
 </script>
 <template>
     <AdminLayout :title="file.name" :backurl="backurl" class="full-page-layout">
         <div class="embed-wrapper">
-            <embed :src="{ ticketRecordFile: route('ticketRecordFile.getContent', { ticketRecordFile: file.id }) }[file.type]" />
+            <embed
+                :src="
+                    {
+                        ticketRecordFile: route('ticketRecordFile.getContent', { ticketRecordFile: file.id }),
+                        ticketFile: route('ticketFile.getContent', { ticketFile: file.id }),
+                    }[file.type]
+                "
+            />
         </div>
     </AdminLayout>
 </template>
