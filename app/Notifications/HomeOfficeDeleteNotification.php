@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use App\Enums\Status;
 use App\Models\HomeOfficeDay;
-use App\Models\HomeOfficeDayGenerator;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;

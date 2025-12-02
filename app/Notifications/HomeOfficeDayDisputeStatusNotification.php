@@ -3,14 +3,9 @@
 namespace App\Notifications;
 
 use App\Enums\Status;
-use App\Models\HomeOfficeDay;
 use App\Models\HomeOfficeDayGenerator;
-use App\Models\User;
 use Carbon\Carbon;
-use Exception;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;

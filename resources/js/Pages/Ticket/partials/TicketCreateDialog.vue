@@ -224,7 +224,6 @@ watch(
                                             label="Ressourcen"
                                             :error-messages="ticketForm.errors.resources"
                                             v-model="ticketForm.resources"
-                                            auto-grow
                                         ></v-textarea>
                                     </v-col>
                                     <v-col cols="12">

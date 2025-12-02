@@ -155,7 +155,7 @@ function setUserData() {
                 weekdays,
             });
         }
-        console.log(userForm.home_office_day_generators, props.user.home_office_day_generators);
+
         for (const entry of props.user.home_office_day_generators) {
             const weekdays = [] as Weekday[];
             for (const w of WEEKDAYS) if (entry[w]) weekdays.push(w);

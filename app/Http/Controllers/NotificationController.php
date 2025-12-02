@@ -18,13 +18,10 @@ use App\Notifications\TicketRecordCreationNotification;
 use App\Notifications\TicketUpdateNotification;
 use App\Notifications\WorkLogNotification;
 use App\Notifications\WorkLogPatchNotification;
-use Carbon\Carbon;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Notifications\DatabaseNotification;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {

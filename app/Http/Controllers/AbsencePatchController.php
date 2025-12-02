@@ -22,12 +22,12 @@ class AbsencePatchController extends Controller
 
         $validated = $request->validate([
             'start' => ['required', 'date', function ($attr, $val, $fail) use ($absence, $request) {
-                // if (
-                //     AbsencePatch::getCurrentEntries($absence->user)
-                //     ->where('start', '<=', $request['end'])
-                //     ->where('end', '>=', $request['start'])
-                //     ->count() > 0
-                // ) $fail('In diesem Zeitraum besteht bereits eine Abwesenheit.');
+                if (
+                    AbsencePatch::getCurrentEntries($absence->user)
+                    ->where('start', '<=', $request['end'])
+                    ->where('end', '>=', $request['start'])
+                    ->count() > 0
+                ) $fail('In diesem Zeitraum besteht bereits eine Abwesenheit.');
             }],
             'end' => 'required|date|after_or_equal:start',
             'absence_type_id' => ['required', Rule::in(AbsenceType::inOrganization()->get()->pluck('id'))],

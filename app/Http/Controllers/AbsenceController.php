@@ -7,7 +7,6 @@ use App\Models\AbsencePatch;
 use App\Models\AbsenceType;
 use App\Enums\Status;
 use App\Models\HomeOfficeDay;
-use App\Models\HomeOfficeDayGenerator;
 use App\Models\OperatingSite;
 use App\Models\Organization;
 use App\Models\User;
@@ -20,7 +19,6 @@ use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
