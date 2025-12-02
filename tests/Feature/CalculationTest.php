@@ -5,7 +5,9 @@ namespace Tests\Feature;
 use App\Models\AbsenceType;
 use App\Models\Shift;
 use App\Models\User;
+use App\Models\UserTrustWorkingHour;
 use App\Models\WorkLog;
+use Carbon\Carbon;
 use Exception;
 use Tests\TestCase;
 
@@ -718,23 +720,18 @@ class CalculationTest extends TestCase
 
     public function test_user_trust_working_hours()
     {
-        $date = now()->subDays(6);
-        // user trust working hours für einen tag
-        // travelto tag
-        // $this->oldUser->removeMissingWorkTimeForDate($date);
-        // dasselbe mit einer abwesenheit an diesem tag -> ergebnis sollte dasselbe sein
+        $date = Carbon::parse('2025-06-15');
+        UserTrustWorkingHour::create([
+            'user_id' => $this->oldUser->id,
+            'active_since' => $date,
+            'active_until' => $date,
+        ]);
+        $this->travelto($date);
         $this->oldUser->removeMissingWorkTimeForDate($date);
 
-        $workLog = $this->oldUser->workLogs()->create([
-            'start' =>  $date,
-            'end' =>  $date->copy()->addHours(6),
-            'status' => 'accepted',
-            'accepted_at' => $date
-        ]);
+        $this->assertEquals(0, $this->oldUser->defaultTimeAccount->fresh()->balance);
 
-        $this->assertEquals(- (1 * 3600 + 30 * 60), $this->oldUser->defaultTimeAccount->fresh()->balance);
-
-        $absence = $this->oldUser->absences()->create([
+        $this->oldUser->absences()->create([
             'start' =>  $date,
             'end' =>  $date,
             'status' => 'accepted',
@@ -743,10 +740,6 @@ class CalculationTest extends TestCase
         ]);
 
         $this->assertEquals(0, $this->oldUser->defaultTimeAccount->fresh()->balance);
-
-        $absence->fresh()->delete();
-
-        $this->assertEquals(- (1 * 3600 + 30 * 60), $this->oldUser->defaultTimeAccount->fresh()->balance);
     }
 
     // public function test_missing_break_in_absence()
