@@ -128,12 +128,11 @@ class OrganizationController extends Controller
         return Inertia::render('Organization/OrganizationShow', [
             'organization' => $organization,
             'flags' => Organization::$FLAGS,
-            'operating_sites' => OperatingSite::inOrganization()->get(),
-            'operating_times' => OperatingTime::inOrganization()->get(),
-            'absence_types' => AbsenceType::inOrganization()->get(),
+            'operating_sites' => $organization->operatingSites()->get(),
+            'absence_types' => $organization->absenceTypes()->get(),
             'absence_type_defaults' => AbsenceType::getTypes(),
-            'special_working_hours_factors' => SpecialWorkingHoursFactor::inOrganization()->get(),
-            'timeAccountSettings' => TimeAccountSetting::inOrganization()->get(),
+            'special_working_hours_factors' => $organization->specialWorkingHoursFactors()->get(),
+            'timeAccountSettings' => $organization->timeAccountSettings()->get(),
             'can' => [
                 'organization' => [
                     'update' => Gate::allows('update', $organization),
