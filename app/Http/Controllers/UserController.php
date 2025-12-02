@@ -99,7 +99,7 @@ class UserController extends Controller
             'home_office_hours_per_week' => 'nullable|min:0|numeric',
 
             'home_office_day_generators' => 'present|array',
-            'home_office_day_generators.*.id' => 'nullable|exists:home_office_day_generators,id',
+            'home_office_day_generators.*.id' => ['nullable', Rule::exists('home_office_day_generators', 'id')->whereIn('user_id', User::inOrganization()->select('id'))],
             'home_office_day_generators.*.weekdays' => 'required|array',
             'home_office_day_generators.*.weekdays.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'home_office_day_generators.*.start' =>  ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
@@ -112,9 +112,10 @@ class UserController extends Controller
                     ]);
                 }
             }],
-            'home_office_day_generators.*.end' => 'required|date|after_or_equal:home_office_day_generators.*.start',
-
-            'user_working_hours' => 'present|array',
+            'home_office_day_generators.*.end' => ['required', 'date', 'after_or_equal:home_office_day_generators.*.start', function ($attribute, $value, $fail) use ($request) {
+                if (!$request['home_office'] && Carbon::parse($value)->gt(Carbon::now()->startOfDay())) $fail('The ' . $attribute . ' is invalid.');
+            }],
+            +'user_working_hours' => 'present|array',
             'user_working_hours.*.id' => 'nullable|exists:user_working_hours,id',
             'user_working_hours.*.weekly_working_hours' => 'required|min:0|decimal:0,2',
             'user_working_hours.*.active_since' => ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {

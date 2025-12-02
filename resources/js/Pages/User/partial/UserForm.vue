@@ -2,7 +2,7 @@
 import { Country, CountryProp, DateString, FederalState, Group, OperatingSite, Permission, User, UserLeaveDays, Weekday } from '@/types/types';
 import { getBrowser, getStates } from '@/utils';
 import { DateTime, Info } from 'luxon';
-import { nextTick } from 'vue';
+import { nextTick, onMounted, watch } from 'vue';
 import HertaUserFormSections from './HertaUserFormSections.vue';
 import PermissionSelector from './PermissionSelector.vue';
 import { FormData, UserProp } from './userFormTypes';
@@ -23,7 +23,7 @@ const emit = defineEmits<{
 
 const WEEKDAYS = Info.weekdays('long', { locale: 'en' }).map(e => e.toLowerCase()) as Weekday[];
 
-const userForm = useForm<FormData>({
+const userFormDefaults: FormData = {
     first_name: '',
     last_name: '',
     email: '',
@@ -100,83 +100,103 @@ const userForm = useForm<FormData>({
         ticket_permission: null,
         ticket_accounting_permission: null,
     },
-});
+};
+const userForm = useForm<FormData>(userFormDefaults);
 
-if (props.user) {
-    userForm.first_name = props.user.first_name;
-    userForm.last_name = props.user.last_name;
-    userForm.email = props.user.email;
-    userForm.date_of_birth = props.user.date_of_birth;
-    userForm.city = props.user.current_address.city ?? '';
-    userForm.zip = props.user.current_address.zip ?? '';
-    userForm.street = props.user.current_address.street ?? '';
-    userForm.house_number = props.user.current_address.house_number ?? '';
-    userForm.address_suffix = props.user.current_address.address_suffix ?? '';
-    userForm.country = props.user.current_address.country ?? ('' as Country);
-    userForm.federal_state = props.user.current_address.federal_state ?? ('' as FederalState);
-    userForm.phone_number = props.user.phone_number ?? '';
-    userForm.staff_number = props.user.staff_number;
-    userForm.job_role = props.user.job_role;
-    userForm.password = props.user.password;
-    userForm.group_id = props.user.group_id;
-    userForm.operating_site_id = props.user.operating_site_id;
-    userForm.supervisor_id = props.user.supervisor_id;
-    userForm.resignation_date = props.user.resignation_date;
-    userForm.home_office = props.user.home_office;
-    userForm.home_office_hours_per_week = props.user.home_office_hours_per_week;
-    userForm.overtime_calculations_start = props.user.overtime_calculations_start;
-    userForm.use_time_balance_traffic_light = props.user.time_balance_red_threshold !== null && props.user.time_balance_yellow_threshold !== null;
-    userForm.time_balance_yellow_threshold = props.user.time_balance_yellow_threshold;
-    userForm.time_balance_red_threshold = props.user.time_balance_red_threshold;
+function setUserData() {
+    if (props.user) {
+        userForm.first_name = props.user.first_name;
+        userForm.last_name = props.user.last_name;
+        userForm.email = props.user.email;
+        userForm.date_of_birth = props.user.date_of_birth;
+        userForm.city = props.user.current_address.city ?? '';
+        userForm.zip = props.user.current_address.zip ?? '';
+        userForm.street = props.user.current_address.street ?? '';
+        userForm.house_number = props.user.current_address.house_number ?? '';
+        userForm.address_suffix = props.user.current_address.address_suffix ?? '';
+        userForm.country = props.user.current_address.country ?? ('' as Country);
+        userForm.federal_state = props.user.current_address.federal_state ?? ('' as FederalState);
+        userForm.phone_number = props.user.phone_number ?? '';
+        userForm.staff_number = props.user.staff_number;
+        userForm.job_role = props.user.job_role;
+        userForm.password = props.user.password;
+        userForm.group_id = props.user.group_id;
+        userForm.operating_site_id = props.user.operating_site_id;
+        userForm.supervisor_id = props.user.supervisor_id;
+        userForm.resignation_date = props.user.resignation_date;
+        userForm.home_office = props.user.home_office;
+        userForm.home_office_hours_per_week = props.user.home_office_hours_per_week;
+        userForm.overtime_calculations_start = props.user.overtime_calculations_start;
+        userForm.use_time_balance_traffic_light = props.user.time_balance_red_threshold !== null && props.user.time_balance_yellow_threshold !== null;
+        userForm.time_balance_yellow_threshold = props.user.time_balance_yellow_threshold;
+        userForm.time_balance_red_threshold = props.user.time_balance_red_threshold;
 
-    userForm.user_leave_days = props.user.user_leave_days
-        .filter(e => e !== null)
-        .map(e => ({ ...e, active_since: DateTime.fromSQL(e.active_since).toFormat('yyyy-MM') }));
-    if (userForm.user_leave_days.length == 0)
-        userForm.user_leave_days.push({ id: null, active_since: DateTime.now().toFormat('yyyy-MM'), leave_days: 0 });
+        userForm.user_leave_days = props.user.user_leave_days
+            .filter(e => e !== null)
+            .map(e => ({ ...e, active_since: DateTime.fromSQL(e.active_since).toFormat('yyyy-MM') }));
+        if (userForm.user_leave_days.length == 0)
+            userForm.user_leave_days.push({ id: null, active_since: DateTime.now().toFormat('yyyy-MM'), leave_days: 0 });
 
-    userForm.user_working_hours = props.user.user_working_hours ?? [];
-    if (userForm.user_working_hours.length == 0)
-        userForm.user_working_hours.push({ id: null, active_since: DateTime.now().plus({ day: 1 }).toFormat('yyyy-MM-dd'), weekly_working_hours: 0 });
+        userForm.user_working_hours = props.user.user_working_hours ?? [];
+        if (userForm.user_working_hours.length == 0)
+            userForm.user_working_hours.push({
+                id: null,
+                active_since: DateTime.now().plus({ day: 1 }).toFormat('yyyy-MM-dd'),
+                weekly_working_hours: 0,
+            });
 
-    for (const entry of props.user.user_working_weeks) {
-        const weekdays = [] as Weekday[];
-        for (const w of WEEKDAYS) if (entry[w]) weekdays.push(w);
+        for (const entry of props.user.user_working_weeks) {
+            const weekdays = [] as Weekday[];
+            for (const w of WEEKDAYS) if (entry[w]) weekdays.push(w);
 
-        userForm.user_working_weeks.push({
-            id: entry.id,
-            active_since: entry.active_since,
-            weekdays,
-        });
-    }
-    for (const entry of props.user.home_office_day_generators) {
-        const weekdays = [] as Weekday[];
-        for (const w of WEEKDAYS) if (entry[w]) weekdays.push(w);
+            userForm.user_working_weeks.push({
+                id: entry.id,
+                active_since: entry.active_since,
+                weekdays,
+            });
+        }
+        console.log(userForm.home_office_day_generators, props.user.home_office_day_generators);
+        for (const entry of props.user.home_office_day_generators) {
+            const weekdays = [] as Weekday[];
+            for (const w of WEEKDAYS) if (entry[w]) weekdays.push(w);
 
-        userForm.home_office_day_generators.push({
-            id: entry.id,
-            start: entry.start,
-            end: entry.end,
-            weekdays,
-        });
-    }
-    if (userForm.user_working_weeks.length == 0)
-        userForm.user_working_weeks.push({ id: null, active_since: DateTime.now().plus({ day: 1 }).toFormat('yyyy-MM-dd'), weekdays: [] });
+            userForm.home_office_day_generators.push({
+                id: entry.id,
+                start: entry.start,
+                end: entry.end,
+                weekdays,
+            });
+        }
+        if (userForm.user_working_weeks.length == 0)
+            userForm.user_working_weeks.push({ id: null, active_since: DateTime.now().plus({ day: 1 }).toFormat('yyyy-MM-dd'), weekdays: [] });
 
-    for (const key in userForm.organizationUser) {
-        userForm.organizationUser[key as keyof typeof userForm.organizationUser] =
-            props.user.organization_user[key as keyof typeof userForm.organizationUser];
-    }
-    for (const key in userForm.groupUser) {
-        userForm.groupUser[key as keyof typeof userForm.groupUser] = (props.user.group_user ?? userForm.groupUser)[
-            key as keyof typeof userForm.groupUser
-        ];
-    }
-    for (const key in userForm.operatingSiteUser) {
-        userForm.operatingSiteUser[key as keyof typeof userForm.operatingSiteUser] =
-            props.user.operating_site_user[key as keyof typeof userForm.operatingSiteUser];
+        for (const key in userForm.organizationUser) {
+            userForm.organizationUser[key as keyof typeof userForm.organizationUser] =
+                props.user.organization_user[key as keyof typeof userForm.organizationUser];
+        }
+        for (const key in userForm.groupUser) {
+            userForm.groupUser[key as keyof typeof userForm.groupUser] = (props.user.group_user ?? userForm.groupUser)[
+                key as keyof typeof userForm.groupUser
+            ];
+        }
+        for (const key in userForm.operatingSiteUser) {
+            userForm.operatingSiteUser[key as keyof typeof userForm.operatingSiteUser] =
+                props.user.operating_site_user[key as keyof typeof userForm.operatingSiteUser];
+        }
     }
 }
+
+onMounted(() => setUserData());
+
+watch(
+    () => props.user,
+    () => {
+        userForm.defaults(userFormDefaults);
+        userForm.reset();
+        setUserData();
+    },
+    { deep: true },
+);
 function submit() {
     const form = userForm.transform(data => ({
         ...data,
@@ -599,6 +619,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                         <v-checkbox
                             v-model="userForm.home_office"
                             label="Darf der Mitarbeitende Homeoffice machen?"
+                            :disabled="!!userForm.home_office_day_generators.find(g => g.end && DateTime.fromSQL(g.end) > DateTime.now())"
                             :error-messages="userForm.errors.home_office"
                             @update:model-value="
                                 v => {
@@ -646,6 +667,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                         >
                             <template v-slot:header.actions>
                                 <v-btn
+                                    :disabled="!userForm.home_office"
                                     v-if="!user || can('user', 'update')"
                                     color="primary"
                                     @click.stop="userForm.home_office_day_generators.push({ start: '', end: '', id: null, weekdays: [] })"

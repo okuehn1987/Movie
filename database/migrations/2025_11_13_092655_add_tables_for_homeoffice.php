@@ -30,7 +30,7 @@ return new class extends Migration
         Schema::create('home_office_days', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained();
-            $table->foreignId('home_office_day_generator_id')->nullable()->constrained();
+            $table->foreignId('home_office_day_generator_id')->nullable()->constrained()->cascadeOnDelete();
             $table->date('date');
             $table->enum('status', ["created", "declined", "accepted"]);
             $table->softDeletes();
