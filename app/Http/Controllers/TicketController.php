@@ -100,7 +100,7 @@ class TicketController extends Controller
                     array_key_exists('start', $validated) && array_key_exists('end', $validated) && $validated['start'] != null && $validated['end'] != null,
                     fn($q) => $q->whereBetween('tickets.finished_at', [Carbon::parse($validated['start'])->startOfDay(), Carbon::parse($validated['end'])->endOfDay()])
                 )
-                ->paginate(14),
+                ->paginate(13),
             'customers' => fn() => Customer::inOrganization()->get(['id', 'name']),
             'users' => fn() => User::inOrganization()->get(['id', 'first_name', 'last_name', 'job_role']),
             'operatingSites' => fn() => collect([['title' => 'Homeoffice', 'value' => ['id' => $authUser->id, 'type' => User::class]]])

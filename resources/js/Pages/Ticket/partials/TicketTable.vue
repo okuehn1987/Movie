@@ -8,6 +8,7 @@ import { PRIORITIES } from '@/types/types';
 import { ref } from 'vue';
 import { DateTime } from 'luxon';
 import TicketFinishDialog from './TicketFinishDialog.vue';
+import { useMaxScrollHeight } from '@/utils';
 
 defineProps<{
     tickets: TicketProp[];
@@ -18,12 +19,14 @@ defineProps<{
 }>();
 
 const search = ref('');
+const height = useMaxScrollHeight(48);
 
 const acceptTicketForm = useForm({});
 </script>
 <template>
     <v-card>
         <v-data-table-virtual
+            :style="{ maxHeight: height }"
             fixed-header
             :headers="[
                 { title: 'Prio', key: 'priorityText', width: '1px' },
