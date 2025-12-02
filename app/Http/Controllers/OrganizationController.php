@@ -107,13 +107,14 @@ class OrganizationController extends Controller
                 ->mapWithKeys(fn($p) => [$p => 1])
                 ->toArray()
         ]);
+        $org->timeAccountSettings()->createMany(TimeAccountSetting::getDefaultSettings());
 
-        $defaultTimeAccountSetting = $org->timeAccountSettings()->createMany(TimeAccountSetting::getDefaultSettings());
+        $defaultTimeAccountSetting = $org->timeAccountSettings()->where('truncation_cycle_length_in_months', null)->first();
 
         $user->timeAccounts()->create([
             'name' => 'Gleitzeitkonto',
             'balance' => 0,
-            'balance_limit' => 40 * 2 * 3600,
+            'balance_limit' => 0,
             'time_account_setting_id' => $defaultTimeAccountSetting->id,
         ]);
 
