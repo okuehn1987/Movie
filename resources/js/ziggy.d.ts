@@ -243,6 +243,7 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "notification.readAll": [],
     "profile.update": [],
     "profile.updateSettings": [],
     "user.index": [],

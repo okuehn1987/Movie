@@ -25,6 +25,11 @@ function readNotification(item: Notification) {
         }),
     );
 }
+
+function readAllNotifications() {
+    if (props.tab == 'archive') return;
+    router.post(route('notification.readAll'), { tab: props.tab });
+}
 </script>
 <template>
     <v-data-table-virtual
@@ -43,6 +48,9 @@ function readNotification(item: Notification) {
         "
         no-data-text="Keine ungelesenen Benachrichtigungen"
     >
+        <template v-slot:header.actions v-if="tab != 'archive'">
+            <v-btn color="primary" @click.stop="readAllNotifications">alle als gelesen markieren</v-btn>
+        </template>
         <template v-slot:item.created_at="{ item }">
             {{ DateTime.fromISO(item.created_at).toFormat('dd.MM.yyyy HH:mm') }}
         </template>
