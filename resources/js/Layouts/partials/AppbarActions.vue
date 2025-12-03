@@ -8,7 +8,11 @@ const display = useDisplay();
 
 <template>
     <v-btn color="primary" stacked @click.stop="router.get(route('notification.index'))">
-        <v-badge v-if="$page.props.unreadNotifications.length > 0" :content="$page.props.unreadNotifications.length" color="error">
+        <v-badge
+            v-if="$page.props.unreadNotifications.length > 0"
+            :content="$page.props.unreadNotifications.length <= 99 ? $page.props.unreadNotifications.length : '99+'"
+            color="error"
+        >
             <v-icon icon="mdi-bell"></v-icon>
         </v-badge>
         <v-icon v-else icon="mdi-bell"></v-icon>

@@ -25,8 +25,7 @@ class DashboardController extends Controller
             ->filter(fn($a) => $a['end'] !== null)
             ->values();
 
-
-        $hertaProps = [];
+        $tideProps = [];
         if (AppModuleService::hasAppModule('tide')) {
             $lastWeekEntries =
                 $user->currentWeekShifts
@@ -37,7 +36,7 @@ class DashboardController extends Controller
                 ->map(fn($e) => collect($e->append('duration'))->only(['id', 'start', 'end', 'duration']))
                 ->values();
 
-            $hertaProps = [
+            $tideProps = [
                 'overtime' => $user->overtime,
                 'workingHours' => $user->currentWeekWorkingHours,
                 'lastWeekEntries' => $lastWeekEntries,
@@ -48,7 +47,7 @@ class DashboardController extends Controller
             'user' => [...$user->load(['latestWorkLog'])->toArray(), 'current_shift' => $user->currentShift()->first(['id', 'user_id', 'start', 'end'])?->append('current_work_duration')],
             'supervisor' => User::select('id', 'first_name', 'last_name')->find($user->supervisor_id),
             'currentAbsences' => $currentAbsences,
-            ...$hertaProps,
+            ...$tideProps,
         ]);
     }
 }

@@ -65,7 +65,6 @@ class CustomerController extends Controller
             default => 'newTickets',
         };
 
-
         $ticketQuery = $customer->tickets()->with([
             'customer:id,name',
             'user:id,first_name,last_name',
@@ -74,6 +73,7 @@ class CustomerController extends Controller
             'files',
             'records.files'
         ]);
+
         return Inertia::render('Customer/CustomerShow', [
             'customer' => $customer->load('contacts'),
             'operatingSites' => $customer->customerOperatingSites()->with('currentAddress')->get(),
@@ -86,8 +86,8 @@ class CustomerController extends Controller
                 ->get(['id', 'type', 'title', 'value', 'updated_at', 'metadata', 'modified_by']),
             'users' => User::inOrganization()->get(),
             'tickets' => fn() => (clone $ticketQuery)
-                ->whereNull('tickets.finished_at')
-                ->orWhereHas('records', fn($q) => $q->whereNull('accounted_at'))
+                ->where(fn($q) => $q->whereNull('tickets.finished_at')
+                    ->orWhereHas('records', fn($q2) => $q2->whereNull('accounted_at')))
                 ->get()
                 ->map(fn($t) => [
                     ...$t->toArray(),

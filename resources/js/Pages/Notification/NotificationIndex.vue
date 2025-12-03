@@ -19,11 +19,21 @@ const currentTab = ref(route().params['tab'] || 'flow');
             <v-tabs v-model="currentTab">
                 <v-tab value="flow" v-if="can('app', 'flow')">
                     Flow
-                    <v-badge v-if="flowNotifications.total > 0" :content="flowNotifications.total" color="error" inline></v-badge>
+                    <v-badge
+                        v-if="flowNotifications.total > 0"
+                        :content="flowNotifications.total <= 99 ? flowNotifications.total : '99+'"
+                        color="error"
+                        inline
+                    ></v-badge>
                 </v-tab>
                 <v-tab value="tide" v-if="can('app', 'tide')">
                     Tide
-                    <v-badge v-if="tideNotifications.total > 0" :content="tideNotifications.total" color="error" inline></v-badge>
+                    <v-badge
+                        v-if="tideNotifications.total > 0"
+                        :content="tideNotifications.total <= 99 ? tideNotifications.total : '99+'"
+                        color="error"
+                        inline
+                    ></v-badge>
                 </v-tab>
                 <v-tab value="archive">Archiv</v-tab>
             </v-tabs>
