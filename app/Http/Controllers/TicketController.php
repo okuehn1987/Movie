@@ -9,7 +9,6 @@ use App\Models\OperatingSite;
 use App\Models\Organization;
 use App\Models\Ticket;
 use App\Models\TicketRecord;
-use App\Models\TicketRecordFile;
 use App\Models\User;
 use App\Notifications\RemovedFromTicketNotification;
 use App\Notifications\TicketCreationNotification;
@@ -101,7 +100,7 @@ class TicketController extends Controller
                     array_key_exists('start', $validated) && array_key_exists('end', $validated) && $validated['start'] != null && $validated['end'] != null,
                     fn($q) => $q->whereBetween('tickets.finished_at', [Carbon::parse($validated['start'])->startOfDay(), Carbon::parse($validated['end'])->endOfDay()])
                 )
-                ->paginate(14),
+                ->paginate(13),
             'customers' => fn() => Customer::inOrganization()->get(['id', 'name']),
             'users' => fn() => User::inOrganization()->get(['id', 'first_name', 'last_name', 'job_role']),
             'operatingSites' => fn() => collect([['title' => 'Homeoffice', 'value' => ['id' => $authUser->id, 'type' => User::class]]])
@@ -187,8 +186,7 @@ class TicketController extends Controller
             $ticket->assignees()->updateExistingPivot($authUser->id, ['status' => 'accepted']);
         }
 
-        $model = $ticket;
-        if (isset($record)) $model = $record;
+        $model = isset($record) ? $record : $ticket;
         foreach ($validated['files'] as $file) {
             $path = Storage::disk($validated["tab"] === "expressTicket" ? 'ticket_record_files' : 'ticket_files')->putFile($file);
             $model->files()->create([

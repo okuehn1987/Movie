@@ -15,7 +15,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use App\Notifications\PasswordResetNotification;
 
 class User extends Authenticatable
@@ -319,6 +318,16 @@ class User extends Authenticatable
     public function operatingSiteUser()
     {
         return $this->hasOne(OperatingSiteUser::class);
+    }
+
+    public function homeOfficeDays()
+    {
+        return $this->hasMany(HomeOfficeDay::class);
+    }
+
+    public function homeOfficeDayGenerators()
+    {
+        return $this->hasMany(HomeOfficeDayGenerator::class);
     }
 
     public function workingWeeks(): Attribute

@@ -56,7 +56,8 @@ class HasOrganizationAccess
                 => $instanceObject->operatingSite()->select('organization_id')->first()->organization_id,
 
                 $instanceObject instanceof \App\Models\TravelLog,  $instanceObject instanceof \App\Models\WorkLog,
-                $instanceObject instanceof \App\Models\WorkLogPatch, $instanceObject instanceof \App\Models\TicketRecord
+                $instanceObject instanceof \App\Models\WorkLogPatch, $instanceObject instanceof \App\Models\TicketRecord,
+                $instanceObject instanceof \App\Models\HomeOfficeDay, $instanceObject instanceof \App\Models\HomeOfficeDayGenerator
                 => $instanceObject->user->operatingSite()->select('organization_id')->first()->organization_id,
 
                 $instanceObject instanceof Organization

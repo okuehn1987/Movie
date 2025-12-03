@@ -7,6 +7,9 @@ use App\Notifications\AbsenceDeleteNotification;
 use App\Notifications\AbsenceNotification;
 use App\Notifications\AbsencePatchNotification;
 use App\Notifications\DisputeStatusNotification;
+use App\Notifications\HomeOfficeDayDisputeStatusNotification;
+use App\Notifications\HomeOfficeDayNotification;
+use App\Notifications\HomeOfficeDeleteNotification;
 use App\Notifications\RemovedFromTicketNotification;
 use App\Notifications\TicketCreationNotification;
 use App\Notifications\TicketDeletionNotification;
@@ -15,13 +18,10 @@ use App\Notifications\TicketRecordCreationNotification;
 use App\Notifications\TicketUpdateNotification;
 use App\Notifications\WorkLogNotification;
 use App\Notifications\WorkLogPatchNotification;
-use Carbon\Carbon;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Notifications\DatabaseNotification;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
@@ -31,7 +31,10 @@ class NotificationController extends Controller
         AbsencePatchNotification::class,
         DisputeStatusNotification::class,
         WorkLogNotification::class,
-        WorkLogPatchNotification::class
+        WorkLogPatchNotification::class,
+        HomeOfficeDayNotification::class,
+        HomeOfficeDeleteNotification::class,
+        HomeOfficeDayDisputeStatusNotification::class,
     ];
 
     public static $flowNotificationTypes = [
@@ -46,7 +49,7 @@ class NotificationController extends Controller
     public function index(#[CurrentUser] User $authUser)
     {
 
-        $archiveNotifications = $authUser->notifications()->paginate(10);
+        $archiveNotifications = $authUser->readNotifications()->paginate(10);
         $flowNotifications = $authUser->unreadNotifications()->whereIn('type', self::$flowNotificationTypes)->paginate(10);
         $tideNotifications = $authUser->unreadNotifications()->whereIn('type', self::$tideNotificationTypes)->paginate(10);
 

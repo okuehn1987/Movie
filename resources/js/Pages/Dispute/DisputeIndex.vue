@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { AbsenceType } from '@/types/types';
+import { AbsenceType, HomeOfficeDayGenerator, User } from '@/types/types';
+import AbsenceDeleteRequests from './partial/AbsenceDeleteRequests.vue';
 import AbsencePatchRequests from './partial/AbsencePatchRequests.vue';
 import AbsenceRequests from './partial/AbsenceRequests.vue';
-import { AbsencePatchProp, AbsenceProp, UserProp, WorkLogPatchProp, WorkLogProp } from './partial/disputeTypes';
+import { AbsencePatchProp, AbsenceProp, HomeOfficeDayProp, UserProp, WorkLogPatchProp, WorkLogProp } from './partial/disputeTypes';
+import HomeOfficeDayRequests from './partial/HomeOfficeDayRequests.vue';
 import WorkLogPatches from './partial/WorkLogPatches.vue';
-import AbsenceDeleteRequests from './partial/AbsenceDeleteRequests.vue';
 import WorkLogRequests from './partial/WorkLogRequests.vue';
+import HomeOfficeDayDeleteRequests from './partial/HomeOfficeDayDeleteRequests.vue';
 
 defineProps<{
     absenceRequests: (AbsenceProp & {
@@ -21,6 +23,13 @@ defineProps<{
     absenceDeleteRequests: (AbsenceProp & {
         absence_type: Pick<AbsenceType, 'id' | 'name'>;
         user: UserProp;
+    })[];
+    homeOfficeDayRequests: (Pick<HomeOfficeDayGenerator, 'id' | 'start' | 'end' | 'created_as_request' | 'user_id'> & {
+        user: Pick<User, 'id' | 'first_name' | 'last_name' | 'operating_site_id' | 'supervisor_id'>;
+    })[];
+    homeOfficeDayDeleteRequests: (HomeOfficeDayProp & {
+        user: Pick<User, 'id' | 'first_name' | 'last_name'>;
+        homeOfficeDayGenerator: Pick<HomeOfficeDayGenerator, 'id' | 'start' | 'end' | 'created_as_request'>;
     })[];
     workLogPatchRequests?: WorkLogPatchProp[];
     workLogRequests?: WorkLogProp[];
@@ -37,6 +46,8 @@ defineProps<{
                     ...absenceDeleteRequests,
                     ...absencePatchRequests,
                     ...(workLogRequests ? workLogRequests : []),
+                    ...homeOfficeDayRequests,
+                    ...homeOfficeDayDeleteRequests,
                 ].length == 0
             "
         >
@@ -50,12 +61,22 @@ defineProps<{
                             <AbsenceRequests :absenceRequests="absenceRequests" />
                         </v-card>
                     </v-col>
+                    <v-col v-if="homeOfficeDayRequests.length > 0" cols="12">
+                        <v-card title="Homeoffice">
+                            <HomeOfficeDayRequests :homeOfficeDayRequests="homeOfficeDayRequests" />
+                        </v-card>
+                    </v-col>
                     <v-col v-if="workLogPatchRequests && workLogPatchRequests.length > 0" cols="12">
                         <v-card title="Zeitkorrekturen"><WorkLogPatches :patches="workLogPatchRequests" /></v-card>
                     </v-col>
                     <v-col v-if="absenceDeleteRequests.length > 0" cols="12">
                         <v-card title="Abwesenheitslöschungen">
                             <AbsenceDeleteRequests :requestedDeletes="absenceDeleteRequests" />
+                        </v-card>
+                    </v-col>
+                    <v-col v-if="homeOfficeDayDeleteRequests.length > 0" cols="12">
+                        <v-card title="Homeofficelöschungen">
+                            <HomeOfficeDayDeleteRequests :requestedDeletes="homeOfficeDayDeleteRequests" />
                         </v-card>
                     </v-col>
                     <!-- <v-col cols="12">
