@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Canable, DATETIME_LOCAL_FORMAT, Relations, TicketRecord, TicketRecordFile } from '@/types/types';
+import { DATETIME_LOCAL_FORMAT } from '@/types/types';
 import { secondsToDuration } from '@/utils';
 import { DateTime } from 'luxon';
 import { computed, ref, watch } from 'vue';
@@ -8,7 +8,7 @@ import { OperatingSiteProp, TicketProp, UserProp } from './ticketTypes';
 const props = defineProps<{
     users: UserProp[];
     ticket: TicketProp;
-    record?: TicketRecord & Canable & { files: TicketRecordFile[]; user: Relations<'ticketRecord'>['user'] };
+    record?: TicketProp['records'][number];
     operatingSites: OperatingSiteProp[];
 }>();
 

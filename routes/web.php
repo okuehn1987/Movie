@@ -47,6 +47,7 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::resource('operatingSite.operatingTime', OperatingTimeController::class)->only(['store', 'destroy'])->shallow();
 
     Route::resource('notification', NotificationController::class)->only(['index', 'update']);
+    Route::post('notification/readAll', [NotificationController::class, 'readAll'])->name('notification.readAll');
 
     Route::singleton('profile', ProfileController::class)->only(['update']);
     Route::post('profile', [ProfileController::class, 'updateSettings'])->name('profile.updateSettings');
