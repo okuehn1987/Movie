@@ -27,7 +27,7 @@ const form = useForm({
 });
 
 watch(
-    props.ticket,
+    () => props.ticket,
     () => {
         form.defaults({
             priority: props.ticket.priority,
@@ -60,7 +60,7 @@ function closeTicket() {
     if (route().current() === 'ticket.show') {
         router.get(route('ticket.index', { tab: props.tab }));
     } else {
-        const currentCustomer = route().routeParams['customer'];
+        const currentCustomer = route().routeParams?.['customer'];
         if (currentCustomer) router.get(route('customer.show', { customer: currentCustomer, tab: props.tab }));
         else showDialog.value = false;
     }
@@ -291,14 +291,16 @@ function copyRecordToClipBoard(record: TicketRecord & { userName: string }) {
                                                 <v-table density="compact">
                                                     <tbody class="bg-surface-medium">
                                                         <tr class="bg-surface-light">
-                                                            <th>Ressourcen</th>
+                                                            <th style="width: 1px">Ressourcen</th>
                                                             <td class="py-2">{{ item.resources }}</td>
                                                             <td></td>
                                                             <td></td>
                                                         </tr>
                                                         <tr>
-                                                            <th>Beschreibung</th>
-                                                            <td class="py-2">{{ item.description }}</td>
+                                                            <th style="width: 1px">Beschreibung</th>
+                                                            <td class="py-2">
+                                                                <pre style="font: unset">{{ item.description }}</pre>
+                                                            </td>
                                                             <td></td>
                                                             <td></td>
                                                         </tr>
@@ -307,7 +309,7 @@ function copyRecordToClipBoard(record: TicketRecord & { userName: string }) {
                                                             :class="{ 'bg-surface-light': index % 2 == 0 }"
                                                             :key="index"
                                                         >
-                                                            <th v-if="index == 0">Anhang</th>
+                                                            <th v-if="index == 0" style="width: 1px">Anhang</th>
                                                             <th v-else></th>
                                                             <td class="py-2">{{ file.original_name }}</td>
                                                             <td style="width: 1px; padding: 0">
