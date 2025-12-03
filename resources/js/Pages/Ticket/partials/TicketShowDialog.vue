@@ -292,7 +292,9 @@ function copyRecordToClipBoard(record: TicketRecord & { userName: string }) {
                                                     <tbody class="bg-surface-medium">
                                                         <tr class="bg-surface-light">
                                                             <th style="width: 1px">Ressourcen</th>
-                                                            <td class="py-2">{{ item.resources }}</td>
+                                                            <td class="py-2">
+                                                                <pre style="font: unset">{{ item.resources }}</pre>
+                                                            </td>
                                                             <td></td>
                                                             <td></td>
                                                         </tr>
