@@ -160,13 +160,14 @@ class DisputeController extends Controller
                 'user' => fn($q) => $q->select(['id', 'first_name', 'last_name', 'operating_site_id', 'supervisor_id'])->withTrashed()
             ])
             ->get(['id', 'user_id', 'start', 'end'])
-            ->filter(fn($log) => $authUser->can('update', [Absence::class, $log->user]))
+            ->filter(fn(HomeOfficeDayGenerator $generator) => $authUser->can('update', [Absence::class, $generator->user]))
             ->values();
     }
 
     public function getHomeOfficeDayDeleteRequests()
     {
         $authUser = request()->user();
+
         $openHomeOfficeDayDeleteNotifications = $authUser->notifications()
             ->where('type', HomeOfficeDeleteNotification::class)
             ->where('data->status', Status::Created)

@@ -104,11 +104,9 @@ class HomeOfficeDayController extends Controller
             $homeOfficeDayGenerator->user->notify(new HomeOfficeDayDisputeStatusNotification($homeOfficeDayGenerator, $is_accepted ? Status::Accepted : Status::Declined));
 
         if ($is_accepted) {
-            DB::table('home_office_days')->where('home_office_day_generator_id', $homeOfficeDayGenerator->id)
-                ->update(['status' => Status::Accepted]);
+            $homeOfficeDayGenerator->homeOfficeDays()->update(['status' => Status::Accepted]);
         } else {
-            DB::table('home_office_days')->where('home_office_day_generator_id', $homeOfficeDayGenerator->id)
-                ->update(['status' => Status::Declined]);
+            $homeOfficeDayGenerator->homeOfficeDays()->update(['status' => Status::Declined]);
         }
 
         return back()->with('success',  "Abwesenheit erfolgreich " . ($is_accepted ? 'akzeptiert' : 'abgelehnt') . ".");
