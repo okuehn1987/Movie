@@ -39,10 +39,10 @@ function getAccountedAt(records: TicketRecord[]) {
             :itemsPerPage
             :headers="[
                 { title: 'Ticket', key: 'reference_number', width: '100px', sortable: false },
-                { title: 'Datum', key: 'created_at', width: '1px', sortable: false },
+                { title: 'Erstellt am', key: 'created_at', sortable: false },
                 { title: 'Titel', key: 'title', sortable: false },
                 { title: 'Kunde', key: 'customer.name', sortable: false },
-                { title: 'Termin', key: 'appointment_at', sortable: false },
+                { title: 'Abgeschlossen', key: 'finished_at', sortable: false },
                 { title: 'Bearbeitet von', key: 'recordUserName', sortable: false },
                 { title: 'Abgerechnet am', key: 'accounted_at', sortable: false },
                 { title: '', key: 'actions', align: 'end', width: '250px', sortable: false },
@@ -72,10 +72,10 @@ function getAccountedAt(records: TicketRecord[]) {
                 <TicketArchiveFilter :customers :users :operating-sites></TicketArchiveFilter>
             </template>
             <template v-slot:item.created_at="{ item }">
-                {{ DateTime.fromISO(item.created_at).toFormat('dd.MM.yyyy') }}
+                {{ DateTime.fromISO(item.created_at).toFormat("dd.MM. 'um' HH:mm 'Uhr'") }}
             </template>
-            <template v-slot:item.appointment_at="{ item }">
-                {{ item.appointment_at ? DateTime.fromSQL(item.appointment_at).toFormat("dd.MM. 'um' HH:mm 'Uhr'") : '-' }}
+            <template v-slot:item.finished_at="{ item }">
+                {{ item.finished_at ? DateTime.fromSQL(item.finished_at).toFormat("dd.MM. 'um' HH:mm 'Uhr'") : '-' }}
             </template>
             <template v-slot:item.priorityText="{ item }">
                 <v-icon
