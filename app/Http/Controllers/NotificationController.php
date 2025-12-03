@@ -80,15 +80,10 @@ class NotificationController extends Controller
             'tab' => 'required|string|in:tide,flow',
         ]);
 
-        /** @var Illuminate\Notifications\DatabaseNotificationCollection $notifications */
-        $notifications = match ($validated['tab']) {
+        (match ($validated['tab']) {
             'tide' => $authUser->unreadNotifications()->whereIn('type', self::$tideNotificationTypes)->get(),
             'flow' => $authUser->unreadNotifications()->whereIn('type', self::$flowNotificationTypes)->get(),
-        };
-
-        foreach ($notifications as $notification) {
-            $notification->markAsRead();
-        }
+        })->markAsRead();
 
         return back();
     }

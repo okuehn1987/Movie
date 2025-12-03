@@ -49,7 +49,13 @@ function readAllNotifications() {
         no-data-text="Keine ungelesenen Benachrichtigungen"
     >
         <template v-slot:header.actions v-if="tab != 'archive'">
-            <v-btn color="primary" @click.stop="readAllNotifications">alle als gelesen markieren</v-btn>
+            <v-btn
+                variant="text"
+                title="Alle als gelesen markieren"
+                color="primary"
+                @click.stop="readAllNotifications"
+                icon="mdi-close-box-multiple"
+            ></v-btn>
         </template>
         <template v-slot:item.created_at="{ item }">
             {{ DateTime.fromISO(item.created_at).toFormat('dd.MM.yyyy HH:mm') }}
