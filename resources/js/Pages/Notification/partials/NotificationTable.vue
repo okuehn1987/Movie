@@ -18,11 +18,13 @@ const { currentPage, lastPage, data } = usePagination(
     { flow: 'flowNotifications', archive: 'archiveNotifications', tide: 'tideNotifications' }[props.tab],
 );
 
-function readNotification(item: Notification) {
+function readNotification(item: Notification, onSuccess?: () => void) {
     router.patch(
         route('notification.update', {
             notification: item.id,
         }),
+        {},
+        { onSuccess },
     );
 }
 
@@ -61,7 +63,13 @@ function readAllNotifications() {
             {{ DateTime.fromISO(item.created_at).toFormat('dd.MM.yyyy HH:mm') }}
         </template>
         <template v-slot:item.actions="{ item }">
-            <v-btn v-if="tab !== 'archive'" color="primary" icon="mdi-eye" variant="text" @click.stop="router.get(getNotificationUrl(item))">
+            <v-btn
+                v-if="tab !== 'archive'"
+                color="primary"
+                icon="mdi-eye"
+                variant="text"
+                @click.stop="readNotification(item, () => router.get(getNotificationUrl(item)))"
+            >
                 <v-icon icon="mdi-eye"></v-icon>
             </v-btn>
             <v-btn v-if="tab !== 'archive'" color="primary" icon="mdi-close" variant="text" @click.stop="readNotification(item)"></v-btn>

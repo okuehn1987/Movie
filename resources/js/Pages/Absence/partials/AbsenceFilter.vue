@@ -5,9 +5,9 @@ import { UserProp } from '../utils';
 import { useDisplay } from 'vuetify';
 
 const props = defineProps<{
-    user_absence_filters: UserAbsenceFilter[];
+    userAbsenceFilters: UserAbsenceFilter[];
     users: UserProp[];
-    absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval' | 'type'>[];
+    absenceTypes: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval' | 'type'>[];
     schoolHolidays: Record<string, { name: string; start: DateString; end: DateString }[]>;
     federal_state: FederalState;
     all_federal_states: Record<FederalState, string>;
@@ -56,8 +56,8 @@ watch(() => groupFilterForm.value.set, selectExistingFilter);
 function selectExistingFilter(newValue: typeof groupFilterForm.value.set) {
     if (newValue == null) return;
     let selectedFilter;
-    if (typeof newValue == 'object' && groupFilterForm.value.isDirty) selectedFilter = props.user_absence_filters.find(f => f.id == newValue.value);
-    else if (typeof newValue == 'string') selectedFilter = props.user_absence_filters.find(f => f.name == newValue);
+    if (typeof newValue == 'object' && groupFilterForm.value.isDirty) selectedFilter = props.userAbsenceFilters.find(f => f.id == newValue.value);
+    else if (typeof newValue == 'string') selectedFilter = props.userAbsenceFilters.find(f => f.name == newValue);
     if (!selectedFilter) return;
 
     const data = {
@@ -74,7 +74,7 @@ watch(
     () => singleFilterForm.value.set,
     newValue => {
         if (newValue == null) return;
-        const selectedFilter = props.user_absence_filters.find(f => f.id == newValue);
+        const selectedFilter = props.userAbsenceFilters.find(f => f.id == newValue);
         if (!selectedFilter) return;
         singleFilterForm.value.defaults({
             set: selectedFilter.id,
@@ -156,7 +156,7 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                             label="Filtergruppe auswählen"
                                             auto-select-first="exact"
                                             variant="underlined"
-                                            :items="user_absence_filters.map(u => ({ value: u.id, title: u.name }))"
+                                            :items="userAbsenceFilters.map(u => ({ value: u.id, title: u.name }))"
                                             v-model="singleFilterForm.set"
                                             :error-messages="singleFilterForm.errors.set"
                                             item-title="title"
@@ -181,7 +181,7 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                     <v-col cols="12">
                                         <v-select
                                             label="Abwesenheitsgrund"
-                                            :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
+                                            :items="absenceTypes.map(a => ({ title: a.name, value: a.id }))"
                                             v-model="singleFilterForm.selected_absence_types"
                                             :error-messages="singleFilterForm.errors.selected_absence_types"
                                             clearable
@@ -273,7 +273,7 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                             <v-col cols="12">
                                                 <v-select
                                                     label="Abwesenheitsgrund"
-                                                    :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
+                                                    :items="absenceTypes.map(a => ({ title: a.name, value: a.id }))"
                                                     v-model="groupFilterForm.selected_absence_types"
                                                     :error-messages="groupFilterForm.errors.selected_absence_types"
                                                     clearable
@@ -321,7 +321,7 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                                 { title: 'Gruppenübersicht', key: 'name' },
                                                 { title: '', key: 'action', align: 'end' },
                                             ]"
-                                            :items="user_absence_filters"
+                                            :items="userAbsenceFilters"
                                             no-data-text="Keine Filtergruppen vorhanden."
                                         >
                                             <template #item.name="{ item }">

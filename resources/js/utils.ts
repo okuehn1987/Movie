@@ -229,6 +229,12 @@ export function getNotificationUrl(notification: Notification) {
         return route('dispute.index', { openAbsencePatch: notification.data.absence_patch_id });
     else if (notification.type == 'App\\Notifications\\AbsenceDeleteNotification')
         return route('dispute.index', { openAbsenceDelete: notification.data.absence_id });
+    else if (notification.type == 'App\\Notifications\\HomeOfficeDayDisputeStatusNotification')
+        return route('absence.index', { date: DateTime.fromISO(notification.data.start).toFormat('yyyy-MM') });
+    else if (notification.type == 'App\\Notifications\\HomeOfficeDayNotification')
+        return route('dispute.index', { openHomeOfficeDay: notification.data.home_office_day_generator_id });
+    else if (notification.type == 'App\\Notifications\\HomeOfficeDeleteNotification')
+        return route('dispute.index', { openHomeOfficeDayDelete: notification.data.home_office_day_id });
     else if (
         'ticket_id' in notification.data &&
         [

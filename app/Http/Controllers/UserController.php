@@ -8,6 +8,8 @@ use App\Models\AbsenceType;
 use App\Models\Address;
 use App\Models\Group;
 use App\Models\GroupUser;
+use App\Models\HomeOfficeDay;
+use App\Models\HomeOfficeDayGenerator;
 use App\Models\OperatingSite;
 use App\Models\OperatingSiteUser;
 use App\Models\Organization;
@@ -96,13 +98,30 @@ class UserController extends Controller
             'home_office' => 'required|boolean',
             'home_office_hours_per_week' => 'nullable|min:0|numeric',
 
+            'home_office_day_generators' => 'present|array',
+            'home_office_day_generators.*.id' => ['nullable', Rule::exists('home_office_day_generators', 'id')->whereIn('user_id', User::inOrganization()->select('id'))],
+            'home_office_day_generators.*.weekdays' => 'required|array',
+            'home_office_day_generators.*.weekdays.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
+            'home_office_day_generators.*.start' =>  ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
+                $index  = explode('.', $attribute)[1];
+                $currentGenerator = $request['home_office_day_generators'][$index];
+                if ($mode == 'update' && !isset($currentGenerator['id']) && Carbon::parse($currentGenerator['start'])->lt(Carbon::now()->startOfDay())) {
+                    $fail('validation.after_or_equal')->translate([
+                        'attribute' => __('validation.attributes.start'),
+                        'date' => Carbon::now()->format('d.m.Y')
+                    ]);
+                }
+            }],
+            'home_office_day_generators.*.end' => ['required', 'date', 'after_or_equal:home_office_day_generators.*.start', function ($attribute, $value, $fail) use ($request) {
+                if (!$request['home_office'] && Carbon::parse($value)->gt(Carbon::now()->startOfDay())) $fail('The ' . $attribute . ' is invalid.');
+            }],
             'user_working_hours' => 'present|array',
             'user_working_hours.*.id' => 'nullable|exists:user_working_hours,id',
             'user_working_hours.*.weekly_working_hours' => 'required|min:0|decimal:0,2',
             'user_working_hours.*.active_since' => ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
                 $index  = explode('.', $attribute)[1];
                 $currentWorkingHour = $request['user_working_hours'][$index];
-                if ($mode == 'update' && !isset($currentWorkingHour['id']) && Carbon::parse($currentWorkingHour['active_since'])->lt(Carbon::now()->endOfDay())) {
+                if ($mode == 'update' && !isset($currentWorkingHour['id']) && Carbon::parse($currentWorkingHour['active_since'])->lte(Carbon::now()->endOfDay())) {
                     $fail('validation.after')->translate([
                         'attribute' => __('validation.attributes.active_since'),
                         'date' => Carbon::now()->format('d.m.Y')
@@ -117,7 +136,7 @@ class UserController extends Controller
             'user_working_weeks.*.active_since' =>  ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
                 $index  = explode('.', $attribute)[1];
                 $currentWorkingWeek = $request['user_working_weeks'][$index];
-                if ($mode == 'update' && !isset($currentWorkingWeek['id']) && Carbon::parse($currentWorkingWeek['active_since'])->lt(Carbon::now()->endOfDay())) {
+                if ($mode == 'update' && !isset($currentWorkingWeek['id']) && Carbon::parse($currentWorkingWeek['active_since'])->lte(Carbon::now()->endOfDay())) {
                     $fail('validation.after')->translate([
                         'attribute' => __('validation.attributes.active_since'),
                         'date' => Carbon::now()->format('d.m.Y')
@@ -169,6 +188,8 @@ class UserController extends Controller
                 }
             }],
             ...$additionalRules
+        ], [
+            'home_office_day_generators.*.end.after_or_equal' => 'Das Ende des gewählten Zeitraums darf nicht vor dem Startdatum sein.'
         ]);
     }
 
@@ -224,6 +245,9 @@ class UserController extends Controller
             },
             'userLeaveDays' => function ($q) {
                 $q->where('type', 'annual')->orderBy('active_since', 'desc');
+            },
+            'homeOfficeDayGenerators' => function ($q) {
+                $q->where('created_as_request', false);
             },
             ...(AppModuleService::hasAppModule('tide') ?
                 [
@@ -446,6 +470,31 @@ class UserController extends Controller
             ...$validated['operatingSiteUser']
         ]);
 
+        foreach ($validated['home_office_day_generators'] as $generator) {
+            $newGenerator = HomeOfficeDayGenerator::create([
+                'user_id' => $user->id,
+                'start' => Carbon::parse($generator['start']),
+                'end' => Carbon::parse($generator['end']),
+                ...collect(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'])
+                    ->flatMap(
+                        fn($e) =>
+                        [$e => (int)in_array($e, $generator['weekdays'])]
+                    )->toArray()
+            ]);
+
+            for ($currentDay = Carbon::parse($generator['start']); $currentDay->lte(Carbon::parse($generator['end'])); $currentDay->addDay()) {
+
+                if (in_array(strtolower($currentDay->englishDayOfWeek), $generator['weekdays'])) {
+                    HomeOfficeDay::create([
+                        'user_id' => $user->id,
+                        'home_office_day_generator_id' => $newGenerator->id,
+                        'status' => Status::Accepted,
+                        'date' => $currentDay,
+                    ]);
+                }
+            };
+        }
+
         return back()->with('success', 'Mitarbeitenden erfolgreich angelegt.');
     }
 
@@ -562,6 +611,84 @@ class UserController extends Controller
                 'weekly_working_hours' => $workingHour['weekly_working_hours'],
             ]);
         }
+
+        $user->homeOfficeDayGenerators()
+            ->whereDate('start', '>=', Carbon::now())
+            ->whereNotIn('id', collect($validated['home_office_day_generators'])->map(fn($d) => $d['id'])->toArray())
+            ->delete();
+
+        foreach ($validated['home_office_day_generators'] as $generator) {
+            if (Carbon::parse($generator['start'])->lt(Carbon::now()->startOfDay())) continue;
+
+            if ($generator['id']) {
+                $previousGeneratedDays = HomeOfficeDay::where('home_office_day_generator_id', $generator['id'])->withTrashed()->pluck('date');
+                $newGenerator = HomeOfficeDayGenerator::whereId($generator['id'])->update([
+                    'user_id' => $user->id,
+                    'start' => Carbon::parse($generator['start']),
+                    'end' => Carbon::parse($generator['end']),
+                    ...collect(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'])
+                        ->flatMap(
+                            fn($e) =>
+                            [$e => (int)in_array($e, $generator['weekdays'])]
+                        )->toArray()
+                ]);
+
+                $daysRangeToGenerate = collect(
+                    range(0, Carbon::parse($generator['end'])->diffInDays($generator['start']))
+                )->map(
+                    fn($i) => Carbon::parse($generator['start'])->subDays($i)
+                )->sort();
+
+                $daysToGenerate = collect();
+
+                foreach ($daysRangeToGenerate as $currentDay) {
+                    if (in_array(strtolower($currentDay->englishDayOfWeek), $generator['weekdays'])) {
+                        $daysToGenerate->push($currentDay);
+                        if ($previousGeneratedDays->contains($currentDay->format('Y-m-d'))) continue;
+
+                        HomeOfficeDay::create([
+                            'user_id' => $user->id,
+                            'home_office_day_generator_id' => $generator['id'],
+                            'status' => Status::Accepted,
+                            'date' => $currentDay,
+                        ]);
+                    }
+                };
+
+                HomeOfficeDay::where(
+                    'home_office_day_generator_id',
+                    $generator['id']
+                )->whereNotIn(
+                    'date',
+                    $daysToGenerate->map->format('Y-m-d')
+                )->forceDelete();
+            } else {
+                $newGenerator = HomeOfficeDayGenerator::create([
+                    'user_id' => $user->id,
+                    'start' => Carbon::parse($generator['start']),
+                    'end' => Carbon::parse($generator['end']),
+                    ...collect(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'])
+                        ->flatMap(
+                            fn($e) =>
+                            [$e => (int)in_array($e, $generator['weekdays'])]
+                        )->toArray()
+                ]);
+
+                for ($currentDay = Carbon::parse($generator['start']); $currentDay->lte(Carbon::parse($generator['end'])); $currentDay->addDay()) {
+
+                    if (in_array(strtolower($currentDay->englishDayOfWeek), $generator['weekdays'])) {
+                        HomeOfficeDay::create([
+                            'user_id' => $user->id,
+                            'home_office_day_generator_id' => $newGenerator->id,
+                            'status' => Status::Accepted,
+                            'date' => $currentDay,
+                        ]);
+                    }
+                };
+            }
+        }
+
+
 
         return back()->with("success", "Mitarbeitenden erfolgreich aktualisiert.");
     }

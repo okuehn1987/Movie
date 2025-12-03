@@ -6,6 +6,7 @@ use App\Models\Absence;
 use App\Models\AbsencePatch;
 use App\Models\AbsenceType;
 use App\Enums\Status;
+use App\Models\HomeOfficeDay;
 use App\Models\OperatingSite;
 use App\Models\Organization;
 use App\Models\User;
@@ -18,7 +19,6 @@ use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
@@ -58,12 +58,19 @@ class AbsenceController extends Controller
 
 
         $visibleUsers = User::inOrganization()
-            ->where(function ($query) {
+            ->where(
+                fn($query) =>
                 $query->whereNull('resignation_date')
-                    ->orWhere('resignation_date', '>=', now()->startOfYear());
-            })
+                    ->orWhere('resignation_date', '>=', $date->copy()->startOfYear())
+            )
             ->get()
             ->filter(fn($u) =>  $authUser->can('viewShow', [Absence::class, $u]));
+
+        $homeOfficeDays = HomeOfficeDay::inOrganization()
+            ->whereIn('user_id', $visibleUsers->pluck('id'))
+            ->whereBetween('date', [$date->copy()->startOfMonth(), $date->copy()->endOfMonth()])
+            ->with('homeOfficeDayGenerator:id,start,end,created_as_request')
+            ->get(['id', 'user_id', 'date', 'status', 'home_office_day_generator_id']);
 
         $absences = Absence::inOrganization()
             ->doesntHave('currentAcceptedPatch')
@@ -164,12 +171,13 @@ class AbsenceController extends Controller
                         ]
                     ]
                 ])->values(),
-            'absence_types' => fn() => AbsenceType::inOrganization()->get(['id', 'name', 'abbreviation', 'requires_approval']),
+            'absenceTypes' => fn() => AbsenceType::inOrganization()->get(['id', 'name', 'abbreviation', 'requires_approval']),
             'absences' =>  Inertia::merge(fn() => $absences),
             'absencePatches' =>  Inertia::merge(fn() => $absencePatches),
             'holidays' =>  Inertia::merge(fn() => $holidays->isEmpty() ? (object)[] : $holidays),
+            'userAbsenceFilters' => $authUser->userAbsenceFilters,
+            'homeOfficeDays' => Inertia::merge(fn() => $homeOfficeDays),
             'schoolHolidays' =>  Inertia::merge(fn() => $schoolHolidays->isEmpty() ? (object)[] : [$date->format('Y-m') => $schoolHolidays]),
-            'user_absence_filters' => $authUser->userAbsenceFilters,
             'date' => $date,
             'federal_state' => $authUser->operatingSite->currentAddress->federal_state,
             'all_federal_states' => HolidayService::$COUNTRIES['DE']['regions'],

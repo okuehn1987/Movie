@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Enums\Status;
 use App\Models\Absence;
 use App\Models\AbsencePatch;
+use App\Models\HomeOfficeDay;
+use App\Models\HomeOfficeDayGenerator;
 use App\Models\User;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
 use App\Notifications\AbsenceDeleteNotification;
+use App\Notifications\HomeOfficeDeleteNotification;
 use App\Services\AppModuleService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -24,6 +27,8 @@ class DisputeController extends Controller
             'absenceRequests' => self::getAbsenceRequests(),
             'absencePatchRequests' => self::getAbsencePatchRequests(),
             'absenceDeleteRequests' => self::getAbsenceDeleteRequests(),
+            'homeOfficeDayRequests' => self::getHomeOfficeDayRequests(),
+            'homeOfficeDayDeleteRequests' => self::getHomeOfficeDayDeleteRequests(),
             ...(AppModuleService::hasAppModule('tide') ? [
                 'workLogPatchRequests' => self::getWorkLogPatchRequests(),
                 'workLogRequests' => self::getWorkLogRequests(),
@@ -132,7 +137,7 @@ class DisputeController extends Controller
             ->where('data->status', Status::Created)
             ->get();
 
-        $requestesdAbsences = count($openDeleteNotifications) > 0 ?
+        $requestedAbsences = count($openDeleteNotifications) > 0 ?
             Absence::inOrganization()
             ->whereIn('id', $openDeleteNotifications->pluck('data.absence_id'))
             ->with([
@@ -142,6 +147,41 @@ class DisputeController extends Controller
             ->get(['id', 'start', 'end', 'user_id', 'absence_type_id']) :
             collect();
 
-        return $requestesdAbsences->filter(fn(Absence $a) => $authUser->can('delete', $a))->values();
+        return $requestedAbsences->filter(fn(Absence $a) => $authUser->can('delete', $a))->values();
+    }
+
+    public function getHomeOfficeDayRequests()
+    {
+        $authUser = request()->user();
+
+        return HomeOfficeDayGenerator::inOrganization()
+            ->whereHas('homeOfficeDays', fn($q) => $q->where('status', Status::Created))
+            ->with([
+                'user' => fn($q) => $q->select(['id', 'first_name', 'last_name', 'operating_site_id', 'supervisor_id'])->withTrashed()
+            ])
+            ->get(['id', 'user_id', 'start', 'end'])
+            ->filter(fn(HomeOfficeDayGenerator $generator) => $authUser->can('update', [Absence::class, $generator->user]))
+            ->values();
+    }
+
+    public function getHomeOfficeDayDeleteRequests()
+    {
+        $authUser = request()->user();
+
+        $openHomeOfficeDayDeleteNotifications = $authUser->notifications()
+            ->where('type', HomeOfficeDeleteNotification::class)
+            ->where('data->status', Status::Created)
+            ->get();
+
+        $requestedHomeOfficeDays = count($openHomeOfficeDayDeleteNotifications) > 0 ?
+            HomeOfficeDay::inOrganization()
+            ->whereIn('id', $openHomeOfficeDayDeleteNotifications->pluck('data.home_office_day_id'))
+            ->with([
+                'user' => fn($q) => $q->select(['id', 'first_name', 'last_name', 'operating_site_id', 'supervisor_id'])->withTrashed(),
+            ])
+            ->get(['id', 'date', 'user_id'])
+            : collect();
+
+        return $requestedHomeOfficeDays->filter(fn(HomeOfficeDay $homeOfficeDay) => $authUser->can('deleteHomeOffice', [Absence::class, $homeOfficeDay]))->values();
     }
 }

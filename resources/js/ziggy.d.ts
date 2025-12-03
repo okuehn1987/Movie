@@ -198,6 +198,47 @@ declare module 'ziggy-js' {
             "required": true
         }
     ],
+    "homeOfficeDay.store": [],
+    "homeOfficeDay.update": [
+        {
+            "name": "homeOfficeDay",
+            "required": true
+        }
+    ],
+    "homeOfficeDay.destroy": [
+        {
+            "name": "homeOfficeDay",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "homeOfficeDay.denyDestroy": [
+        {
+            "name": "homeOfficeDay",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "homeOfficeDay.destroyDispute": [
+        {
+            "name": "homeOfficeDay",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "homeOfficeDay.updateStatus": [
+        {
+            "name": "homeOfficeDayGenerator",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "homeOfficeDayGenerator.destroy": [
+        {
+            "name": "homeOfficeDayGenerator",
+            "required": true
+        }
+    ],
     "operatingSite.index": [],
     "operatingSite.store": [],
     "operatingSite.show": [

@@ -11,7 +11,13 @@ defineProps<{
         user_leave_days: (UserLeaveDays | null)[];
     } & Pick<
             Relations<'user'>,
-            'organization_user' | 'operating_site_user' | 'group_user' | 'user_working_hours' | 'user_working_weeks' | 'current_address'
+            | 'organization_user'
+            | 'operating_site_user'
+            | 'group_user'
+            | 'user_working_hours'
+            | 'user_working_weeks'
+            | 'current_address'
+            | 'home_office_day_generators'
         >;
     possibleSupervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];

@@ -10,17 +10,19 @@ import AbsenceFilter from './partials/AbsenceFilter.vue';
 import AbsenceTableCell from './partials/AbsenceTableCell.vue';
 import EditCreateAbsence from './partials/EditCreateAbsence.vue';
 import ShowAbsenceModal from './partials/ShowAbsenceModal.vue';
-import { AbsencePatchProp, AbsenceProp, getEntryState, UserProp } from './utils';
+import ShowHomeOfficeModal from './partials/ShowHomeOfficeModal.vue';
+import { AbsencePatchProp, AbsenceProp, getEntryState, HomeOfficeDayProp, UserProp } from './utils';
 
 const props = defineProps<{
     users: UserProp[];
     absences: AbsenceProp[];
     absencePatches: AbsencePatchProp[];
-    absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval' | 'type'>[];
+    absenceTypes: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval' | 'type'>[];
     holidays: Record<string, string> | null;
     schoolHolidays: Record<string, Record<string, { name: string; start: DateString; end: DateString }[]>>;
     date: DateString;
-    user_absence_filters: UserAbsenceFilter[];
+    homeOfficeDays: HomeOfficeDayProp[];
+    userAbsenceFilters: UserAbsenceFilter[];
     federal_state: FederalState;
     all_federal_states: Record<FederalState, string>;
 }>();
@@ -53,6 +55,12 @@ watch(
         else currentFilterForm.value = groupFilterForm;
     },
     { deep: true },
+);
+
+const currentMonthHomeOfficeDays = computed(() =>
+    props.homeOfficeDays.filter(
+        h => h.date >= currentDate.value.startOf('month').toFormat('yyyy-MM-dd') && h.date <= currentDate.value.endOf('month').toFormat('yyyy-MM-dd'),
+    ),
 );
 
 const currentMonthEntries = computed(() => {
@@ -88,7 +96,9 @@ const currentEntries = computed(() => {
 
 const openEditCreateAbsenceModal = ref(false);
 const openShowAbsenceModal = ref(false);
+const openShowHomeOfficeModal = ref(false);
 const selectedAbsence = ref<null | AbsenceProp | AbsencePatchProp>(null);
+const selectedHomeOffice = ref<null | HomeOfficeDayProp>(null);
 const selectedUser = ref<null | User['id']>(null);
 const selectedDate = ref<DateTime | null>(null);
 const selectedAbsenceUser = computed(() => props.users.find(u => u.id === selectedAbsence.value?.user_id));
@@ -110,16 +120,29 @@ if (openAbsenceFromRoute) {
 
 function createAbsenceModal(user_id: User['id'], start?: DateTime) {
     selectedUser.value = user_id;
+    selectedDate.value = start ?? null;
+
     const absenceToEdit = currentEntries.value
         .filter(a => a.user_id === user_id)
         .find(a => start && DateTime.fromSQL(a.start) <= start && start <= DateTime.fromSQL(a.end));
 
-    selectedDate.value = start ?? null;
-    selectedAbsence.value = absenceToEdit ?? null;
-    if (absenceToEdit && ['hasOpenPatch', 'created'].includes(getEntryState(absenceToEdit))) {
-        openShowAbsenceModal.value = true;
+    if (absenceToEdit) {
+        selectedAbsence.value = absenceToEdit ?? null;
+        if (['hasOpenPatch', 'created'].includes(getEntryState(absenceToEdit))) {
+            openShowAbsenceModal.value = true;
+        } else {
+            openEditCreateAbsenceModal.value = true;
+        }
     } else {
-        openEditCreateAbsenceModal.value = true;
+        selectedAbsence.value = null;
+        const homeOfficeToEdit = props.homeOfficeDays.filter(u => u.user_id === user_id).find(h => start && h.date === start.toFormat('yyyy-MM-dd'));
+
+        selectedHomeOffice.value = homeOfficeToEdit ?? null;
+        if (homeOfficeToEdit) {
+            openShowHomeOfficeModal.value = true;
+        } else {
+            openEditCreateAbsenceModal.value = true;
+        }
     }
 }
 
@@ -144,7 +167,7 @@ const loading = ref(false);
 const reload = throttle(() => {
     if (loadedMonths.value.includes(currentDate.value.toFormat('yyyy-MM'))) return;
     router.reload({
-        only: ['absences', 'absencePatches', 'holidays', 'schoolHolidays'],
+        only: ['absences', 'absencePatches', 'holidays', 'homeOfficeDays', 'schoolHolidays'],
         data: { date: currentDate.value.toFormat('yyyy-MM'), openAbsence: null, openAbsencePatch: null },
         onStart: () => {
             loadedMonths.value.push(currentDate.value.toFormat('yyyy-MM'));
@@ -183,7 +206,7 @@ const currentSchoolHolidays = computed(() => {
     <AdminLayout title="Abwesenheiten">
         <EditCreateAbsence
             v-if="openEditCreateAbsenceModal && selectedUser"
-            :absence_types
+            :absenceTypes
             :users
             :selectedAbsence
             :selectedDate
@@ -193,20 +216,28 @@ const currentSchoolHolidays = computed(() => {
         ></EditCreateAbsence>
         <ShowAbsenceModal
             v-if="openShowAbsenceModal && selectedAbsence && selectedAbsenceUser"
-            :absence_types
+            :absenceTypes
             :users
             :selectedAbsence
             :absenceUser="selectedAbsenceUser"
             v-model="openShowAbsenceModal"
             @absenceReload="loadedMonths = [currentDate.toFormat('yyyy-MM')]"
         ></ShowAbsenceModal>
+        <ShowHomeOfficeModal
+            v-if="openShowHomeOfficeModal && selectedUser && selectedHomeOffice"
+            :selectedHomeOffice
+            :users
+            v-model:selectedUser="selectedUser"
+            v-model="openShowHomeOfficeModal"
+            @homeOfficeReload="loadedMonths = [currentDate.toFormat('yyyy-MM')]"
+        ></ShowHomeOfficeModal>
         <v-card>
             <v-card-text class="px-sm-4 px-0">
                 <div class="d-flex align-center w-100" :class="display.mdAndUp.value ? 'justify-space-between' : 'justify-center'">
                     <AbsenceFilter
-                        :absence_types
+                        :absenceTypes
                         :users
-                        :user_absence_filters
+                        :userAbsenceFilters
                         v-model:filterForm="groupFilterForm"
                         v-model:singleFilterForm="singleFilterForm"
                         :schoolHolidays="currentMonthHolidays"
@@ -267,7 +298,9 @@ const currentSchoolHolidays = computed(() => {
                             ...u,
                             name: display.mdAndUp.value ? u.last_name + ', ' + u.first_name : u.first_name.substring(0, 1) + '.' + u.last_name,
                         }))
-                        .toSorted((a, b) => (b.id == $page.props.auth.user.id ? 1 : a.last_name.localeCompare(b.last_name)))
+                        .toSorted((a, b) =>
+                            b.id == $page.props.auth.user.id ? 1 : a.id == $page.props.auth.user.id ? -1 : a.last_name.localeCompare(b.last_name),
+                        )
                 "
                 :headers="[
                     {
@@ -326,10 +359,11 @@ const currentSchoolHolidays = computed(() => {
                                 v-else
                                 @click="can('absence', 'create', item) && createAbsenceModal(item.id, DateTime.fromISO(header.key!))"
                                 :holidays="holidays"
-                                :absenceTypes="absence_types"
+                                :absenceTypes="absenceTypes"
                                 :user="item"
                                 :date="DateTime.fromISO(header.key!)"
                                 :entries="currentEntries.filter(a => a.user_id === item.id)"
+                                :homeOfficeDays="currentMonthHomeOfficeDays.filter(u => u.user_id === item.id)"
                             ></AbsenceTableCell>
                         </template>
                     </tr>
