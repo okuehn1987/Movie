@@ -20,6 +20,7 @@ use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 
