@@ -11,11 +11,17 @@ export function useNow() {
     return now;
 }
 
+export const showsGlobalMessage = ref(false);
+
 export function useMaxScrollHeight(extraHeight: number) {
     const page = usePage();
     const height = ref(`calc(100vh - ${80 + extraHeight}px)`);
     watch(page, () => {
-        if (page.props.flash.error || page.props.flash.success) height.value = `calc(100vh - ${80 + 88 + extraHeight}px)`;
+        if (page.props.flash.error || page.props.flash.success) showsGlobalMessage.value = true;
+        else showsGlobalMessage.value = false;
+    });
+    watch(showsGlobalMessage, () => {
+        if (showsGlobalMessage.value) height.value = `calc(100vh - ${80 + 88 + extraHeight}px)`;
         else height.value = `calc(100vh - ${80 + extraHeight}px)`;
     });
     return height;
@@ -91,8 +97,8 @@ export function fillNullishValues<T extends Record<string, unknown>, Default ext
         [K in keyof T]: null extends T[K]
             ? Exclude<T[K], null | undefined> | Default
             : undefined extends T[K]
-            ? Exclude<T[K], null | undefined> | Default
-            : T[K];
+              ? Exclude<T[K], null | undefined> | Default
+              : T[K];
     };
 }
 
@@ -128,7 +134,7 @@ export const mapTree = <K extends string & keyof T, T extends { [x in K]?: T[] }
     fn: (e: Omit<T, K>, level: number) => MappedType,
     level: number = 0,
 ): Tree<MappedType, K>[] => {
-    return tree.map(e => ({ ...fn(e, level), [k]: e[k] ? mapTree(e[k], k, fn, level + 1) : [] } as Tree<MappedType, K>));
+    return tree.map(e => ({ ...fn(e, level), [k]: e[k] ? mapTree(e[k], k, fn, level + 1) : [] }) as Tree<MappedType, K>);
 };
 
 export function getStates(country: Country, countries: { title: string; value: Country; regions: Record<FederalState, string> }[]) {
@@ -168,10 +174,13 @@ export function throttle<T extends (...args: unknown[]) => void>(func: T, delayL
         } else {
             // Otherwise, set a timeout to call the function after the limit period
             if (lastFunc) clearTimeout(lastFunc);
-            lastFunc = setTimeout(() => {
-                func(...args);
-                lastRan = now;
-            }, delayLimit - (now - lastRan));
+            lastFunc = setTimeout(
+                () => {
+                    func(...args);
+                    lastRan = now;
+                },
+                delayLimit - (now - lastRan),
+            );
         }
     };
 }
