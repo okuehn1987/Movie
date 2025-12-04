@@ -2,7 +2,7 @@
 import { Country, CountryProp, DateString, FederalState, Group, OperatingSite, Permission, User, UserLeaveDays, Weekday } from '@/types/types';
 import { getBrowser, getStates } from '@/utils';
 import { DateTime, Info } from 'luxon';
-import { nextTick, onMounted, watch } from 'vue';
+import { nextTick, onMounted } from 'vue';
 import HertaUserFormSections from './HertaUserFormSections.vue';
 import PermissionSelector from './PermissionSelector.vue';
 import { FormData, UserProp } from './userFormTypes';
