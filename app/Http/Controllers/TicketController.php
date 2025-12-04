@@ -32,12 +32,21 @@ class TicketController extends Controller
 
         $validated = $request->validate([
             'tab' => 'nullable|string|in:archive,finishedTickets,newTickets,workingTickets',
-            'customer_id' => 'nullable|exists:customers,id',
+            'customer_id' => [
+                'nullable',
+                Rule::exists('customers', 'id')->where('organization_id', Organization::getCurrent()->id)
+            ],
             'assignees' => 'nullable|array',
-            'assignees.*' => ['nullable', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))],
+            'assignees.*' => [
+                'nullable',
+                Rule::exists('users', 'id')->whereIn('operating_site_id', OperatingSite::inOrganization()->select('operating_sites.id'))
+            ],
             'start' => 'nullable|date|required_with:end',
             'end' => 'nullable|date|required_with:start|after_or_equal:start',
-            'openTicket' => ['nullable', Rule::exists('tickets', 'id')->whereIn('id', Ticket::inOrganization()->select('tickets.id'))],
+            'openTicket' => [
+                'nullable',
+                Rule::exists('tickets', 'id')->whereIn('customer_id', Customer::inOrganization()->select('customers.id'))
+            ],
         ]);
 
         $openTicket = array_key_exists('openTicket', $validated) && $validated['openTicket'] != null ? Ticket::find($validated['openTicket']) : null;

@@ -354,7 +354,13 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
-    "workLogPatch.store": [],
+    "workLog.workLogPatch.store": [
+        {
+            "name": "workLog",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "workLogPatch.update": [
         {
             "name": "workLogPatch",

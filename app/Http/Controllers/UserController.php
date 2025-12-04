@@ -106,10 +106,8 @@ class UserController extends Controller
                 $currentGenerator = $request['home_office_day_generators'][$index];
                 if ($mode == 'update' && isset($currentGenerator['id'])) {
                     $existingGenerator = HomeOfficeDayGenerator::find($currentGenerator['id']);
-                    if (Carbon::parse($existingGenerator->start)->lt(now()->startOfDay()) && $value != $existingGenerator->start->format('Y-m-d')) {
-                        $fail('validation.immutable')->translate([
-                            'attribute' => __('validation.attributes.start'),
-                        ]);
+                    if (Carbon::parse($existingGenerator->start)->lt(now()->startOfDay()) && $currentGenerator['start'] != Carbon::parse($existingGenerator->start)->format('Y-m-d')) {
+                        $fail('Der Eintrag darf nicht geändert werden, da der Zeitraum bereits begonnen hat.');
                     }
                 }
             }],
@@ -118,10 +116,8 @@ class UserController extends Controller
                 $currentGenerator = $request['home_office_day_generators'][$index];
                 if ($mode == 'update' && isset($currentGenerator['id'])) {
                     $existingGenerator = HomeOfficeDayGenerator::find($currentGenerator['id']);
-                    if (Carbon::parse($existingGenerator->start)->lt(now()->startOfDay()) && $value != $existingGenerator->start->format('Y-m-d')) {
-                        $fail('validation.immutable')->translate([
-                            'attribute' => __('validation.attributes.start'),
-                        ]);
+                    if (Carbon::parse($existingGenerator->start)->lt(now()->startOfDay()) && $value != Carbon::parse($existingGenerator->start)->format('Y-m-d')) {
+                        $fail('Der Eintrag darf nicht geändert werden, da der Zeitraum bereits begonnen hat.');
                     }
                 }
                 if ($mode == 'update' && !isset($currentGenerator['id']) && Carbon::parse($currentGenerator['start'])->lt(Carbon::now()->startOfDay())) {
@@ -146,7 +142,13 @@ class UserController extends Controller
                 if (!$request['home_office'] && Carbon::parse($value)->gt(Carbon::now()->startOfDay())) $fail('The ' . $attribute . ' is invalid.');
             }],
             'user_working_hours' => 'present|array',
-            'user_working_hours.*.id' => 'nullable|exists:user_working_hours,id',
+            'user_working_hours.*.id' => [
+                'nullable',
+                Rule::exists('user_working_hours', 'id')->when(
+                    $mode == 'update' && isset($user),
+                    fn($q) => $q->where('user_id', $user->id)
+                )
+            ],
             'user_working_hours.*.weekly_working_hours' => 'required|min:0|decimal:0,2',
             'user_working_hours.*.active_since' => ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
                 $index  = explode('.', $attribute)[1];
@@ -160,7 +162,13 @@ class UserController extends Controller
             }],
 
             'user_working_weeks' => 'present|array',
-            'user_working_weeks.*.id' => 'nullable|exists:user_working_weeks,id',
+            'user_working_weeks.*.id' => [
+                'nullable',
+                Rule::exists('user_working_weeks', 'id')->when(
+                    $mode == 'update' && isset($user),
+                    fn($q) => $q->where('user_id', $user->id)
+                )
+            ],
             'user_working_weeks.*.weekdays' => 'required|array',
             'user_working_weeks.*.weekdays.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'user_working_weeks.*.active_since' =>  ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
@@ -175,7 +183,13 @@ class UserController extends Controller
             }],
 
             'user_leave_days' => 'present|array',
-            'user_leave_days.*.id' => 'nullable|exists:user_leave_days,id',
+            'user_leave_days.*.id' => [
+                'nullable',
+                Rule::exists('user_leave_days', 'id')->when(
+                    $mode == 'update' && isset($user),
+                    fn($q) => $q->where('user_id', $user->id)
+                )
+            ],
             'user_leave_days.*.leave_days' => 'required|integer|min:0',
             'user_leave_days.*.active_since' => ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
                 $index  = explode('.', $attribute)[1];

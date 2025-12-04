@@ -70,10 +70,9 @@ function submit() {
                     minute: end_time.minute,
                     second: end_time.second,
                 }),
-                workLog: workLogForm.id,
             };
         })
-        .post(route('workLogPatch.store'), {
+        .post(route('workLogPatch.store', { workLog: workLogForm.id }), {
             onSuccess: () => {
                 showDialog.value = false;
                 workLogForm.reset();
