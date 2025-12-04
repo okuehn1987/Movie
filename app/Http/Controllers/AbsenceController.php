@@ -155,7 +155,7 @@ class AbsenceController extends Controller
                         ->whereDate('start', '<=', $date->copy()->endOfYear())
                         ->whereDate('end', '>=', $date->copy()->startOfYear())
                 ])
-                ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'group_id', 'operating_site_id'])
+                ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'group_id', 'operating_site_id', 'home_office'])
                 ->map(fn(User $u) => [
                     ...$u->toArray(),
                     'leaveDaysForYear' => $u->leaveDaysForYear(now(), $u->userLeaveDays),

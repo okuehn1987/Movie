@@ -101,10 +101,29 @@ class UserController extends Controller
             'home_office_day_generators' => 'present|array',
             'home_office_day_generators.*.id' => ['nullable', Rule::exists('home_office_day_generators', 'id')->whereIn('user_id', User::inOrganization()->select('id'))],
             'home_office_day_generators.*.weekdays' => 'required|array',
-            'home_office_day_generators.*.weekdays.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
+            'home_office_day_generators.*.weekdays.*' => ['required', 'in:monday,tuesday,wednesday,thursday,friday,saturday,sunday', function ($attribute, $value, $fail) use ($request, $mode) {
+                $index  = explode('.', $attribute)[1];
+                $currentGenerator = $request['home_office_day_generators'][$index];
+                if ($mode == 'update' && isset($currentGenerator['id'])) {
+                    $existingGenerator = HomeOfficeDayGenerator::find($currentGenerator['id']);
+                    if (Carbon::parse($existingGenerator->start)->lt(now()->startOfDay()) && $value != $existingGenerator->start->format('Y-m-d')) {
+                        $fail('validation.immutable')->translate([
+                            'attribute' => __('validation.attributes.start'),
+                        ]);
+                    }
+                }
+            }],
             'home_office_day_generators.*.start' =>  ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
                 $index  = explode('.', $attribute)[1];
                 $currentGenerator = $request['home_office_day_generators'][$index];
+                if ($mode == 'update' && isset($currentGenerator['id'])) {
+                    $existingGenerator = HomeOfficeDayGenerator::find($currentGenerator['id']);
+                    if (Carbon::parse($existingGenerator->start)->lt(now()->startOfDay()) && $value != $existingGenerator->start->format('Y-m-d')) {
+                        $fail('validation.immutable')->translate([
+                            'attribute' => __('validation.attributes.start'),
+                        ]);
+                    }
+                }
                 if ($mode == 'update' && !isset($currentGenerator['id']) && Carbon::parse($currentGenerator['start'])->lt(Carbon::now()->startOfDay())) {
                     $fail('validation.after_or_equal')->translate([
                         'attribute' => __('validation.attributes.start'),
@@ -112,7 +131,18 @@ class UserController extends Controller
                     ]);
                 }
             }],
-            'home_office_day_generators.*.end' => ['required', 'date', 'after_or_equal:home_office_day_generators.*.start', function ($attribute, $value, $fail) use ($request) {
+            'home_office_day_generators.*.end' => ['required', 'date', 'after_or_equal:home_office_day_generators.*.start', function ($attribute, $value, $fail) use ($request, $mode) {
+                $index  = explode('.', $attribute)[1];
+                $currentGenerator = $request['home_office_day_generators'][$index];
+                if ($mode == 'update' && isset($currentGenerator['id'])) {
+                    $existingGenerator = HomeOfficeDayGenerator::find($currentGenerator['id']);
+                    if (Carbon::parse($existingGenerator->start)->lt(now()->startOfDay()) && Carbon::parse($value)->lt(now()->startOfDay())) {
+                        $fail('validation.after_or_equal')->translate([
+                            'attribute' => __('validation.attributes.end'),
+                            'date' => Carbon::now()->format('d.m.Y')
+                        ]);
+                    }
+                }
                 if (!$request['home_office'] && Carbon::parse($value)->gt(Carbon::now()->startOfDay())) $fail('The ' . $attribute . ' is invalid.');
             }],
             'user_working_hours' => 'present|array',
@@ -189,6 +219,9 @@ class UserController extends Controller
             }],
             ...$additionalRules
         ], [
+            'home_office_day_generators.*.start' => 'Der Start des Zeitraums muss angegeben werden.',
+            'home_office_day_generators.*.end' => 'Das Ende des Zeitraums muss angegeben werden.',
+            'home_office_day_generators.*.weekdays' => 'Es müssen Wochentage angegeben werden.',
             'home_office_day_generators.*.end.after_or_equal' => 'Das Ende des gewählten Zeitraums darf nicht vor dem Startdatum sein.'
         ]);
     }
@@ -533,7 +566,7 @@ class UserController extends Controller
             'supervisor_id' => $validated['supervisor_id'],
             'is_supervisor' => $validated['is_supervisor'],
             'resignation_date' => $validated['resignation_date'],
-            'date_of_birth' => Carbon::parse(Carbon::parse($validated['date_of_birth'])->format('d-m-Y')),
+            'date_of_birth' => Carbon::parse($validated['date_of_birth'])->format('Y-m-d'),
             'home_office' => $validated['home_office'],
             'home_office_hours_per_week' => $validated['home_office'] ? $validated['home_office_hours_per_week'] ?? 0 : null,
             "overtime_calculations_start" => $validated['overtime_calculations_start'],
@@ -542,8 +575,13 @@ class UserController extends Controller
             'time_balance_red_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_red_threshold'] : null,
         ]);
 
-        // FIXME: wir brauchen active since und sync wie CustomerOperatingSiteController@update
-        $user->addresses()->create(collect($validated)->only(Address::$ADDRESS_KEYS)->toArray());
+        foreach (Address::$ADDRESS_KEYS as $key) {
+            $user->currentAddress->$key = $validated[$key];
+        }
+        if ($user->currentAddress->isDirty()) {
+            $user->currentAddress->active_since = now();
+            $user->currentAddress->replicate()->save();
+        }
 
         $user->organizationUser->update($validated['organizationUser']);
         $user->operatingSiteUser->update($validated['operatingSiteUser']);
@@ -564,7 +602,7 @@ class UserController extends Controller
             ], [
                 'user_id' => $user->id,
                 'leave_days' => $leaveDay['leave_days'],
-                'active_since' => Carbon::parse($leaveDay['active_since']),
+                'active_since' => Carbon::parse($leaveDay['active_since'])->format('Y-m-d'),
                 'type' => 'annual'
             ]);
         }
@@ -687,8 +725,6 @@ class UserController extends Controller
                 };
             }
         }
-
-
 
         return back()->with("success", "Mitarbeitenden erfolgreich aktualisiert.");
     }

@@ -24,7 +24,8 @@ const absenceForm = useForm({
     start: props.selectedAbsence?.start ?? props.selectedDate?.toFormat('yyyy-MM-dd') ?? null,
     end: props.selectedAbsence?.end ?? props.selectedDate?.toFormat('yyyy-MM-dd') ?? null,
     absence_type_id: (props.selectedAbsence?.absence_type_id ?? null) as AbsenceType['id'] | null | 'homeOffice',
-    absence_id: props.selectedAbsence && 'absence_id' in props.selectedAbsence ? props.selectedAbsence.absence_id : props.selectedAbsence?.id ?? null,
+    absence_id:
+        props.selectedAbsence && 'absence_id' in props.selectedAbsence ? props.selectedAbsence.absence_id : (props.selectedAbsence?.id ?? null),
 });
 
 function saveAbsence() {
@@ -107,7 +108,7 @@ const requiresApproval = computed(() => {
                                     :items="
                                         [
                                             ...absenceTypes.map(a => ({ title: a.name, value: a.id })),
-                                            $page.props.auth.user.home_office && { title: 'Homeoffice', value: 'homeOffice' },
+                                            currentUser?.home_office && { title: 'Homeoffice', value: 'homeOffice' },
                                         ].filter(Boolean)
                                     "
                                     v-model="absenceForm.absence_type_id"
