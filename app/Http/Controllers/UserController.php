@@ -60,7 +60,6 @@ class UserController extends Controller
                 "nullable",
                 Rule::exists('groups', 'id')->where('organization_id', Organization::getCurrent()->id)
             ],
-            //TODO: mopsen für active in trust working hours
             'operating_site_id' => [
                 "required",
                 Rule::exists('operating_sites', 'id')->where('organization_id', Organization::getCurrent()->id)

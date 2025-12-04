@@ -251,7 +251,6 @@ class User extends Authenticatable
     {
         return $this->userWorkingHours()->one()->ofMany(['active_since' => 'Max'], fn($q) => $q->whereDate('active_since', '<=', now()));
     }
-    //TODO: Das hier in Relations eintragen und von dort aus gucken in suche wo currentWorkingHours so benutzt wird
 
     public function userTrustWorkingHours()
     {

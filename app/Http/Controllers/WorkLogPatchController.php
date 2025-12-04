@@ -25,7 +25,7 @@ class WorkLogPatchController extends Controller
                 if (UserTrustWorkingHour::checkCollisions([
                     'start' => $value,
                     'end' => $request['end'],
-                    'user_id' => WorkLog::with('user')->find($request['workLog'])->user_id
+                    'user_id' => WorkLog::find($request['workLog'])->user_id
                 ])) {
                     $fail('Der angegebene Zeitraum kollidiert mit Vertrauensarbeitszeiteinträgen.');
                 }

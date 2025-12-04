@@ -21,7 +21,7 @@ class UserTrustWorkingHour extends Model
      *  user_id: int
      * } $data
      */
-    public static function checkCollisions(array $data)
+    public static function checkCollisions(array $data): bool
     {
         return self::where('user_id', $data['user_id'])
             ->where(fn($q) =>
