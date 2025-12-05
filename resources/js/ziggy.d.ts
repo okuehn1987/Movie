@@ -189,13 +189,15 @@ declare module 'ziggy-js' {
     "group.update": [
         {
             "name": "group",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "group.destroy": [
         {
             "name": "group",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "homeOfficeDay.store": [],
