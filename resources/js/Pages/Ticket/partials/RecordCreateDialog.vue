@@ -76,7 +76,7 @@ function submit() {
                     </v-btn>
                 </template>
                 <v-divider></v-divider>
-                <v-card-text>
+                <v-card-text style="max-height: 600px; overflow-y: auto">
                     <v-form @submit.prevent="submit">
                         <v-row>
                             <v-col cols="12" md="6">

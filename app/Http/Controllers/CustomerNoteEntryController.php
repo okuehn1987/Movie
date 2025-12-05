@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class CustomerNoteEntryController extends Controller
 {
@@ -23,7 +24,7 @@ class CustomerNoteEntryController extends Controller
             'title' => 'required|string',
             'value' => 'nullable|required_if:type,text|string|max:200',
             'file' => 'nullable|required_if:type,file|file',
-            'selectedFolder' => 'required|exists:customer_note_folders,id',
+            'selectedFolder' => ['required', Rule::exists('customer_note_folders', 'id')->where('customer_id', $customer->id)],
 
             'metadata' => 'nullable|array',
             'metadata.*' => 'nullable|string'

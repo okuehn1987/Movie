@@ -10,7 +10,7 @@ const bugForm = useForm({
     <v-dialog max-width="1000">
         <template #activator="{ props: activatorProps }">
             <div v-bind="activatorProps">
-                <v-icon icon="mdi-bug" class="me-2"></v-icon>
+                <v-icon icon="mdi-bug" color="primary" class="me-2"></v-icon>
                 Fehler melden
             </div>
         </template>

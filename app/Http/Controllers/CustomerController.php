@@ -42,9 +42,8 @@ class CustomerController extends Controller
         Gate::authorize('viewShow', Customer::class);
 
         $validated = $request->validate([
-            'selectedFolder' => 'nullable|exists:customer_note_folders,id',
+            'selectedFolder' => ['nullable', Rule::exists('customer_note_folders', 'id')->where('customer_id', $customer->id)],
             'tab' => 'nullable|string|in:archive,finishedTickets,newTickets,workingTickets',
-            'customer_id' => 'nullable|exists:customers,id',
             'assignees' => 'nullable|array',
             'assignees.*' => ['nullable', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))],
             'start' => 'nullable|date|required_with:end',
@@ -113,10 +112,6 @@ class CustomerController extends Controller
                 ->whereNotNull('tickets.finished_at')
                 ->whereDoesntHave('records', fn($q) => $q->whereNull('accounted_at'))
                 ->with('records')
-                ->when(
-                    array_key_exists('customer_id', $validated) && $validated['customer_id'] != null,
-                    fn($q) => $q->where('customer_id', $validated['customer_id'])
-                )
                 ->when(
                     array_key_exists('assignees', $validated) && $validated['assignees'] != null,
                     fn($q) => $q->whereHas('assignees', fn($q2) => $q2->where('status', Status::Accepted)->whereIn('users.id', $validated['assignees']))

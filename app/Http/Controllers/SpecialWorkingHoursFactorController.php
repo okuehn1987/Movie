@@ -17,7 +17,7 @@ class SpecialWorkingHoursFactorController extends Controller
         $validated = $request->validate([
             'type' => ['required', Rule::in(array_keys(SpecialWorkingHoursFactor::$TYPES))],
             'extra_charge' => 'required|numeric',
-            'id' => 'nullable|exists:special_working_hours_factors,id'
+            'id' => ['nullable', Rule::exists('special_working_hours_factors', 'id')->where('organization_id', Organization::getCurrent()->id)],
         ], [
             'type.in' => 'Muss in ' . join(', ', SpecialWorkingHoursFactor::$TYPES) . ' vorhanden sein'
         ]);

@@ -10,7 +10,7 @@ const emit = defineEmits<{
 }>();
 const props = defineProps<{
     users: UserProp[];
-    absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval'>[];
+    absenceTypes: Pick<AbsenceType, 'id' | 'name' | 'abbreviation' | 'requires_approval'>[];
     selectedAbsence: AbsenceProp | AbsencePatchProp | null;
     selectedDate: DateTime | null;
 }>();
@@ -23,27 +23,25 @@ const absenceForm = useForm({
     user_id: props.selectedAbsence?.user_id ?? selectedUser.value,
     start: props.selectedAbsence?.start ?? props.selectedDate?.toFormat('yyyy-MM-dd') ?? null,
     end: props.selectedAbsence?.end ?? props.selectedDate?.toFormat('yyyy-MM-dd') ?? null,
-    absence_type_id: props.selectedAbsence?.absence_type_id ?? null,
-    absence_id: props.selectedAbsence && 'absence_id' in props.selectedAbsence ? props.selectedAbsence.absence_id : props.selectedAbsence?.id ?? null,
+    absence_type_id: (props.selectedAbsence?.absence_type_id ?? null) as AbsenceType['id'] | null | 'homeOffice',
+    absence_id:
+        props.selectedAbsence && 'absence_id' in props.selectedAbsence ? props.selectedAbsence.absence_id : (props.selectedAbsence?.id ?? null),
 });
 
 function saveAbsence() {
-    if (absenceForm.absence_id) {
-        absenceForm.post(route('absence.absencePatch.store', { absence: absenceForm.absence_id }), {
-            onSuccess: () => {
-                absenceForm.reset();
-                openModal.value = false;
-                emit('absenceReload');
-            },
-        });
+    const options = {
+        onSuccess: () => {
+            absenceForm.reset();
+            openModal.value = false;
+            emit('absenceReload');
+        },
+    };
+    if (absenceForm.absence_type_id == 'homeOffice') {
+        absenceForm.post(route('homeOfficeDay.store'), options);
+    } else if (absenceForm.absence_id) {
+        absenceForm.post(route('absence.absencePatch.store', { absence: absenceForm.absence_id }), options);
     } else {
-        absenceForm.post(route('absence.store'), {
-            onSuccess: () => {
-                absenceForm.reset();
-                openModal.value = false;
-                emit('absenceReload');
-            },
-        });
+        absenceForm.post(route('absence.store'), options);
     }
 }
 const deleteAbsenceForm = useForm({});
@@ -63,7 +61,7 @@ function deleteAbsence() {
 }
 
 const requiresApproval = computed(() => {
-    const type = props.absence_types.find(a => a.id === absenceForm.absence_type_id);
+    const type = props.absenceTypes.find(a => a.id === absenceForm.absence_type_id);
     return !props.selectedAbsence || (type?.requires_approval && usePage().props.auth.user.supervisor_id);
 });
 </script>
@@ -107,7 +105,12 @@ const requiresApproval = computed(() => {
                             <v-col cols="12">
                                 <v-select
                                     label="Abwesenheitsgrund angeben"
-                                    :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
+                                    :items="
+                                        [
+                                            ...absenceTypes.map(a => ({ title: a.name, value: a.id })),
+                                            currentUser?.home_office && { title: 'Homeoffice', value: 'homeOffice' },
+                                        ].filter(Boolean)
+                                    "
                                     v-model="absenceForm.absence_type_id"
                                     :error-messages="absenceForm.errors.absence_type_id"
                                 ></v-select>
@@ -162,9 +165,17 @@ const requiresApproval = computed(() => {
                                         >
                                             löschen
                                         </v-btn>
-                                        <v-btn v-else @click.stop="deleteAbsence()" color="error">Löschung beantragen</v-btn>
+                                        <v-btn v-else-if="selectedAbsence.status !== 'declined'" @click.stop="deleteAbsence()" color="error">
+                                            Löschung beantragen
+                                        </v-btn>
                                     </template>
-                                    <v-btn :loading="absenceForm.processing" type="submit" color="primary" :disabled="!absenceForm.isDirty">
+                                    <v-btn
+                                        v-if="!selectedAbsence || selectedAbsence.status !== 'declined'"
+                                        :loading="absenceForm.processing"
+                                        type="submit"
+                                        color="primary"
+                                        :disabled="!absenceForm.isDirty"
+                                    >
                                         {{
                                             can(
                                                 'absence',

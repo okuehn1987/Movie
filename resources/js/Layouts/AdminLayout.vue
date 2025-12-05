@@ -5,6 +5,7 @@ import { useDisplay } from 'vuetify';
 import AppbarActions from './partials/AppbarActions.vue';
 import { AppModule } from '@/types/types';
 import DrawerMenu from './partials/DrawerMenu.vue';
+import { showsGlobalMessage } from '@/utils';
 
 defineProps<{
     title: string;
@@ -118,10 +119,24 @@ const currentApp = computed(() => page.props.appModules.find(m => m.value === pa
         </v-app-bar>
         <v-main>
             <v-container class="pt-0" fluid>
-                <v-alert v-if="$page.props.flash.error" type="error" closable class="mb-6" :key="Math.random()">
+                <v-alert
+                    v-if="$page.props.flash.error"
+                    type="error"
+                    closable
+                    class="mb-6"
+                    :key="Math.random()"
+                    @click:close="showsGlobalMessage = false"
+                >
                     {{ $page.props.flash.error }}
                 </v-alert>
-                <v-alert v-if="$page.props.flash.success" type="success" closable class="mb-6" :key="Math.random()">
+                <v-alert
+                    v-if="$page.props.flash.success"
+                    type="success"
+                    closable
+                    class="mb-6"
+                    :key="Math.random()"
+                    @click:close="showsGlobalMessage = false"
+                >
                     {{ $page.props.flash.success }}
                 </v-alert>
                 <slot />

@@ -9,7 +9,6 @@ use App\Models\OperatingSite;
 use App\Models\Organization;
 use App\Models\Ticket;
 use App\Models\TicketRecord;
-use App\Models\TicketRecordFile;
 use App\Models\User;
 use App\Notifications\RemovedFromTicketNotification;
 use App\Notifications\TicketCreationNotification;
@@ -33,12 +32,21 @@ class TicketController extends Controller
 
         $validated = $request->validate([
             'tab' => 'nullable|string|in:archive,finishedTickets,newTickets,workingTickets',
-            'customer_id' => 'nullable|exists:customers,id',
+            'customer_id' => [
+                'nullable',
+                Rule::exists('customers', 'id')->where('organization_id', Organization::getCurrent()->id)
+            ],
             'assignees' => 'nullable|array',
-            'assignees.*' => ['nullable', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))],
+            'assignees.*' => [
+                'nullable',
+                Rule::exists('users', 'id')->whereIn('operating_site_id', OperatingSite::inOrganization()->select('operating_sites.id'))
+            ],
             'start' => 'nullable|date|required_with:end',
             'end' => 'nullable|date|required_with:start|after_or_equal:start',
-            'openTicket' => ['nullable', Rule::exists('tickets', 'id')->whereIn('id', Ticket::inOrganization()->select('tickets.id'))],
+            'openTicket' => [
+                'nullable',
+                Rule::exists('tickets', 'id')->whereIn('customer_id', Customer::inOrganization()->select('customers.id'))
+            ],
         ]);
 
         $openTicket = array_key_exists('openTicket', $validated) && $validated['openTicket'] != null ? Ticket::find($validated['openTicket']) : null;
@@ -101,7 +109,7 @@ class TicketController extends Controller
                     array_key_exists('start', $validated) && array_key_exists('end', $validated) && $validated['start'] != null && $validated['end'] != null,
                     fn($q) => $q->whereBetween('tickets.finished_at', [Carbon::parse($validated['start'])->startOfDay(), Carbon::parse($validated['end'])->endOfDay()])
                 )
-                ->paginate(14),
+                ->paginate(13),
             'customers' => fn() => Customer::inOrganization()->get(['id', 'name']),
             'users' => fn() => User::inOrganization()->get(['id', 'first_name', 'last_name', 'job_role']),
             'operatingSites' => fn() => collect([['title' => 'Homeoffice', 'value' => ['id' => $authUser->id, 'type' => User::class]]])
@@ -187,8 +195,7 @@ class TicketController extends Controller
             $ticket->assignees()->updateExistingPivot($authUser->id, ['status' => 'accepted']);
         }
 
-        $model = $ticket;
-        if (isset($record)) $model = $record;
+        $model = isset($record) ? $record : $ticket;
         foreach ($validated['files'] as $file) {
             $path = Storage::disk($validated["tab"] === "expressTicket" ? 'ticket_record_files' : 'ticket_files')->putFile($file);
             $model->files()->create([
