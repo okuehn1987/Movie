@@ -26,6 +26,7 @@ const open = ref([]);
         <v-card :max-height="useMaxScrollHeight(48).value" class="overflow-auto">
             <v-card-text>
                 <v-row>
+                    <v-col v-if="user.absences.length === 0"><v-alert color="info">Keine Abwesenheiten vorhanden.</v-alert></v-col>
                     <v-col cols="12">
                         <v-expansion-panels elevation="1" multiple v-model="open">
                             <template v-for="absenceType in absenceTypes" :key="absenceType.id">
