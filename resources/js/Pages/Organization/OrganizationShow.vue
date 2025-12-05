@@ -3,7 +3,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { AbsenceType, Flag, OperatingSite, Organization, SpecialWorkingHoursFactor, TimeAccountSetting } from '@/types/types';
 import { ref } from 'vue';
 import OrganizationGeneralInformationSettings from './OrganizationGeneralInformationSettings.vue';
-import SWHFIndex from '../SWHF/SWHFIndex.vue';
+// import SWHFIndex from '../SWHF/SWHFIndex.vue';
 import AbsenceTypeIndex from '../AbsenceType/AbsenceTypeIndex.vue';
 import TimeAccountSettingsIndex from '../TimeAccount/TimeAccountSettingsIndex.vue';
 import OrganizationSettings from './OrganizationSettings.vue';
