@@ -150,7 +150,7 @@ class AbsenceController extends Controller
                     'absencePatches' => fn($q) => $q
                         ->with('log.currentAcceptedPatch')
                         ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
-                        ->where('status', Status::Accepted)
+                        ->whereIn('status', [Status::Accepted, Status::Created])
                         ->whereNot('type', 'delete')
                         ->whereDate('start', '<=', $date->copy()->endOfYear())
                         ->whereDate('end', '>=', $date->copy()->startOfYear())

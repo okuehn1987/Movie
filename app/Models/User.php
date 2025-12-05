@@ -435,7 +435,7 @@ class User extends Authenticatable
             $this->absencePatches()
                 ->with('log.currentAcceptedPatch')
                 ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
-                ->where('status', Status::Accepted)
+                ->whereIn('status', [Status::Accepted, Status::Created])
                 ->whereNot('type', 'delete')
                 ->whereDate('start', '<=', $endOfYear)
                 ->whereDate('end', '>=', $startOfYear)
@@ -459,6 +459,7 @@ class User extends Authenticatable
                 $usedDays++;
             };
         }
+
         return $usedDays;
     }
 
