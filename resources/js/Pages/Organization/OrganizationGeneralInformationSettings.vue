@@ -69,7 +69,7 @@ function submit() {
                         ></v-file-input>
                     </v-col>
 
-                    <v-col cols="12" md="3">
+                    <!-- <v-col cols="12" md="3">
                         <v-checkbox
                             label="Nachtzuschüsse?"
                             v-model="organizationForm.night_surcharges"
@@ -82,7 +82,7 @@ function submit() {
                             v-model="organizationForm.vacation_limitation_period"
                             :error-messages="organizationForm.errors.vacation_limitation_period"
                         ></v-checkbox>
-                    </v-col>
+                    </v-col> -->
 
                     <v-col cols="12" class="text-end" v-if="can('organization', 'update')">
                         <v-btn type="submit" color="primary">Aktualisieren</v-btn>
