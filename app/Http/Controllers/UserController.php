@@ -670,7 +670,6 @@ class UserController extends Controller
             ->delete();
 
         foreach ($validated['home_office_day_generators'] as $generator) {
-            if (Carbon::parse($generator['start'])->lt(Carbon::now()->startOfDay())) continue;
 
             if ($generator['id']) {
                 $previousGeneratedDays = HomeOfficeDay::where('home_office_day_generator_id', $generator['id'])->withTrashed()->pluck('date');
