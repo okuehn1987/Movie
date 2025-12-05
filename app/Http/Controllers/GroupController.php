@@ -34,12 +34,12 @@ class GroupController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string',
-            'users' => 'nullable|array',
+            'users' => 'present|array',
             'users.*' => ['required', Rule::exists('users', 'id')->whereIn('operating_site_id', OperatingSite::inOrganization()->select('id'))]
         ]);
 
         $group->update(['name' => $validated['name']]);
-        User::inOrganization()->where('group_id', $group->id)->update(['group_id' => null]);
+        $group->users()->whereNotIn('users.id', $validated['users'])->update(['group_id' => null]);
         User::inOrganization()->whereIn('id', $validated['users'])->update(['group_id' => $group->id]);
 
         return back()->with('success', 'Abteilung erfolgreich aktualisiert.');
@@ -60,7 +60,7 @@ class GroupController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string',
-            'users' => 'nullable|array',
+            'users' => 'present|array',
             'users.*' => ['required', Rule::exists('users', 'id')->whereIn('operating_site_id', OperatingSite::inOrganization()->select('id'))]
         ]);
 
