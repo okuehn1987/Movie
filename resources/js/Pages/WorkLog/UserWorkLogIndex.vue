@@ -54,6 +54,7 @@ function parseTimeFlexible(s: string) {
 }
 
 function submit() {
+    if (!workLogForm.id) return;
     workLogForm
         .transform(d => {
             const start_time = parseTimeFlexible(d.start_time);
@@ -72,7 +73,7 @@ function submit() {
                 }),
             };
         })
-        .post(route('workLogPatch.store', { workLog: workLogForm.id }), {
+        .post(route('workLog.workLogPatch.store', { workLog: workLogForm.id }), {
             onSuccess: () => {
                 showDialog.value = false;
                 workLogForm.reset();
