@@ -135,7 +135,7 @@ class UserController extends Controller
                     $existingGenerator = HomeOfficeDayGenerator::find($currentGenerator['id']);
                     if (
                         Carbon::parse($existingGenerator->start)->lt(now()->startOfDay()) &&
-                        Carbon::parse($value)->lt(now()->startOfDay()) && $value != Carbon::parse($existingGenerator->start)->format('Y-m-d')
+                        Carbon::parse($value)->lt(now()->startOfDay()) && $value != Carbon::parse($existingGenerator->end)->format('Y-m-d')
                     ) {
                         $fail('validation.after_or_equal')->translate([
                             'attribute' => __('validation.attributes.end'),
@@ -143,7 +143,7 @@ class UserController extends Controller
                         ]);
                     }
                 }
-                if (!$request['home_office'] && Carbon::parse($value)->gt(Carbon::now()->startOfDay())) $fail('The ' . $attribute . ' is invalid.');
+                if (!$request['home_office'] && Carbon::parse($value)->gt(Carbon::now()->startOfDay())) $fail('Es können keine Homeoffice-Tage gespeichert werden, wenn Homeoffice nicht aktiv ist.');
             }],
             'user_working_hours' => 'present|array',
             'user_working_hours.*.id' => [
