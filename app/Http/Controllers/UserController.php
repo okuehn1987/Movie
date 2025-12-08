@@ -133,7 +133,10 @@ class UserController extends Controller
                 $currentGenerator = $request['home_office_day_generators'][$index];
                 if ($mode == 'update' && isset($currentGenerator['id'])) {
                     $existingGenerator = HomeOfficeDayGenerator::find($currentGenerator['id']);
-                    if (Carbon::parse($existingGenerator->start)->lt(now()->startOfDay()) && Carbon::parse($value)->lt(now()->startOfDay())) {
+                    if (
+                        Carbon::parse($existingGenerator->start)->lt(now()->startOfDay()) &&
+                        Carbon::parse($value)->lt(now()->startOfDay()) && $value != Carbon::parse($existingGenerator->start)->format('Y-m-d')
+                    ) {
                         $fail('validation.after_or_equal')->translate([
                             'attribute' => __('validation.attributes.end'),
                             'date' => Carbon::now()->format('d.m.Y')
@@ -178,11 +181,19 @@ class UserController extends Controller
                     }
                     if ($mode == 'update' && isset($currentTrustWorkingHour['id'])) {
                         $existingEntry = UserTrustWorkingHour::find($currentTrustWorkingHour['id']);
-                        if (Carbon::parse($existingEntry->active_since)->lt(now()->startOfDay()) && $value != Carbon::parse($existingEntry->active_since)->format('Y-m-d')) {
+                        if (
+                            Carbon::parse($existingEntry->active_since)->lt(now()->startOfDay()) &&
+                            Carbon::parse($value)->lt(now()->startOfDay()) && $value != Carbon::parse($existingEntry->active_since)->format('Y-m-d')
+                        ) {
                             $fail('Der Eintrag darf nicht geändert werden, da der Zeitraum bereits begonnen hat.');
                         }
                     }
-                    if ($mode == 'update' && UserTrustWorkingHour::checkCollisions([...$currentTrustWorkingHour, 'user_id' => $user->id])) {
+                    if (
+                        $mode == 'update' && UserTrustWorkingHour::whereNot('id', $currentTrustWorkingHour['id'])->where(fn($q) =>
+                        $q->where('active_since', '<=', Carbon::parse($currentTrustWorkingHour['active_until']))
+                            ->where('active_until', '>=', Carbon::parse($currentTrustWorkingHour['active_since'])))
+                        ->exists()
+                    ) {
                         $fail('In dem Zeitraum besteht bereits ein Eintrag für Vertrauensarbeit.');
                     }
                 }
