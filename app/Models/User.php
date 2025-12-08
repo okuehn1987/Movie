@@ -420,7 +420,7 @@ class User extends Authenticatable
         )->shouldCache();
     }
 
-    public function usedLeaveDaysForYear(CarbonInterface $year, $userWorkingWeeks = null, $absences = null): int
+    public function usedLeaveDaysForYear(CarbonInterface $year, $userWorkingWeeks = null, $absences = null)
     {
         $startOfYear = $year->copy()->startOfYear();
         $endOfYear = $year->copy()->endOfYear();
@@ -449,14 +449,14 @@ class User extends Authenticatable
             fn($i) => Carbon::parse(max($a->start, $startOfYear))->addDays($i)->startOfDay()
         ))->unique()->sort();
 
-        $usedDays = 0;
+        $usedDays = [];
         foreach ($absenceData as $day) {
             $currentWorkingWeek = $this->userWorkingWeekForDate($day, $userWorkingWeeks);
             if (
                 $currentWorkingWeek?->hasWorkDay($day) &&
                 !$this->operatingSite->hasHoliday($day)
             ) {
-                $usedDays++;
+                $usedDays[$day->year] = ($usedDays[$day->year] ?? 0) + 1;
             };
         }
 

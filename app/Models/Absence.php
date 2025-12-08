@@ -90,7 +90,7 @@ class Absence extends Model
                 $currentWorkingWeek?->hasWorkDay($day) &&
                 !$entry->user->loadMissing('operatingSite')->operatingSite->hasHoliday($day)
             ) {
-                $usedDays[$day->year] = 1;
+                $usedDays[$day->year] = ($usedDays[$day->year] ?? 0) + 1;
             };
         }
 

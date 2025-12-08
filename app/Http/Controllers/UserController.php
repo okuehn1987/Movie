@@ -345,16 +345,22 @@ class UserController extends Controller
         $user['leaveDaysForYear'] = $user->leaveDaysForYear(Carbon::now());
         $user['usedLeaveDaysForYear'] = $user->usedLeaveDaysForYear(Carbon::now());
         $user['absences'] = $user->absences()
-            ->whereYear('start', '<=', Carbon::now()->year)
-            ->whereYear('end', '>=', Carbon::now()->year - 3)
+            ->whereYear('start', '>=', Carbon::now()->year - 1)
             ->with(['absenceType:id,name', 'user:id,operating_site_id'])
             ->whereIn('status', [Status::Accepted, Status::Created])
             ->get(['id', 'start', 'end', 'absence_type_id', 'status', 'user_id'])->append('usedDays');
 
+        $allAbsenceYears = $user->absences->unique(fn($a) => Carbon::parse($a->start)->year)->map(fn($a) => Carbon::parse($a->start));
+        $usedLeaveDaysForYear = [];
+        foreach ($allAbsenceYears as $year) {
+            $usedLeaveDaysForYear[] = $user->usedLeaveDaysForYear($year);
+        }
+
         return Inertia::render('User/UserShow/Absences', [
             'user' => $user,
             'can' => self::getUserShowCans($user),
-            'absenceTypes' => AbsenceType::inOrganization()->get(['id', 'name'])
+            'absenceTypes' => AbsenceType::inOrganization()->get(['id', 'name']),
+            'usedLeaveDaysForYear' => $usedLeaveDaysForYear
         ]);
     }
 
