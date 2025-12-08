@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { AbsenceType, DateString, FederalState, Status, User, UserAbsenceFilter } from '@/types/types';
+import { AbsenceType, DateString, FederalState, Group, OperatingSite, Status, User, UserAbsenceFilter } from '@/types/types';
 import { throttle, useMaxScrollHeight } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
@@ -25,6 +25,8 @@ const props = defineProps<{
     userAbsenceFilters: UserAbsenceFilter[];
     federal_state: FederalState;
     all_federal_states: Record<FederalState, string>;
+    filterableOperatingSites: Pick<OperatingSite, 'id' | 'name'>[];
+    filterableGroups: Pick<Group, 'id' | 'name'>[];
 }>();
 
 const dateParam = route().params['date'];
@@ -34,6 +36,8 @@ const groupFilterForm = useForm({
     set: null as null | string | { value: UserAbsenceFilter['id']; title: string },
     selected_users: [] as User['id'][],
     selected_absence_types: [] as AbsenceType['id'][],
+    selected_operating_sites: [] as OperatingSite['id'][],
+    selected_groups: [] as Group['id'][],
     selected_statuses: ['created', 'accepted'] as Status[],
     selected_holidays: [props.federal_state] as FederalState[],
 });
@@ -42,6 +46,8 @@ const singleFilterForm = useForm({
     set: null as null | UserAbsenceFilter['id'],
     selected_users: [] as User['id'][],
     selected_absence_types: [] as AbsenceType['id'][],
+    selected_operating_sites: [] as OperatingSite['id'][],
+    selected_groups: [] as Group['id'][],
     selected_statuses: ['created', 'accepted'] as Status[],
     selected_holidays: [props.federal_state] as FederalState[],
 });
@@ -243,6 +249,8 @@ const currentSchoolHolidays = computed(() => {
                         :schoolHolidays="currentMonthHolidays"
                         :federal_state
                         :all_federal_states
+                        :filterableOperatingSites
+                        :filterableGroups
                     ></AbsenceFilter>
                     <div class="d-flex flex-wrap align-center">
                         <div class="d-flex">
@@ -292,7 +300,12 @@ const currentSchoolHolidays = computed(() => {
                     users
                         .filter(
                             u =>
-                                !currentFilterForm || currentFilterForm.selected_users.length == 0 || currentFilterForm.selected_users.includes(u.id),
+                                !currentFilterForm ||
+                                ((currentFilterForm.selected_users.length == 0 || currentFilterForm.selected_users.includes(u.id)) &&
+                                    (currentFilterForm.selected_operating_sites.length == 0 ||
+                                        currentFilterForm.selected_operating_sites.includes(u.operating_site_id)) &&
+                                    (currentFilterForm.selected_groups.length == 0 ||
+                                        (u.group_id && currentFilterForm.selected_groups.includes(u.group_id)))),
                         )
                         .map(u => ({
                             ...u,
@@ -306,33 +319,50 @@ const currentSchoolHolidays = computed(() => {
                     {
                         title: 'Name',
                         key: 'name',
-                        headerProps: {class:'px-sm-4 px-1'}
+                        headerProps: { class: 'px-sm-4 px-1' },
                     },
-                  ...( display.mdAndUp.value?  [  {
-                            title: '',
-                            key: 'action',
-                            width: '48px',
-                            sortable:false
-                        }]: []),
-                    ...(display.mdAndUp.value ? getDaysInMonth() : getDaysInWeek()).map((e,_,dayList) => ({
-                        title: e.weekdayShort + '\n' + e.day.toString(),
-                        key: e.toString(),
-                        sortable: false,
-                        align: 'center',
-                        width: (1/dayList.length * 100)+'%' ,
-                        headerProps:{ class: {'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate() ,
-                         'bg-grey': !(e.toISODate() === DateTime.local().toISODate()) && currentSchoolHolidays.some(h => {
-                            const start = DateTime.fromISO(h.start);
-                            const end = DateTime.fromISO(h.end);
+                    ...(display.mdAndUp.value
+                        ? [
+                              {
+                                  title: '',
+                                  key: 'action',
+                                  width: '48px',
+                                  sortable: false,
+                              },
+                          ]
+                        : []),
+                    ...(display.mdAndUp.value ? getDaysInMonth() : getDaysInWeek()).map(
+                        (e, _, dayList) =>
+                            ({
+                                title: e.weekdayShort + '\n' + e.day.toString(),
+                                key: e.toString(),
+                                sortable: false,
+                                align: 'center',
+                                width: (1 / dayList.length) * 100 + '%',
+                                headerProps: {
+                                    class: {
+                                        'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate(),
+                                        'bg-grey':
+                                            !(e.toISODate() === DateTime.local().toISODate()) &&
+                                            currentSchoolHolidays.some(h => {
+                                                const start = DateTime.fromISO(h.start);
+                                                const end = DateTime.fromISO(h.end);
 
-                            return e >= start && e <= end;
-                         }) }, title: currentSchoolHolidays.filter(h => {
-                            const start = DateTime.fromISO(h.start);
-                            const end = DateTime.fromISO(h.end);
+                                                return e >= start && e <= end;
+                                            }),
+                                    },
+                                    title: currentSchoolHolidays
+                                        .filter(h => {
+                                            const start = DateTime.fromISO(h.start);
+                                            const end = DateTime.fromISO(h.end);
 
-                            return e >= start && e <= end;
-                         }).map( d => d.name).join('\n') }
-                    } as const)),
+                                            return e >= start && e <= end;
+                                        })
+                                        .map(d => d.name)
+                                        .join('\n'),
+                                },
+                            }) as const,
+                    ),
                 ]"
             >
                 <template v-slot:item="{ item, columns }">

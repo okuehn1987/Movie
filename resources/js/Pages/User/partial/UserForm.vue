@@ -26,6 +26,7 @@ const WEEKDAYS = Info.weekdays('long', { locale: 'en' }).map(e => e.toLowerCase(
 const userFormDefaults: FormData = {
     first_name: '',
     last_name: '',
+    academic_title: null,
     email: '',
     date_of_birth: null as null | string,
     city: '',
@@ -109,6 +110,7 @@ function setUserData() {
     if (props.user) {
         userForm.first_name = props.user.first_name;
         userForm.last_name = props.user.last_name;
+        userForm.academic_title = props.user.academic_title;
         userForm.email = props.user.email;
         userForm.date_of_birth = props.user.date_of_birth;
         userForm.city = props.user.current_address.city ?? '';
@@ -132,6 +134,7 @@ function setUserData() {
         userForm.use_time_balance_traffic_light = props.user.time_balance_red_threshold !== null && props.user.time_balance_yellow_threshold !== null;
         userForm.time_balance_yellow_threshold = props.user.time_balance_yellow_threshold;
         userForm.time_balance_red_threshold = props.user.time_balance_red_threshold;
+        userForm.is_supervisor = props.user.is_supervisor;
 
         userForm.user_leave_days = props.user.user_leave_days
             .filter(e => e !== null)
@@ -244,7 +247,14 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
             <v-card-title>Persönliche Daten</v-card-title>
             <v-card-text>
                 <v-row>
-                    <v-col cols="12" md="6">
+                    <v-col cols="12" md="2">
+                        <v-text-field
+                            v-model="userForm.academic_title"
+                            label="Akademischer Titel"
+                            :error-messages="userForm.errors.academic_title"
+                        ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="4">
                         <v-text-field v-model="userForm.first_name" label="Vorname" :error-messages="userForm.errors.first_name"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
@@ -500,7 +510,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" title="Gleitzeitkonto">
+        <v-card v-if="user && can('user', 'update')" class="mb-4" title="Gleitzeitkonto">
             <v-card-text>
                 <v-row>
                     <v-col cols="12">
@@ -531,7 +541,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4">
+        <v-card v-if="user && can('user', 'update')" class="mb-4">
             <v-card-title>Homeoffice</v-card-title>
             <v-card-text>
                 <v-row>
@@ -655,7 +665,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4">
+        <v-card v-if="user && can('user', 'update')" class="mb-4">
             <v-card-title>Organisation</v-card-title>
             <v-card-text>
                 <v-row>
@@ -686,7 +696,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4">
+        <v-card v-if="user && can('user', 'update')" class="mb-4">
             <v-card-title>Betriebsstätte</v-card-title>
             <v-card-text>
                 <v-row>
@@ -726,7 +736,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4">
+        <v-card v-if="user && can('user', 'update')" class="mb-4">
             <v-card-title>Abteilung</v-card-title>
             <v-card-text>
                 <v-row>
@@ -780,7 +790,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             data-testid="userSupervisorSelection"
                         ></v-select>
                     </v-col>
-                    <v-col cols="12" md="6">
+                    <v-col v-if="user && can('user', 'update')" cols="12" md="6">
                         <v-checkbox v-model="userForm.is_supervisor" label="Ist ein Vorgesetzter"></v-checkbox>
                     </v-col>
                 </v-row>

@@ -20,11 +20,9 @@ class DashboardController extends Controller
             ->get(['id', 'supervisor_id', 'group_id', 'operating_site_id', 'first_name', 'last_name'])
             ->filter(fn($u) => $user->can('viewShow', [Absence::class, $u]));
 
-
         $currentAbsences = $visibleUsers->map(fn($u) => [...$u->currentAbsencePeriod, 'name' => $u->name])
-            ->filter(fn($a) => $a['end'] !== null)
+            ->filter(fn($a) => $a['end'] !== null && $a['start'] !== null)
             ->values();
-
         $tideProps = [];
         if (AppModuleService::hasAppModule('tide')) {
             $lastWeekEntries =

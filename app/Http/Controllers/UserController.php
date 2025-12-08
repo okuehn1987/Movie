@@ -47,6 +47,7 @@ class UserController extends Controller
         return $request->validate([
             "first_name" => "required|string",
             "last_name" => "required|string",
+            "academic_title" => "nullable|string",
             "date_of_birth" => "nullable|date",
             "city" => "nullable|string",
             "zip" => "nullable|string",
@@ -356,7 +357,7 @@ class UserController extends Controller
             'groupUser',
             'operatingSiteUser',
             'organizationUser',
-            'supervisor:id',
+            'supervisor:id,first_name,last_name',
             'currentAddress',
             'userWorkingWeeks' => function ($q) {
                 $q->orderBy('active_since', 'desc');
@@ -503,6 +504,7 @@ class UserController extends Controller
         $user = (new User)->forceFill([
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
+            'academic_title' => $validated['academic_title'],
             'email' => $validated['email'],
             'date_of_birth' => $validated['date_of_birth'],
             'phone_number' => $validated['phone_number'],
@@ -651,6 +653,7 @@ class UserController extends Controller
         $user->update([
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
+            'academic_title' => $validated['academic_title'],
             'email' => $validated['email'],
             'date_of_birth' => $validated['date_of_birth'],
             'phone_number' => $validated['phone_number'],

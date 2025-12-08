@@ -107,6 +107,7 @@ export type User = DBObject<'user'> &
     SoftDelete & {
         first_name: string;
         last_name: string;
+        academic_title: string | null;
         email: string;
         role: 'super-admin' | 'employee';
         password: string;
@@ -362,9 +363,11 @@ export type UserAbsenceFilter = DBObject<'userAbcenceFilter'> & {
     user_id: User['id'];
     name: string;
     data: {
-        version: 'v1';
+        version: 'v2';
         absence_type_ids: AbsenceType['id'][];
         user_ids: User['id'][];
+        operating_site_ids: OperatingSite['id'][];
+        group_ids: Group['id'][];
         statuses: Status[];
         holidays_from_federal_states: FederalState[];
     };
