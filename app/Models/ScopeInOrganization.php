@@ -51,6 +51,7 @@ trait ScopeInOrganization
             new self instanceof \App\Models\ChatMessage
         ) {
             return $builder->whereIn('chat_id', Chat::select('id')->inOrganization());
+        }
         if (new self instanceof \App\Models\CustomerNoteEntry) {
             return $builder->whereIn('customer_note_folder_id', CustomerNoteFolder::select('id')->inOrganization());
         }
