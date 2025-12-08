@@ -7,7 +7,6 @@ import { DateTime } from 'luxon';
 import { ref } from 'vue';
 import Absences from './partial/Absences.vue';
 import WorkingHours from './partial/WorkingHours.vue';
-
 defineProps<{
     user: User &
         Pick<Relations<'user'>, 'latest_work_log'> & {
@@ -16,10 +15,9 @@ defineProps<{
     supervisor: Pick<User, 'id' | 'first_name' | 'last_name'>;
     overtime: number;
     workingHours: { totalHours: number; homeOfficeHours: number };
-    currentAbsences: { name: string; end: DateString; type: string }[];
+    currentAbsences: { name: string; start: DateString; end: DateString; type: string }[];
     lastWeekEntries: (Pick<ShiftEntries, 'id' | 'start' | 'end'> & { duration: Seconds })[];
 }>();
-
 const currentPage = ref(1);
 </script>
 
@@ -32,7 +30,7 @@ const currentPage = ref(1);
                         <WorkingHours :user :overtime :workingHours />
                     </v-col>
                     <v-col cols="12" v-if="can('app', 'tide')">
-                        <v-card title="Zeiten der Aktuellen Woche">
+                        <v-card title="Zeiten der aktuellen Woche">
                             <template #append>
                                 <v-btn
                                     icon="mdi-eye"

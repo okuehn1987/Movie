@@ -701,6 +701,12 @@ class User extends Authenticatable
                             ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p))
                     );
 
+
+                $currentAbsence = $futureAbsences->firstWhere(
+                    fn($a) =>
+                    Carbon::parse($a['start'])->lte(now()) && Carbon::parse($a['end'])->gte(now())
+                );
+                $firstDay = $currentAbsence ? Carbon::parse($currentAbsence['start']) : now();
                 $lastDay = null;
                 $absenceTypes = collect();
 
@@ -717,6 +723,7 @@ class User extends Authenticatable
                     }
                 }
                 return [
+                    'start' => $firstDay?->format('d.m.Y'),
                     'end' => $lastDay?->format('d.m.Y'),
                     'type' => request()->user()->can(
                         'viewShow',
