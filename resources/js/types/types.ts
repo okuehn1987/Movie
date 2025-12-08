@@ -107,6 +107,7 @@ export type User = DBObject<'user'> &
     SoftDelete & {
         first_name: string;
         last_name: string;
+        academic_title: string | null;
         email: string;
         role: 'super-admin' | 'employee';
         password: string;

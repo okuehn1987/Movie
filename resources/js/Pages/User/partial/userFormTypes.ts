@@ -35,6 +35,7 @@ export type UserProp = User &
 export type FormData = {
     first_name: string;
     last_name: string;
+    academic_title: null | string;
     email: string;
     date_of_birth: null | string;
     city: string;
