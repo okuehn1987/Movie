@@ -251,10 +251,10 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             :error-messages="userForm.errors.academic_title"
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="12" md="5">
+                    <v-col cols="12" md="4">
                         <v-text-field v-model="userForm.first_name" label="Vorname" :error-messages="userForm.errors.first_name"></v-text-field>
                     </v-col>
-                    <v-col cols="12" md="5">
+                    <v-col cols="12" md="6">
                         <v-text-field v-model="userForm.last_name" label="Nachname" :error-messages="userForm.errors.last_name"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
