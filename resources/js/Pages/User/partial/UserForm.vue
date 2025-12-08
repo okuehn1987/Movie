@@ -130,6 +130,7 @@ function setUserData() {
         userForm.use_time_balance_traffic_light = props.user.time_balance_red_threshold !== null && props.user.time_balance_yellow_threshold !== null;
         userForm.time_balance_yellow_threshold = props.user.time_balance_yellow_threshold;
         userForm.time_balance_red_threshold = props.user.time_balance_red_threshold;
+        userForm.is_supervisor = props.user.is_supervisor;
 
         userForm.user_leave_days = props.user.user_leave_days
             .filter(e => e !== null)
