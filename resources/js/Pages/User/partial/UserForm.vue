@@ -26,6 +26,7 @@ const WEEKDAYS = Info.weekdays('long', { locale: 'en' }).map(e => e.toLowerCase(
 const userFormDefaults: FormData = {
     first_name: '',
     last_name: '',
+    academic_title: null,
     email: '',
     date_of_birth: null as null | string,
     city: '',
@@ -107,6 +108,7 @@ function setUserData() {
     if (props.user) {
         userForm.first_name = props.user.first_name;
         userForm.last_name = props.user.last_name;
+        userForm.academic_title = props.user.academic_title;
         userForm.email = props.user.email;
         userForm.date_of_birth = props.user.date_of_birth;
         userForm.city = props.user.current_address.city ?? '';
@@ -242,7 +244,14 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
             <v-card-title>Persönliche Daten</v-card-title>
             <v-card-text>
                 <v-row>
-                    <v-col cols="12" md="6">
+                    <v-col cols="12" md="2">
+                        <v-text-field
+                            v-model="userForm.academic_title"
+                            label="Akademischer Titel"
+                            :error-messages="userForm.errors.academic_title"
+                        ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="4">
                         <v-text-field v-model="userForm.first_name" label="Vorname" :error-messages="userForm.errors.first_name"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
