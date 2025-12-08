@@ -6,6 +6,7 @@ use App\Models\Absence;
 use App\Models\AbsencePatch;
 use App\Models\AbsenceType;
 use App\Enums\Status;
+use App\Models\Group;
 use App\Models\HomeOfficeDay;
 use App\Models\OperatingSite;
 use App\Models\Organization;
@@ -155,7 +156,7 @@ class AbsenceController extends Controller
                         ->whereDate('start', '<=', $date->copy()->endOfYear())
                         ->whereDate('end', '>=', $date->copy()->startOfYear())
                 ])
-                ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'group_id', 'operating_site_id', 'home_office'])
+                ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'group_id', 'operating_site_id', 'home_office', 'group_id', 'operating_site_id'])
                 ->map(fn(User $u) => [
                     ...$u->toArray(),
                     'leaveDaysForYear' => $u->leaveDaysForYear(now(), $u->userLeaveDays),
@@ -176,6 +177,8 @@ class AbsenceController extends Controller
             'absencePatches' =>  Inertia::merge(fn() => $absencePatches),
             'holidays' =>  Inertia::merge(fn() => $holidays->isEmpty() ? (object)[] : $holidays),
             'userAbsenceFilters' => $authUser->userAbsenceFilters,
+            'filterableOperatingSites' => OperatingSite::inOrganization()->get(['id', 'name']),
+            'filterableGroups' => Group::inOrganization()->get(['id', 'name']),
             'homeOfficeDays' => Inertia::merge(fn() => $homeOfficeDays),
             'schoolHolidays' =>  Inertia::merge(fn() => $schoolHolidays->isEmpty() ? (object)[] : [$date->format('Y-m') => $schoolHolidays]),
             'date' => $date,

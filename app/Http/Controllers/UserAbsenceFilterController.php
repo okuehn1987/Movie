@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Enums\Status;
 use App\Models\AbsenceType;
+use App\Models\OperatingSite;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use App\Models\UserAbsenceFilter;
@@ -22,10 +24,16 @@ class UserAbsenceFilterController extends Controller
             'set' => 'required|string',
 
             'selected_users' => 'present|array',
-            'selected_users.*' => Rule::in(User::inOrganization()->pluck('id')),
+            'selected_users.*' => Rule::exists('users', 'id')->whereIn('operating_site_id', OperatingSite::inOrganization()->select('id')),
 
             'selected_absence_types' => 'present|array',
-            'selected_absence_types.*' => Rule::in(AbsenceType::inOrganization()->pluck('id')),
+            'selected_absence_types.*' => Rule::exists('absence_types', 'id')->where('organization_id', Organization::getCurrent()->id),
+
+            'selected_operating_sites' => 'present|array',
+            'selected_operating_sites.*' => Rule::exists('operating_sites', 'id')->where('organization_id', Organization::getCurrent()->id),
+
+            'selected_groups' => 'present|array',
+            'selected_groups.*' => Rule::exists('groups', 'id')->where('organization_id', Organization::getCurrent()->id),
 
             "selected_statuses" => 'present|array',
             "selected_statuses.*" => Rule::enum(Status::class),
@@ -38,9 +46,11 @@ class UserAbsenceFilterController extends Controller
             'user_id' => $authUser->id,
             'name' => $validated['set'],
             'data' => [
-                'version' => 'v1',
+                'version' => 'v2',
                 'user_ids' => $validated['selected_users'],
                 'absence_type_ids' => $validated['selected_absence_types'],
+                'operating_site_ids' => $validated['selected_operating_sites'],
+                'group_ids' => $validated['selected_groups'],
                 'statuses' => $validated['selected_statuses'],
                 'holidays_from_federal_states' => $validated['selected_holidays'],
             ],
@@ -55,10 +65,16 @@ class UserAbsenceFilterController extends Controller
 
         $validated = $request->validate([
             'selected_users' => 'present|array',
-            'selected_users.*' => Rule::in(User::inOrganization()->pluck('id')),
+            'selected_users.*' => Rule::exists('users', 'id')->whereIn('operating_site_id', OperatingSite::inOrganization()->select('id')),
 
             'selected_absence_types' => 'present|array',
-            'selected_absence_types.*' => Rule::in(AbsenceType::inOrganization()->pluck('id')),
+            'selected_absence_types.*' => Rule::exists('absence_types', 'id')->where('organization_id', Organization::getCurrent()->id),
+
+            'selected_operating_sites' => 'present|array',
+            'selected_operating_sites.*' => Rule::exists('operating_sites', 'id')->where('organization_id', Organization::getCurrent()->id),
+
+            'selected_groups' => 'present|array',
+            'selected_groups.*' => Rule::exists('groups', 'id')->where('organization_id', Organization::getCurrent()->id),
 
             "selected_statuses" => 'present|array',
             "selected_statuses.*" => Rule::enum(Status::class),
@@ -72,6 +88,8 @@ class UserAbsenceFilterController extends Controller
                 'user_ids' => $validated['selected_users'],
                 'absence_type_ids' => $validated['selected_absence_types'],
                 'statuses' => $validated['selected_statuses'],
+                'operating_site_ids' => $validated['selected_operating_sites'],
+                'group_ids' => $validated['selected_groups'],
                 'holidays_from_federal_states' => $validated['selected_holidays'],
             ]
         ]);
