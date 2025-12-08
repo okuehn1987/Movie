@@ -231,9 +231,12 @@ const currentSchoolHolidays = computed(() => {
             v-model="openShowHomeOfficeModal"
             @homeOfficeReload="loadedMonths = [currentDate.toFormat('yyyy-MM')]"
         ></ShowHomeOfficeModal>
-        <v-card>
-            <v-card-text class="px-0 py-0">
-                <div class="d-flex flex-column align-center w-100" :class="display.mdAndUp.value ? 'justify-space-between' : 'justify-center'">
+        <v-card :class="{ 'rounded-0': !display.smAndUp.value }">
+            <v-card-text class="px-sm-4 px-0 py-sm-2 py-0">
+                <div
+                    class="d-flex align-center w-100"
+                    :class="display.smAndUp.value ? 'justify-space-between flex-row' : 'justify-center flex-column'"
+                >
                     <AbsenceFilter
                         :absenceTypes
                         :users
@@ -258,7 +261,7 @@ const currentSchoolHolidays = computed(() => {
                                 <v-icon icon="mdi-chevron-left"></v-icon>
                             </v-btn>
                         </div>
-                        <h2 class="mx-md-4 text-center" :style="{ minWidth: display.mdAndUp.value ? '170px' : '110px' }">
+                        <h2 class="mx-md-4 text-center" :style="{ minWidth: display.smAndUp.value ? '170px' : '110px' }">
                             <template v-if="display.mdAndUp.value">{{ currentDate.toFormat('MMMM yyyy') }}</template>
                             <template v-else>
                                 {{ currentDate.startOf('week').toFormat('dd.MM.yy') }} - {{ currentDate.endOf('week').toFormat('dd.MM.yy') }}
@@ -279,7 +282,7 @@ const currentSchoolHolidays = computed(() => {
                             </v-btn>
                         </div>
                     </div>
-                    <div style="width: 64px" v-if="display.mdAndUp.value"></div>
+                    <div style="width: 64px" v-if="display.smAndUp.value"></div>
                 </div>
             </v-card-text>
             <v-divider></v-divider>
@@ -306,33 +309,50 @@ const currentSchoolHolidays = computed(() => {
                     {
                         title: 'Name',
                         key: 'name',
-                        headerProps: {class:'px-sm-4 px-1'}
+                        headerProps: { class: 'px-sm-4 px-1' },
                     },
-                  ...( display.mdAndUp.value?  [  {
-                            title: '',
-                            key: 'action',
-                            width: '48px',
-                            sortable:false
-                        }]: []),
-                    ...(display.mdAndUp.value ? getDaysInMonth() : getDaysInWeek()).map((e,_,dayList) => ({
-                        title: e.weekdayShort + '\n' + e.day.toString(),
-                        key: e.toString(),
-                        sortable: false,
-                        align: 'center',
-                        width: (1/dayList.length * 100)+'%' ,
-                        headerProps:{ class: {'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate() ,
-                         'bg-grey': !(e.toISODate() === DateTime.local().toISODate()) && currentSchoolHolidays.some(h => {
-                            const start = DateTime.fromISO(h.start);
-                            const end = DateTime.fromISO(h.end);
+                    ...(display.mdAndUp.value
+                        ? [
+                              {
+                                  title: '',
+                                  key: 'action',
+                                  width: '48px',
+                                  sortable: false,
+                              },
+                          ]
+                        : []),
+                    ...(display.mdAndUp.value ? getDaysInMonth() : getDaysInWeek()).map(
+                        (e, _, dayList) =>
+                            ({
+                                title: e.weekdayShort + '\n' + e.day.toString(),
+                                key: e.toString(),
+                                sortable: false,
+                                align: 'center',
+                                width: (1 / dayList.length) * 100 + '%',
+                                headerProps: {
+                                    class: {
+                                        'bg-blue-darken-2': e.toISODate() === DateTime.local().toISODate(),
+                                        'bg-grey':
+                                            !(e.toISODate() === DateTime.local().toISODate()) &&
+                                            currentSchoolHolidays.some(h => {
+                                                const start = DateTime.fromISO(h.start);
+                                                const end = DateTime.fromISO(h.end);
 
-                            return e >= start && e <= end;
-                         }) }, title: currentSchoolHolidays.filter(h => {
-                            const start = DateTime.fromISO(h.start);
-                            const end = DateTime.fromISO(h.end);
+                                                return e >= start && e <= end;
+                                            }),
+                                    },
+                                    title: currentSchoolHolidays
+                                        .filter(h => {
+                                            const start = DateTime.fromISO(h.start);
+                                            const end = DateTime.fromISO(h.end);
 
-                            return e >= start && e <= end;
-                         }).map( d => d.name).join('\n') }
-                    } as const)),
+                                            return e >= start && e <= end;
+                                        })
+                                        .map(d => d.name)
+                                        .join('\n'),
+                                },
+                            }) as const,
+                    ),
                 ]"
             >
                 <template v-slot:item="{ item, columns }">

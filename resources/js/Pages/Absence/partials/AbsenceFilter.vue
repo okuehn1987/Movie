@@ -125,7 +125,7 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
 <template>
     <v-dialog max-width="1000">
         <template #activator="{ props: activatorProps }">
-            <v-btn class="w-100" style="border-radius: 0px !important" v-bind="activatorProps" variant="flat" color="primary">
+            <v-btn :class="{ 'w-100 rounded-0': !display.smAndUp.value }" v-bind="activatorProps" variant="flat" color="primary">
                 <v-icon>mdi-filter</v-icon>
             </v-btn>
         </template>
@@ -253,7 +253,7 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                                     :model-value="
                                                         typeof groupFilterForm.set === 'object' && groupFilterForm.set !== null
                                                             ? groupFilterForm.set.title
-                                                            : groupFilterForm.set ?? ''
+                                                            : (groupFilterForm.set ?? '')
                                                     "
                                                     @update:model-value="
                                                         newValue => {
