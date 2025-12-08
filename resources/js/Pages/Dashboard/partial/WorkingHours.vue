@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Relations, Seconds, Shift, User } from '@/types/types';
+import { RelationPick, Relations, Seconds, Shift, User } from '@/types/types';
 import { formatDuration, useNow } from '@/utils';
 import { router, usePage } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
@@ -9,7 +9,8 @@ const props = defineProps<{
     overtime: number;
     workingHours: { totalHours: number; homeOfficeHours: number };
     user: User &
-        Pick<Relations<'user'>, 'latest_work_log' | 'current_trust_working_hours'> & {
+        RelationPick<'user', 'current_trust_working_hours', 'id' | 'user_id'> &
+        Pick<Relations<'user'>, 'latest_work_log'> & {
             current_shift: (Pick<Shift, 'id' | 'start' | 'end'> & { current_work_duration: Seconds }) | null;
         };
 }>();

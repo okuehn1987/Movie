@@ -134,12 +134,11 @@ const userForm = defineModel<ReturnType<typeof useForm<FormData>>>('userForm', {
                         </template>
                         <template v-slot:item.active_since="{ item, index }">
                             <v-text-field
-                                data-testid="userWorkingHours-since"
                                 type="date"
                                 variant="underlined"
                                 :min="mode == 'edit' ? DateTime.now().plus({ days: 1 }).toFormat('yyyy-MM-dd') : undefined"
                                 v-model="item.active_since"
-                                :error-messages="userForm.errors[`user_working_hours.${index}.active_since`]"
+                                :error-messages="userForm.errors[`user_trust_working_hours.${index}.active_since`]"
                                 :disabled="
                                     (user && !can('user', 'update')) ||
                                     (!!item.active_since && item.active_since <= DateTime.now().toFormat('yyyy-MM-dd'))
@@ -148,7 +147,6 @@ const userForm = defineModel<ReturnType<typeof useForm<FormData>>>('userForm', {
                         </template>
                         <template v-slot:item.active_until="{ item, index }">
                             <v-text-field
-                                data-testid="userWorkingHours-until"
                                 type="date"
                                 variant="underlined"
                                 :min="mode == 'edit' ? DateTime.now().plus({ days: 1 }).toFormat('yyyy-MM-dd') : undefined"

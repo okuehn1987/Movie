@@ -167,7 +167,7 @@ class UserController extends Controller
             'user_trust_working_hours.*.active_since' => [
                 'required',
                 'date',
-                function ($attribute, $value, $fail) use ($request, $mode) {
+                function ($attribute, $value, $fail) use ($request, $mode, $user) {
                     $index = explode('.', $attribute)[1];
                     $currentTrustWorkingHour = $request['user_trust_working_hours'][$index];
                     if ($mode == 'update' && !isset($currentTrustWorkingHour['id']) && Carbon::parse($currentTrustWorkingHour['active_since'])->lt(Carbon::now()->endOfDay())) {
@@ -176,9 +176,18 @@ class UserController extends Controller
                             'date' => Carbon::now()->format('d.M.Y')
                         ]);
                     }
+                    if ($mode == 'update' && isset($currentTrustWorkingHour['id'])) {
+                        $existingEntry = UserTrustWorkingHour::find($currentTrustWorkingHour['id']);
+                        if (Carbon::parse($existingEntry->active_since)->lt(now()->startOfDay()) && $value != Carbon::parse($existingEntry->active_since)->format('Y-m-d')) {
+                            $fail('Der Eintrag darf nicht geändert werden, da der Zeitraum bereits begonnen hat.');
+                        }
+                    }
+                    if ($mode == 'update' && UserTrustWorkingHour::checkCollisions([...$currentTrustWorkingHour, 'user_id' => $user->id])) {
+                        $fail('In dem Zeitraum besteht bereits ein Eintrag für Vertrauensarbeit.');
+                    }
                 }
             ],
-            'user_trust_working_hours.*.active_until' => ['nullable', 'date', function ($attribute, $value, $fail) use ($request) {
+            'user_trust_working_hours.*.active_until' => ['nullable', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
                 if ($value == null) return;
 
                 $index = explode('.', $attribute)[1];
@@ -188,6 +197,12 @@ class UserController extends Controller
                         'attribute' => __('validation.attributes.active_until'),
                         'date' => $currentTrustWorkingHour['active_since'],
                     ]));
+                }
+                if ($mode == 'update' && isset($currentTrustWorkingHour['id'])) {
+                    $existingEntry = UserTrustWorkingHour::find($currentTrustWorkingHour['id']);
+                    if (Carbon::parse($existingEntry->active_until)->lt(now()->startOfDay()) && $value != Carbon::parse($existingEntry->active_until)->format('Y-m-d')) {
+                        $fail('Der Eintrag darf nicht geändert werden, da er in der Vergangenheit liegt.');
+                    }
                 }
             }],
 
@@ -709,15 +724,12 @@ class UserController extends Controller
             ->delete();
 
         foreach ($validated['user_trust_working_hours'] as $trustWorkingHour) {
-            if (Carbon::now()->startOfDay()->gt(Carbon::parse($trustWorkingHour['active_since'])))
-                continue;
-
             UserTrustWorkingHour::updateOrCreate([
                 'id' => $trustWorkingHour['id'],
             ], [
-                'active_since' => Carbon::parse($trustWorkingHour['active_since']),
+                'active_since' => Carbon::parse($trustWorkingHour['active_since'])->format('Y-m-d'),
                 'user_id' => $user->id,
-                'active_until' => Carbon::parse($trustWorkingHour['active_until']),
+                'active_until' => Carbon::parse($trustWorkingHour['active_until'])->format('Y-m-d'),
             ]);
         }
 

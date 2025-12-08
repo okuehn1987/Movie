@@ -21,7 +21,7 @@ class WorkLogPatchController extends Controller
         Gate::authorize('create', [WorkLogPatch::class, $workLog->user]);
 
         $validated = $request->validate([
-            'start' => ['required', 'date', function ($attr, $value, $fail) use ($request) {
+            'start' => ['required', 'date', 'before:end', function ($attr, $value, $fail) use ($request) {
                 if (UserTrustWorkingHour::checkCollisions([
                     'start' => $value,
                     'end' => $request['end'],
@@ -30,7 +30,7 @@ class WorkLogPatchController extends Controller
                     $fail('Der angegebene Zeitraum kollidiert mit Vertrauensarbeitszeiteinträgen.');
                 }
             }],
-            'end' => 'required|date|after:start',
+            'end' => 'required|date|before_or_equal:now',
             'comment' => 'nullable|string',
             'is_home_office' => 'required|boolean',
         ]);

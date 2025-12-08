@@ -70,15 +70,14 @@ function submit() {
                     <v-form @submit.prevent="submit">
                         <v-row>
                             <v-col cols="12" md="3">
-                                <v-date-input
+                                <v-text-field
+                                    type="date"
                                     label="Start"
                                     required
                                     :error-messages="newWorkLogForm.errors.start"
                                     v-model="newWorkLogForm.start"
-                                    variant="plain"
                                     :max="DateTime.now().toFormat('yyyy-MM-dd')"
-                                    style="height: 73px"
-                                ></v-date-input>
+                                ></v-text-field>
                             </v-col>
                             <v-col cols="12" md="3">
                                 <v-text-field
@@ -87,18 +86,17 @@ function submit() {
                                     required
                                     :error-messages="newWorkLogForm.errors.start_time"
                                     v-model="newWorkLogForm.start_time"
-                                    variant="plain"
                                 ></v-text-field>
                             </v-col>
                             <v-col cols="12" md="3">
-                                <v-date-input
+                                <v-text-field
+                                    type="date"
                                     label="Ende"
                                     required
                                     :error-messages="newWorkLogForm.errors.end"
                                     v-model="newWorkLogForm.end"
-                                    variant="plain"
-                                    style="height: 73px"
-                                ></v-date-input>
+                                    :max="DateTime.now().toFormat('yyyy-MM-dd')"
+                                ></v-text-field>
                             </v-col>
                             <v-col cols="12" md="3">
                                 <v-text-field
@@ -107,7 +105,6 @@ function submit() {
                                     required
                                     :error-messages="newWorkLogForm.errors.end_time"
                                     v-model="newWorkLogForm.end_time"
-                                    variant="plain"
                                 ></v-text-field>
                             </v-col>
                             <v-col cols="12">

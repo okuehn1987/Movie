@@ -852,7 +852,10 @@ export type RelationMap = {
     userLeaveDays: {
         user: User;
     };
-    userWorkingHours: {
+    userTrustWorkingHour: {
+        user: User;
+    };
+    userWorkingHour: {
         user: User;
     };
     userWorkingWeek: {

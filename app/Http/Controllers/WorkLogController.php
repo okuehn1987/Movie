@@ -68,10 +68,7 @@ class WorkLogController extends Controller
         Gate::authorize('create', [WorkLog::class, $authUser]);
 
         $validated = $request->validate([
-            'start' => ['required', 'date', function ($attr, $value, $fail) use ($request, $user) {
-                if (Carbon::parse($value) > Carbon::now()->endOfDay()) {
-                    $fail('Der Startzeitpunkt darf nicht in der Zukunft liegen.');
-                }
+            'start' => ['required', 'date', 'before:end', function ($attr, $value, $fail) use ($request, $user) {
                 if (UserTrustWorkingHour::checkCollisions([
                     'start' => $value,
                     'end' => $request['end'],
@@ -80,13 +77,9 @@ class WorkLogController extends Controller
                     $fail('In dem Zeitraum besteht Vertrauensarbeit.');
                 }
             }],
-            'end' => ['required', 'date', 'after:start', function ($attr, $value, $fail) use ($user) {
+            'end' => ['required', 'date', 'before_or_equal:now', function ($attr, $value, $fail) use ($user) {
                 $last = $user->latestWorkLog;
                 $lastEnded = $last?->end != null;
-
-                if (Carbon::parse($value) > Carbon::now()->endOfDay()) {
-                    $fail('Der Endzeitpunkt darf nicht in der Zukunft liegen.');
-                }
 
                 if ($last && !$lastEnded && $value > $last->shift->start) {
                     $fail('Der Eintrag muss vor der aktiven Schicht enden.');
