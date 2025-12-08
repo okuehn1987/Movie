@@ -5,7 +5,9 @@ namespace Tests\Feature;
 use App\Models\AbsenceType;
 use App\Models\Shift;
 use App\Models\User;
+use App\Models\UserTrustWorkingHour;
 use App\Models\WorkLog;
+use Carbon\Carbon;
 use Exception;
 use Tests\TestCase;
 
@@ -714,6 +716,30 @@ class CalculationTest extends TestCase
         ]);
 
         $this->assertEquals(12 * 60 + 40, $this->tim->defaultTimeAccount->fresh()->balance);
+    }
+
+    public function test_user_trust_working_hours()
+    {
+        $date = Carbon::parse('2025-06-15');
+        UserTrustWorkingHour::create([
+            'user_id' => $this->oldUser->id,
+            'active_since' => $date,
+            'active_until' => $date,
+        ]);
+        $this->travelto($date);
+        $this->oldUser->removeMissingWorkTimeForDate($date);
+
+        $this->assertEquals(0, $this->oldUser->defaultTimeAccount->fresh()->balance);
+
+        $this->oldUser->absences()->create([
+            'start' =>  $date,
+            'end' =>  $date,
+            'status' => 'accepted',
+            'accepted_at' =>  now(),
+            'absence_type_id' => 10,
+        ]);
+
+        $this->assertEquals(0, $this->oldUser->defaultTimeAccount->fresh()->balance);
     }
 
     // public function test_missing_break_in_absence()

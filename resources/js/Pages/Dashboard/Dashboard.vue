@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { DateString, Relations, Seconds, Shift, ShiftEntries, User } from '@/types/types';
+import { DateString, RelationPick, Relations, Seconds, Shift, ShiftEntries, User } from '@/types/types';
 import { formatDuration } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
@@ -9,6 +9,7 @@ import Absences from './partial/Absences.vue';
 import WorkingHours from './partial/WorkingHours.vue';
 defineProps<{
     user: User &
+        RelationPick<'user', 'current_trust_working_hours', 'id' | 'user_id'> &
         Pick<Relations<'user'>, 'latest_work_log'> & {
             current_shift: (Pick<Shift, 'id' | 'start' | 'end'> & { current_work_duration: Seconds }) | null;
         };
@@ -26,7 +27,7 @@ const currentPage = ref(1);
         <v-row>
             <v-col cols="12" lg="6">
                 <v-row>
-                    <v-col cols="12" v-if="can('app', 'tide')">
+                    <v-col cols="12" v-if="can('app', 'tide') && !user.current_trust_working_hours">
                         <WorkingHours :user :overtime :workingHours />
                     </v-col>
                     <v-col cols="12" v-if="can('app', 'tide')">

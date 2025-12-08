@@ -254,6 +254,16 @@ class User extends Authenticatable
         return $this->userWorkingHours()->one()->ofMany(['active_since' => 'Max'], fn($q) => $q->whereDate('active_since', '<=', now()));
     }
 
+    public function userTrustWorkingHours()
+    {
+        return $this->hasMany(UserTrustWorkingHour::class);
+    }
+
+    public function currentTrustWorkingHours()
+    {
+        return $this->userTrustWorkingHours()->one()->ofMany(['active_since' => 'Max'], fn($q) => $q->whereDate('active_since', '<=', now())->whereDate('active_until', '>=', now()));
+    }
+
     public function workingHours(): Attribute
     {
         return Attribute::make(
@@ -585,7 +595,7 @@ class User extends Authenticatable
 
     public function getSollsekundenForDate(CarbonInterface $date)
     {
-        if ($this->resignation_date && $date->gt(Carbon::parse($this->resignation_date))) {
+        if ($this->resignation_date && $date->gt(Carbon::parse($this->resignation_date)) || UserTrustWorkingHour::checkCollisions(['start' => $date, 'end' => $date, 'user_id' => $this->id])) {
             return 0;
         }
 

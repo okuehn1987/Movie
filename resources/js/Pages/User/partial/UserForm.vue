@@ -57,6 +57,8 @@ const userFormDefaults: FormData = {
     user_working_weeks: [],
     initialRemainingLeaveDays: 0,
 
+    user_trust_working_hours: [],
+
     overtime_calculations_start: DateTime.now().toFormat('yyyy-MM-dd') as DateString,
     organizationUser: {
         organization_permission: null,
@@ -158,6 +160,7 @@ function setUserData() {
                 weekdays,
             });
         }
+        userForm.user_trust_working_hours = props.user.user_trust_working_hours;
 
         for (const entry of props.user.home_office_day_generators) {
             const weekdays = [] as Weekday[];
@@ -546,7 +549,10 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                         <v-checkbox
                             v-model="userForm.home_office"
                             label="Darf der Mitarbeitende Homeoffice machen?"
-                            :disabled="!!userForm.home_office_day_generators.find(g => g.end && DateTime.fromSQL(g.end) > DateTime.now())"
+                            :disabled="
+                                !!userForm.home_office_day_generators.find(g => g.end && DateTime.fromSQL(g.end) > DateTime.now()) ||
+                                (user && !can('user', 'update'))
+                            "
                             :error-messages="userForm.errors.home_office"
                             @update:model-value="
                                 v => {
@@ -812,7 +818,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <div class="d-flex justify-end">
+        <div class="d-flex justify-end" v-if="(user && can('user', 'update')) || (!user && can('user', 'create'))">
             <v-btn type="submit" color="primary" :loading="userForm.processing">Speichern</v-btn>
         </div>
     </v-form>
