@@ -285,7 +285,7 @@ class UserController extends Controller
             'groupUser',
             'operatingSiteUser',
             'organizationUser',
-            'supervisor:id',
+            'supervisor:id,first_name,last_name',
             'currentAddress',
             'userWorkingWeeks' => function ($q) {
                 $q->orderBy('active_since', 'desc');

@@ -35,16 +35,13 @@ const lastActionText = computed(() => {
     if (!props.user.latest_work_log) return;
     const endTime = DateTime.fromSQL(props.user.latest_work_log.end ?? props.user.latest_work_log.start);
     const diff = now.value.diff(endTime);
-    if (diff.as('minutes') < 1) {
+    if (diff.as('minutes') < 1 && props.user.latest_work_log.end) {
         return 'Jetzt';
     }
-    if (diff.as('hours') < 1) {
-        return 'vor ' + Math.floor(diff.as('minutes')) + ' minuten';
+    if (diff.as('hours') < 1 && props.user.latest_work_log.end) {
+        return 'vor ' + Math.floor(diff.as('minutes')) + ' Minuten';
     }
-    if (endTime.day !== now.value.day) {
-        return endTime.toFormat('dd.MM. - HH:mm') + ' Uhr';
-    }
-    return endTime.toFormat('HH:mm') + ' Uhr';
+    return endTime.toFormat('dd.MM.') + ' um ' + endTime.toFormat('HH:mm') + ' Uhr';
 });
 </script>
 <template>

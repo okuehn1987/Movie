@@ -497,7 +497,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" title="Gleitzeitkonto">
+        <v-card v-if="user && can('user', 'update')" class="mb-4" title="Gleitzeitkonto">
             <v-card-text>
                 <v-row>
                     <v-col cols="12">
@@ -528,7 +528,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4">
+        <v-card v-if="user && can('user', 'update')" class="mb-4">
             <v-card-title>Homeoffice</v-card-title>
             <v-card-text>
                 <v-row>
@@ -649,7 +649,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4">
+        <v-card v-if="user && can('user', 'update')" class="mb-4">
             <v-card-title>Organisation</v-card-title>
             <v-card-text>
                 <v-row>
@@ -680,7 +680,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4">
+        <v-card v-if="user && can('user', 'update')" class="mb-4">
             <v-card-title>Betriebsstätte</v-card-title>
             <v-card-text>
                 <v-row>
@@ -720,7 +720,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4">
+        <v-card v-if="user && can('user', 'update')" class="mb-4">
             <v-card-title>Abteilung</v-card-title>
             <v-card-text>
                 <v-row>
@@ -774,13 +774,13 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             data-testid="userSupervisorSelection"
                         ></v-select>
                     </v-col>
-                    <v-col cols="12" md="6">
+                    <v-col v-if="user && can('user', 'update')" cols="12" md="6">
                         <v-checkbox v-model="userForm.is_supervisor" label="Ist ein Vorgesetzter"></v-checkbox>
                     </v-col>
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" v-if="can('user', 'update')">
+        <v-card class="mb-4" v-if="user && can('user', 'update')">
             <v-card-title>Kündigungseinstellungen</v-card-title>
             <v-card-text>
                 <v-row>
