@@ -209,7 +209,7 @@ const currentSchoolHolidays = computed(() => {
 });
 </script>
 <template>
-    <AdminLayout title="Abwesenheiten">
+    <AdminLayout :noInlinePadding="display.smAndDown.value" title="Abwesenheiten">
         <EditCreateAbsence
             v-if="openEditCreateAbsenceModal && selectedUser"
             :absenceTypes
@@ -237,9 +237,12 @@ const currentSchoolHolidays = computed(() => {
             v-model="openShowHomeOfficeModal"
             @homeOfficeReload="loadedMonths = [currentDate.toFormat('yyyy-MM')]"
         ></ShowHomeOfficeModal>
-        <v-card>
-            <v-card-text class="px-sm-4 px-0">
-                <div class="d-flex align-center w-100" :class="display.mdAndUp.value ? 'justify-space-between' : 'justify-center'">
+        <v-card :class="{ 'rounded-0': !display.smAndUp.value }">
+            <v-card-text class="px-sm-4 px-0 py-sm-2 py-0">
+                <div
+                    class="d-flex align-center w-100"
+                    :class="display.smAndUp.value ? 'justify-space-between flex-row' : 'justify-center flex-column'"
+                >
                     <AbsenceFilter
                         :absenceTypes
                         :users
@@ -266,7 +269,7 @@ const currentSchoolHolidays = computed(() => {
                                 <v-icon icon="mdi-chevron-left"></v-icon>
                             </v-btn>
                         </div>
-                        <h2 class="mx-md-4 text-center" :style="{ minWidth: display.mdAndUp.value ? '170px' : '110px' }">
+                        <h2 class="mx-md-4 text-center" :style="{ minWidth: display.smAndUp.value ? '170px' : '110px' }">
                             <template v-if="display.mdAndUp.value">{{ currentDate.toFormat('MMMM yyyy') }}</template>
                             <template v-else>
                                 {{ currentDate.startOf('week').toFormat('dd.MM.yy') }} - {{ currentDate.endOf('week').toFormat('dd.MM.yy') }}
@@ -287,7 +290,7 @@ const currentSchoolHolidays = computed(() => {
                             </v-btn>
                         </div>
                     </div>
-                    <div style="width: 64px" v-if="display.mdAndUp.value"></div>
+                    <div style="width: 64px" v-if="display.smAndUp.value"></div>
                 </div>
             </v-card-text>
             <v-divider></v-divider>

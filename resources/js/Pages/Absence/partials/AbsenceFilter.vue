@@ -139,7 +139,9 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
 <template>
     <v-dialog max-width="1000">
         <template #activator="{ props: activatorProps }">
-            <v-btn v-bind="activatorProps" variant="flat" color="primary"><v-icon>mdi-filter</v-icon></v-btn>
+            <v-btn :class="{ 'w-100 rounded-0': !display.smAndUp.value }" v-bind="activatorProps" variant="flat" color="primary">
+                <v-icon>mdi-filter</v-icon>
+            </v-btn>
         </template>
         <template #default="{ isActive }">
             <v-card title="Abwesenheiten filtern">
@@ -156,7 +158,7 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                     </v-btn>
                 </template>
                 <v-divider></v-divider>
-                <v-card-text>
+                <v-card-text class="pt-0">
                     <v-tabs v-if="!display.smAndDown.value" v-model="tab" color="primary">
                         <v-tab text="Einzelfilter" value="singleFilter"></v-tab>
                         <v-tab text="Filtergruppen" value="groupFilter"></v-tab>
@@ -174,6 +176,7 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                             v-model="singleFilterForm.set"
                                             :error-messages="singleFilterForm.errors.set"
                                             required
+                                            hide-details
                                             clearable
                                         ></v-select>
                                     </v-col>
@@ -211,6 +214,7 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                             :error-messages="singleFilterForm.errors.selected_users"
                                             clearable
                                             chips
+                                            hide-details
                                             multiple
                                             variant="underlined"
                                             autocomplete="off"
@@ -224,6 +228,7 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                             :error-messages="singleFilterForm.errors.selected_absence_types"
                                             clearable
                                             chips
+                                            hide-details
                                             multiple
                                         ></v-select>
                                     </v-col>
@@ -239,6 +244,7 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                             :error-messages="singleFilterForm.errors.selected_statuses"
                                             clearable
                                             chips
+                                            hide-details
                                             multiple
                                         ></v-select>
                                     </v-col>
@@ -266,7 +272,7 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                                 variant="flat"
                                                 @click.stop="singleFilterForm.defaults(FORM_DEFAULT).reset()"
                                             >
-                                                Zurücksetzen
+                                                Leeren
                                             </v-btn>
                                             <v-btn color="primary" variant="flat" @click.stop="isActive.value = false">Anwenden</v-btn>
                                         </div>

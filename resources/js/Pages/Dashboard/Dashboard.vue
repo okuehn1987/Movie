@@ -31,7 +31,7 @@ const currentPage = ref(1);
                         <WorkingHours :user :overtime :workingHours />
                     </v-col>
                     <v-col cols="12" v-if="can('app', 'tide')">
-                        <v-card title="Zeiten der aktuellen Woche">
+                        <v-card title="Letzte Zeiterfassungen">
                             <template #append>
                                 <v-btn
                                     icon="mdi-eye"
