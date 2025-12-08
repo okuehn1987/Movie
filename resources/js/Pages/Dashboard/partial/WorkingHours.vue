@@ -102,9 +102,10 @@ const lastActionText = computed(() => {
                             Woche Homeoffice
                             <div class="text-h6">
                                 <!-- TODO: should probably get live updates like currentWorkingHours -->
-                                {{ formatDuration(workingHours.homeOfficeHours, 'minutes') }} ({{
-                                    Math.round((workingHours.homeOfficeHours / workingHours.totalHours) * 100)
-                                }}%)
+                                {{ formatDuration(workingHours.homeOfficeHours, 'minutes') }}
+                                <span v-if="workingHours.totalHours">
+                                    ({{ Math.round((workingHours.homeOfficeHours / workingHours.totalHours) * 100) }}%)
+                                </span>
                             </div>
                         </div>
                     </div>

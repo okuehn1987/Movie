@@ -8,6 +8,7 @@ import { PRIORITIES } from '@/types/types';
 import { ref } from 'vue';
 import { DateTime } from 'luxon';
 import TicketFinishDialog from './TicketFinishDialog.vue';
+import { useMaxScrollHeight } from '@/utils';
 
 defineProps<{
     tickets: TicketProp[];
@@ -18,12 +19,14 @@ defineProps<{
 }>();
 
 const search = ref('');
+const height = useMaxScrollHeight(48);
 
 const acceptTicketForm = useForm({});
 </script>
 <template>
     <v-card>
         <v-data-table-virtual
+            :style="{ maxHeight: height }"
             fixed-header
             :headers="[
                 { title: 'Prio', key: 'priorityText', width: '1px' },
@@ -37,26 +40,30 @@ const acceptTicketForm = useForm({});
                 { title: '', key: 'actions', align: 'end', sortable: false, width: '280px' },
             ]"
             :items="
-               tickets.map((t) => {
-                    const assignee = (()=>{
-                        if(t.assignees.length == 0) return null;
-                        const a = t.assignees[0]!
-                        if(t.assignees.length == 1) return a.first_name + ' ' + a.last_name
-                        return `${a.first_name} ${a.last_name} (+${t.assignees.length -1} weitere)`
-                    })()
-                    return {
-                        ...t,
-                        user: { ...t.user, name: (t.user.first_name + ' ' + t.user.last_name) },
-                        assigneeName: assignee,
-                        priorityText:  PRIORITIES.find(p => p.value === t.priority)?.title,
-                        priorityValue: PRIORITIES.find(p=>p.value === t.priority)?.priorityValue,
-                        assigneesNames: t.assignees.map(a => a.first_name + a.last_name).join(''),
-                    };
-                }).filter(t => {
-                    const searchString = search.replace(/\W/gi,'').toLowerCase();
-                    const ticketValue = (t.title+t.customer.name+t.user.name+t.assigneesNames+t.priorityText+t.reference_number).toLowerCase().replace(/\W/gi,'')
-                    return ticketValue.includes(searchString)
-                })
+                tickets
+                    .map(t => {
+                        const assignee = (() => {
+                            if (t.assignees.length == 0) return null;
+                            const a = t.assignees[0]!;
+                            if (t.assignees.length == 1) return a.first_name + ' ' + a.last_name;
+                            return `${a.first_name} ${a.last_name} (+${t.assignees.length - 1} weitere)`;
+                        })();
+                        return {
+                            ...t,
+                            user: { ...t.user, name: t.user.first_name + ' ' + t.user.last_name },
+                            assigneeName: assignee,
+                            priorityText: PRIORITIES.find(p => p.value === t.priority)?.title,
+                            priorityValue: PRIORITIES.find(p => p.value === t.priority)?.priorityValue,
+                            assigneesNames: t.assignees.map(a => a.first_name + a.last_name).join(''),
+                        };
+                    })
+                    .filter(t => {
+                        const searchString = search.replace(/\W/gi, '').toLowerCase();
+                        const ticketValue = (t.title + t.customer.name + t.user.name + t.assigneesNames + t.priorityText + t.reference_number)
+                            .toLowerCase()
+                            .replace(/\W/gi, '');
+                        return ticketValue.includes(searchString);
+                    })
             "
             hover
         >

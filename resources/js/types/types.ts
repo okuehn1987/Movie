@@ -456,6 +456,33 @@ export type Notification = Omit<DBObject<'notification'>, 'id'> & {
               };
           }
         | {
+              type: 'App\\Notifications\\HomeOfficeDayDisputeStatusNotification';
+              data: {
+                  title: string;
+                  home_office_day_generator_id: HomeOfficeDayGenerator['id'];
+                  start: DateString;
+                  type: 'delete' | 'create';
+              };
+          }
+        | {
+              type: 'App\\Notifications\\HomeOfficeDayNotification';
+              data: {
+                  title: string;
+                  home_office_day_generator_id: HomeOfficeDayGenerator['id'];
+                  start: DateString;
+                  status: string;
+              };
+          }
+        | {
+              type: 'App\\Notifications\\HomeOfficeDeleteNotification';
+              data: {
+                  title: string;
+                  home_office_day_id: HomeOfficeDay['id'];
+                  date: DateString;
+                  status: string;
+              };
+          }
+        | {
               type: 'App\\Notifications\\DisputeStatusNotification';
               data: {
                   type: 'delete' | 'create';
@@ -506,6 +533,12 @@ export type TicketRecord = DBObject<'record'> & {
 
 export type TicketRecordFile = DBObject<'ticketRecordFile'> & {
     ticket_record_id: TicketRecord['id'];
+    path: string;
+    original_name: string;
+};
+
+export type TicketFile = DBObject<'ticketFile'> & {
+    ticket_id: Ticket['id'];
     path: string;
     original_name: string;
 };
@@ -564,6 +597,8 @@ export type CustomerOperatingSite = DBObject<'customerOperatingSite'> & {
 
 export type JSON = string | number | boolean | null | { [x: string]: JSON } | JSON[];
 
+export type FileType = 'ticketRecordFile' | 'ticketFile';
+
 export type CustomerNoteFolder = DBObject<'customerNoteFolder'> & {
     customer_id: Customer['id'];
     customer_note_folder_id: CustomerNoteFolder['id'] | null;
@@ -584,6 +619,21 @@ export type TicketUser = DBObject<'ticket_user'> & {
     user_id: User['id'];
     status: Status;
 };
+
+export type HomeOfficeDayGenerator = DBObject<'home_office_day_generators'> & {
+    user_id: User['id'];
+    start: DateString;
+    end: DateString;
+    created_as_request: boolean;
+} & Record<Weekday, boolean>;
+
+export type HomeOfficeDay = DBObject<'home_office_days'> &
+    SoftDelete & {
+        user_id: User['id'];
+        home_office_day_generator_id: HomeOfficeDayGenerator['id'];
+        date: DateString;
+        status: Status;
+    };
 
 export type RelationMap = {
     absence: {
@@ -646,6 +696,14 @@ export type RelationMap = {
         group: Group;
         user: User;
     };
+    homeOfficeDayGenerator: {
+        user: User;
+        home_office_days: HomeOfficeDay[];
+    };
+    homeOfficeDay: {
+        user: User;
+        home_office_day_generator: HomeOfficeDayGenerator;
+    };
     operatingSite: {
         organization: Organization;
         users: User[];
@@ -697,6 +755,10 @@ export type RelationMap = {
             pivot: TicketUser;
         })[];
         records: TicketRecord[];
+        files: TicketFile[];
+    };
+    ticketFile: {
+        ticket: Ticket;
     };
     ticketRecord: {
         ticket: Ticket;
@@ -778,6 +840,8 @@ export type RelationMap = {
         current_address: Address;
         addresses: Address[];
         tickets: (Ticket & { pivot: TicketUser })[];
+        home_office_day_generators: HomeOfficeDayGenerator[];
+        home_office_days: HomeOfficeDay[];
     };
     userAbsenceFilter: {
         user: User;

@@ -54,15 +54,10 @@ function submit(isActive: Ref<boolean>) {
                     <v-form @submit.prevent="submit(isActive)">
                         <v-row>
                             <v-col cols="12" md="6">
-                                <v-text-field v-model="form.name" label="Name *" :errorMessages="form.errors.name" required></v-text-field>
+                                <v-text-field v-model="form.name" label="Name" :errorMessages="form.errors.name" required></v-text-field>
                             </v-col>
                             <v-col cols="12" md="6">
-                                <v-text-field
-                                    v-model="form.occupation"
-                                    label="Tätigkeit *"
-                                    :errorMessages="form.errors.occupation"
-                                    required
-                                ></v-text-field>
+                                <v-text-field v-model="form.occupation" label="Tätigkeit" :errorMessages="form.errors.occupation"></v-text-field>
                             </v-col>
                             <v-col cols="12" md="6">
                                 <v-text-field v-model="form.email" label="Email" :errorMessages="form.errors.email"></v-text-field>

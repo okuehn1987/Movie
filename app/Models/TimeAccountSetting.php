@@ -27,19 +27,19 @@ class TimeAccountSetting extends Model
         return [
             [
                 'type' => null,
-                'truncation_cycle_length_in_months' => 1,
+                'truncation_cycle_length_in_months' => "1",
             ],
             [
                 'type' => null,
-                'truncation_cycle_length_in_months' => 3,
+                'truncation_cycle_length_in_months' => "3",
             ],
             [
                 'type' => null,
-                'truncation_cycle_length_in_months' => 6,
+                'truncation_cycle_length_in_months' => "6",
             ],
             [
                 'type' => null,
-                'truncation_cycle_length_in_months' => 12,
+                'truncation_cycle_length_in_months' => "12",
             ],
             [
                 'type' => null,

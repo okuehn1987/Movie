@@ -16,9 +16,9 @@ use Illuminate\Support\Facades\Gate;
 
 class WorkLogPatchController extends Controller
 {
-    public function store(Request $request, #[CurrentUser] User $authUser)
+    public function store(Request $request, WorkLog $workLog, #[CurrentUser] User $authUser)
     {
-        Gate::authorize('create', [WorkLogPatch::class, WorkLog::with('user')->find($request['workLog'])->user]);
+        Gate::authorize('create', [WorkLogPatch::class, $workLog->user]);
 
         $validated = $request->validate([
             'start' => ['required', 'date', function ($attr, $value, $fail) use ($request) {
@@ -33,10 +33,8 @@ class WorkLogPatchController extends Controller
             'end' => 'required|date|after:start',
             'comment' => 'nullable|string',
             'is_home_office' => 'required|boolean',
-            'workLog' => 'required|exists:work_logs,id'
         ]);
 
-        $workLog = WorkLog::find($validated['workLog']);
         $user = $workLog->user;
 
         $patch = WorkLogPatch::create([

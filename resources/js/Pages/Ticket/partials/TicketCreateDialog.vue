@@ -136,7 +136,18 @@ watch(
                                             reqiuired
                                             :error-messages="ticketForm.errors.description"
                                             v-model="ticketForm.description"
+                                            max-rows="13"
+                                            auto-grow
                                         ></v-textarea>
+                                    </v-col>
+                                    <v-col cols="12">
+                                        <v-file-input
+                                            label="Dateien anhängen"
+                                            multiple
+                                            v-model="ticketForm.files"
+                                            :error-messages="ticketForm.errors['files.0']"
+                                            accept="image/jpg, image/png, image/jpeg, image/avif, image/tiff, image/svg+xml, application/pdf"
+                                        ></v-file-input>
                                     </v-col>
                                 </v-row>
                             </v-tabs-window-item>
@@ -196,20 +207,23 @@ watch(
 
                                     <v-col cols="12">
                                         <v-textarea
-                                            auto-grow
                                             label="Beschreibung"
                                             required
+                                            max-rows="10"
+                                            rows="2"
+                                            auto-grow
                                             :error-messages="ticketForm.errors.description"
                                             v-model="ticketForm.description"
                                         ></v-textarea>
                                     </v-col>
                                     <v-col cols="12">
                                         <v-textarea
-                                            rows="1"
+                                            max-rows="5"
+                                            auto-grow
+                                            rows="2"
                                             label="Ressourcen"
                                             :error-messages="ticketForm.errors.resources"
                                             v-model="ticketForm.resources"
-                                            auto-grow
                                         ></v-textarea>
                                     </v-col>
                                     <v-col cols="12">

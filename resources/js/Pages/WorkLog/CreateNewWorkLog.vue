@@ -116,7 +116,8 @@ function submit() {
                                     v-model="newWorkLogForm.comment"
                                     :error-messages="newWorkLogForm.errors.comment"
                                     variant="filled"
-                                    rows="3"
+                                    max-rows="10"
+                                    auto-grow
                                 ></v-textarea>
                             </v-col>
                             <v-col cols="12" md="3">

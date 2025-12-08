@@ -3,6 +3,7 @@ import {
     DateString,
     Group,
     GroupUser,
+    HomeOfficeDayGenerator,
     OperatingSite,
     OperatingSiteUser,
     OrganizationUser,
@@ -28,6 +29,7 @@ export type UserProp = User &
         | 'user_working_weeks'
         | 'current_address'
         | 'user_trust_working_hours'
+        | 'home_office_day_generators'
     > & {
         user_leave_days: (UserLeaveDays | null)[];
     };
@@ -54,6 +56,7 @@ export type FormData = {
     is_supervisor: boolean;
     home_office: boolean;
     home_office_hours_per_week: null | number; //TODO: check if we need active_since
+    home_office_day_generators: { id: HomeOfficeDayGenerator['id'] | null; weekdays: Weekday[]; start: string | null; end: string | null }[];
 
     user_working_hours: (Pick<UserWorkingHours, 'weekly_working_hours'> & { active_since: string; id: UserWorkingHours['id'] | null })[];
 

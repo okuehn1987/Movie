@@ -15,7 +15,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use App\Notifications\PasswordResetNotification;
 
 class User extends Authenticatable
@@ -31,7 +30,10 @@ class User extends Authenticatable
      */
     public function sendPasswordResetNotification($token): void
     {
-        $url = route('password.reset', ['token' => $token]);
+        $url = url(route('password.reset', [
+            'token' => $token,
+            'email' => $this->email,
+        ], false));
         $this->notify(new PasswordResetNotification($url, $this));
     }
 
@@ -326,6 +328,16 @@ class User extends Authenticatable
     public function operatingSiteUser()
     {
         return $this->hasOne(OperatingSiteUser::class);
+    }
+
+    public function homeOfficeDays()
+    {
+        return $this->hasMany(HomeOfficeDay::class);
+    }
+
+    public function homeOfficeDayGenerators()
+    {
+        return $this->hasMany(HomeOfficeDayGenerator::class);
     }
 
     public function workingWeeks(): Attribute
@@ -702,14 +714,16 @@ class User extends Authenticatable
                 $lastDay = null;
                 $absenceTypes = collect();
 
-                for ($day = now()->startOfDay();; $day->addDay()) {
-                    $absencesForDay = $futureAbsences->filter(fn($a) => Carbon::parse($a['start'])->lte($day) && Carbon::parse($a['end'])->gte($day));
+                if ($this->workingWeeks->count() > 0) {
+                    for ($day = now()->startOfDay();; $day->addDay()) {
+                        $absencesForDay = $futureAbsences->filter(fn($a) => Carbon::parse($a['start'])->lte($day) && Carbon::parse($a['end'])->gte($day));
 
-                    if ($absencesForDay->count() > 0 || !$this->shouldWork($day)) {
-                        $absenceTypes = $absenceTypes->merge($absencesForDay->pluck('absence_type_id'));
-                        $lastDay = $day->copy();
-                    } else {
-                        break;
+                        if ($absencesForDay->count() > 0 || !$this->shouldWork($day)) {
+                            $absenceTypes = $absenceTypes->merge($absencesForDay->pluck('absence_type_id'));
+                            $lastDay = $day->copy();
+                        } else {
+                            break;
+                        }
                     }
                 }
                 return [

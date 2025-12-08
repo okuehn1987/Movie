@@ -11,7 +11,7 @@ const props = defineProps<{
 }>();
 
 const filterForm = useForm({
-    customer_id: props.customers.length == 1 ? props.customers[0]?.id ?? null : (null as Customer['id'] | null),
+    customer_id: props.customers.length == 1 ? (props.customers[0]?.id ?? null) : (null as Customer['id'] | null),
     assignees: [],
     start: null as string | null,
     end: null as string | null,
@@ -47,14 +47,7 @@ const showDialog = ref(false);
                     </div>
                 </template>
                 <template #append>
-                    <v-btn
-                        icon
-                        variant="text"
-                        @click="
-                            isActive.value = false;
-                            filterForm.reset();
-                        "
-                    >
+                    <v-btn icon variant="text" @click="isActive.value = false">
                         <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>
@@ -72,7 +65,7 @@ const showDialog = ref(false);
                             </v-col>
                             <v-col cols="12">
                                 <v-autocomplete
-                                    label="Zuweisung"
+                                    label="Bearbeitet von"
                                     multiple
                                     clearable
                                     chips

@@ -221,6 +221,7 @@ return [
         'record' => 'Eintrag',
         'files' => 'Dateien',
         'file' => 'Datei',
+        'weekdays' => 'Wochentage',
     ],
 
     'values' => [

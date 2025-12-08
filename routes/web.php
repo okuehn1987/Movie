@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Middleware\CheckIfGateWasUsedToAuthorizeRequest;
 use App\Http\Middleware\HasOrganizationAccess;
 use App\Http\Middleware\isApp;
-use App\Models\CustomerNoteFolder;
+use App\Models\HomeOfficeDayGenerator;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard')->name('home');
@@ -43,10 +43,17 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     Route::resource('specialWorkingHoursFactor', SpecialWorkingHoursFactorController::class)->only(['store', 'update', 'destroy']);
     Route::resource('group', GroupController::class)->only(['index', 'store', 'update', 'destroy']);
 
+    Route::resource('homeOfficeDay', HomeOfficeDayController::class)->only(['store', 'update', 'destroy']);
+    Route::delete('/homeOfficeDay/{homeOfficeDay}/denyDestroy', [HomeOfficeDayController::class, 'denyDestroy'])->name('homeOfficeDay.denyDestroy');
+    Route::delete('/homeOfficeDay/{homeOfficeDay}/destroyDispute', [HomeOfficeDayController::class, 'destroyDispute'])->name('homeOfficeDay.destroyDispute');
+    Route::patch('/homeOfficeDay/{homeOfficeDayGenerator}/updateStatus', [HomeOfficeDayController::class, 'updateStatus'])->name('homeOfficeDay.updateStatus');
+    Route::resource('homeOfficeDayGenerator', HomeOfficeDayGenerator::class)->only(['destroy']);
+
     Route::resource('operatingSite', OperatingSiteController::class)->only(['index', 'store', 'destroy', 'update', 'show']);
     Route::resource('operatingSite.operatingTime', OperatingTimeController::class)->only(['store', 'destroy'])->shallow();
 
     Route::resource('notification', NotificationController::class)->only(['index', 'update']);
+    Route::post('notification/readAll', [NotificationController::class, 'readAll'])->name('notification.readAll');
 
     Route::singleton('profile', ProfileController::class)->only(['update']);
     Route::post('profile', [ProfileController::class, 'updateSettings'])->name('profile.updateSettings');
@@ -65,7 +72,7 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
         Route::get('/user/{user}/timeAccountTransactions', [UserController::class, 'timeAccountTransactions'])->name('user.timeAccountTransactions');
         Route::get('/user/{user}/timeStatementDoc', [UserController::class, 'timeStatementDoc'])->name('user.timeStatementDoc');
 
-        Route::resource('workLogPatch', WorkLogPatchController::class)->only(['destroy', 'store', 'update']);
+        Route::resource('workLog.workLogPatch', WorkLogPatchController::class)->only(['destroy', 'store', 'update'])->shallow();
         Route::resource('workLog', WorkLogController::class)->only(['index', 'store', 'destroy', 'update']);
 
         Route::post('/user/{user}/workLogs', [WorkLogController::class, 'createWorkLog'])->name('user.workLog.store');
@@ -97,6 +104,9 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
 
         Route::resource('ticketRecordFile', TicketRecordFileController::class)->only(['show', 'destroy']);
         Route::get('ticketRecordFile/{ticketRecordFile}/getContent', [TicketRecordFileController::class, 'getContent'])->name('ticketRecordFile.getContent');
+
+        Route::resource('ticketFile', TicketFileController::class)->only(['show', 'destroy']);
+        Route::get('ticketFile/{ticketFile}/getContent', [TicketFileController::class, 'getContent'])->name('ticketFile.getContent');
     });
 });
 

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { AbsenceType, Flag, OperatingSite, OperatingTime, Organization, SpecialWorkingHoursFactor, TimeAccountSetting } from '@/types/types';
+import { AbsenceType, Flag, OperatingSite, Organization, SpecialWorkingHoursFactor, TimeAccountSetting } from '@/types/types';
 import { ref } from 'vue';
 import OrganizationGeneralInformationSettings from './OrganizationGeneralInformationSettings.vue';
-import SWHFIndex from '../SWHF/SWHFIndex.vue';
+// import SWHFIndex from '../SWHF/SWHFIndex.vue';
 import AbsenceTypeIndex from '../AbsenceType/AbsenceTypeIndex.vue';
 import TimeAccountSettingsIndex from '../TimeAccount/TimeAccountSettingsIndex.vue';
 import OrganizationSettings from './OrganizationSettings.vue';
@@ -12,7 +12,6 @@ defineProps<{
     organization: Organization;
     flags: Record<Flag, string>;
     operating_sites: OperatingSite[];
-    operating_times: OperatingTime[];
     special_working_hours_factors: SpecialWorkingHoursFactor[];
     absence_types: AbsenceType[];
     absence_type_defaults: string[];
@@ -28,12 +27,12 @@ const tab = ref<'Allgemeine Informationen' | 'Einstellungen' | 'Sonderarbeitszei
         <v-tabs v-model="tab" color="primary">
             <v-tab prepend-icon="mdi-account" text="Allgemeine Informationen" value="Allgemeine Informationen"></v-tab>
             <v-tab prepend-icon="mdi-cog" text="Einstellungen" value="Einstellungen"></v-tab>
-            <v-tab
+            <!-- <v-tab
                 v-if="can('specialWorkingHoursFactors', 'viewIndex')"
                 prepend-icon="mdi-clock-outline"
                 text="Sonderarbeitszeitfaktor"
                 value="Sonderarbeitszeitfaktor"
-            ></v-tab>
+            ></v-tab> -->
             <v-tab
                 v-if="can('absenceType', 'viewIndex')"
                 prepend-icon="mdi-clock-outline"
@@ -54,9 +53,9 @@ const tab = ref<'Allgemeine Informationen' | 'Einstellungen' | 'Sonderarbeitszei
             <v-tabs-window-item value="Einstellungen">
                 <OrganizationSettings :organization :flags />
             </v-tabs-window-item>
-            <v-tabs-window-item v-if="can('specialWorkingHoursFactors', 'viewIndex')" value="Sonderarbeitszeitfaktor">
+            <!-- <v-tabs-window-item v-if="can('specialWorkingHoursFactors', 'viewIndex')" value="Sonderarbeitszeitfaktor">
                 <SWHFIndex :special_working_hours_factors />
-            </v-tabs-window-item>
+            </v-tabs-window-item> -->
             <v-tabs-window-item v-if="can('absenceType', 'viewIndex')" value="Abwesenheitsgründe">
                 <AbsenceTypeIndex :absenceTypes="absence_types" :absence_type_defaults />
             </v-tabs-window-item>
