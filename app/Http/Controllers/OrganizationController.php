@@ -28,7 +28,22 @@ class OrganizationController extends Controller
     {
         Gate::authorize('viewIndex', Organization::class);
 
-        return Inertia::render('Organization/OrganizationIndex', ['organizations' => Organization::all(),  'countries' => HolidayService::getCountries()]);
+        $organizations = Organization::with(['chatAssistant:id,organization_id,created_at,updated_at', 'owner'])
+            ->get(['id', 'owner_id', 'name', 'created_at'])
+            ->map(function ($organization) {
+                $chatAssistant = $organization->chatAssistant;
+
+                return [
+                    ...$organization->toArray(),
+                    'stats'            => $chatAssistant
+                        ? IsaController::getStatsForAssistant($chatAssistant)
+                        : null,
+                ];
+            });
+        return Inertia::render('Organization/OrganizationIndex', [
+            'organizations' => $organizations,
+            'countries'     => HolidayService::getCountries(),
+        ]);
     }
 
     public function store(Request $request)

@@ -239,7 +239,7 @@ class User extends Authenticatable
 
     public function owns()
     {
-        return $this->hasOne(Organization::class, 'owner_id', 'organization_id');
+        return $this->hasOne(Organization::class, 'owner_id');
     }
 
     public function userAbsenceFilters()

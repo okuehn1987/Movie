@@ -188,7 +188,7 @@ function deleteChat() {
                     <div v-show="showChat" class="chat-space bg-white elevation-12">
                         <div class="chat-header">
                                 <div class="d-flex align-center gap-2 chat-button">
-                                    <img  src="/img/Isa-klein.png" alt="ISA Logo"></img>
+                                    <img  src="/img/Isa-klein.png" role="button" @click.stop="closeChat" alt="ISA Logo"></img>
                                     <v-card-subtitle class="text-h6">ISA</v-card-subtitle>
                                 </div>
                 

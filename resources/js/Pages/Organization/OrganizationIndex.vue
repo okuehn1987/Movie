@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Country, CountryProp, Organization } from '@/types/types';
+import { Country, CountryProp, Organization, RelationPick } from '@/types/types';
 import { fillNullishValues, getStates } from '@/utils';
 import { Link } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
+import { Month, MonthStats, Year } from '@/types/types';
+import PaymentTable from '../Isa/PaymentTable.vue';
 
 defineProps<{
-    organizations: Organization[];
+    organizations: (Organization &
+        RelationPick<'organization', 'owner', 'id' | 'first_name' | 'last_name'> & {
+            stats: Record<Year, Partial<Record<Month, MonthStats>>>;
+        })[];
     countries: CountryProp[];
 }>();
 
@@ -42,19 +47,21 @@ function submit() {
                         hover
                         :headers="[
                             { title: 'id', key: 'id' },
-                            { title: 'owner_id', key: 'owner_id' },
-                            { title: 'name', key: 'name' },
-                            { title: 'created_at', key: 'created_at' },
-                            { title: '', key: 'action', align: 'end' },
+                            { title: 'Owner', key: 'owner_name' },
+                            { title: 'Name', key: 'name' },
+                            { title: 'Erstellt am', key: 'created_at' },
+                            { title: '', key: 'actions', width: '1px', align: 'end' },
                         ]"
                         :items="
-                            organizations.map(o => ({
+                            organizations.map(({ stats, ...o }) => ({
                                 ...fillNullishValues(o),
+                                stats,
+                                owner_name: o.owner.first_name + ' ' + o.owner.last_name,
                                 created_at: DateTime.fromISO(o.created_at).toFormat('dd.MM.yyyy'),
                             }))
                         "
                     >
-                        <template v-slot:header.action>
+                        <template v-slot:header.actions>
                             <v-dialog max-width="1000">
                                 <template v-slot:activator="{ props: activatorProps }">
                                     <v-btn v-bind="activatorProps" color="primary">
@@ -212,10 +219,30 @@ function submit() {
                                 </template>
                             </v-dialog>
                         </template>
-                        <template v-slot:item.action="{ item }">
-                            <Link :href="route('organization.show', { organization: item.id })">
-                                <v-btn color="primary" variant="text" icon="mdi-eye" />
-                            </Link>
+                        <template v-slot:item.actions="{ item }">
+                            <div class="d-flex ga-2 align-center">
+                                <v-dialog>
+                                    <template #activator="{ props: activatorProps }">
+                                        <v-btn color="primary" variant="text" icon="mdi-currency-eur" v-bind="activatorProps"></v-btn>
+                                    </template>
+                                    <template #default="{ isActive }">
+                                        <v-card :title="'Kostenübersicht der Organisation ' + item.name">
+                                            <v-card-title></v-card-title>
+                                            <template #append>
+                                                <v-btn icon variant="text" @click.stop="isActive.value = false">
+                                                    <v-icon>mdi-close</v-icon>
+                                                </v-btn>
+                                            </template>
+                                            <v-card-text>
+                                                <PaymentTable :stats="item.stats"></PaymentTable>
+                                            </v-card-text>
+                                        </v-card>
+                                    </template>
+                                </v-dialog>
+                                <Link :href="route('organization.show', { organization: item.id })">
+                                    <v-btn color="primary" variant="text" icon="mdi-eye" />
+                                </Link>
+                            </div>
                         </template>
                     </v-data-table-virtual>
                 </v-card>

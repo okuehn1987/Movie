@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { Month, MonthStats, Year } from '@/types/types';
 import { Info } from 'luxon';
-import { computed, ref, toRefs } from 'vue';
+import { ref, toRefs } from 'vue';
 
 const props = defineProps<{
     stats: Record<Year, Partial<Record<Month, MonthStats>>>;
-    chatAssistantId: number;
 }>();
 const { stats } = toRefs(props);
 
