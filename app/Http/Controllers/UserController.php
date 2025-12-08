@@ -188,13 +188,24 @@ class UserController extends Controller
                             $fail('Der Eintrag darf nicht geändert werden, da der Zeitraum bereits begonnen hat.');
                         }
                     }
-                    if (
-                        $mode == 'update' && UserTrustWorkingHour::whereNot('id', $currentTrustWorkingHour['id'])->where(fn($q) =>
-                        $q->where('active_since', '<=', Carbon::parse($currentTrustWorkingHour['active_until']))
-                            ->where('active_until', '>=', Carbon::parse($currentTrustWorkingHour['active_since'])))
-                        ->exists()
-                    ) {
-                        $fail('In dem Zeitraum besteht bereits ein Eintrag für Vertrauensarbeit.');
+
+                    $newTrustWorkingHours = collect($request['user_trust_working_hours']);
+                    $oldTrustWorkingHours = $user ? $user->userTrustWorkingHours()->whereNotIn('id', $newTrustWorkingHours->pluck('id'))->get() : collect();
+
+                    $merged = $newTrustWorkingHours->merge($oldTrustWorkingHours);
+                    if ($merged->filter(fn($e) => $e['active_until'] === null)->count() > 1) {
+                        $fail('Es darf nur einen Eintrag für unbegrenzte Vertrauensarbeit geben.');
+                    }
+                    foreach ($merged as $e) {
+                        foreach ($merged as $o) {
+                            if ($e === $o) continue;
+                            if (
+                                Carbon::parse($e['active_since'])->lte(Carbon::parse($o['active_until'])) &&
+                                (is_null($e['active_until']) || Carbon::parse($e['active_until'])->gte(Carbon::parse($o['active_since'])))
+                            ) {
+                                $fail('In dem Zeitraum besteht bereits ein Eintrag für Vertrauensarbeit.');
+                            }
+                        }
                     }
                 }
             ],
@@ -211,7 +222,11 @@ class UserController extends Controller
                 }
                 if ($mode == 'update' && isset($currentTrustWorkingHour['id'])) {
                     $existingEntry = UserTrustWorkingHour::find($currentTrustWorkingHour['id']);
-                    if (Carbon::parse($existingEntry->active_until)->lt(now()->startOfDay()) && $value != Carbon::parse($existingEntry->active_until)->format('Y-m-d')) {
+                    if (
+                        Carbon::parse($existingEntry->active_since)->lt(now()->startOfDay()) &&
+                        $value != Carbon::parse($existingEntry->active_until)->format('Y-m-d') &&
+                        Carbon::parse($value)->lt(now()->startOfDay())
+                    ) {
                         $fail('Der Eintrag darf nicht geändert werden, da er in der Vergangenheit liegt.');
                     }
                 }
