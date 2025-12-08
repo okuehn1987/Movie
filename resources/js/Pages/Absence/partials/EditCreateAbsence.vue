@@ -24,8 +24,7 @@ const absenceForm = useForm({
     start: props.selectedAbsence?.start ?? props.selectedDate?.toFormat('yyyy-MM-dd') ?? null,
     end: props.selectedAbsence?.end ?? props.selectedDate?.toFormat('yyyy-MM-dd') ?? null,
     absence_type_id: (props.selectedAbsence?.absence_type_id ?? null) as AbsenceType['id'] | null | 'homeOffice',
-    absence_id:
-        props.selectedAbsence && 'absence_id' in props.selectedAbsence ? props.selectedAbsence.absence_id : (props.selectedAbsence?.id ?? null),
+    absence_id: props.selectedAbsence && 'absence_id' in props.selectedAbsence ? props.selectedAbsence.absence_id : props.selectedAbsence?.id ?? null,
 });
 
 function saveAbsence() {
@@ -142,7 +141,7 @@ const requiresApproval = computed(() => {
                                     </v-col>
                                     <v-col cols="12" md="6">
                                         <div>
-                                            {{ currentUser.usedLeaveDaysForYear }} von
+                                            {{ currentUser.usedLeaveDaysForYear ? Object.values(currentUser.usedLeaveDaysForYear)[0] : 0 }} von
                                             {{ currentUser.leaveDaysForYear }}
                                         </div>
                                     </v-col>
