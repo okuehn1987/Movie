@@ -203,7 +203,7 @@ const currentSchoolHolidays = computed(() => {
 });
 </script>
 <template>
-    <AdminLayout title="Abwesenheiten">
+    <AdminLayout :noInlinePadding="display.smAndDown.value" title="Abwesenheiten">
         <EditCreateAbsence
             v-if="openEditCreateAbsenceModal && selectedUser"
             :absenceTypes
@@ -232,8 +232,8 @@ const currentSchoolHolidays = computed(() => {
             @homeOfficeReload="loadedMonths = [currentDate.toFormat('yyyy-MM')]"
         ></ShowHomeOfficeModal>
         <v-card>
-            <v-card-text class="px-sm-4 px-0">
-                <div class="d-flex align-center w-100" :class="display.mdAndUp.value ? 'justify-space-between' : 'justify-center'">
+            <v-card-text class="px-0 py-0">
+                <div class="d-flex flex-column align-center w-100" :class="display.mdAndUp.value ? 'justify-space-between' : 'justify-center'">
                     <AbsenceFilter
                         :absenceTypes
                         :users
