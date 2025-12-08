@@ -10,7 +10,7 @@ const bugForm = useForm({
     <v-dialog max-width="1000">
         <template #activator="{ props: activatorProps }">
             <div v-bind="activatorProps">
-                <v-icon icon="mdi-bug" class="me-2"></v-icon>
+                <v-icon icon="mdi-bug" color="primary" class="me-2"></v-icon>
                 Fehler melden
             </div>
         </template>
@@ -57,6 +57,8 @@ const bugForm = useForm({
                             </v-col>
                             <v-col cols="12">
                                 <v-textarea
+                                    max-rows="16"
+                                    auto-grow
                                     v-model="bugForm.description"
                                     :errorMessages="bugForm.errors.description"
                                     label="Zusätzliche Informationen zum Fehler"

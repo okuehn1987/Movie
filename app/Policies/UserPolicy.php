@@ -44,6 +44,6 @@ class UserPolicy
 
     public function viewDisputes(User $authUser): bool
     {
-        return $authUser->supervisees->count() > 0;
+        return $authUser->supervisees->count() > 0 || $authUser->isSubstitutionFor->some(fn($u) => $u->supervisees()->count() > 0);
     }
 }

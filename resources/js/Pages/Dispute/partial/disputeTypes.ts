@@ -1,4 +1,4 @@
-import { Absence, AbsencePatch, AbsenceType, Relation, User, WorkLog, WorkLogPatch } from '@/types/types';
+import { Absence, AbsencePatch, AbsenceType, HomeOfficeDay, Relation, User, WorkLog, WorkLogPatch } from '@/types/types';
 
 export type WorkLogPatchProp = Pick<WorkLogPatch, 'id' | 'start' | 'end' | 'is_home_office' | 'user_id' | 'work_log_id' | 'comment'> & {
     log: Relation<'workLogPatch', 'log', 'id' | 'start' | 'end' | 'is_home_office'>;
@@ -21,3 +21,5 @@ export type AbsencePatchProp = Pick<AbsencePatch, 'id' | 'start' | 'end' | 'user
         leaveDaysForYear: number;
     };
 };
+
+export type HomeOfficeDayProp = Pick<HomeOfficeDay, 'id' | 'user_id' | 'date' | 'home_office_day_generator_id'>;

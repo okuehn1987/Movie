@@ -2,11 +2,12 @@
 import ChatDetails from '@/Pages/Isa/ChatDetails.vue';
 import { AppModule, ChatMessage } from '@/types/types';
 import { Head, router, usePage, usePoll } from '@inertiajs/vue3';
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 import AppbarActions from './partials/AppbarActions.vue';
 import DrawerMenu from './partials/DrawerMenu.vue';
 import { DateTime } from 'luxon';
+import { showsGlobalMessage } from '@/utils';
 
 defineProps<{
     title: string;
@@ -17,13 +18,22 @@ const page = usePage();
 const isMobile = useDisplay().smAndDown;
 const showDrawer = ref(!isMobile.value);
 
-usePoll(
+const { start, stop } = usePoll(
     1000 * 60 * 2,
     {
         only: ['unreadNotifications'],
     },
     { keepAlive: true },
 );
+onMounted(() => {
+    start();
+});
+router.on('before', () => {
+    stop();
+});
+router.on('finish', () => {
+    start();
+});
 
 const showOrgImg = ref(!!page.props.organization.logo);
 watch(
@@ -140,11 +150,25 @@ function deleteChat() {
             <AppbarActions />
         </v-app-bar>
         <v-main class="postion-relative">
-            <v-container class="pt-0"  style="padding-bottom: calc(60px + 16px + 4px)" fluid>
-                <v-alert v-if="$page.props.flash.error" type="error" closable class="mb-6" :key="Math.random()">
+            <v-container class="pt-0" style="padding-bottom: calc(60px + 16px + 4px)" fluid>
+                <v-alert
+                    v-if="$page.props.flash.error"
+                    type="error"
+                    closable
+                    class="mb-6"
+                    :key="Math.random()"
+                    @click:close="showsGlobalMessage = false"
+                >
                     {{ $page.props.flash.error }}
                 </v-alert>
-                <v-alert v-if="$page.props.flash.success" type="success" closable class="mb-6" :key="Math.random()">
+                <v-alert
+                    v-if="$page.props.flash.success"
+                    type="success"
+                    closable
+                    class="mb-6"
+                    :key="Math.random()"
+                    @click:close="showsGlobalMessage = false"
+                >
                     {{ $page.props.flash.success }}
                 </v-alert>
                 <slot />

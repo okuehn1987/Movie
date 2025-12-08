@@ -9,7 +9,6 @@ use App\Models\OperatingSite;
 use App\Models\Organization;
 use App\Models\Ticket;
 use App\Models\TicketRecord;
-use App\Models\TicketRecordFile;
 use App\Models\User;
 use App\Notifications\RemovedFromTicketNotification;
 use App\Notifications\TicketCreationNotification;
@@ -33,12 +32,21 @@ class TicketController extends Controller
 
         $validated = $request->validate([
             'tab' => 'nullable|string|in:archive,finishedTickets,newTickets,workingTickets',
-            'customer_id' => 'nullable|exists:customers,id',
+            'customer_id' => [
+                'nullable',
+                Rule::exists('customers', 'id')->where('organization_id', Organization::getCurrent()->id)
+            ],
             'assignees' => 'nullable|array',
-            'assignees.*' => ['nullable', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))],
+            'assignees.*' => [
+                'nullable',
+                Rule::exists('users', 'id')->whereIn('operating_site_id', OperatingSite::inOrganization()->select('operating_sites.id'))
+            ],
             'start' => 'nullable|date|required_with:end',
             'end' => 'nullable|date|required_with:start|after_or_equal:start',
-            'openTicket' => ['nullable', Rule::exists('tickets', 'id')->whereIn('id', Ticket::inOrganization()->select('tickets.id'))],
+            'openTicket' => [
+                'nullable',
+                Rule::exists('tickets', 'id')->whereIn('customer_id', Customer::inOrganization()->select('customers.id'))
+            ],
         ]);
 
         $openTicket = array_key_exists('openTicket', $validated) && $validated['openTicket'] != null ? Ticket::find($validated['openTicket']) : null;
@@ -56,8 +64,9 @@ class TicketController extends Controller
             'customer:id,name',
             'user:id,first_name,last_name',
             'assignees:id,first_name,last_name',
-            'records.user',
-            'records.files'
+            'files:id,original_name,ticket_id',
+            'records.user:id,first_name,last_name',
+            'records.files:id,original_name,ticket_record_id',
         ]);
         return Inertia::render('Ticket/TicketIndex', [
             'tickets' => fn() => (clone $ticketQuery)
@@ -94,13 +103,13 @@ class TicketController extends Controller
                 )
                 ->when(
                     array_key_exists('assignees', $validated) && $validated['assignees'] != null,
-                    fn($q) => $q->whereHas('assignees', fn($q2) => $q2->wherePivot('status', Status::Accepted)->whereIn('users.id', $validated['assignees']))
+                    fn($q) => $q->whereHas('records', fn($q2) => $q2->whereIn('user_id', $validated['assignees']))
                 )
                 ->when(
                     array_key_exists('start', $validated) && array_key_exists('end', $validated) && $validated['start'] != null && $validated['end'] != null,
                     fn($q) => $q->whereBetween('tickets.finished_at', [Carbon::parse($validated['start'])->startOfDay(), Carbon::parse($validated['end'])->endOfDay()])
                 )
-                ->paginate(14),
+                ->paginate(13),
             'customers' => fn() => Customer::inOrganization()->get(['id', 'name']),
             'users' => fn() => User::inOrganization()->get(['id', 'first_name', 'last_name', 'job_role']),
             'operatingSites' => fn() => collect([['title' => 'Homeoffice', 'value' => ['id' => $authUser->id, 'type' => User::class]]])
@@ -143,14 +152,14 @@ class TicketController extends Controller
                 $operatingSite = $type::inOrganization()->exists($value['id']);
                 if (!$operatingSite) $fail('Bitte gib einen gültigen Standort ein');
             }],
-            'description' => 'nullable|required_if:tab,expressTicket|string|max:1000',
+            'description' => 'nullable|required_if:tab,expressTicket|string',
             'priority' => 'required|in:lowest,low,medium,high,highest',
             'customer_id' => ['required', Rule::exists('customers', 'id')->whereIn('id', Organization::getCurrent()->customers()->select('customers.id'))],
             'assignees' => 'present|array',
             'assignees.*' => ['required_if:tab,ticket', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))],
             'start' => 'nullable|required_if:tab,expressTicket|date',
             'duration' => 'nullable|required_if:tab,expressTicket|date_format:H:i',
-            'resources' => 'nullable|string|max:1000',
+            'resources' => 'nullable|string',
             'appointment_at' => 'nullable|date',
             'files' => 'present|array',
             'files.*' => 'required|file|mimes:jpg,png,jpeg,avif,tiff,svg+xml,pdf|max:5120',
@@ -183,15 +192,18 @@ class TicketController extends Controller
                 'address_id' => $address->id,
             ]);
             $ticket->update(['finished_at' => now()]);
-
-            foreach ($validated['files'] as $file) {
-                $path = Storage::disk('ticket_record_files')->putFile($file);
-                $record->files()->create([
-                    'path' => $path,
-                    'original_name' => $file->getClientOriginalName(),
-                ]);
-            }
+            $ticket->assignees()->updateExistingPivot($authUser->id, ['status' => 'accepted']);
         }
+
+        $model = isset($record) ? $record : $ticket;
+        foreach ($validated['files'] as $file) {
+            $path = Storage::disk($validated["tab"] === "expressTicket" ? 'ticket_record_files' : 'ticket_files')->putFile($file);
+            $model->files()->create([
+                'path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+            ]);
+        }
+
         $users = $ticket->assignees->filter(fn($u) => !$authUser->is($u));
         $users->merge($users->flatMap(fn($u) => $u->loadMissing('isSubstitutedBy')->isSubstitutedBy))
             ->unique('id')
@@ -208,7 +220,7 @@ class TicketController extends Controller
         $validated = $request->validate([
             'priority' => 'required|in:lowest,low,medium,high,highest',
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
+            'description' => 'nullable|string',
             'assignees' => 'present|array',
             'assignees.*' => ['required_if:tab,ticket', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))],
             'selected' => 'present|array',

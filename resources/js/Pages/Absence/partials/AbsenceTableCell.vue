@@ -2,7 +2,7 @@
 import { AbsenceType, Weekday } from '@/types/types';
 import { DateTime } from 'luxon';
 import { computed } from 'vue';
-import { AbsencePatchProp, AbsenceProp, getEntryState, UserProp } from '../utils';
+import { AbsencePatchProp, AbsenceProp, getEntryState, HomeOfficeDayProp, UserProp } from '../utils';
 
 const props = defineProps<{
     user: UserProp;
@@ -10,6 +10,7 @@ const props = defineProps<{
     entries: (AbsenceProp | AbsencePatchProp)[];
     absenceTypes: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
     holidays: Record<string, string> | null;
+    homeOfficeDays: HomeOfficeDayProp[];
 }>();
 
 const currentEntry = computed(() => props.entries.find(a => DateTime.fromSQL(a.start) <= props.date && props.date <= DateTime.fromSQL(a.end)));
@@ -24,6 +25,8 @@ function shouldUserWork(day: DateTime) {
         !props.holidays?.[props.date.toFormat('yyyy-MM-dd')]
     );
 }
+
+const currentHomeOfficeEntry = computed(() => props.homeOfficeDays.find(d => d.date === props.date.toFormat('yyyy-MM-dd')));
 </script>
 <template>
     <td
@@ -36,13 +39,23 @@ function shouldUserWork(day: DateTime) {
             <div
                 class="h-100 w-100 d-flex justify-center align-center"
                 :style="{
-                    backgroundColor: { accepted: '#f99', created: '#99f', declined: 'grey', hasOpenPatch: '#ff9' }[getEntryState(currentEntry)],
+                    backgroundColor: { accepted: '#f99', created: '#99f', declined: 'grey', hasOpenPatch: '#99f' }[getEntryState(currentEntry)],
                 }"
             >
                 <span v-if="currentEntry.absence_type_id">{{ currentEntry.absence_type?.abbreviation }}</span>
             </div>
         </template>
-        <div v-else :style="{ backgroundColor: shouldUserWork(date) ? '' : 'lightgray' }" class="h-100 w-100 empty"></div>
+        <div
+            v-else
+            :style="{
+                backgroundColor: shouldUserWork(date)
+                    ? !!currentHomeOfficeEntry
+                        ? { accepted: '#ff9', created: '#99f', declined: 'grey' }[currentHomeOfficeEntry.status]
+                        : ''
+                    : 'lightgray',
+            }"
+            class="h-100 w-100 empty"
+        ></div>
     </td>
 </template>
 

@@ -222,6 +222,7 @@ return [
         'files' => 'Dateien',
         'file' => 'Datei',
         'monthly_cost_limit' => 'Monatliches Kostenlimit',
+        'weekdays' => 'Wochentage',
     ],
 
     'values' => [

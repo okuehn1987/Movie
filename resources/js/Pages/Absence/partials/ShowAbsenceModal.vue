@@ -8,7 +8,7 @@ const emit = defineEmits<{
 }>();
 const props = defineProps<{
     users: Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'>[];
-    absence_types: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
+    absenceTypes: Pick<AbsenceType, 'id' | 'name' | 'abbreviation'>[];
     selectedAbsence: AbsenceProp | AbsencePatchProp;
     absenceUser: UserProp;
 }>();
@@ -53,8 +53,7 @@ function withdrawRequest() {
                     (selectedAbsence.user_id != $page.props.auth.user.id
                         ? ' von ' +
                           users.map(u => ({ ...u, name: u.first_name + ' ' + u.last_name })).find(u => u.id === selectedAbsence.user_id)?.name
-                        : '') +
-                    ' beantragen'
+                        : '')
                 "
             >
                 <template #append>
@@ -69,7 +68,7 @@ function withdrawRequest() {
                             <v-col cols="12">
                                 <v-select
                                     label="Abwesenheitsgrund angeben"
-                                    :items="absence_types.map(a => ({ title: a.name, value: a.id }))"
+                                    :items="absenceTypes.map(a => ({ title: a.name, value: a.id }))"
                                     :model-value="selectedAbsence.absence_type_id"
                                 ></v-select>
                             </v-col>
@@ -80,7 +79,12 @@ function withdrawRequest() {
                                 <v-text-field type="date" label="Bis" :model-value="selectedAbsence.end"></v-text-field>
                             </v-col>
                             <v-col cols="12" class="text-end">
-                                <v-btn v-if="can('user', 'viewDisputes')" @click.stop="openDispute" type="button" color="primary">
+                                <v-btn
+                                    v-if="can('user', 'viewDisputes') && $page.props.auth.user.id != selectedAbsence.user_id"
+                                    @click.stop="openDispute"
+                                    type="button"
+                                    color="primary"
+                                >
                                     Antrag öffnen
                                 </v-btn>
                                 <v-btn

@@ -38,29 +38,30 @@ function getAccountedAt(records: TicketRecord[]) {
             v-model:page="currentPage"
             :itemsPerPage
             :headers="[
-                { title: 'Ticket', key: 'reference_number', width: '1px' },
-                { title: 'Datum', key: 'created_at', width: '1px' },
-                { title: 'Titel', key: 'title' },
-                { title: 'Kunde', key: 'customer.name' },
-                { title: 'Termin', key: 'appointment_at' },
-                { title: 'Zugewiesen an', key: 'assigneeName' },
-                { title: 'Abgerechnet am', key: 'accounted_at' },
+                { title: 'Ticket', key: 'reference_number', width: '100px', sortable: false },
+                { title: 'Erstellt am', key: 'created_at', sortable: false },
+                { title: 'Titel', key: 'title', sortable: false },
+                { title: 'Kunde', key: 'customer.name', sortable: false },
+                { title: 'Abgeschlossen', key: 'finished_at', sortable: false },
+                { title: 'Bearbeitet von', key: 'recordUserName', sortable: false },
+                { title: 'Abgerechnet am', key: 'accounted_at', sortable: false },
                 { title: '', key: 'actions', align: 'end', width: '250px', sortable: false },
             ]"
             :items="
                 data.map(t => {
-                    const assignee = (()=>{
-                        if(t.assignees.length == 0) return null;
-                        const a = t.assignees[0]!
-                        if(t.assignees.length == 1) return a.first_name + ' ' + a.last_name
-                        return `${a.first_name} ${a.last_name} (+${t.assignees.length -1} weitere)`
-                    })()
+                    const recordUserName = (() => {
+                        const recordUsers = t.records.map(r => r.user);
+                        if (recordUsers.length == 0) return null;
+                        const a = recordUsers[0]!;
+                        if (recordUsers.length == 1) return a.first_name + ' ' + a.last_name;
+                        return `${a.first_name} ${a.last_name} (+${recordUsers.length - 1} weitere)`;
+                    })();
                     return {
                         ...t,
                         user: { ...t.user, name: t.user.first_name + ' ' + t.user.last_name },
-                        assigneeName: assignee,
-                        priorityText:  PRIORITIES.find(p => p.value === t.priority)?.title,
-                        priorityValue: PRIORITIES.find(p=>p.value === t.priority)?.priorityValue,
+                        recordUserName: recordUserName,
+                        priorityText: PRIORITIES.find(p => p.value === t.priority)?.title,
+                        priorityValue: PRIORITIES.find(p => p.value === t.priority)?.priorityValue,
                         assigneesNames: t.assignees.map(a => a.first_name + a.last_name).join(''),
                     };
                 })
@@ -71,10 +72,10 @@ function getAccountedAt(records: TicketRecord[]) {
                 <TicketArchiveFilter :customers :users :operating-sites></TicketArchiveFilter>
             </template>
             <template v-slot:item.created_at="{ item }">
-                {{ DateTime.fromISO(item.created_at).toFormat('dd.MM.yyyy') }}
+                {{ DateTime.fromISO(item.created_at).toFormat("dd.MM. 'um' HH:mm 'Uhr'") }}
             </template>
-            <template v-slot:item.appointment_at="{ item }">
-                {{ item.appointment_at ? DateTime.fromSQL(item.appointment_at).toFormat("dd.MM. 'um' HH:mm 'Uhr'") : '-' }}
+            <template v-slot:item.finished_at="{ item }">
+                {{ item.finished_at ? DateTime.fromSQL(item.finished_at).toFormat("dd.MM. 'um' HH:mm 'Uhr'") : '-' }}
             </template>
             <template v-slot:item.priorityText="{ item }">
                 <v-icon
@@ -83,8 +84,8 @@ function getAccountedAt(records: TicketRecord[]) {
                     :color="PRIORITIES.find(p => p.value === item.priority)?.color"
                 ></v-icon>
             </template>
-            <template v-slot:item.assigneeName="{ item }">
-                {{ item.assigneeName }}
+            <template v-slot:item.recordUserName="{ item }">
+                {{ item.recordUserName }}
             </template>
             <template v-slot:item.accounted_at="{ item }">
                 {{ getAccountedAt(item.records) }}

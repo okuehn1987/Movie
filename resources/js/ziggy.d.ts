@@ -235,12 +235,55 @@ declare module 'ziggy-js' {
     "group.update": [
         {
             "name": "group",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "group.destroy": [
         {
             "name": "group",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "homeOfficeDay.store": [],
+    "homeOfficeDay.update": [
+        {
+            "name": "homeOfficeDay",
+            "required": true
+        }
+    ],
+    "homeOfficeDay.destroy": [
+        {
+            "name": "homeOfficeDay",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "homeOfficeDay.denyDestroy": [
+        {
+            "name": "homeOfficeDay",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "homeOfficeDay.destroyDispute": [
+        {
+            "name": "homeOfficeDay",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "homeOfficeDay.updateStatus": [
+        {
+            "name": "homeOfficeDayGenerator",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "homeOfficeDayGenerator.destroy": [
+        {
+            "name": "homeOfficeDayGenerator",
             "required": true
         }
     ],
@@ -289,6 +332,7 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "notification.readAll": [],
     "profile.update": [],
     "profile.updateSettings": [],
     "user.index": [],
@@ -358,7 +402,13 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
-    "workLogPatch.store": [],
+    "workLog.workLogPatch.store": [
+        {
+            "name": "workLog",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "workLogPatch.update": [
         {
             "name": "workLogPatch",
@@ -620,6 +670,27 @@ declare module 'ziggy-js' {
     "ticketRecordFile.getContent": [
         {
             "name": "ticketRecordFile",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticketFile.show": [
+        {
+            "name": "ticketFile",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticketFile.destroy": [
+        {
+            "name": "ticketFile",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "ticketFile.getContent": [
+        {
+            "name": "ticketFile",
             "required": true,
             "binding": "id"
         }

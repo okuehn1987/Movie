@@ -17,20 +17,20 @@ class BugReportController extends Controller
         Gate::authorize('publicAuth', User::class);
 
         $validated = $request->validate([
-            'description' => 'required|string|max:2000',
+            'description' => 'required|string',
             'location' => 'required|string|max:255',
             'summary' => 'required|string',
             'attachments' => 'present|array',
             'attachments.*' => 'image|max:10240',
         ]);
 
-        foreach ($validated['attachments'] as $file) {
-            Storage::disk('bug_reports')->putFile(now() . ' ' . $authUser->first_name . '-' . $authUser->last_name, $file);
-        }
-
         $mail = (new MailMessage)->line($validated['summary'])
             ->line($validated['description'])
             ->line('Ort: ' . $validated['location']);
+
+        foreach ($validated['attachments'] as $file) {
+            $mail->line('Datei: ' .  Storage::disk('bug_reports')->putFile(now() . ' ' . $authUser->first_name . '-' . $authUser->last_name, $file));
+        }
 
         Mail::send([], [], function ($message) use ($mail, $authUser) {
             $message

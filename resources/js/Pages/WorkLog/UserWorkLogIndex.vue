@@ -54,6 +54,7 @@ function parseTimeFlexible(s: string) {
 }
 
 function submit() {
+    if (!workLogForm.id) return;
     workLogForm
         .transform(d => {
             const start_time = parseTimeFlexible(d.start_time);
@@ -70,10 +71,9 @@ function submit() {
                     minute: end_time.minute,
                     second: end_time.second,
                 }),
-                workLog: workLogForm.id,
             };
         })
-        .post(route('workLogPatch.store'), {
+        .post(route('workLog.workLogPatch.store', { workLog: workLogForm.id }), {
             onSuccess: () => {
                 showDialog.value = false;
                 workLogForm.reset();
@@ -292,7 +292,8 @@ const tableHeight = useMaxScrollHeight(0);
                                             :error-messages="workLogForm.errors.comment"
                                             :disabled="workLogForm.status == 'created'"
                                             variant="filled"
-                                            rows="3"
+                                            max-rows="10"
+                                            auto-grow
                                         ></v-textarea>
                                     </v-col>
                                     <v-col cols="12" md="3">

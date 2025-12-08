@@ -1,4 +1,4 @@
-import { Absence, AbsencePatch, Canable, RelationPick, Status, User, Weekday } from '@/types/types';
+import { Absence, AbsencePatch, Canable, HomeOfficeDay, RelationPick, Status, User, Weekday } from '@/types/types';
 
 export type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'absence_type_id' | 'user_id'> &
     RelationPick<'absence', 'absence_type', 'id' | 'abbreviation'> & {
@@ -13,9 +13,12 @@ export type AbsencePatchProp = Pick<AbsencePatch, 'id' | 'start' | 'end' | 'abse
         };
         status: Status;
     } & Canable;
-export type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id'> &
+export type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id' | 'home_office'> &
     Canable &
     RelationPick<'user', 'user_working_weeks', 'id' | 'active_since' | Weekday> & { leaveDaysForYear: number; usedLeaveDaysForYear: number };
+
+export type HomeOfficeDayProp = Pick<HomeOfficeDay, 'id' | 'user_id' | 'date' | 'status' | 'home_office_day_generator_id'> &
+    RelationPick<'homeOfficeDay', 'home_office_day_generator', 'start' | 'end' | 'id' | 'user_id' | 'created_as_request'>;
 
 export function getEntryState(entry: AbsenceProp | AbsencePatchProp) {
     if ('patches_exists' in entry && entry.patches_exists) return 'hasOpenPatch';

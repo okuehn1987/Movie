@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Canable, DATETIME_LOCAL_FORMAT, Relations, TicketRecord, TicketRecordFile } from '@/types/types';
+import { DATETIME_LOCAL_FORMAT } from '@/types/types';
 import { secondsToDuration } from '@/utils';
 import { DateTime } from 'luxon';
 import { computed, ref, watch } from 'vue';
@@ -8,7 +8,7 @@ import { OperatingSiteProp, TicketProp, UserProp } from './ticketTypes';
 const props = defineProps<{
     users: UserProp[];
     ticket: TicketProp;
-    record?: TicketRecord & Canable & { files: TicketRecordFile[]; user: Relations<'ticketRecord'>['user'] };
+    record?: TicketProp['records'][number];
     operatingSites: OperatingSiteProp[];
 }>();
 
@@ -113,6 +113,8 @@ function submit() {
                             <v-col cols="12">
                                 <v-textarea
                                     label="Beschreibung"
+                                    max-rows="10"
+                                    rows="2"
                                     v-model="recordForm.description"
                                     :error-messages="recordForm.errors.description"
                                     auto-grow
@@ -121,7 +123,8 @@ function submit() {
                             <v-col cols="12">
                                 <v-textarea
                                     label="Ressourcen"
-                                    rows="1"
+                                    max-rows="10"
+                                    rows="2"
                                     v-model="recordForm.resources"
                                     :error-messages="recordForm.errors.resources"
                                     auto-grow

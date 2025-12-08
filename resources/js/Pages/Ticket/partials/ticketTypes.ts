@@ -1,9 +1,15 @@
-import { Address, Canable, Customer, CustomerOperatingSite, OperatingSite, Relations, Ticket, TicketRecord, User } from '@/types/types';
+import { Address, Canable, Customer, CustomerOperatingSite, OperatingSite, RelationPick, Ticket, TicketRecord, User } from '@/types/types';
 
 export type TicketProp = Ticket &
     Canable &
-    Pick<Relations<'ticket'>, 'user' | 'assignees' | 'customer'> & {
-        records: (TicketRecord & Canable & Pick<Relations<'ticketRecord'>, 'files'> & { user: Relations<'ticketRecord'>['user'] })[];
+    RelationPick<'ticket', 'user', 'id' | 'first_name' | 'last_name'> &
+    RelationPick<'ticket', 'assignees', 'id' | 'first_name' | 'last_name' | 'pivot'> &
+    RelationPick<'ticket', 'customer', 'id' | 'name'> &
+    RelationPick<'ticket', 'files', 'id' | 'original_name' | 'ticket_id'> & {
+        records: (TicketRecord &
+            Canable &
+            RelationPick<'ticketRecord', 'files', 'id' | 'original_name' | 'ticket_record_id'> &
+            RelationPick<'ticketRecord', 'user', 'id' | 'first_name' | 'last_name'>)[];
     };
 export type CustomerProp = Pick<Customer, 'id' | 'name'>;
 export type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'job_role'> & Canable;
