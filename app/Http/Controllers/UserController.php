@@ -48,7 +48,7 @@ class UserController extends Controller
             "first_name" => "required|string",
             "last_name" => "required|string",
             "academic_title" => "nullable|string",
-            "date_of_birth" => "nullable|date",
+            "date_of_birth" => "required|date",
             "city" => "nullable|string",
             "zip" => "nullable|string",
             "street" => "nullable|string",

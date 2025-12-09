@@ -15,7 +15,7 @@ class GroupPolicy
         return true;
     }
 
-    public function viewShow(User $user, Group $group): bool
+    public function viewShow(User $user): bool
     {
         return true;
     }

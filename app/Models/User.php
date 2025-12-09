@@ -733,7 +733,7 @@ class User extends Authenticatable
                     }
                 }
                 return [
-                    'start' => $firstDay?->format('d.m.Y'),
+                    'start' => $firstDay->format('d.m.Y'),
                     'end' => $lastDay?->format('d.m.Y'),
                     'type' => request()->user()->can(
                         'viewShow',

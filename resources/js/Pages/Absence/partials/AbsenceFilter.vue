@@ -174,7 +174,6 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                             variant="underlined"
                                             :items="userAbsenceFilters.map(u => ({ value: u.id, title: u.name }))"
                                             v-model="singleFilterForm.set"
-                                            :error-messages="singleFilterForm.errors.set"
                                             required
                                             hide-details
                                             clearable
@@ -211,7 +210,6 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                             label="Nutzer"
                                             :items="users.map(u => ({ title: u.first_name + ' ' + u.last_name, value: u.id }))"
                                             v-model="singleFilterForm.selected_users"
-                                            :error-messages="singleFilterForm.errors.selected_users"
                                             clearable
                                             chips
                                             hide-details
@@ -225,7 +223,6 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                             label="Abwesenheitsgrund"
                                             :items="absenceTypes.map(a => ({ title: a.name, value: a.id }))"
                                             v-model="singleFilterForm.selected_absence_types"
-                                            :error-messages="singleFilterForm.errors.selected_absence_types"
                                             clearable
                                             chips
                                             hide-details
@@ -241,7 +238,6 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                                 { title: 'Abgelehnt', value: 'declined' },
                                             ]"
                                             v-model="singleFilterForm.selected_statuses"
-                                            :error-messages="singleFilterForm.errors.selected_statuses"
                                             clearable
                                             chips
                                             hide-details
@@ -291,7 +287,7 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                                     :model-value="
                                                         typeof groupFilterForm.set === 'object' && groupFilterForm.set !== null
                                                             ? groupFilterForm.set.title
-                                                            : (groupFilterForm.set ?? '')
+                                                            : groupFilterForm.set ?? ''
                                                     "
                                                     @update:model-value="
                                                         newValue => {
