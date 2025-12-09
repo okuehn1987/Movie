@@ -449,16 +449,29 @@ class User extends Authenticatable
             fn($i) => Carbon::parse(max($a->start, $startOfYear))->addDays($i)->startOfDay()
         ))->unique()->sort();
 
+
+
         $usedDays = [];
-        foreach ($absenceData as $day) {
-            $currentWorkingWeek = $this->userWorkingWeekForDate($day, $userWorkingWeeks);
-            if (
-                $currentWorkingWeek?->hasWorkDay($day) &&
-                !$this->operatingSite->hasHoliday($day)
-            ) {
-                $usedDays[$day->year] = ($usedDays[$day->year] ?? 0) + 1;
-            };
-        }
+
+        foreach ($relevantAbsences as $absence)
+
+            for ($day = max(Carbon::parse($absence->start), $year->copy()->startOfYear()); $day->lte(min($absence->end, $year->copy()->endOfYear())); $day->addDay()) {
+
+                $currentWorkingWeek = $this->userWorkingWeekForDate($day, $userWorkingWeeks);
+                if (
+                    $currentWorkingWeek?->hasWorkDay($day) &&
+                    !$this->operatingSite->hasHoliday($day)
+                ) {
+                    $usedDays[$day->year] = (isset($usedDays[$day->year]) ? $usedDays[$day->year] : [Status::Accepted->value => 0, Status::Created->value => 0]);
+
+                    if ($absence->status === Status::Accepted) {
+                        $usedDays[$day->year][Status::Accepted->value] = $usedDays[$day->year][Status::Accepted->value] + 1;
+                    }
+                    if ($absence->status === Status::Created) {
+                        $usedDays[$day->year][Status::Created->value] = $usedDays[$day->year][Status::Created->value] + 1;
+                    }
+                };
+            }
 
         return $usedDays;
     }

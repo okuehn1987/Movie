@@ -343,17 +343,16 @@ class UserController extends Controller
         Gate::authorize('viewIndex', [Absence::class, $user]);
 
         $user['leaveDaysForYear'] = $user->leaveDaysForYear(Carbon::now());
-        $user['usedLeaveDaysForYear'] = $user->usedLeaveDaysForYear(Carbon::now());
         $user['absences'] = $user->absences()
             ->whereYear('start', '>=', Carbon::now()->year - 1)
             ->with(['absenceType:id,name', 'user:id,operating_site_id'])
             ->whereIn('status', [Status::Accepted, Status::Created])
             ->get(['id', 'start', 'end', 'absence_type_id', 'status', 'user_id'])->append('usedDays');
 
-        $allAbsenceYears = $user->absences->unique(fn($a) => Carbon::parse($a->start)->year)->map(fn($a) => Carbon::parse($a->start));
+        $allAbsenceYears = $user->absences->flatMap(fn($a) => [Carbon::parse($a->start), Carbon::parse($a->end)])->unique(fn($e) => $e->year);
         $usedLeaveDaysForYear = [];
         foreach ($allAbsenceYears as $year) {
-            $usedLeaveDaysForYear[] = $user->usedLeaveDaysForYear($year);
+            $usedLeaveDaysForYear = $usedLeaveDaysForYear + $user->usedLeaveDaysForYear($year);
         }
 
         return Inertia::render('User/UserShow/Absences', [

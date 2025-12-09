@@ -131,17 +131,43 @@ const requiresApproval = computed(() => {
                                 ></v-text-field>
                             </v-col>
                             <v-alert
-                                v-if="currentUser && currentUser.leaveDaysForYear && (!selectedDate || selectedDate.year == DateTime.now().year)"
+                                v-if="
+                                    currentUser &&
+                                    currentUser.leaveDaysForYear &&
+                                    (!selectedDate || selectedDate.year == DateTime.now().year) &&
+                                    absenceForm.start &&
+                                    DateTime.fromSQL(absenceForm.start).year === DateTime.now().year
+                                "
                                 type="info"
                                 class="w-100"
                             >
                                 <v-row>
                                     <v-col cols="12" md="6">
+                                        <div>Genehmigte Urlaubstage für {{ DateTime.now().year }}</div>
+                                    </v-col>
+                                    <v-col cols="12" md="6">
+                                        <div>
+                                            {{ currentUser.usedLeaveDaysForYear[DateTime.now().year]?.accepted }}
+                                        </div>
+                                    </v-col>
+                                    <v-col cols="12" md="6">
+                                        <div>Beantragte Urlaubstage für {{ DateTime.now().year }}</div>
+                                    </v-col>
+                                    <v-col cols="12" md="6">
+                                        <div>
+                                            {{ currentUser.usedLeaveDaysForYear[DateTime.now().year]?.created }}
+                                        </div>
+                                    </v-col>
+                                    <v-col cols="12" md="6">
                                         <div>Bereits verwendete Urlaubstage für {{ DateTime.now().year }}</div>
                                     </v-col>
                                     <v-col cols="12" md="6">
                                         <div>
-                                            {{ currentUser.usedLeaveDaysForYear ? Object.values(currentUser.usedLeaveDaysForYear)[0] : 0 }} von
+                                            {{
+                                                (currentUser.usedLeaveDaysForYear[DateTime.now().year]?.accepted ?? 0) +
+                                                (currentUser.usedLeaveDaysForYear[DateTime.now().year]?.created ?? 0)
+                                            }}
+                                            von
                                             {{ currentUser.leaveDaysForYear }}
                                         </div>
                                     </v-col>
