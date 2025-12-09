@@ -443,14 +443,6 @@ class User extends Authenticatable
                 ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p))
         ));
 
-        $absenceData = $relevantAbsences->flatMap(fn($a) => collect(
-            range(0, Carbon::parse(max($a->start, $startOfYear))->startOfDay()->diffInDays(Carbon::parse(min($a->end, $endOfYear))->startOfDay()))
-        )->map(
-            fn($i) => Carbon::parse(max($a->start, $startOfYear))->addDays($i)->startOfDay()
-        ))->unique()->sort();
-
-
-
         $usedDays = [];
 
         foreach ($relevantAbsences as $absence)
