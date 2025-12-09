@@ -29,6 +29,7 @@ const userFormDefaults: FormData = {
     academic_title: null,
     email: '',
     date_of_birth: null as null | string,
+    show_date_of_birth_marker: false,
     city: '',
     zip: '',
     street: '',
@@ -113,6 +114,7 @@ function setUserData() {
         userForm.academic_title = props.user.academic_title;
         userForm.email = props.user.email;
         userForm.date_of_birth = props.user.date_of_birth;
+        userForm.show_date_of_birth_marker = props.user.show_date_of_birth_marker;
         userForm.city = props.user.current_address.city ?? '';
         userForm.zip = props.user.current_address.zip ?? '';
         userForm.street = props.user.current_address.street ?? '';
@@ -266,13 +268,20 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                     <v-col cols="12" md="6" v-if="mode == 'create'">
                         <v-text-field v-model="userForm.password" label="Passwort" :error-messages="userForm.errors.password"></v-text-field>
                     </v-col>
-                    <v-col cols="12" md="6">
+                    <v-col cols="12" md="3">
                         <v-text-field
                             type="date"
                             v-model="userForm.date_of_birth"
                             label="Geburtsdatum"
                             :error-messages="userForm.errors.date_of_birth"
                         ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="3">
+                        <v-checkbox
+                            v-model="userForm.show_date_of_birth_marker"
+                            label="Geburtstag im Kalender anzeigen"
+                            :error-messages="userForm.errors.show_date_of_birth_marker"
+                        ></v-checkbox>
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-text-field

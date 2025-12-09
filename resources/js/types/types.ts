@@ -117,6 +117,7 @@ export type User = DBObject<'user'> &
         organization_id: Organization['id'] | null;
         staff_number: string | null;
         date_of_birth: DateString;
+        show_date_of_birth_marker: boolean;
         phone_number: string | null;
         email_verified_at: string | null;
         weekly_working_hours: number;
@@ -140,6 +141,7 @@ export type User = DBObject<'user'> &
 
 export type UserAppends = {
     readonly name: string;
+    readonly date_of_birth_marker: string | null;
 };
 
 export type UserWorkingHours = DBObject<'userWorkingHours'> &

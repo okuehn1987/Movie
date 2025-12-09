@@ -156,9 +156,9 @@ class AbsenceController extends Controller
                         ->whereDate('start', '<=', $date->copy()->endOfYear())
                         ->whereDate('end', '>=', $date->copy()->startOfYear())
                 ])
-                ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'group_id', 'operating_site_id', 'home_office', 'group_id', 'operating_site_id'])
+                ->get(['id', 'first_name', 'last_name', 'show_date_of_birth_marker', 'date_of_birth', 'supervisor_id', 'group_id', 'operating_site_id', 'home_office', 'group_id', 'operating_site_id'])
                 ->map(fn(User $u) => [
-                    ...$u->toArray(),
+                    ...$u->append('date_of_birth_marker')->makeHidden(['date_of_birth', 'show_date_of_birth_marker'])->toArray(),
                     'leaveDaysForYear' => $u->leaveDaysForYear(now(), $u->userLeaveDays),
                     'usedLeaveDaysForYear' => $u->usedLeaveDaysForYear(
                         now(),
@@ -315,7 +315,7 @@ class AbsenceController extends Controller
                 ->unique('id')
                 ->each
                 ->notify(new AbsenceDeleteNotification($authUser, $absence));
-            return back()->with('success', 'Der Antrag auf Löschung wurder erfolgreich eingeleitet.');
+            return back()->with('success', 'Der Antrag auf Löschung wurde erfolgreich eingeleitet.');
         }
     }
 
