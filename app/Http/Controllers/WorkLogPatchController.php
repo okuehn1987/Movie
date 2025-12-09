@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Status;
 use App\Models\User;
+use App\Models\UserTrustWorkingHour;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
 use App\Notifications\DisputeStatusNotification;
@@ -20,8 +21,16 @@ class WorkLogPatchController extends Controller
         Gate::authorize('create', [WorkLogPatch::class, $workLog->user]);
 
         $validated = $request->validate([
-            'start' => 'required|date',
-            'end' => 'required|date|after:start',
+            'start' => ['required', 'date', 'before:end', function ($attr, $value, $fail) use ($request, $workLog) {
+                if (UserTrustWorkingHour::checkCollisions([
+                    'start' => $value,
+                    'end' => $request['end'],
+                    'user_id' => $workLog->user_id
+                ])) {
+                    $fail('Der angegebene Zeitraum kollidiert mit Vertrauensarbeitszeiteinträgen.');
+                }
+            }],
+            'end' => 'required|date|before_or_equal:now',
             'comment' => 'nullable|string',
             'is_home_office' => 'required|boolean',
         ]);

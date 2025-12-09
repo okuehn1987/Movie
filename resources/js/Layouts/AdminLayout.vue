@@ -7,9 +7,10 @@ import { AppModule } from '@/types/types';
 import DrawerMenu from './partials/DrawerMenu.vue';
 import { showsGlobalMessage } from '@/utils';
 
-defineProps<{
+const props = defineProps<{
     title: string;
     backurl?: string;
+    noInlinePadding?: boolean;
 }>();
 
 const page = usePage();
@@ -118,7 +119,7 @@ const currentApp = computed(() => page.props.appModules.find(m => m.value === pa
             <AppbarActions />
         </v-app-bar>
         <v-main>
-            <v-container class="pt-0" fluid>
+            <v-container class="pt-0" :class="props.noInlinePadding ? 'px-0' : ''" fluid>
                 <v-alert
                     v-if="$page.props.flash.error"
                     type="error"

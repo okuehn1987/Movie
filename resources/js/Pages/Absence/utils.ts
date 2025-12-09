@@ -13,7 +13,7 @@ export type AbsencePatchProp = Pick<AbsencePatch, 'id' | 'start' | 'end' | 'abse
         };
         status: Status;
     } & Canable;
-export type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id' | 'home_office'> &
+export type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id' | 'home_office' | 'group_id' | 'operating_site_id'> &
     Canable &
     RelationPick<'user', 'user_working_weeks', 'id' | 'active_since' | Weekday> & { leaveDaysForYear: number; usedLeaveDaysForYear: number };
 

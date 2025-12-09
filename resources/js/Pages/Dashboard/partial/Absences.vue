@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { DateString } from '@/types/types';
 import { ref } from 'vue';
+import { useDisplay } from 'vuetify/lib/composables/display.mjs';
 
 defineProps<{
-    absences: { name: string; end: DateString; type: string }[];
+    absences: { name: string; start: DateString; end: DateString; type: string }[];
 }>();
 
 const currentPage = ref(1);
+const display = useDisplay();
 </script>
 <template>
-    <v-card title="Aktuelle Abwesenheiten">
+    <v-card title="Abwesenheiten">
         <v-data-table
             hover
             items-per-page="5"
@@ -17,8 +19,9 @@ const currentPage = ref(1);
             no-data-text="keine Abwesenheiten vorhanden."
             :items="absences"
             :headers="[
-                { title: 'Mitarbeiter', key: 'name' },
-                { title: 'Bis', key: 'end' },
+                { title: 'Mitarbeitende', key: 'name' },
+                ...(display.smAndDown.value ? [] : [{ title: 'von', key: 'start' }]),
+                { title: 'bis', key: 'end' },
                 ...(absences.some(a => a.type) ? [{ title: 'Grund', key: 'type' }] : []),
             ]"
         >

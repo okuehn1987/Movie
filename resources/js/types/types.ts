@@ -149,6 +149,13 @@ export type UserWorkingHours = DBObject<'userWorkingHours'> &
         active_since: DateString;
     };
 
+export type UserTrustWorkingHour = DBObject<'userTrustWorkingHour'> &
+    SoftDelete & {
+        user_id: User['id'];
+        active_since: DateString;
+        active_until: DateString | null;
+    };
+
 export type UserLeaveDays = DBObject<'userLeaveDays'> &
     SoftDelete & {
         user_id: User['id'];
@@ -356,9 +363,11 @@ export type UserAbsenceFilter = DBObject<'userAbcenceFilter'> & {
     user_id: User['id'];
     name: string;
     data: {
-        version: 'v1';
+        version: 'v2';
         absence_type_ids: AbsenceType['id'][];
         user_ids: User['id'][];
+        operating_site_ids: OperatingSite['id'][];
+        group_ids: Group['id'][];
         statuses: Status[];
         holidays_from_federal_states: FederalState[];
     };
@@ -817,6 +826,8 @@ export type RelationMap = {
         organization_user: OrganizationUser;
         owns: Organization | null;
         user_working_hours: UserWorkingHours[];
+        user_trust_working_hours: UserTrustWorkingHour[];
+        current_trust_working_hours: UserTrustWorkingHour | null;
         current_working_hours: UserWorkingHours | null;
         user_leave_days: UserLeaveDays[];
         current_leave_days: UserLeaveDays | null;
@@ -844,7 +855,10 @@ export type RelationMap = {
     userLeaveDays: {
         user: User;
     };
-    userWorkingHours: {
+    userTrustWorkingHour: {
+        user: User;
+    };
+    userWorkingHour: {
         user: User;
     };
     userWorkingWeek: {
