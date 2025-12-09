@@ -25,12 +25,12 @@ class GroupPolicy
         return $user->hasPermissionOrDelegation(null, 'group_permission', 'write');
     }
 
-    public function update(User $user, Group $group): bool
+    public function update(User $user): bool
     {
         return $user->hasPermissionOrDelegation(null, 'group_permission', 'write');
     }
 
-    public function delete(User $user, Group $group): bool
+    public function delete(User $user): bool
     {
         return $user->hasPermissionOrDelegation(null, 'group_permission', 'write');
     }

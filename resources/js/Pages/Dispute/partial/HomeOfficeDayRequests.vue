@@ -72,7 +72,7 @@ function changeAbsenceStatus(accepted: boolean) {
     </v-data-table>
 
     <v-dialog v-if="homeOfficeDayDialog" v-model="showHomeOfficeDayDialog" max-width="1000">
-        <v-card :title="'Abwesenheit von ' + homeOfficeDayDialog.user.first_name + ' ' + homeOfficeDayDialog.user.last_name">
+        <v-card :title="'Homeoffice von ' + homeOfficeDayDialog.user.first_name + ' ' + homeOfficeDayDialog.user.last_name">
             <template #append>
                 <v-btn icon variant="text" @click="showHomeOfficeDayDialog = false">
                     <v-icon>mdi-close</v-icon>

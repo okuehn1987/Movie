@@ -270,7 +270,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                         <v-text-field
                             type="date"
                             v-model="userForm.date_of_birth"
-                            label="Geburtsdatum (optional)"
+                            label="Geburtsdatum"
                             :error-messages="userForm.errors.date_of_birth"
                         ></v-text-field>
                     </v-col>
