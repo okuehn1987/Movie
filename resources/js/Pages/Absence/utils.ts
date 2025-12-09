@@ -16,7 +16,7 @@ export type AbsencePatchProp = Pick<AbsencePatch, 'id' | 'start' | 'end' | 'abse
 export type UserProp = Pick<User, 'id' | 'first_name' | 'last_name' | 'supervisor_id' | 'home_office'> &
     Canable &
     RelationPick<'user', 'user_working_weeks', 'id' | 'active_since' | Weekday> & {
-        leaveDaysForYear: number;
+        leaveDaysForYear: Record<string, number>;
         usedLeaveDaysForYear: Record<string, Record<Exclude<Status, 'declined'>, number>>;
     };
 
