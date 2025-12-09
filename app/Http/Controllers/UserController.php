@@ -102,17 +102,19 @@ class UserController extends Controller
 
             'home_office_day_generators' => 'present|array',
             'home_office_day_generators.*.id' => ['nullable', Rule::exists('home_office_day_generators', 'id')->whereIn('user_id', User::inOrganization()->select('id'))],
-            'home_office_day_generators.*.weekdays' => 'required|array',
-            'home_office_day_generators.*.weekdays.*' => ['required', 'in:monday,tuesday,wednesday,thursday,friday,saturday,sunday', function ($attribute, $value, $fail) use ($request, $mode) {
+            'home_office_day_generators.*.weekdays' => ['required', 'array', function ($attribute, $value, $fail) use ($request, $mode) {
                 $index  = explode('.', $attribute)[1];
                 $currentGenerator = $request['home_office_day_generators'][$index];
                 if ($mode == 'update' && isset($currentGenerator['id'])) {
                     $existingGenerator = HomeOfficeDayGenerator::find($currentGenerator['id']);
-                    if (Carbon::parse($existingGenerator->start)->lt(now()->startOfDay()) && $currentGenerator['start'] != Carbon::parse($existingGenerator->start)->format('Y-m-d')) {
-                        $fail('Der Eintrag darf nicht geändert werden, da der Zeitraum bereits begonnen hat.');
+                    foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $day) {
+                        if (in_array($day, $value) != $existingGenerator->$day && Carbon::parse($existingGenerator->start)->lt(now()->startOfDay())) {
+                            $fail('Der Eintrag darf nicht geändert werden, da der Zeitraum bereits begonnen hat.');
+                        }
                     }
                 }
             }],
+            'home_office_day_generators.*.weekdays.*' => ['required', 'in:monday,tuesday,wednesday,thursday,friday,saturday,sunday'],
             'home_office_day_generators.*.start' =>  ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
                 $index  = explode('.', $attribute)[1];
                 $currentGenerator = $request['home_office_day_generators'][$index];
@@ -306,9 +308,9 @@ class UserController extends Controller
             }],
             ...$additionalRules
         ], [
-            'home_office_day_generators.*.start' => 'Der Start des Zeitraums muss angegeben werden.',
-            'home_office_day_generators.*.end' => 'Das Ende des Zeitraums muss angegeben werden.',
-            'home_office_day_generators.*.weekdays' => 'Es müssen Wochentage angegeben werden.',
+            'home_office_day_generators.*.start.required' => 'Der Start des Zeitraums muss angegeben werden.',
+            'home_office_day_generators.*.end.required' => 'Das Ende des Zeitraums muss angegeben werden.',
+            'home_office_day_generators.*.weekdays.required' => 'Es müssen Wochentage angegeben werden.',
             'home_office_day_generators.*.end.after_or_equal' => 'Das Ende des gewählten Zeitraums darf nicht vor dem Startdatum sein.'
         ]);
     }
