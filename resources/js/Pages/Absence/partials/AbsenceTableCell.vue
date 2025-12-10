@@ -26,6 +26,17 @@ function shouldUserWork(day: DateTime) {
     );
 }
 
+function getColor() {
+    if (currentEntry.value && shouldUserWork(props.date)) {
+        return { accepted: '#f99', created: '#99f', declined: 'grey', hasOpenPatch: '#99f' }[getEntryState(currentEntry.value)];
+    }
+    if (shouldUserWork(props.date) && !!currentHomeOfficeEntry.value) {
+        return { accepted: '#ff9', created: '#99f', declined: 'grey' }[currentHomeOfficeEntry.value.status];
+    }
+    if (!shouldUserWork(props.date)) return 'lightgray';
+    return '';
+}
+
 const currentHomeOfficeEntry = computed(() => props.homeOfficeDays.find(d => d.date === props.date.toFormat('yyyy-MM-dd')));
 </script>
 <template>
@@ -35,27 +46,17 @@ const currentHomeOfficeEntry = computed(() => props.homeOfficeDays.find(d => d.d
         :role="can('absence', 'create', props.user) ? 'button' : 'cell'"
         :title="props.holidays?.[props.date.toFormat('yyyy-MM-dd')] ?? absenceTypes.find(t => t.id == currentEntry?.absence_type?.id)?.name"
     >
-        <template v-if="currentEntry && shouldUserWork(date)">
-            <div
-                class="h-100 w-100 d-flex justify-center align-center"
-                :style="{
-                    backgroundColor: { accepted: '#f99', created: '#99f', declined: 'grey', hasOpenPatch: '#99f' }[getEntryState(currentEntry)],
-                }"
-            >
-                <span v-if="currentEntry.absence_type_id">{{ currentEntry.absence_type?.abbreviation }}</span>
+        <div class="w-100 h-100 d-flex justify-center align-center flex-column" :style="{ backgroundColor: getColor() }">
+            <div v-if="currentEntry && shouldUserWork(date) && currentEntry.absence_type_id" class="h-100 w-100 d-flex justify-center align-center">
+                <span>{{ currentEntry.absence_type?.abbreviation }}</span>
             </div>
-        </template>
-        <div
-            v-else
-            :style="{
-                backgroundColor: shouldUserWork(date)
-                    ? !!currentHomeOfficeEntry
-                        ? { accepted: '#ff9', created: '#99f', declined: 'grey' }[currentHomeOfficeEntry.status]
-                        : ''
-                    : 'lightgray',
-            }"
-            class="h-100 w-100 empty"
-        ></div>
+            <div
+                v-if="user.date_of_birth_marker && date.toFormat('MM-dd') === DateTime.fromISO(user.date_of_birth_marker).toFormat('MM-dd')"
+                title="Geburtstag"
+            >
+                <v-icon>mdi-crown</v-icon>
+            </div>
+        </div>
     </td>
 </template>
 

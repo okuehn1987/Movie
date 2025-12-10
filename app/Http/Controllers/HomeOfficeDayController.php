@@ -136,7 +136,7 @@ class HomeOfficeDayController extends Controller
             return back()->with('success', 'Die Abwesenheit wurde erfolgreich gelöscht.');
         } else {
             $authUser->supervisor->notify(new HomeOfficeDeleteNotification($authUser, $homeOfficeDay, $homeOfficeDay->date));
-            return back()->with('success', 'Der Antrag auf Löschung wurder erfolgreich eingeleitet.');
+            return back()->with('success', 'Der Antrag auf Löschung wurde erfolgreich eingeleitet.');
         }
     }
 

@@ -41,6 +41,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'home_office' => 'boolean',
+        'show_date_of_birth_marker' => 'boolean',
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_supervisor' => 'boolean',
@@ -269,6 +270,13 @@ class User extends Authenticatable
         return Attribute::make(
             get: fn() => $this->userWorkingHours()->get()
         )->shouldCache();
+    }
+
+    public function dateOfBirthMarker(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->show_date_of_birth_marker ? $this->date_of_birth : null,
+        );
     }
 
     public function userWorkingHoursForDate(CarbonInterface $date, $userWorkingHours = null): UserWorkingHour | null

@@ -40,6 +40,7 @@ export type FormData = {
     academic_title: null | string;
     email: string;
     date_of_birth: null | string;
+    show_date_of_birth_marker: boolean;
     city: string;
     zip: string;
     street: string;

@@ -227,6 +227,7 @@ return [
         'file' => 'Datei',
         'weekdays' => 'Wochentage',
         'today' => 'Heute',
+        'operating_site_id' => 'Betriebsstätte',
     ],
 
     'values' => [
