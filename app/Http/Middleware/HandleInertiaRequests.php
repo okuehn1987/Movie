@@ -76,7 +76,10 @@ class HandleInertiaRequests extends Middleware
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ]),
-            'organization' => Organization::getCurrent(),
+            'organization' => [
+                ...Organization::getCurrent()->toArray(),
+                'isa_active' => Organization::getCurrent()->isa_active && Organization::getCurrent()->chatAssistant != null
+            ],
             'reachedMonthlyTokenLimit' =>
             Organization::getCurrent()->isa_active && Organization::getCurrent()->chatAssistant ?
                 OpenAIService::hasReachedTokenLimit(Organization::getCurrent()->chatAssistant) : false,

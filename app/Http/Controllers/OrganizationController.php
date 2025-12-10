@@ -65,12 +65,38 @@ class OrganizationController extends Controller
             'email' => "required|string",
             'password' => "required|string",
             'date_of_birth' => "required|date",
-            'openai_api_key' => "required|string",
+            'isa_active' => 'required|boolean',
+            'flow_active' => 'required|boolean',
+            'tide_active' => 'required|boolean',
+            'openai_api_key' => 'nullable|string',
         ]);
 
         $org = Organization::create([
             'name' => $validated['organization_name'],
+            'isa_active' => $validated['isa_active'],
+            'openai_api_key' => $validated['openai_api_key'],
         ]);
+
+        if ($validated['isa_active']) {
+            $isa = $org->chatAssistant()->create([
+                'monthly_cost_limit' => 100,
+            ]);
+            OpenAIService::createAssistant($isa);
+        }
+
+        if ($validated['flow_active']) {
+            $org->modules()->create([
+                'module' => 'flow',
+                'activated_at' => now(),
+            ]);
+        }
+
+        if ($validated['tide_active']) {
+            $org->modules()->create([
+                'module' => 'tide',
+                'activated_at' => now(),
+            ]);
+        }
 
         foreach (AbsenceType::$DEFAULTS as $type) {
             AbsenceType::create([
@@ -113,7 +139,7 @@ class OrganizationController extends Controller
         OrganizationUser::create([
             "user_id" => $user->id,
             "organization_id" => $org->id,
-            ...collect(User::$PERMISSIONS)->flatten(1)->map(fn($p) => $p['name'])->mapWithKeys(fn($p) => [$p => 1])->toArray()
+            ...collect(User::$PERMISSIONS)->flatten(1)->map(fn($p) => $p['name'])->mapWithKeys(fn($p) => [$p => 'write'])->toArray()
         ]);
 
         OperatingSiteUser::create([
@@ -122,7 +148,7 @@ class OrganizationController extends Controller
             ...collect([User::$PERMISSIONS['all'], User::$PERMISSIONS['operatingSite']])
                 ->flatten(1)
                 ->map(fn($p) => $p['name'])
-                ->mapWithKeys(fn($p) => [$p => 1])
+                ->mapWithKeys(fn($p) => [$p => 'write'])
                 ->toArray()
         ]);
         $org->timeAccountSettings()->createMany(TimeAccountSetting::getDefaultSettings());
