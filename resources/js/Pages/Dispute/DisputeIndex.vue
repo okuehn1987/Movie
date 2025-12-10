@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { AbsenceType, HomeOfficeDayGenerator, User } from '@/types/types';
+import { AbsenceType, HomeOfficeDayGenerator, Status, User } from '@/types/types';
 import AbsenceDeleteRequests from './partial/AbsenceDeleteRequests.vue';
 import AbsencePatchRequests from './partial/AbsencePatchRequests.vue';
 import AbsenceRequests from './partial/AbsenceRequests.vue';
@@ -15,7 +15,7 @@ defineProps<{
         absence_type: Pick<AbsenceType, 'id' | 'name'>;
         usedDays: number;
         user: UserProp & {
-            usedLeaveDaysForYear: number;
+            usedLeaveDaysForYear: Record<string, Record<Exclude<Status, 'declined'>, number>>;
             leaveDaysForYear: number;
         };
     })[];

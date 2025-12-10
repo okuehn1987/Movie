@@ -82,7 +82,7 @@ class Absence extends Model
 
     public static function calculateUsedDays(Absence|AbsencePatch $entry)
     {
-        $usedDays = 0;
+        $usedDays  = [];
         for ($day = Carbon::parse($entry->start)->startOfDay(); $day->lte(Carbon::parse($entry->end)); $day->addDay()) {
             $currentWorkingWeek = $entry->user->userWorkingWeekForDate($day);
 
@@ -90,7 +90,7 @@ class Absence extends Model
                 $currentWorkingWeek?->hasWorkDay($day) &&
                 !$entry->user->loadMissing('operatingSite')->operatingSite->hasHoliday($day)
             ) {
-                $usedDays++;
+                $usedDays[$day->year] = ($usedDays[$day->year] ?? 0) + 1;
             };
         }
 

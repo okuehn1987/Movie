@@ -1,5 +1,17 @@
 <script setup lang="ts">
-import { Country, CountryProp, DateString, FederalState, Group, OperatingSite, Permission, User, UserLeaveDays, Weekday } from '@/types/types';
+import {
+    Country,
+    CountryProp,
+    DateString,
+    FederalState,
+    Group,
+    OperatingSite,
+    Permission,
+    User,
+    UserLeaveDays,
+    UserPermission,
+    Weekday,
+} from '@/types/types';
 import { getBrowser, getStates } from '@/utils';
 import { DateTime, Info } from 'luxon';
 import { nextTick, onMounted } from 'vue';
@@ -14,7 +26,7 @@ const props = defineProps<{
     groups: Pick<Group, 'id' | 'name'>[];
     mode: 'create' | 'edit';
     countries: CountryProp[];
-    permissions: { name: Permission[keyof Permission]; label: string }[];
+    permissions: UserPermission[keyof UserPermission][];
 }>();
 
 const emit = defineEmits<{
@@ -77,6 +89,9 @@ const userFormDefaults: FormData = {
         ticket_permission: null,
         ticket_accounting_permission: null,
         customer_permission: null,
+        chatAssistant_permission: null,
+        chatFile_permission: null,
+        isaPayment_permission: null,
     },
     groupUser: {
         absenceType_permission: null,
@@ -145,12 +160,6 @@ function setUserData() {
             userForm.user_leave_days.push({ id: null, active_since: DateTime.now().toFormat('yyyy-MM'), leave_days: 0 });
 
         userForm.user_working_hours = props.user.user_working_hours ?? [];
-        if (userForm.user_working_hours.length == 0)
-            userForm.user_working_hours.push({
-                id: null,
-                active_since: DateTime.now().plus({ day: 1 }).toFormat('yyyy-MM-dd'),
-                weekly_working_hours: 0,
-            });
 
         for (const entry of props.user.user_working_weeks) {
             const weekdays = [] as Weekday[];
@@ -175,8 +184,6 @@ function setUserData() {
                 weekdays,
             });
         }
-        if (userForm.user_working_weeks.length == 0)
-            userForm.user_working_weeks.push({ id: null, active_since: DateTime.now().plus({ day: 1 }).toFormat('yyyy-MM-dd'), weekdays: [] });
 
         for (const key in userForm.organizationUser) {
             userForm.organizationUser[key as keyof typeof userForm.organizationUser] =
@@ -695,9 +702,21 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                                 ],
                             },
                             { label: 'Abwesenheiten', keys: ['absence_permission', 'absenceType_permission'] },
+                            ...($page.props.organization?.isa_active
+                                ? [
+                                      {
+                                          label: 'ISA',
+                                          keys: [
+                                              'chatAssistant_permission',
+                                              'chatFile_permission',
+                                              'isaPayment_permission',
+                                          ] as Permission[keyof Permission][],
+                                      },
+                                  ]
+                                : []),
                             { label: 'Mitarbeiter', keys: ['user_permission'] },
                             { label: 'Organisation', keys: ['organization_permission'] },
-                            { label: 'Ticket', keys: ['ticket_permission', 'ticket_accounting_permission'] },
+                            { label: 'Ticket', keys: ['ticket_permission'] },
                             { label: 'Kunden', keys: ['customer_permission'] },
                         ]"
                     />

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AbsenceType;
+use App\Models\ChatAssistant;
 use App\Models\GroupUser;
 use App\Models\OperatingSite;
 use App\Models\OperatingSiteUser;
@@ -14,6 +15,7 @@ use App\Models\TimeAccountSetting;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use App\Services\HolidayService;
+use App\Services\OpenAIService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -26,7 +28,22 @@ class OrganizationController extends Controller
     {
         Gate::authorize('viewIndex', Organization::class);
 
-        return Inertia::render('Organization/OrganizationIndex', ['organizations' => Organization::all(),  'countries' => HolidayService::getCountries()]);
+        $organizations = Organization::with(['chatAssistant:id,organization_id,created_at,updated_at', 'owner'])
+            ->get(['id', 'owner_id', 'name', 'created_at'])
+            ->map(function ($organization) {
+                $chatAssistant = $organization->chatAssistant;
+
+                return [
+                    ...$organization->toArray(),
+                    'stats'            => $chatAssistant
+                        ? IsaController::getStatsForAssistant($chatAssistant)
+                        : null,
+                ];
+            });
+        return Inertia::render('Organization/OrganizationIndex', [
+            'organizations' => $organizations,
+            'countries'     => HolidayService::getCountries(),
+        ]);
     }
 
     public function store(Request $request)
@@ -48,11 +65,38 @@ class OrganizationController extends Controller
             'email' => "required|string",
             'password' => "required|string",
             'date_of_birth' => "required|date",
+            'isa_active' => 'required|boolean',
+            'flow_active' => 'required|boolean',
+            'tide_active' => 'required|boolean',
+            'openai_api_key' => 'nullable|string',
         ]);
 
         $org = Organization::create([
             'name' => $validated['organization_name'],
+            'isa_active' => $validated['isa_active'],
+            'openai_api_key' => $validated['openai_api_key'],
         ]);
+
+        if ($validated['isa_active']) {
+            $isa = $org->chatAssistant()->create([
+                'monthly_cost_limit' => 100,
+            ]);
+            OpenAIService::createAssistant($isa);
+        }
+
+        if ($validated['flow_active']) {
+            $org->modules()->create([
+                'module' => 'flow',
+                'activated_at' => now(),
+            ]);
+        }
+
+        if ($validated['tide_active']) {
+            $org->modules()->create([
+                'module' => 'tide',
+                'activated_at' => now(),
+            ]);
+        }
 
         foreach (AbsenceType::$DEFAULTS as $type) {
             AbsenceType::create([
@@ -95,7 +139,7 @@ class OrganizationController extends Controller
         OrganizationUser::create([
             "user_id" => $user->id,
             "organization_id" => $org->id,
-            ...collect(User::$PERMISSIONS)->flatten(1)->map(fn($p) => $p['name'])->mapWithKeys(fn($p) => [$p => 1])->toArray()
+            ...collect(User::$PERMISSIONS)->flatten(1)->map(fn($p) => $p['name'])->mapWithKeys(fn($p) => [$p => 'write'])->toArray()
         ]);
 
         OperatingSiteUser::create([
@@ -104,7 +148,7 @@ class OrganizationController extends Controller
             ...collect([User::$PERMISSIONS['all'], User::$PERMISSIONS['operatingSite']])
                 ->flatten(1)
                 ->map(fn($p) => $p['name'])
-                ->mapWithKeys(fn($p) => [$p => 1])
+                ->mapWithKeys(fn($p) => [$p => 'write'])
                 ->toArray()
         ]);
         $org->timeAccountSettings()->createMany(TimeAccountSetting::getDefaultSettings());
@@ -117,6 +161,14 @@ class OrganizationController extends Controller
             'balance_limit' => 0,
             'time_account_setting_id' => $defaultTimeAccountSetting->id,
         ]);
+
+        $chatAssistant = ChatAssistant::create([
+            'organization_id' => $org->id,
+            'monthly_cost_limit' => 100,
+        ]);
+
+        $chatAssistant->vector_store_id = OpenAIService::createAssistant($chatAssistant);
+        $chatAssistant->save();
 
         return back()->with('success', 'Organisation erfolgreich erstellt.');
     }

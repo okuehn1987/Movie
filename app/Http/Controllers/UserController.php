@@ -282,29 +282,73 @@ class UserController extends Controller
 
             'organizationUser' => 'required|array',
             'organizationUser.*' => ['nullable', function ($attribute, $value, $fail) {
-                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
-                    $fail('The ' . $attribute . ' is invalid.');
+                $permissionName = explode('.', $attribute)[1];
+                $permissions = collect(User::$PERMISSIONS)
+                    ->flatten(1)
+                    ->keyBy('name');
+
+                if (!isset($permissions[$permissionName])) {
+                    return $fail('Die ausgewählte Berechtigung ist ungültig.');
                 }
-                if (!in_array($value, ['read', 'write', null])) {
-                    $fail('The ' . $attribute . ' is invalid.');
+
+                $permissionConfig = $permissions[$permissionName];
+                $allowedValues = ['read', 'write', null];
+
+                if (isset($permissionConfig['except'])) {
+                    $except = (array) $permissionConfig['except'];
+                    $allowedValues = array_values(array_diff($allowedValues, $except));
+                }
+
+                if (!in_array($value, $allowedValues, true)) {
+                    $fail('Die ausgewählte Berechtigung ist ungültig.');
                 }
             }],
             'operatingSiteUser' => 'required|array',
             'operatingSiteUser.*' => ['nullable', function ($attribute, $value, $fail) {
-                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->only(['all', 'operatingSite'])->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
-                    $fail('The ' . $attribute . ' is invalid.');
+                $permissionName = explode('.', $attribute)[1];
+                $permissions = collect(User::$PERMISSIONS)
+                    ->only(['all', 'operatingSite'])
+                    ->flatten(1)
+                    ->keyBy('name');
+
+                if (!isset($permissions[$permissionName])) {
+                    return $fail('Die ausgewählte Berechtigung ist ungültig.');
                 }
-                if (!in_array($value, ['read', 'write', null])) {
-                    $fail('The ' . $attribute . ' is invalid.');
+
+                $permissionConfig = $permissions[$permissionName];
+                $allowedValues = ['read', 'write', null];
+
+                if (isset($permissionConfig['except'])) {
+                    $except = (array) $permissionConfig['except'];
+                    $allowedValues = array_values(array_diff($allowedValues, $except));
+                }
+
+                if (!in_array($value, $allowedValues, true)) {
+                    $fail('Die ausgewählte Berechtigung ist ungültig.');
                 }
             }],
             'groupUser' => 'nullable|array',
             'groupUser.*' => ['nullable', function ($attribute, $value, $fail) {
-                if (!in_array(explode('.', $attribute)[1], collect(User::$PERMISSIONS)->only(['all', 'group'])->flatten(1)->map(fn($p) => $p['name'])->toArray())) {
-                    $fail('The ' . $attribute . ' is invalid.');
+                $permissionName = explode('.', $attribute)[1];
+                $permissions = collect(User::$PERMISSIONS)
+                    ->only(['all', 'group'])
+                    ->flatten(1)
+                    ->keyBy('name');
+
+                if (!isset($permissions[$permissionName])) {
+                    return $fail('Die ausgewählte Berechtigung ist ungültig.');
                 }
-                if (!in_array($value, ['read', 'write', null])) {
-                    $fail('The ' . $attribute . ' is invalid.');
+
+                $permissionConfig = $permissions[$permissionName];
+                $allowedValues = ['read', 'write', null];
+
+                if (isset($permissionConfig['except'])) {
+                    $except = (array) $permissionConfig['except'];
+                    $allowedValues = array_values(array_diff($allowedValues, $except));
+                }
+
+                if (!in_array($value, $allowedValues, true)) {
+                    $fail('Die ausgewählte Berechtigung ist ungültig.');
                 }
             }],
             ...$additionalRules
@@ -420,18 +464,23 @@ class UserController extends Controller
         Gate::authorize('viewIndex', [Absence::class, $user]);
 
         $user['leaveDaysForYear'] = $user->leaveDaysForYear(Carbon::now());
-        $user['usedLeaveDaysForYear'] = $user->usedLeaveDaysForYear(Carbon::now());
         $user['absences'] = $user->absences()
-            ->whereYear('start', '<=', Carbon::now()->year)
-            ->whereYear('end', '>=', Carbon::now()->year - 3)
+            ->whereYear('start', '>=', Carbon::now()->year - 1)
             ->with(['absenceType:id,name', 'user:id,operating_site_id'])
-            ->where('status', Status::Accepted)
+            ->whereIn('status', [Status::Accepted, Status::Created])
             ->get(['id', 'start', 'end', 'absence_type_id', 'status', 'user_id'])->append('usedDays');
+
+        $allAbsenceYears = $user->absences->flatMap(fn($a) => [Carbon::parse($a->start), Carbon::parse($a->end)])->unique(fn($e) => $e->year);
+        $usedLeaveDaysForYear = [];
+        foreach ($allAbsenceYears as $year) {
+            $usedLeaveDaysForYear = $usedLeaveDaysForYear + $user->usedLeaveDaysForYear($year);
+        }
 
         return Inertia::render('User/UserShow/Absences', [
             'user' => $user,
             'can' => self::getUserShowCans($user),
-            'absenceTypes' => AbsenceType::inOrganization()->get(['id', 'name'])
+            'absenceTypes' => AbsenceType::inOrganization()->get(['id', 'name']),
+            'usedLeaveDaysForYear' => $usedLeaveDaysForYear
         ]);
     }
 

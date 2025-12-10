@@ -19,7 +19,10 @@ export type UserProp = Pick<
 > &
     Pick<UserAppends, 'date_of_birth_marker'> &
     Canable &
-    RelationPick<'user', 'user_working_weeks', 'id' | 'active_since' | Weekday> & { leaveDaysForYear: number; usedLeaveDaysForYear: number };
+    RelationPick<'user', 'user_working_weeks', 'id' | 'active_since' | Weekday> & {
+        leaveDaysForYear: Record<string, number>;
+        usedLeaveDaysForYear: Record<string, Record<Exclude<Status, 'declined'>, number>>;
+    };
 
 export type HomeOfficeDayProp = Pick<HomeOfficeDay, 'id' | 'user_id' | 'date' | 'status' | 'home_office_day_generator_id'> &
     RelationPick<'homeOfficeDay', 'home_office_day_generator', 'start' | 'end' | 'id' | 'user_id' | 'created_as_request'>;
