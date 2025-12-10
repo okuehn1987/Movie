@@ -145,12 +145,6 @@ function setUserData() {
             userForm.user_leave_days.push({ id: null, active_since: DateTime.now().toFormat('yyyy-MM'), leave_days: 0 });
 
         userForm.user_working_hours = props.user.user_working_hours ?? [];
-        if (userForm.user_working_hours.length == 0)
-            userForm.user_working_hours.push({
-                id: null,
-                active_since: DateTime.now().plus({ day: 1 }).toFormat('yyyy-MM-dd'),
-                weekly_working_hours: 0,
-            });
 
         for (const entry of props.user.user_working_weeks) {
             const weekdays = [] as Weekday[];
@@ -175,8 +169,6 @@ function setUserData() {
                 weekdays,
             });
         }
-        if (userForm.user_working_weeks.length == 0)
-            userForm.user_working_weeks.push({ id: null, active_since: DateTime.now().plus({ day: 1 }).toFormat('yyyy-MM-dd'), weekdays: [] });
 
         for (const key in userForm.organizationUser) {
             userForm.organizationUser[key as keyof typeof userForm.organizationUser] =
