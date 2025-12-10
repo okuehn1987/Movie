@@ -446,7 +446,7 @@ class User extends Authenticatable
         )->shouldCache();
     }
 
-    public function usedLeaveDaysForYear(CarbonInterface $year, $userWorkingWeeks = null, $absences = null): int
+    public function usedLeaveDaysForYear(CarbonInterface $year, $userWorkingWeeks = null, $absences = null)
     {
         $startOfYear = $year->copy()->startOfYear();
         $endOfYear = $year->copy()->endOfYear();
@@ -461,7 +461,7 @@ class User extends Authenticatable
             $this->absencePatches()
                 ->with('log.currentAcceptedPatch')
                 ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
-                ->where('status', Status::Accepted)
+                ->whereIn('status', [Status::Accepted, Status::Created])
                 ->whereNot('type', 'delete')
                 ->whereDate('start', '<=', $endOfYear)
                 ->whereDate('end', '>=', $startOfYear)
@@ -469,22 +469,28 @@ class User extends Authenticatable
                 ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p))
         ));
 
-        $absenceData = $relevantAbsences->flatMap(fn($a) => collect(
-            range(0, Carbon::parse(max($a->start, $startOfYear))->startOfDay()->diffInDays(Carbon::parse(min($a->end, $endOfYear))->startOfDay()))
-        )->map(
-            fn($i) => Carbon::parse(max($a->start, $startOfYear))->addDays($i)->startOfDay()
-        ))->unique()->sort();
+        $usedDays = [];
 
-        $usedDays = 0;
-        foreach ($absenceData as $day) {
-            $currentWorkingWeek = $this->userWorkingWeekForDate($day, $userWorkingWeeks);
-            if (
-                $currentWorkingWeek?->hasWorkDay($day) &&
-                !$this->operatingSite->hasHoliday($day)
-            ) {
-                $usedDays++;
-            };
-        }
+        foreach ($relevantAbsences as $absence)
+
+            for ($day = max(Carbon::parse($absence->start), $year->copy()->startOfYear()); $day->lte(min($absence->end, $year->copy()->endOfYear())); $day->addDay()) {
+
+                $currentWorkingWeek = $this->userWorkingWeekForDate($day, $userWorkingWeeks);
+                if (
+                    $currentWorkingWeek?->hasWorkDay($day) &&
+                    !$this->operatingSite->hasHoliday($day)
+                ) {
+                    $usedDays[$day->year] = (isset($usedDays[$day->year]) ? $usedDays[$day->year] : [Status::Accepted->value => 0, Status::Created->value => 0]);
+
+                    if ($absence->status === Status::Accepted) {
+                        $usedDays[$day->year][Status::Accepted->value] = $usedDays[$day->year][Status::Accepted->value] + 1;
+                    }
+                    if ($absence->status === Status::Created) {
+                        $usedDays[$day->year][Status::Created->value] = $usedDays[$day->year][Status::Created->value] + 1;
+                    }
+                };
+            }
+
         return $usedDays;
     }
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Absence, AbsenceType, User } from '@/types/types';
+import { Absence, AbsenceType, Status, User } from '@/types/types';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { ref } from 'vue';
@@ -7,7 +7,10 @@ import { ref } from 'vue';
 type AbsenceProp = Pick<Absence, 'id' | 'start' | 'end' | 'user_id'> & {
     absence_type: Pick<AbsenceType, 'id' | 'name'>;
     usedDays: number;
-    user: Pick<User, 'id' | 'first_name' | 'last_name'> & { usedLeaveDaysForYear: number; leaveDaysForYear: number };
+    user: Pick<User, 'id' | 'first_name' | 'last_name'> & {
+        usedLeaveDaysForYear: Record<string, Record<Exclude<Status, 'declined'>, number>>;
+        leaveDaysForYear: number;
+    };
 };
 
 const props = defineProps<{
@@ -82,11 +85,31 @@ function changeAbsenceStatus(accepted: boolean) {
                     <v-col cols="12" v-if="absenceDialog.absence_type.name == 'Urlaub'">
                         <v-alert :type="absenceDialog.user.leaveDaysForYear < absenceDialog.usedDays ? 'warning' : 'info'" class="w-100">
                             <v-row>
-                                <v-col cols="12" md="6">
-                                    <div>Verfügbare Urlaubstage {{ DateTime.now().year }}: {{ absenceDialog.user.leaveDaysForYear }}</div>
+                                <v-col cols="12">
+                                    <div>Benötigte Urlaubstage: {{ absenceDialog.usedDays ? Object.values(absenceDialog.usedDays)[0] : 0 }}</div>
                                 </v-col>
-                                <v-col cols="12" md="6">
-                                    <div>Benötigte Urlaubstage: {{ absenceDialog.usedDays }}</div>
+                                <v-col cols="12">
+                                    <div>
+                                        Genehmigte Urlaubstage für das Jahr {{ DateTime.now().year }} :
+                                        {{ absenceDialog.user.usedLeaveDaysForYear[DateTime.now().year]?.accepted }}
+                                    </div>
+                                </v-col>
+                                <v-col cols="12">
+                                    <div>
+                                        Beantragte Urlaubstage für das Jahr {{ DateTime.now().year }} :
+                                        {{ absenceDialog.user.usedLeaveDaysForYear[DateTime.now().year]?.created }}
+                                    </div>
+                                </v-col>
+                                <v-col cols="12">
+                                    <div>
+                                        Gesamt genutzte Urlaubstage für das Jahr {{ DateTime.now().year }} :
+                                        {{
+                                            (absenceDialog.user.usedLeaveDaysForYear[DateTime.now().year]?.accepted ?? 0) +
+                                            (absenceDialog.user.usedLeaveDaysForYear[DateTime.now().year]?.created ?? 0)
+                                        }}
+                                        von
+                                        {{ absenceDialog.user.leaveDaysForYear }}
+                                    </div>
                                 </v-col>
                             </v-row>
                         </v-alert>

@@ -136,6 +136,7 @@ class AbsenceController extends Controller
         );
 
         $schoolHolidays = HolidayService::getSchoolHolidaysForMonth($date);
+
         return Inertia::render('Absence/AbsenceIndex', [
             'users' => fn() =>
             User::whereIn('id', $visibleUsers->pluck('id'))
@@ -146,32 +147,50 @@ class AbsenceController extends Controller
                     'absences' => fn($q) => $q
                         ->doesntHave('currentAcceptedPatch')
                         ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
-                        ->whereDate('start', '<=', $date->copy()->endOfYear())
-                        ->whereDate('end', '>=', $date->copy()->startOfYear()),
+                        ->whereIn('status', [Status::Accepted, Status::Created])
+                        ->whereDate('end', '>=', now()->startOfYear()),
                     'absencePatches' => fn($q) => $q
                         ->with('log.currentAcceptedPatch')
                         ->whereHas('absenceType', fn($q) => $q->where('type', 'Urlaub'))
-                        ->where('status', Status::Accepted)
+                        ->whereIn('status', [Status::Accepted, Status::Created])
                         ->whereNot('type', 'delete')
-                        ->whereDate('start', '<=', $date->copy()->endOfYear())
-                        ->whereDate('end', '>=', $date->copy()->startOfYear())
+                        ->whereDate('end', '>=', now()->startOfYear())
                 ])
                 ->get(['id', 'first_name', 'last_name', 'show_date_of_birth_marker', 'date_of_birth', 'supervisor_id', 'group_id', 'operating_site_id', 'home_office', 'group_id', 'operating_site_id'])
-                ->map(fn(User $u) => [
-                    ...$u->append('date_of_birth_marker')->makeHidden(['date_of_birth', 'show_date_of_birth_marker'])->toArray(),
-                    'leaveDaysForYear' => $u->leaveDaysForYear(now(), $u->userLeaveDays),
-                    'usedLeaveDaysForYear' => $u->usedLeaveDaysForYear(
-                        now(),
-                        $u->userWorkingWeeks,
-                        collect($u->absences)->merge($u->absencePatches->filter(fn($p) => $p->log->currentAcceptedPatch->is($p)))
-                    ),
-                    'can' => [
-                        'absence' => [
-                            'create' => $authUser->can('create', [Absence::class, $u]),
-                            'update' => $authUser->can('update', [Absence::class, $u]),
+                ->map(function (User $u) use ($authUser) {
+                    $allEntries = collect($u->absences)->merge($u->absencePatches);
+                    $allAbsenceYears = $allEntries->flatMap(
+                        fn($a) =>
+                        [Carbon::parse($a->start), Carbon::parse($a->end)]
+                    )
+                        ->merge($u->userLeaveDays->map(fn($ld) => Carbon::parse($ld->active_since)))
+                        ->merge($u->userLeaveDays->isNotEmpty() ? [Carbon::parse($u->userLeaveDays->max('active_since'))->addYear()] : [])
+                        ->merge([now()])
+                        ->unique(fn($e) => $e->year);
+                    $usedLeaveDaysForYear = [];
+                    $leaveDaysForYear = (object)[];
+                    foreach ($allAbsenceYears as $year) {
+                        $leaveDaysForYear->{$year->year} =  $u->leaveDaysForYear($year, $u->userLeaveDays);
+
+                        $usedLeaveDaysForYear = $usedLeaveDaysForYear + $u->usedLeaveDaysForYear(
+                            $year,
+                            $u->userWorkingWeeks,
+                            collect($u->absences)->merge($u->absencePatches->filter(fn($p) => $p->log->currentAcceptedPatch->is($p)))
+                        );
+                    }
+                    if (count($usedLeaveDaysForYear) == 0) $usedLeaveDaysForYear = (object)[];
+                    return [
+                        ...$u->append('date_of_birth_marker')->makeHidden(['date_of_birth', 'show_date_of_birth_marker'])->toArray(),
+                        'leaveDaysForYear' => $leaveDaysForYear,
+                        'usedLeaveDaysForYear' => $usedLeaveDaysForYear,
+                        'can' => [
+                            'absence' => [
+                                'create' => $authUser->can('create', [Absence::class, $u]),
+                                'update' => $authUser->can('update', [Absence::class, $u]),
+                            ]
                         ]
-                    ]
-                ])->values(),
+                    ];
+                })->values(),
             'absenceTypes' => fn() => AbsenceType::inOrganization()->get(['id', 'name', 'abbreviation', 'requires_approval']),
             'absences' =>  Inertia::merge(fn() => $absences),
             'absencePatches' =>  Inertia::merge(fn() => $absencePatches),

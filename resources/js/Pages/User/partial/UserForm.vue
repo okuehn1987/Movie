@@ -1,5 +1,17 @@
 <script setup lang="ts">
-import { Country, CountryProp, DateString, FederalState, Group, OperatingSite, User, UserLeaveDays, UserPermission, Weekday } from '@/types/types';
+import {
+    Country,
+    CountryProp,
+    DateString,
+    FederalState,
+    Group,
+    OperatingSite,
+    Permission,
+    User,
+    UserLeaveDays,
+    UserPermission,
+    Weekday,
+} from '@/types/types';
 import { getBrowser, getStates } from '@/utils';
 import { DateTime, Info } from 'luxon';
 import { nextTick, onMounted } from 'vue';
@@ -678,29 +690,35 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                         :permissions
                         :errors="userForm.errors"
                         label="Organisationsrechte"
-                        :items="
-                            [
-                                {
-                                    label: 'Zeiterfassung',
-                                    keys: [
-                                        'workLog_permission',
-                                        'workLogPatch_permission',
-                                        'timeAccount_permission',
-                                        'timeAccountSetting_permission',
-                                        'timeAccountTransaction_permission',
-                                    ],
-                                },
-                                { label: 'Abwesenheiten', keys: ['absence_permission', 'absenceType_permission'] },
-                                $page.props.organization?.isa_active && {
-                                    label: 'ISA',
-                                    keys: ['chatAssistant_permission', 'chatFile_permission', 'isaPayment_permission'],
-                                },
-                                { label: 'Mitarbeiter', keys: ['user_permission'] },
-                                { label: 'Organisation', keys: ['organization_permission'] },
-                                { label: 'Ticket', keys: ['ticket_permission'] },
-                                { label: 'Kunden', keys: ['customer_permission'] },
-                            ].filter(Boolean)
-                        "
+                        :items="[
+                            {
+                                label: 'Zeiterfassung',
+                                keys: [
+                                    'workLog_permission',
+                                    'workLogPatch_permission',
+                                    'timeAccount_permission',
+                                    'timeAccountSetting_permission',
+                                    'timeAccountTransaction_permission',
+                                ],
+                            },
+                            { label: 'Abwesenheiten', keys: ['absence_permission', 'absenceType_permission'] },
+                            ...($page.props.organization?.isa_active
+                                ? [
+                                      {
+                                          label: 'ISA',
+                                          keys: [
+                                              'chatAssistant_permission',
+                                              'chatFile_permission',
+                                              'isaPayment_permission',
+                                          ] as Permission[keyof Permission][],
+                                      },
+                                  ]
+                                : []),
+                            { label: 'Mitarbeiter', keys: ['user_permission'] },
+                            { label: 'Organisation', keys: ['organization_permission'] },
+                            { label: 'Ticket', keys: ['ticket_permission'] },
+                            { label: 'Kunden', keys: ['customer_permission'] },
+                        ]"
                     />
                 </v-row>
             </v-card-text>
