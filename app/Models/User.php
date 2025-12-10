@@ -66,6 +66,9 @@ class User extends Authenticatable
             ['name' => 'ticket_accounting_permission', 'label' => 'Tickets abrechnen'],
         ],
         'organization' => [
+            ['name' => 'chatFile_permission', 'label' => 'ISA Dateien verwalten'],
+            ['name' => 'chatAssistant_permission', 'label' => 'ISA verwalten'],
+            ['name' => 'isaPayment_permission', 'label' => 'ISA Kostenübersicht einsehen', 'except' => 'write'],
             ['name' => 'absenceType_permission', 'label' => 'Abwesenheitsgründe verwalten'],
             ['name' => 'specialWorkingHoursFactor_permission', 'label' => 'Sonderarbeitszeitfaktoren verwalten'],
             ['name' => 'organization_permission', 'label' => 'Organisation verwalten'],
@@ -237,7 +240,7 @@ class User extends Authenticatable
 
     public function owns()
     {
-        return $this->hasOne(Organization::class, 'owner_id', 'organization_id');
+        return $this->hasOne(Organization::class, 'owner_id');
     }
 
     public function userAbsenceFilters()
@@ -336,6 +339,11 @@ class User extends Authenticatable
     public function operatingSiteUser()
     {
         return $this->hasOne(OperatingSiteUser::class);
+    }
+
+    public function chats()
+    {
+        return $this->hasMany(Chat::class);
     }
 
     public function homeOfficeDays()

@@ -225,6 +225,7 @@ return [
         'record' => 'Eintrag',
         'files' => 'Dateien',
         'file' => 'Datei',
+        'monthly_cost_limit' => 'Monatliches Kostenlimit',
         'weekdays' => 'Wochentage',
         'today' => 'Heute',
         'operating_site_id' => 'Betriebsstätte',

@@ -78,11 +78,26 @@ class Organization extends Model
 
     public function owner()
     {
-        return $this->hasOne(User::class, 'owner_id');
+        return $this->hasOne(User::class);
     }
     public function customAddresses()
     {
         return $this->hasMany(CustomAddress::class);
+    }
+
+    public function chatAssistant()
+    {
+        return $this->hasOne(ChatAssistant::class);
+    }
+
+    public function chats()
+    {
+        return $this->hasManyThrough(Chat::class, ChatAssistant::class);
+    }
+
+    public function chatFiles()
+    {
+        return $this->hasMany(ChatFile::class);
     }
 
     public static function getCurrent(): Organization

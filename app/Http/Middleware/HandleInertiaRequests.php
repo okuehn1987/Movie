@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\ChatAssistant;
+use App\Models\ChatMessage;
 use App\Models\Customer;
 use App\Models\Group;
 use App\Models\OperatingSite;
@@ -9,6 +11,7 @@ use App\Models\Organization;
 use App\Models\User;
 use App\Models\WorkLog;
 use App\Services\AppModuleService;
+use App\Services\OpenAIService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Middleware;
@@ -73,7 +76,15 @@ class HandleInertiaRequests extends Middleware
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ]),
-            'organization' => Organization::getCurrent(),
+            'organization' => [
+                ...Organization::getCurrent()->toArray(),
+                'isa_active' => Organization::getCurrent()->isa_active && Organization::getCurrent()->chatAssistant != null
+            ],
+            'reachedMonthlyTokenLimit' =>
+            Organization::getCurrent()->isa_active && Organization::getCurrent()->chatAssistant ?
+                OpenAIService::hasReachedTokenLimit(Organization::getCurrent()->chatAssistant) : false,
+            'currentUserChat' =>  Organization::getCurrent()->isa_active ?
+                $request->user()?->chats()->with('chatMessages:id,chat_id,role,assistant_api_message_id,created_at,msg')->first() : null,
             'currentAppModule' => AppModuleService::currentAppModule(),
             'appModules' => $accessableModules,
             'flash' => [
@@ -103,6 +114,9 @@ class HandleInertiaRequests extends Middleware
                 ],
                 'dispute' => [
                     'viewIndex' =>  Gate::allows('viewDisputes', User::class),
+                ],
+                'chatAssistant' => [
+                    'viewIndex' => Gate::allows('viewIndex', ChatAssistant::class),
                 ],
             ],
             ...match (AppModuleService::currentAppModule()) {
