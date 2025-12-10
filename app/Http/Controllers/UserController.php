@@ -23,6 +23,7 @@ use App\Models\TravelLog;
 use App\Models\TravelLogPatch;
 use App\Models\User;
 use App\Models\UserLeaveDay;
+use App\Models\UserTrustWorkingHour;
 use App\Models\UserWorkingHour;
 use App\Models\UserWorkingWeek;
 use App\Services\AppModuleService;
@@ -46,7 +47,9 @@ class UserController extends Controller
         return $request->validate([
             "first_name" => "required|string",
             "last_name" => "required|string",
-            "date_of_birth" => "nullable|date",
+            "academic_title" => "nullable|string",
+            "date_of_birth" => "required|date",
+            "show_date_of_birth_marker" => "required|boolean",
             "city" => "nullable|string",
             "zip" => "nullable|string",
             "street" => "nullable|string",
@@ -100,17 +103,19 @@ class UserController extends Controller
 
             'home_office_day_generators' => 'present|array',
             'home_office_day_generators.*.id' => ['nullable', Rule::exists('home_office_day_generators', 'id')->whereIn('user_id', User::inOrganization()->select('id'))],
-            'home_office_day_generators.*.weekdays' => 'required|array',
-            'home_office_day_generators.*.weekdays.*' => ['required', 'in:monday,tuesday,wednesday,thursday,friday,saturday,sunday', function ($attribute, $value, $fail) use ($request, $mode) {
+            'home_office_day_generators.*.weekdays' => ['required', 'array', function ($attribute, $value, $fail) use ($request, $mode) {
                 $index  = explode('.', $attribute)[1];
                 $currentGenerator = $request['home_office_day_generators'][$index];
                 if ($mode == 'update' && isset($currentGenerator['id'])) {
                     $existingGenerator = HomeOfficeDayGenerator::find($currentGenerator['id']);
-                    if (Carbon::parse($existingGenerator->start)->lt(now()->startOfDay()) && $currentGenerator['start'] != Carbon::parse($existingGenerator->start)->format('Y-m-d')) {
-                        $fail('Der Eintrag darf nicht geändert werden, da der Zeitraum bereits begonnen hat.');
+                    foreach (['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as $day) {
+                        if (in_array($day, $value) != $existingGenerator->$day && Carbon::parse($existingGenerator->start)->lt(now()->startOfDay())) {
+                            $fail('Der Eintrag darf nicht geändert werden, da der Zeitraum bereits begonnen hat.');
+                        }
                     }
                 }
             }],
+            'home_office_day_generators.*.weekdays.*' => ['required', 'in:monday,tuesday,wednesday,thursday,friday,saturday,sunday'],
             'home_office_day_generators.*.start' =>  ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
                 $index  = explode('.', $attribute)[1];
                 $currentGenerator = $request['home_office_day_generators'][$index];
@@ -132,14 +137,17 @@ class UserController extends Controller
                 $currentGenerator = $request['home_office_day_generators'][$index];
                 if ($mode == 'update' && isset($currentGenerator['id'])) {
                     $existingGenerator = HomeOfficeDayGenerator::find($currentGenerator['id']);
-                    if (Carbon::parse($existingGenerator->start)->lt(now()->startOfDay()) && Carbon::parse($value)->lt(now()->startOfDay())) {
+                    if (
+                        Carbon::parse($existingGenerator->start)->lt(now()->startOfDay()) &&
+                        Carbon::parse($value)->lt(now()->startOfDay()) && $value != Carbon::parse($existingGenerator->end)->format('Y-m-d')
+                    ) {
                         $fail('validation.after_or_equal')->translate([
                             'attribute' => __('validation.attributes.end'),
                             'date' => Carbon::now()->format('d.m.Y')
                         ]);
                     }
                 }
-                if (!$request['home_office'] && Carbon::parse($value)->gt(Carbon::now()->startOfDay())) $fail('The ' . $attribute . ' is invalid.');
+                if (!$request['home_office'] && Carbon::parse($value)->gt(Carbon::now()->startOfDay())) $fail('Es können keine Homeoffice-Tage gespeichert werden, wenn Homeoffice nicht aktiv ist.');
             }],
             'user_working_hours' => 'present|array',
             'user_working_hours.*.id' => [
@@ -160,6 +168,74 @@ class UserController extends Controller
                     ]);
                 }
             }],
+
+            'user_trust_working_hours' => 'present|array',
+            'user_trust_working_hours.*.id' => 'nullable|exists:user_trust_working_hours,id',
+            'user_trust_working_hours.*.active_since' => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) use ($request, $mode, $user) {
+                    $index = explode('.', $attribute)[1];
+                    $currentTrustWorkingHour = $request['user_trust_working_hours'][$index];
+                    if ($mode == 'update' && !isset($currentTrustWorkingHour['id']) && Carbon::parse($currentTrustWorkingHour['active_since'])->lt(Carbon::now()->endOfDay())) {
+                        $fail('validation.after')->translate([
+                            'attribute' => __('validation.attributes.active_since'),
+                            'date' => Carbon::now()->format('d.M.Y')
+                        ]);
+                    }
+                    if ($mode == 'update' && isset($currentTrustWorkingHour['id'])) {
+                        $existingEntry = UserTrustWorkingHour::find($currentTrustWorkingHour['id']);
+                        if (
+                            Carbon::parse($existingEntry->active_since)->lt(now()->startOfDay()) &&
+                            Carbon::parse($value)->lt(now()->startOfDay()) && $value != Carbon::parse($existingEntry->active_since)->format('Y-m-d')
+                        ) {
+                            $fail('Der Eintrag darf nicht geändert werden, da der Zeitraum bereits begonnen hat.');
+                        }
+                    }
+
+                    $newTrustWorkingHours = collect($request['user_trust_working_hours']);
+                    $oldTrustWorkingHours = $user ? $user->userTrustWorkingHours()->whereNotIn('id', $newTrustWorkingHours->pluck('id'))->get() : collect();
+
+                    $merged = $newTrustWorkingHours->merge($oldTrustWorkingHours);
+                    if ($merged->filter(fn($e) => $e['active_until'] === null)->count() > 1) {
+                        $fail('Es darf nur einen Eintrag für unbegrenzte Vertrauensarbeit geben.');
+                    }
+                    foreach ($merged as $e) {
+                        foreach ($merged as $o) {
+                            if ($e === $o) continue;
+                            if (
+                                Carbon::parse($e['active_since'])->lte(Carbon::parse($o['active_until'])) &&
+                                (is_null($e['active_until']) || Carbon::parse($e['active_until'])->gte(Carbon::parse($o['active_since'])))
+                            ) {
+                                $fail('In dem Zeitraum besteht bereits ein Eintrag für Vertrauensarbeit.');
+                            }
+                        }
+                    }
+                }
+            ],
+            'user_trust_working_hours.*.active_until' => ['nullable', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
+                if ($value == null) return;
+
+                $index = explode('.', $attribute)[1];
+                $currentTrustWorkingHour = $request['user_trust_working_hours'][$index];
+                if (isset($currentTrustWorkingHour['active_since']) && Carbon::parse($value)->lt(Carbon::parse($currentTrustWorkingHour['active_since']))) {
+                    $fail(__('validation.after_or_equal', [
+                        'attribute' => __('validation.attributes.active_until'),
+                        'date' => $currentTrustWorkingHour['active_since'],
+                    ]));
+                }
+                if ($mode == 'update' && isset($currentTrustWorkingHour['id'])) {
+                    $existingEntry = UserTrustWorkingHour::find($currentTrustWorkingHour['id']);
+                    if (
+                        Carbon::parse($existingEntry->active_since)->lt(now()->startOfDay()) &&
+                        $value != Carbon::parse($existingEntry->active_until)->format('Y-m-d') &&
+                        Carbon::parse($value)->lt(now()->startOfDay())
+                    ) {
+                        $fail('Der Eintrag darf nicht geändert werden, da er in der Vergangenheit liegt.');
+                    }
+                }
+            }],
+
 
             'user_working_weeks' => 'present|array',
             'user_working_weeks.*.id' => [
@@ -277,9 +353,9 @@ class UserController extends Controller
             }],
             ...$additionalRules
         ], [
-            'home_office_day_generators.*.start' => 'Der Start des Zeitraums muss angegeben werden.',
-            'home_office_day_generators.*.end' => 'Das Ende des Zeitraums muss angegeben werden.',
-            'home_office_day_generators.*.weekdays' => 'Es müssen Wochentage angegeben werden.',
+            'home_office_day_generators.*.start.required' => 'Der Start des Zeitraums muss angegeben werden.',
+            'home_office_day_generators.*.end.required' => 'Das Ende des Zeitraums muss angegeben werden.',
+            'home_office_day_generators.*.weekdays.required' => 'Es müssen Wochentage angegeben werden.',
             'home_office_day_generators.*.end.after_or_equal' => 'Das Ende des gewählten Zeitraums darf nicht vor dem Startdatum sein.'
         ]);
     }
@@ -324,12 +400,11 @@ class UserController extends Controller
     public function generalInformation(User $user)
     {
         Gate::authorize('viewShow', $user);
-
         $user->load([
             'groupUser',
             'operatingSiteUser',
             'organizationUser',
-            'supervisor:id',
+            'supervisor:id,first_name,last_name',
             'currentAddress',
             'userWorkingWeeks' => function ($q) {
                 $q->orderBy('active_since', 'desc');
@@ -344,6 +419,9 @@ class UserController extends Controller
                 [
                     'userWorkingHours' => function ($q) {
                         $q->orderBy('active_since', 'desc');
+                    },
+                    'userTrustWorkingHours' => function ($q) {
+                        $q->orderBy('active_since', 'desc');
                     }
                 ] :
                 []
@@ -352,7 +430,6 @@ class UserController extends Controller
 
         return Inertia::render('User/UserShow/GeneralInformation', [
             'user' => $user,
-
             'operating_sites' => OperatingSite::inOrganization()->get(),
             'groups' => Group::inOrganization()->get(),
 
@@ -474,8 +551,10 @@ class UserController extends Controller
         $user = (new User)->forceFill([
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
+            'academic_title' => $validated['academic_title'],
             'email' => $validated['email'],
             'date_of_birth' => $validated['date_of_birth'],
+            'show_date_of_birth_marker' => $validated['show_date_of_birth_marker'],
             'phone_number' => $validated['phone_number'],
             'staff_number' => $validated['staff_number'],
             'password' =>  Hash::make($validated['password']),
@@ -518,6 +597,13 @@ class UserController extends Controller
                 'user_id' => $user->id,
                 'weekly_working_hours' => $workingHour['weekly_working_hours'],
                 'active_since' => Carbon::parse($workingHour['active_since'])
+            ]);
+        }
+        foreach ($validated['user_trust_working_hours'] as $trustWorkingHour) {
+            UserTrustWorkingHour::create([
+                'user_id' => $user->id,
+                'active_since' => Carbon::parse($trustWorkingHour['active_since']),
+                'active_until' => Carbon::parse($trustWorkingHour['active_until']),
             ]);
         }
         foreach ($validated['user_working_weeks'] as $workingWeek) {
@@ -615,8 +701,10 @@ class UserController extends Controller
         $user->update([
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
+            'academic_title' => $validated['academic_title'],
             'email' => $validated['email'],
             'date_of_birth' => $validated['date_of_birth'],
+            'show_date_of_birth_marker' => $validated['show_date_of_birth_marker'],
             'phone_number' => $validated['phone_number'],
             'staff_number' => $validated['staff_number'],
             'group_id' => $validated['group_id'],
@@ -705,6 +793,21 @@ class UserController extends Controller
                 'active_since' => Carbon::parse($workingHour['active_since']),
                 'user_id' => $user->id,
                 'weekly_working_hours' => $workingHour['weekly_working_hours'],
+            ]);
+        }
+
+        $user->userTrustWorkingHours()
+            ->whereDate('active_since', '>', Carbon::now())
+            ->whereNotIn('id', collect($validated['user_trust_working_hours'])->map(fn($e) => $e['id'])->toArray())
+            ->delete();
+
+        foreach ($validated['user_trust_working_hours'] as $trustWorkingHour) {
+            UserTrustWorkingHour::updateOrCreate([
+                'id' => $trustWorkingHour['id'],
+            ], [
+                'active_since' => Carbon::parse($trustWorkingHour['active_since'])->format('Y-m-d'),
+                'user_id' => $user->id,
+                'active_until' => Carbon::parse($trustWorkingHour['active_until'])->format('Y-m-d'),
             ]);
         }
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Relations, Seconds, Shift, User } from '@/types/types';
+import { RelationPick, Relations, Seconds, Shift, User } from '@/types/types';
 import { formatDuration, useNow } from '@/utils';
 import { router, usePage } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
@@ -9,6 +9,7 @@ const props = defineProps<{
     overtime: number;
     workingHours: { totalHours: number; homeOfficeHours: number };
     user: User &
+        RelationPick<'user', 'current_trust_working_hours', 'id' | 'user_id'> &
         Pick<Relations<'user'>, 'latest_work_log'> & {
             current_shift: (Pick<Shift, 'id' | 'start' | 'end'> & { current_work_duration: Seconds }) | null;
         };
@@ -35,16 +36,13 @@ const lastActionText = computed(() => {
     if (!props.user.latest_work_log) return;
     const endTime = DateTime.fromSQL(props.user.latest_work_log.end ?? props.user.latest_work_log.start);
     const diff = now.value.diff(endTime);
-    if (diff.as('minutes') < 1) {
+    if (diff.as('minutes') < 1 && props.user.latest_work_log.end) {
         return 'Jetzt';
     }
-    if (diff.as('hours') < 1) {
-        return 'vor ' + Math.floor(diff.as('minutes')) + ' minuten';
+    if (diff.as('hours') < 1 && props.user.latest_work_log.end) {
+        return 'vor ' + Math.floor(diff.as('minutes')) + ' Minuten';
     }
-    if (endTime.day !== now.value.day) {
-        return endTime.toFormat('dd.MM. - HH:mm') + ' Uhr';
-    }
-    return endTime.toFormat('HH:mm') + ' Uhr';
+    return endTime.toFormat('dd.MM.') + ' um ' + endTime.toFormat('HH:mm') + ' Uhr';
 });
 </script>
 <template>

@@ -6,6 +6,7 @@ use App\Models\Absence;
 use App\Models\AbsencePatch;
 use App\Models\AbsenceType;
 use App\Enums\Status;
+use App\Models\Group;
 use App\Models\HomeOfficeDay;
 use App\Models\OperatingSite;
 use App\Models\Organization;
@@ -155,9 +156,9 @@ class AbsenceController extends Controller
                         ->whereDate('start', '<=', $date->copy()->endOfYear())
                         ->whereDate('end', '>=', $date->copy()->startOfYear())
                 ])
-                ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'group_id', 'operating_site_id', 'home_office'])
+                ->get(['id', 'first_name', 'last_name', 'show_date_of_birth_marker', 'date_of_birth', 'supervisor_id', 'group_id', 'operating_site_id', 'home_office', 'group_id', 'operating_site_id'])
                 ->map(fn(User $u) => [
-                    ...$u->toArray(),
+                    ...$u->append('date_of_birth_marker')->makeHidden(['date_of_birth', 'show_date_of_birth_marker'])->toArray(),
                     'leaveDaysForYear' => $u->leaveDaysForYear(now(), $u->userLeaveDays),
                     'usedLeaveDaysForYear' => $u->usedLeaveDaysForYear(
                         now(),
@@ -176,6 +177,8 @@ class AbsenceController extends Controller
             'absencePatches' =>  Inertia::merge(fn() => $absencePatches),
             'holidays' =>  Inertia::merge(fn() => $holidays->isEmpty() ? (object)[] : $holidays),
             'userAbsenceFilters' => $authUser->userAbsenceFilters,
+            'filterableOperatingSites' => OperatingSite::inOrganization()->get(['id', 'name']),
+            'filterableGroups' => Group::inOrganization()->get(['id', 'name']),
             'homeOfficeDays' => Inertia::merge(fn() => $homeOfficeDays),
             'schoolHolidays' =>  Inertia::merge(fn() => $schoolHolidays->isEmpty() ? (object)[] : [$date->format('Y-m') => $schoolHolidays]),
             'date' => $date,
@@ -312,7 +315,7 @@ class AbsenceController extends Controller
                 ->unique('id')
                 ->each
                 ->notify(new AbsenceDeleteNotification($authUser, $absence));
-            return back()->with('success', 'Der Antrag auf Löschung wurder erfolgreich eingeleitet.');
+            return back()->with('success', 'Der Antrag auf Löschung wurde erfolgreich eingeleitet.');
         }
     }
 

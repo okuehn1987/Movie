@@ -91,4 +91,85 @@ const userForm = defineModel<ReturnType<typeof useForm<FormData>>>('userForm', {
             </v-row>
         </v-card-text>
     </v-card>
+    <v-card class="mb-4" v-if="(user && can('user', 'update')) || !user">
+        <v-card-item>
+            <v-card-title class="mb-2">Vertrauensarbeitszeit</v-card-title>
+        </v-card-item>
+        <v-card-text>
+            <v-row>
+                <v-col cols="12" v-if="userForm.errors.user_working_hours">
+                    <v-alert type="error">{{ userForm.errors.user_working_hours }}</v-alert>
+                </v-col>
+                <v-col cols="12">
+                    <v-data-table-virtual
+                        :items="userForm.user_trust_working_hours"
+                        :headers="[
+                            {
+                                title: 'Aktiv seit',
+                                key: 'active_since',
+                                width: '50%',
+                                sortable: false,
+                            },
+                            {
+                                title: 'Aktiv bis',
+                                key: 'active_until',
+                                sortable: false,
+                            },
+                            {
+                                title: '',
+                                key: 'actions',
+                                align: 'end',
+                                sortable: false,
+                            },
+                        ]"
+                    >
+                        <template v-slot:header.actions>
+                            <v-btn
+                                v-if="!user || can('user', 'update')"
+                                color="primary"
+                                @click.stop="userForm.user_trust_working_hours.push({ active_since: '', id: null, active_until: null })"
+                            >
+                                <v-icon icon="mdi-plus"></v-icon>
+                            </v-btn>
+                        </template>
+                        <template v-slot:item.active_since="{ item, index }">
+                            <v-text-field
+                                type="date"
+                                variant="underlined"
+                                :min="mode == 'edit' ? DateTime.now().plus({ days: 1 }).toFormat('yyyy-MM-dd') : undefined"
+                                v-model="item.active_since"
+                                :error-messages="userForm.errors[`user_trust_working_hours.${index}.active_since`]"
+                                :disabled="
+                                    (user && !can('user', 'update')) ||
+                                    (!!item.active_since && item.active_since <= DateTime.now().toFormat('yyyy-MM-dd'))
+                                "
+                            ></v-text-field>
+                        </template>
+                        <template v-slot:item.active_until="{ item, index }">
+                            <v-text-field
+                                type="date"
+                                variant="underlined"
+                                :min="mode == 'edit' ? DateTime.now().plus({ days: 1 }).toFormat('yyyy-MM-dd') : undefined"
+                                v-model="item.active_until"
+                                :error-messages="userForm.errors[`user_trust_working_hours.${index}.active_until`]"
+                                :disabled="
+                                    (user && !can('user', 'update')) ||
+                                    (!!item.active_until && item.active_until <= DateTime.now().toFormat('yyyy-MM-dd'))
+                                "
+                            ></v-text-field>
+                        </template>
+                        <template v-slot:item.actions="{ item, index }">
+                            <v-btn
+                                color="error"
+                                @click.stop="userForm.user_trust_working_hours.splice(index, 1)"
+                                v-if="(!user || can('user', 'update')) && (!item.id || item.active_since > DateTime.now().toFormat('yyyy-MM-dd'))"
+                            >
+                                <v-icon icon="mdi-delete"></v-icon>
+                            </v-btn>
+                        </template>
+                    </v-data-table-virtual>
+                </v-col>
+            </v-row>
+        </v-card-text>
+    </v-card>
 </template>

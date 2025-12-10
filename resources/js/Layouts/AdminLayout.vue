@@ -9,9 +9,10 @@ import DrawerMenu from './partials/DrawerMenu.vue';
 import { DateTime } from 'luxon';
 import { showsGlobalMessage } from '@/utils';
 
-defineProps<{
+const props = defineProps<{
     title: string;
     backurl?: string;
+    noInlinePadding?: boolean;
 }>();
 
 const page = usePage();
@@ -149,8 +150,8 @@ function deleteChat() {
 
             <AppbarActions />
         </v-app-bar>
-        <v-main class="postion-relative">
-            <v-container class="pt-0" style="padding-bottom: calc(60px + 16px + 4px)" fluid>
+        <v-main>
+            <v-container class="pt-0" :style="$page.props.organization.isa_active ? 'padding-bottom: calc(60px + 16px + 4px)' : ''" :class="props.noInlinePadding ? 'px-0' : ''" fluid>
                 <v-alert
                     v-if="$page.props.flash.error"
                     type="error"

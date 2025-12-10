@@ -42,8 +42,9 @@ const search = ref('');
                     </div>
                 </template>
                 <template v-slot:item.actions="{ item }">
-                    <GroupDialogForm :group="item" :users></GroupDialogForm>
+                    <GroupDialogForm v-if="can('group', 'update')" :group="item" :users></GroupDialogForm>
                     <ConfirmDelete
+                        v-if="can('group', 'delete')"
                         :route="route('group.destroy', { group: item.id })"
                         :content="`Bist du dir sicher das du die Abteilung '${item.name}' löschen möchtest?`"
                         :title="`Abeilung ${item.name} löschen`"

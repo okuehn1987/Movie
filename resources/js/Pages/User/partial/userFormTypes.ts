@@ -12,6 +12,7 @@ import {
     Relations,
     User,
     UserLeaveDays,
+    UserTrustWorkingHour,
     UserWorkingHours,
     UserWorkingWeek,
     Weekday,
@@ -27,6 +28,7 @@ export type UserProp = User &
         | 'user_working_hours'
         | 'user_working_weeks'
         | 'current_address'
+        | 'user_trust_working_hours'
         | 'home_office_day_generators'
     > & {
         user_leave_days: (UserLeaveDays | null)[];
@@ -35,8 +37,10 @@ export type UserProp = User &
 export type FormData = {
     first_name: string;
     last_name: string;
+    academic_title: null | string;
     email: string;
     date_of_birth: null | string;
+    show_date_of_birth_marker: boolean;
     city: string;
     zip: string;
     street: string;
@@ -57,6 +61,8 @@ export type FormData = {
     home_office_day_generators: { id: HomeOfficeDayGenerator['id'] | null; weekdays: Weekday[]; start: string | null; end: string | null }[];
 
     user_working_hours: (Pick<UserWorkingHours, 'weekly_working_hours'> & { active_since: string; id: UserWorkingHours['id'] | null })[];
+
+    user_trust_working_hours: { id: UserTrustWorkingHour['id'] | null; active_since: string; active_until: string | null }[];
 
     user_leave_days: (Pick<UserLeaveDays, 'leave_days'> & { active_since: string; id: UserLeaveDays['id'] | null })[];
 

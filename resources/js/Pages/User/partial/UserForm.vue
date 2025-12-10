@@ -26,8 +26,10 @@ const WEEKDAYS = Info.weekdays('long', { locale: 'en' }).map(e => e.toLowerCase(
 const userFormDefaults: FormData = {
     first_name: '',
     last_name: '',
+    academic_title: null,
     email: '',
     date_of_birth: null as null | string,
+    show_date_of_birth_marker: false,
     city: '',
     zip: '',
     street: '',
@@ -55,6 +57,8 @@ const userFormDefaults: FormData = {
     user_leave_days: [],
     user_working_weeks: [],
     initialRemainingLeaveDays: 0,
+
+    user_trust_working_hours: [],
 
     overtime_calculations_start: DateTime.now().toFormat('yyyy-MM-dd') as DateString,
     organizationUser: {
@@ -110,8 +114,10 @@ function setUserData() {
     if (props.user) {
         userForm.first_name = props.user.first_name;
         userForm.last_name = props.user.last_name;
+        userForm.academic_title = props.user.academic_title;
         userForm.email = props.user.email;
         userForm.date_of_birth = props.user.date_of_birth;
+        userForm.show_date_of_birth_marker = props.user.show_date_of_birth_marker;
         userForm.city = props.user.current_address.city ?? '';
         userForm.zip = props.user.current_address.zip ?? '';
         userForm.street = props.user.current_address.street ?? '';
@@ -133,6 +139,7 @@ function setUserData() {
         userForm.use_time_balance_traffic_light = props.user.time_balance_red_threshold !== null && props.user.time_balance_yellow_threshold !== null;
         userForm.time_balance_yellow_threshold = props.user.time_balance_yellow_threshold;
         userForm.time_balance_red_threshold = props.user.time_balance_red_threshold;
+        userForm.is_supervisor = props.user.is_supervisor;
 
         userForm.user_leave_days = props.user.user_leave_days
             .filter(e => e !== null)
@@ -158,6 +165,7 @@ function setUserData() {
                 weekdays,
             });
         }
+        userForm.user_trust_working_hours = props.user.user_trust_working_hours;
 
         for (const entry of props.user.home_office_day_generators) {
             const weekdays = [] as Weekday[];
@@ -244,7 +252,14 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
             <v-card-title>Persönliche Daten</v-card-title>
             <v-card-text>
                 <v-row>
-                    <v-col cols="12" md="6">
+                    <v-col cols="12" md="2">
+                        <v-text-field
+                            v-model="userForm.academic_title"
+                            label="Akademischer Titel"
+                            :error-messages="userForm.errors.academic_title"
+                        ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" md="4">
                         <v-text-field v-model="userForm.first_name" label="Vorname" :error-messages="userForm.errors.first_name"></v-text-field>
                     </v-col>
                     <v-col cols="12" md="6">
@@ -256,13 +271,20 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                     <v-col cols="12" md="6" v-if="mode == 'create'">
                         <v-text-field v-model="userForm.password" label="Passwort" :error-messages="userForm.errors.password"></v-text-field>
                     </v-col>
-                    <v-col cols="12" md="6">
+                    <v-col cols="12" :md="mode == 'create' ? '6' : '3'">
                         <v-text-field
                             type="date"
                             v-model="userForm.date_of_birth"
-                            label="Geburtsdatum (optional)"
+                            label="Geburtsdatum"
                             :error-messages="userForm.errors.date_of_birth"
                         ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" :md="mode == 'create' ? '6' : '3'">
+                        <v-checkbox
+                            v-model="userForm.show_date_of_birth_marker"
+                            label="Geburtstag im Kalender anzeigen"
+                            :error-messages="userForm.errors.show_date_of_birth_marker"
+                        ></v-checkbox>
                     </v-col>
                     <v-col cols="12" md="6">
                         <v-text-field
@@ -278,7 +300,6 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             :error-messages="userForm.errors.job_role"
                         ></v-text-field>
                     </v-col>
-                    <v-col cols="12" md="6" v-if="mode == 'create'"></v-col>
                     <v-col cols="12" md="6">
                         <v-text-field v-model="userForm.street" label="Straße (optional)" :error-messages="userForm.errors.street"></v-text-field>
                     </v-col>
@@ -500,7 +521,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" title="Gleitzeitkonto">
+        <v-card v-if="(user && can('user', 'update')) || !user" class="mb-4" title="Gleitzeitkonto">
             <v-card-text>
                 <v-row>
                     <v-col cols="12">
@@ -531,7 +552,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4">
+        <v-card v-if="(user && can('user', 'update')) || !user" class="mb-4">
             <v-card-title>Homeoffice</v-card-title>
             <v-card-text>
                 <v-row>
@@ -539,7 +560,10 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                         <v-checkbox
                             v-model="userForm.home_office"
                             label="Darf der Mitarbeitende Homeoffice machen?"
-                            :disabled="!!userForm.home_office_day_generators.find(g => g.end && DateTime.fromSQL(g.end) > DateTime.now())"
+                            :disabled="
+                                !!userForm.home_office_day_generators.find(g => g.end && DateTime.fromSQL(g.end) > DateTime.now()) ||
+                                (user && !can('user', 'update'))
+                            "
                             :error-messages="userForm.errors.home_office"
                             @update:model-value="
                                 v => {
@@ -652,7 +676,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4">
+        <v-card v-if="(user && can('user', 'update')) || !user" class="mb-4">
             <v-card-title>Organisation</v-card-title>
             <v-card-text>
                 <v-row>
@@ -689,7 +713,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4">
+        <v-card v-if="(user && can('user', 'update')) || !user" class="mb-4">
             <v-card-title>Betriebsstätte</v-card-title>
             <v-card-text>
                 <v-row>
@@ -729,7 +753,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4">
+        <v-card v-if="(user && can('user', 'update')) || !user" class="mb-4">
             <v-card-title>Abteilung</v-card-title>
             <v-card-text>
                 <v-row>
@@ -783,13 +807,13 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             data-testid="userSupervisorSelection"
                         ></v-select>
                     </v-col>
-                    <v-col cols="12" md="6">
+                    <v-col v-if="user && can('user', 'update')" cols="12" md="6">
                         <v-checkbox v-model="userForm.is_supervisor" label="Ist ein Vorgesetzter"></v-checkbox>
                     </v-col>
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card class="mb-4" v-if="can('user', mode == 'create' ? 'create' : 'update')">
+        <v-card class="mb-4" v-if="user && can('user', 'update')">
             <v-card-title>Kündigungseinstellungen</v-card-title>
             <v-card-text>
                 <v-row>
@@ -811,7 +835,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <div class="d-flex justify-end">
+        <div class="d-flex justify-end" v-if="(user && can('user', 'update')) || !user">
             <v-btn type="submit" color="primary" :loading="userForm.processing">Speichern</v-btn>
         </div>
     </v-form>

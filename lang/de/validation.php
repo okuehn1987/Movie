@@ -22,6 +22,7 @@ return [
     'after_or_equal' => ':attribute muss nach oder am :date liegen.',
     'array' => ':attribute muss ein Array sein.',
     'before' => ':attribute muss vor :date liegen.',
+    'before_or_equal' => ':attribute muss vor oder am :date liegen.',
     'boolean' => ':attribute muss wahr oder falsch sein.',
     'can' => ':attribute enthält einen nicht autorisierten Wert.',
     'confirmed' => 'Die :attribute-Bestätigung stimmt nicht überein.',
@@ -163,6 +164,9 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
+        'end' => [
+            'before_or_equal' => 'Der Endzeitpunkt darf nicht in der Zukunft liegen.',
+        ]
     ],
 
     /*
@@ -223,11 +227,16 @@ return [
         'file' => 'Datei',
         'monthly_cost_limit' => 'Monatliches Kostenlimit',
         'weekdays' => 'Wochentage',
+        'today' => 'Heute',
+        'operating_site_id' => 'Betriebsstätte',
     ],
 
     'values' => [
         'tab' => [
             'expressTicket' => 'Einzelauftrag'
+        ],
+        'start' => [
+            'today' => 'Heute',
         ]
     ]
 

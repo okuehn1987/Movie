@@ -55,10 +55,10 @@ function getPT(user: PropUser & { userWorkingWeekCount: number }) {
                 { title: '', key: 'isPresent', sortable: false },
                 { title: 'Vorname', key: 'first_name' },
                 { title: 'Nachname', key: 'last_name' },
+                { title: '', key: 'timeBalanceTrafficLight', align: 'end', width: '1px' },
+                { title: 'Gleitzeitkonto', key: 'timeAccountBalance' },
                 { title: 'Letzte Buchung', key: 'lastAction' },
                 { title: 'Uhrzeit', key: 'time' },
-                { title: 'Gleitzeitkonto', key: 'timeAccountBalance', align: 'end' },
-                { title: '', key: 'timeBalanceTrafficLight' },
                 { title: '', key: 'actions', sortable: false, align: 'end' },
             ]"
         >

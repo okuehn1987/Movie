@@ -22,7 +22,9 @@ class GroupController extends Controller
             'users' => User::inOrganization()->get(['id', 'first_name', 'last_name'])->map(fn($user) => [...$user->toArray(), 'name' => $user->name]),
             'can' => [
                 'group' => [
-                    'create' => Gate::allows('create', Group::class)
+                    'create' => Gate::allows('create', Group::class),
+                    'delete' => Gate::allows('delete', Group::class),
+                    'update' => Gate::allows('update', Group::class),
                 ]
             ]
         ]);

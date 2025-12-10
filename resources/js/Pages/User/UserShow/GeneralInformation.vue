@@ -18,6 +18,7 @@ defineProps<{
             | 'user_working_weeks'
             | 'current_address'
             | 'home_office_day_generators'
+            | 'user_trust_working_hours'
         >;
     possibleSupervisors: Pick<User, 'id' | 'first_name' | 'last_name'>[];
     operating_sites: Pick<OperatingSite, 'id' | 'name'>[];
