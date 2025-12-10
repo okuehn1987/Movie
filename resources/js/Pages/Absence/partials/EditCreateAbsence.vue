@@ -70,7 +70,7 @@ const leaveDayYearToShow = computed(() => {
     if (absenceForm.end) years.push(DateTime.fromISO(absenceForm.end).year);
     if (years.length == 0) years.push(DateTime.now().year);
 
-    return years;
+    return years.filter((e, i, a) => a.indexOf(e) === i);
 });
 </script>
 <template>
@@ -146,33 +146,31 @@ const leaveDayYearToShow = computed(() => {
                                 type="info"
                                 class="w-100"
                             >
-                                <v-row>
-                                    <template v-for="year in leaveDayYearToShow.filter((e, i, a) => a.indexOf(e) === i)" :key="year">
-                                        <v-col cols="12">
-                                            <div class="h6 font-weight-bold mb-0">{{ year }}</div>
-                                            <v-divider thickness="1" class="mt-0"></v-divider>
-                                        </v-col>
-                                        <v-col cols="12" md="6">
-                                            <div>Genehmigte Urlaubstage</div>
-                                        </v-col>
-                                        <v-col cols="12" md="6">
-                                            <div>
+                                <v-table>
+                                    <thead>
+                                        <tr>
+                                            <td></td>
+                                            <td v-for="year in leaveDayYearToShow" :key="year">
+                                                {{ year }}
+                                            </td>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Genehmigte Urlaubstage</td>
+                                            <td v-for="year in leaveDayYearToShow" :key="year">
                                                 {{ currentUser.usedLeaveDaysForYear[year]?.accepted ?? 0 }}
-                                            </div>
-                                        </v-col>
-                                        <v-col cols="12" md="6">
-                                            <div>Beantragte Urlaubstage</div>
-                                        </v-col>
-                                        <v-col cols="12" md="6">
-                                            <div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Beantragte Urlaubstage</td>
+                                            <td v-for="year in leaveDayYearToShow" :key="year">
                                                 {{ currentUser.usedLeaveDaysForYear[year]?.created ?? 0 }}
-                                            </div>
-                                        </v-col>
-                                        <v-col cols="12" md="6">
-                                            <div>Bereits verwendete Urlaubstage</div>
-                                        </v-col>
-                                        <v-col cols="12" md="6">
-                                            <div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Bereits verwendete Urlaubstage</td>
+                                            <td v-for="year in leaveDayYearToShow" :key="year">
                                                 {{
                                                     (currentUser.usedLeaveDaysForYear[year]?.accepted ?? 0) +
                                                     (currentUser.usedLeaveDaysForYear[year]?.created ?? 0)
@@ -185,9 +183,54 @@ const leaveDayYearToShow = computed(() => {
                                                     )[0]?.[1] ??
                                                     0
                                                 }}
-                                            </div>
-                                        </v-col>
-                                    </template>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </v-table>
+                                <v-row>
+                                    <v-col cols="6">
+                                        <v-row>
+                                            <v-col cols="12">
+                                                <div class="h6 font-weight-bold mb-0">{{ year }}</div>
+                                                <v-divider thickness="1" class="mt-0"></v-divider>
+                                            </v-col>
+                                            <v-col cols="12" md="6">
+                                                <div>Genehmigte Urlaubstage</div>
+                                            </v-col>
+                                            <v-col cols="12" md="6">
+                                                <div>
+                                                    {{ currentUser.usedLeaveDaysForYear[year]?.accepted ?? 0 }}
+                                                </div>
+                                            </v-col>
+                                            <v-col cols="12" md="6">
+                                                <div>Beantragte Urlaubstage</div>
+                                            </v-col>
+                                            <v-col cols="12" md="6">
+                                                <div>
+                                                    {{ currentUser.usedLeaveDaysForYear[year]?.created ?? 0 }}
+                                                </div>
+                                            </v-col>
+                                            <v-col cols="12" md="6">
+                                                <div>Bereits verwendete Urlaubstage</div>
+                                            </v-col>
+                                            <v-col cols="12" md="6">
+                                                <div>
+                                                    {{
+                                                        (currentUser.usedLeaveDaysForYear[year]?.accepted ?? 0) +
+                                                        (currentUser.usedLeaveDaysForYear[year]?.created ?? 0)
+                                                    }}
+                                                    von
+                                                    {{
+                                                        currentUser.leaveDaysForYear[year] ??
+                                                        Object.entries(currentUser.leaveDaysForYear).sort(([k, _v], [k2, _v2]) =>
+                                                            k2.localeCompare(k),
+                                                        )[0]?.[1] ??
+                                                        0
+                                                    }}
+                                                </div>
+                                            </v-col>
+                                        </v-row>
+                                    </v-col>
                                 </v-row>
                             </v-alert>
                             <v-col cols="12">
