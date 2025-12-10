@@ -20,11 +20,9 @@ class DashboardController extends Controller
             ->get(['id', 'supervisor_id', 'group_id', 'operating_site_id', 'first_name', 'last_name'])
             ->filter(fn($u) => $user->can('viewShow', [Absence::class, $u]));
 
-
         $currentAbsences = $visibleUsers->map(fn($u) => [...$u->currentAbsencePeriod, 'name' => $u->name])
-            ->filter(fn($a) => $a['end'] !== null)
+            ->filter(fn($a) => $a['end'] !== null && $a['start'] !== null)
             ->values();
-
         $tideProps = [];
         if (AppModuleService::hasAppModule('tide')) {
             $lastWeekEntries =
@@ -44,7 +42,10 @@ class DashboardController extends Controller
         }
 
         return Inertia::render('Dashboard/Dashboard', [
-            'user' => [...$user->load(['latestWorkLog'])->toArray(), 'current_shift' => $user->currentShift()->first(['id', 'user_id', 'start', 'end'])?->append('current_work_duration')],
+            'user' => [
+                ...$user->load(['latestWorkLog', 'currentTrustWorkingHours:id,user_trust_working_hours.user_id'])->toArray(),
+                'current_shift' => $user->currentShift()->first(['id', 'user_id', 'start', 'end'])?->append('current_work_duration')
+            ],
             'supervisor' => User::select('id', 'first_name', 'last_name')->find($user->supervisor_id),
             'currentAbsences' => $currentAbsences,
             ...$tideProps,

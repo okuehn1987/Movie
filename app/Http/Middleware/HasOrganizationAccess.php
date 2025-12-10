@@ -30,7 +30,8 @@ class HasOrganizationAccess
             $targetOrgId = match (true) {
                 $instanceObject instanceof \App\Models\OperatingSite, $instanceObject instanceof \App\Models\AbsenceType,
                 $instanceObject instanceof \App\Models\Group, $instanceObject instanceof \App\Models\SpecialWorkingHoursFactor,
-                $instanceObject instanceof \App\Models\TimeAccountSetting, $instanceObject instanceof \App\Models\Customer
+                $instanceObject instanceof \App\Models\TimeAccountSetting, $instanceObject instanceof \App\Models\Customer,
+                $instanceObject instanceof \App\Models\ChatAssistant
                 => $instanceObject->organization_id,
 
                 $instanceObject instanceof \App\Models\Absence, $instanceObject instanceof \App\Models\AbsencePatch

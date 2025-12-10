@@ -107,6 +107,7 @@ export type User = DBObject<'user'> &
     SoftDelete & {
         first_name: string;
         last_name: string;
+        academic_title: string | null;
         email: string;
         role: 'super-admin' | 'employee';
         password: string;
@@ -116,6 +117,7 @@ export type User = DBObject<'user'> &
         organization_id: Organization['id'] | null;
         staff_number: string | null;
         date_of_birth: DateString;
+        show_date_of_birth_marker: boolean;
         phone_number: string | null;
         email_verified_at: string | null;
         weekly_working_hours: number;
@@ -139,6 +141,7 @@ export type User = DBObject<'user'> &
 
 export type UserAppends = {
     readonly name: string;
+    readonly date_of_birth_marker: string | null;
 };
 
 export type UserWorkingHours = DBObject<'userWorkingHours'> &
@@ -146,6 +149,13 @@ export type UserWorkingHours = DBObject<'userWorkingHours'> &
         user_id: User['id'];
         weekly_working_hours: number;
         active_since: DateString;
+    };
+
+export type UserTrustWorkingHour = DBObject<'userTrustWorkingHour'> &
+    SoftDelete & {
+        user_id: User['id'];
+        active_since: DateString;
+        active_until: DateString | null;
     };
 
 export type UserLeaveDays = DBObject<'userLeaveDays'> &
@@ -183,6 +193,7 @@ export type Organization = DBObject<'organization'> &
         commercial_registration_id: string | null;
         website: string | null;
         logo: string | null;
+        isa_active: boolean;
     };
 
 export type OperatingSite = DBObject<'operatingSite'> &
@@ -355,9 +366,11 @@ export type UserAbsenceFilter = DBObject<'userAbcenceFilter'> & {
     user_id: User['id'];
     name: string;
     data: {
-        version: 'v1';
+        version: 'v2';
         absence_type_ids: AbsenceType['id'][];
         user_ids: User['id'][];
+        operating_site_ids: OperatingSite['id'][];
+        group_ids: Group['id'][];
         statuses: Status[];
         holidays_from_federal_states: FederalState[];
     };
@@ -550,13 +563,19 @@ export type Permission = {
         | 'ticket_permission'
         | 'ticket_accounting_permission'
         | 'absenceType_permission';
-    organization: 'specialWorkingHoursFactor_permission' | 'organization_permission' | 'customer_permission';
+    organization:
+        | 'specialWorkingHoursFactor_permission'
+        | 'organization_permission'
+        | 'customer_permission'
+        | 'chatAssistant_permission'
+        | 'chatFile_permission'
+        | 'isaPayment_permission';
     operatingSite: 'operatingSite_permission';
     group: 'group_permission';
 };
 
 export type UserPermission = {
-    [key in keyof Permission]: { name: Permission[key]; label: string };
+    [key in keyof Permission]: { name: Permission[key]; label: string; except?: PermissionValue };
 };
 
 export type OrganizationUser = DBObject<'organizationUser'> &
@@ -613,6 +632,57 @@ export type TicketUser = DBObject<'ticket_user'> & {
     status: Status;
 };
 
+export type ChatAssistant = Prettify<
+    DBObject<'chatAssistant'> &
+        SoftDelete & {
+            vector_store_id: string;
+            organization_id: Organization['id'];
+            monthly_cost_limit: number;
+        }
+>;
+
+export type Chat = Prettify<
+    DBObject<'chat'> &
+        SoftDelete & {
+            chat_assistant_id: ChatAssistant['id'];
+            assistant_api_thread_id: string;
+            open_ai_tokens_used: number;
+            user_id: User['id'];
+            last_response_id: string | null;
+        }
+>;
+
+export type ChatMessage = Prettify<
+    DBObject<'chatMessage'> &
+        SoftDelete & {
+            msg: string;
+            role: 'user' | 'assistant' | 'system' | 'annotation';
+            chat_id: Chat['id'];
+            assistant_api_message_id: string;
+            open_ai_tokens_used: number;
+        }
+>;
+
+export type ChatFile = Prettify<
+    DBObject<'chatFile'> &
+        SoftDelete & {
+            name: string;
+            file_name: string;
+            assistant_api_file_id: string;
+            chat_assistant_id: ChatAssistant['id'] | null;
+            organization_id: Organization['id'];
+        }
+>;
+
+export type Year = string & { __year__: void };
+export type Month = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+export type Minutes = number & { __minutes__: void };
+export type MonthStats = {
+    month: Month;
+    year: Year;
+    chat_cost: number;
+    chats: number;
+};
 export type HomeOfficeDayGenerator = DBObject<'home_office_day_generators'> & {
     user_id: User['id'];
     start: DateString;
@@ -649,6 +719,25 @@ export type RelationMap = {
     address: {
         addressable: User | OperatingSite | CustomAddress;
         ticket_records: TicketRecord[];
+    };
+    chat: {
+        chat_assistant: ChatAssistant;
+        user: User;
+        chat_messages: ChatMessage[];
+        latest_chat_message: ChatMessage | null;
+    };
+    chatAssistant: {
+        organization: Organization;
+        chats: Chat[];
+        chat_messages: ChatMessage[];
+        chat_files: ChatFile[];
+    };
+    chatFile: {
+        organization: Organization;
+        chat_assistant: ChatAssistant | null;
+    };
+    chatMessage: {
+        chat: Chat;
     };
     customAddress: {
         organization: Organization;
@@ -816,6 +905,8 @@ export type RelationMap = {
         organization_user: OrganizationUser;
         owns: Organization | null;
         user_working_hours: UserWorkingHours[];
+        user_trust_working_hours: UserTrustWorkingHour[];
+        current_trust_working_hours: UserTrustWorkingHour | null;
         current_working_hours: UserWorkingHours | null;
         user_leave_days: UserLeaveDays[];
         current_leave_days: UserLeaveDays | null;
@@ -843,7 +934,10 @@ export type RelationMap = {
     userLeaveDays: {
         user: User;
     };
-    userWorkingHours: {
+    userTrustWorkingHour: {
+        user: User;
+    };
+    userWorkingHour: {
         user: User;
     };
     userWorkingWeek: {

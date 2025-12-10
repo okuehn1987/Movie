@@ -6,6 +6,7 @@ use App\Models\Absence;
 use App\Models\AbsencePatch;
 use App\Models\AbsenceType;
 use App\Enums\Status;
+use App\Models\Group;
 use App\Models\HomeOfficeDay;
 use App\Models\OperatingSite;
 use App\Models\Organization;
@@ -155,7 +156,7 @@ class AbsenceController extends Controller
                         ->whereNot('type', 'delete')
                         ->whereDate('end', '>=', now()->startOfYear())
                 ])
-                ->get(['id', 'first_name', 'last_name', 'supervisor_id', 'group_id', 'operating_site_id', 'home_office'])
+                ->get(['id', 'first_name', 'last_name', 'show_date_of_birth_marker', 'date_of_birth', 'supervisor_id', 'group_id', 'operating_site_id', 'home_office', 'group_id', 'operating_site_id'])
                 ->map(function (User $u) use ($authUser) {
                     $allEntries = collect($u->absences)->merge($u->absencePatches);
                     $allAbsenceYears = $allEntries->flatMap(
@@ -179,7 +180,7 @@ class AbsenceController extends Controller
                     }
                     if (count($usedLeaveDaysForYear) == 0) $usedLeaveDaysForYear = (object)[];
                     return [
-                        ...$u->toArray(),
+                        ...$u->append('date_of_birth_marker')->makeHidden(['date_of_birth', 'show_date_of_birth_marker'])->toArray(),
                         'leaveDaysForYear' => $leaveDaysForYear,
                         'usedLeaveDaysForYear' => $usedLeaveDaysForYear,
                         'can' => [
@@ -195,6 +196,8 @@ class AbsenceController extends Controller
             'absencePatches' =>  Inertia::merge(fn() => $absencePatches),
             'holidays' =>  Inertia::merge(fn() => $holidays->isEmpty() ? (object)[] : $holidays),
             'userAbsenceFilters' => $authUser->userAbsenceFilters,
+            'filterableOperatingSites' => OperatingSite::inOrganization()->get(['id', 'name']),
+            'filterableGroups' => Group::inOrganization()->get(['id', 'name']),
             'homeOfficeDays' => Inertia::merge(fn() => $homeOfficeDays),
             'schoolHolidays' =>  Inertia::merge(fn() => $schoolHolidays->isEmpty() ? (object)[] : [$date->format('Y-m') => $schoolHolidays]),
             'date' => $date,
@@ -331,7 +334,7 @@ class AbsenceController extends Controller
                 ->unique('id')
                 ->each
                 ->notify(new AbsenceDeleteNotification($authUser, $absence));
-            return back()->with('success', 'Der Antrag auf Löschung wurder erfolgreich eingeleitet.');
+            return back()->with('success', 'Der Antrag auf Löschung wurde erfolgreich eingeleitet.');
         }
     }
 

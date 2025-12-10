@@ -3,10 +3,12 @@
 namespace Database\Seeders;
 
 use App\Models\AbsenceType;
+use App\Models\Address;
 use App\Models\Group;
 use App\Models\OperatingSite;
 use App\Models\OperatingTime;
 use App\Models\Organization;
+use App\Models\OrganizationModule;
 use App\Models\TimeAccount;
 use App\Models\TimeAccountSetting;
 use App\Models\User;
@@ -68,7 +70,7 @@ class DatabaseSeederPHPUnit extends Seeder
                                 "saturday" => 0,
                                 "sunday" => 0,
                             ]))
-                    )
+                    )->has(Address::factory(1))
                     ->has(OperatingTime::factory(7, ['start' => '09:00:00', 'end' => '17:00:00'])
                         ->sequence(fn(Sequence $sequence) => ['type' => [
                             'monday',
@@ -89,5 +91,11 @@ class DatabaseSeederPHPUnit extends Seeder
                 ...$type,
             ])->create();
         }
+
+        OrganizationModule::create([
+            'organization_id' => $org->id,
+            'module' => 'flow',
+            'activated_at' => now(),
+        ]);
     }
 }

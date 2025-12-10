@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Middleware\CheckIfGateWasUsedToAuthorizeRequest;
+use App\Http\Middleware\CheckIsaActive;
 use App\Http\Middleware\HasOrganizationAccess;
 use App\Http\Middleware\isApp;
+use App\Models\ChatFile;
 use App\Models\HomeOfficeDayGenerator;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 Route::redirect('/', '/dashboard')->name('home');
 
@@ -14,6 +17,14 @@ Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAut
     //super admin routes
     Route::resource('organization', OrganizationController::class)->only(['index', 'store', 'destroy']);
     Route::get('/organization/{organization}/tree', [OrganizationController::class, 'organigram'])->name('organization.tree');
+    Route::middleware(CheckIsaActive::class)->group(function () {
+        Route::resource('isa', IsaController::class)->only(['index', 'store', 'update']);
+        Route::post("/isa/message", [IsaController::class, "message"])->name('isa.message');
+        Route::delete("/isa/{chat}/delete", [IsaController::class, "deleteChat"])->name('isa.deleteChat');
+        Route::post("/isa/{chat}/message/retry", [IsaController::class, "retryLastRun"])->name('isa.retryLastRun');
+        Route::resource('file', ChatFileController::class)->only(['store', 'destroy', 'show']);
+        Route::get('file/{file}/content', fn(ChatFile $file) => response()->file(Storage::disk('chat_files')->path($file->file_name)))->name('file.getContent');
+    });
     //super admin routes
 
     Route::post('/switchAppModule', [AppModuleController::class, 'switchAppModule'])->name('switchAppModule');

@@ -50,6 +50,52 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "isa.index": [],
+    "isa.store": [],
+    "isa.update": [
+        {
+            "name": "isa",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "isa.message": [],
+    "isa.deleteChat": [
+        {
+            "name": "chat",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "isa.retryLastRun": [
+        {
+            "name": "chat",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "file.store": [],
+    "file.show": [
+        {
+            "name": "file",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "file.destroy": [
+        {
+            "name": "file",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "file.getContent": [
+        {
+            "name": "file",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "switchAppModule": [],
     "dashboard": [],
     "reportBug.store": [],
@@ -189,13 +235,15 @@ declare module 'ziggy-js' {
     "group.update": [
         {
             "name": "group",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "group.destroy": [
         {
             "name": "group",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "homeOfficeDay.store": [],

@@ -41,6 +41,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'home_office' => 'boolean',
+        'show_date_of_birth_marker' => 'boolean',
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_supervisor' => 'boolean',
@@ -65,6 +66,9 @@ class User extends Authenticatable
             ['name' => 'ticket_accounting_permission', 'label' => 'Tickets abrechnen'],
         ],
         'organization' => [
+            ['name' => 'chatFile_permission', 'label' => 'ISA Dateien verwalten'],
+            ['name' => 'chatAssistant_permission', 'label' => 'ISA verwalten'],
+            ['name' => 'isaPayment_permission', 'label' => 'ISA Kostenübersicht einsehen', 'except' => 'write'],
             ['name' => 'absenceType_permission', 'label' => 'Abwesenheitsgründe verwalten'],
             ['name' => 'specialWorkingHoursFactor_permission', 'label' => 'Sonderarbeitszeitfaktoren verwalten'],
             ['name' => 'organization_permission', 'label' => 'Organisation verwalten'],
@@ -236,7 +240,7 @@ class User extends Authenticatable
 
     public function owns()
     {
-        return $this->hasOne(Organization::class, 'owner_id', 'organization_id');
+        return $this->hasOne(Organization::class, 'owner_id');
     }
 
     public function userAbsenceFilters()
@@ -254,11 +258,28 @@ class User extends Authenticatable
         return $this->userWorkingHours()->one()->ofMany(['active_since' => 'Max'], fn($q) => $q->whereDate('active_since', '<=', now()));
     }
 
+    public function userTrustWorkingHours()
+    {
+        return $this->hasMany(UserTrustWorkingHour::class);
+    }
+
+    public function currentTrustWorkingHours()
+    {
+        return $this->userTrustWorkingHours()->one()->ofMany(['active_since' => 'Max'], fn($q) => $q->whereDate('active_since', '<=', now())->whereDate('active_until', '>=', now()));
+    }
+
     public function workingHours(): Attribute
     {
         return Attribute::make(
             get: fn() => $this->userWorkingHours()->get()
         )->shouldCache();
+    }
+
+    public function dateOfBirthMarker(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->show_date_of_birth_marker ? $this->date_of_birth : null,
+        );
     }
 
     public function userWorkingHoursForDate(CarbonInterface $date, $userWorkingHours = null): UserWorkingHour | null
@@ -318,6 +339,11 @@ class User extends Authenticatable
     public function operatingSiteUser()
     {
         return $this->hasOne(OperatingSiteUser::class);
+    }
+
+    public function chats()
+    {
+        return $this->hasMany(Chat::class);
     }
 
     public function homeOfficeDays()
@@ -591,7 +617,7 @@ class User extends Authenticatable
 
     public function getSollsekundenForDate(CarbonInterface $date)
     {
-        if ($this->resignation_date && $date->gt(Carbon::parse($this->resignation_date))) {
+        if ($this->resignation_date && $date->gt(Carbon::parse($this->resignation_date)) || UserTrustWorkingHour::checkCollisions(['start' => $date, 'end' => $date, 'user_id' => $this->id])) {
             return 0;
         }
 
@@ -707,6 +733,12 @@ class User extends Authenticatable
                             ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p))
                     );
 
+
+                $currentAbsence = $futureAbsences->firstWhere(
+                    fn($a) =>
+                    Carbon::parse($a['start'])->lte(now()) && Carbon::parse($a['end'])->gte(now())
+                );
+                $firstDay = $currentAbsence ? Carbon::parse($currentAbsence['start']) : now();
                 $lastDay = null;
                 $absenceTypes = collect();
 
@@ -723,6 +755,7 @@ class User extends Authenticatable
                     }
                 }
                 return [
+                    'start' => $firstDay->format('d.m.Y'),
                     'end' => $lastDay?->format('d.m.Y'),
                     'type' => request()->user()->can(
                         'viewShow',

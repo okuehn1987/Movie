@@ -67,6 +67,12 @@ import { router } from '@inertiajs/vue3';
                     value: route('organization.tree', { organization: $page.props.organization.id }),
                     title: 'Organigramm',
                 },
+                can('chatAssistant', 'viewIndex') &&
+                    $page.props.organization.isa_active && {
+                        props: { prependIcon: 'mdi-chat-question-outline', active: route().current('isa.index') },
+                        value: route('isa.index'),
+                        title: 'ISA',
+                    },
                 ...(can('organization', 'viewIndex')
                     ? [
                           { type: 'divider' },

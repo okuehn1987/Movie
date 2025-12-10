@@ -17,6 +17,8 @@ import * as directives from 'vuetify/directives';
 import { VDateInput } from 'vuetify/labs/components';
 import colors from 'vuetify/util/colors';
 
+import './echo';
+
 const vuetify = createVuetify({
     defaults: {
         VTextField: { variant: 'underlined' },

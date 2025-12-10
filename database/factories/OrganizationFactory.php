@@ -18,7 +18,8 @@ class OrganizationFactory extends Factory
     {
         return [
             'name' => fake()->company(),
-            'website' => fake()->domainName()
+            'website' => fake()->domainName(),
+            'openai_api_key' => env('OPENAI_API_KEY')
         ];
     }
 }

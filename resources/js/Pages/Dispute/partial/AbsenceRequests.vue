@@ -57,10 +57,12 @@ function changeAbsenceStatus(accepted: boolean) {
                 user: absence.user.first_name + ' ' + absence.user.last_name,
                 start: DateTime.fromSQL(absence.start).toFormat('dd.MM.yyyy'),
                 end: DateTime.fromSQL(absence.end).toFormat('dd.MM.yyyy'),
+                absence_type: absence.absence_type.name,
             }))
         "
         :headers="[
             { title: 'Mitarbeiter', key: 'user' },
+            { title: 'Abwesenheitsgrund', key: 'absence_type' },
             { title: 'Von', key: 'start' },
             { title: 'Bis', key: 'end' },
         ]"
