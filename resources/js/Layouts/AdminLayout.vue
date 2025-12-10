@@ -151,7 +151,12 @@ function deleteChat() {
             <AppbarActions />
         </v-app-bar>
         <v-main>
-            <v-container class="pt-0" :style="$page.props.organization.isa_active ? 'padding-bottom: calc(60px + 16px + 4px)' : ''" :class="props.noInlinePadding ? 'px-0' : ''" fluid>
+            <v-container
+                class="pt-0"
+                :style="$page.props.organization.isa_active ? 'padding-bottom: calc(60px + 16px + 4px)' : ''"
+                :class="props.noInlinePadding ? 'px-0' : ''"
+                fluid
+            >
                 <v-alert
                     v-if="$page.props.flash.error"
                     type="error"
@@ -188,11 +193,11 @@ function deleteChat() {
                 <transition name="chat-pop">
                     <div v-show="showChat" class="chat-space bg-white elevation-12">
                         <div class="chat-header">
-                                <div class="d-flex align-center gap-2 chat-button">
-                                    <img  src="/img/Isa-klein.png" role="button" @click.stop="closeChat" alt="ISA Logo"></img>
-                                    <v-card-subtitle class="text-h6">ISA</v-card-subtitle>
-                                </div>
-                
+                            <div class="d-flex align-center gap-2 chat-button">
+                                <img src="/img/Isa-klein.png" role="button" @click.stop="closeChat" alt="ISA Logo" />
+                                <v-card-subtitle class="text-h6">ISA</v-card-subtitle>
+                            </div>
+
                             <div style="width: fit-content">
                                 <v-btn icon="mdi-window-minimize" color="primary" variant="text" @click.stop="closeChat" title="Chat minimieren" />
                                 <v-btn icon="mdi-chat-plus" color="primary" variant="text" @click.stop="deleteChat" title="Neuer Chat" />
@@ -200,7 +205,7 @@ function deleteChat() {
                         </div>
                         <div class="chat-body">
                             <ChatDetails
-                            :showChat
+                                :showChat
                                 :chat="$page.props.currentUserChat ? $page.props.currentUserChat : INITIAL_USER_CHAT"
                                 :reachedMonthlyTokenLimit="$page.props.reachedMonthlyTokenLimit"
                             />
@@ -284,7 +289,9 @@ function deleteChat() {
 .chat-pop-enter-active,
 .chat-pop-leave-active {
     transform-origin: bottom right;
-    transition: transform 200ms linear, opacity 200ms linear;
+    transition:
+        transform 200ms linear,
+        opacity 200ms linear;
 }
 .chat-pop-enter-from,
 .chat-pop-leave-to {
