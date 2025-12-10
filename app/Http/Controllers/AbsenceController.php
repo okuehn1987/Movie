@@ -159,9 +159,13 @@ class AbsenceController extends Controller
                 ->map(function (User $u) use ($authUser) {
                     $allEntries = collect($u->absences)->merge($u->absencePatches);
                     $allAbsenceYears = $allEntries->flatMap(
-                            fn($a) =>
-                            [Carbon::parse($a->start), Carbon::parse($a->end)]
-                        )->merge([now()])->unique(fn($e) => $e->year);
+                        fn($a) =>
+                        [Carbon::parse($a->start), Carbon::parse($a->end)]
+                    )
+                        ->merge($u->userLeaveDays->map(fn($ld) => Carbon::parse($ld->active_since)))
+                        ->merge($u->userLeaveDays->isNotEmpty() ? [Carbon::parse($u->userLeaveDays->max('active_since'))->addYear()] : [])
+                        ->merge([now()])
+                        ->unique(fn($e) => $e->year);
                     $usedLeaveDaysForYear = [];
                     $leaveDaysForYear = (object)[];
                     foreach ($allAbsenceYears as $year) {

@@ -24,7 +24,8 @@ const absenceForm = useForm({
     start: props.selectedAbsence?.start ?? props.selectedDate?.toFormat('yyyy-MM-dd') ?? null,
     end: props.selectedAbsence?.end ?? props.selectedDate?.toFormat('yyyy-MM-dd') ?? null,
     absence_type_id: (props.selectedAbsence?.absence_type_id ?? null) as AbsenceType['id'] | null | 'homeOffice',
-    absence_id: props.selectedAbsence && 'absence_id' in props.selectedAbsence ? props.selectedAbsence.absence_id : props.selectedAbsence?.id ?? null,
+    absence_id:
+        props.selectedAbsence && 'absence_id' in props.selectedAbsence ? props.selectedAbsence.absence_id : (props.selectedAbsence?.id ?? null),
 });
 
 function saveAbsence() {
@@ -146,7 +147,7 @@ const leaveDayYearToShow = computed(() => {
                                 type="info"
                                 class="w-100"
                             >
-                                <v-table>
+                                <v-table class="text-info">
                                     <thead>
                                         <tr>
                                             <td></td>
@@ -187,51 +188,6 @@ const leaveDayYearToShow = computed(() => {
                                         </tr>
                                     </tbody>
                                 </v-table>
-                                <v-row>
-                                    <v-col cols="6">
-                                        <v-row>
-                                            <v-col cols="12">
-                                                <div class="h6 font-weight-bold mb-0">{{ year }}</div>
-                                                <v-divider thickness="1" class="mt-0"></v-divider>
-                                            </v-col>
-                                            <v-col cols="12" md="6">
-                                                <div>Genehmigte Urlaubstage</div>
-                                            </v-col>
-                                            <v-col cols="12" md="6">
-                                                <div>
-                                                    {{ currentUser.usedLeaveDaysForYear[year]?.accepted ?? 0 }}
-                                                </div>
-                                            </v-col>
-                                            <v-col cols="12" md="6">
-                                                <div>Beantragte Urlaubstage</div>
-                                            </v-col>
-                                            <v-col cols="12" md="6">
-                                                <div>
-                                                    {{ currentUser.usedLeaveDaysForYear[year]?.created ?? 0 }}
-                                                </div>
-                                            </v-col>
-                                            <v-col cols="12" md="6">
-                                                <div>Bereits verwendete Urlaubstage</div>
-                                            </v-col>
-                                            <v-col cols="12" md="6">
-                                                <div>
-                                                    {{
-                                                        (currentUser.usedLeaveDaysForYear[year]?.accepted ?? 0) +
-                                                        (currentUser.usedLeaveDaysForYear[year]?.created ?? 0)
-                                                    }}
-                                                    von
-                                                    {{
-                                                        currentUser.leaveDaysForYear[year] ??
-                                                        Object.entries(currentUser.leaveDaysForYear).sort(([k, _v], [k2, _v2]) =>
-                                                            k2.localeCompare(k),
-                                                        )[0]?.[1] ??
-                                                        0
-                                                    }}
-                                                </div>
-                                            </v-col>
-                                        </v-row>
-                                    </v-col>
-                                </v-row>
                             </v-alert>
                             <v-col cols="12">
                                 <div class="d-flex ga-2 justify-end">
