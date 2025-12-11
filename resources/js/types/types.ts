@@ -365,6 +365,7 @@ export type TimeAccountTransaction = DBObject<'timeAccountTransaction'> &
 export type UserAbsenceFilter = DBObject<'userAbcenceFilter'> & {
     user_id: User['id'];
     name: string;
+    is_default: boolean;
     data: {
         version: 'v2';
         absence_type_ids: AbsenceType['id'][];

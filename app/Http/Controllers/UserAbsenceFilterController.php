@@ -23,6 +23,8 @@ class UserAbsenceFilterController extends Controller
         $validated = $request->validate([
             'set' => 'required|string',
 
+            'is_default' => 'required|boolean',
+
             'selected_users' => 'present|array',
             'selected_users.*' => Rule::exists('users', 'id')->whereIn('operating_site_id', OperatingSite::inOrganization()->select('id')),
 
@@ -42,9 +44,12 @@ class UserAbsenceFilterController extends Controller
             "selected_holidays.*" => Rule::in(array_keys(HolidayService::$COUNTRIES['DE']['regions']))
         ]);
 
+        if ($validated['is_default']) $authUser->userAbsenceFilters()->where('is_default', true)->update(['is_default' => false]);
+
         UserAbsenceFilter::create([
             'user_id' => $authUser->id,
             'name' => $validated['set'],
+            'is_default' => $validated['is_default'],
             'data' => [
                 'version' => 'v2',
                 'user_ids' => $validated['selected_users'],
@@ -64,6 +69,8 @@ class UserAbsenceFilterController extends Controller
         Gate::authorize('publicAuth', User::class);
 
         $validated = $request->validate([
+            'is_default' => 'required|boolean',
+
             'selected_users' => 'present|array',
             'selected_users.*' => Rule::exists('users', 'id')->whereIn('operating_site_id', OperatingSite::inOrganization()->select('id')),
 
@@ -83,7 +90,10 @@ class UserAbsenceFilterController extends Controller
             "selected_holidays.*" => Rule::in(array_keys(HolidayService::$COUNTRIES['DE']['regions']))
         ]);
 
+        if ($validated['is_default']) UserAbsenceFilter::where('user_id', $userAbsenceFilter->user_id)->where('is_default', true)->update(['is_default' => false]);
+
         $userAbsenceFilter->update([
+            'is_default' => $validated['is_default'],
             'data' => [
                 'user_ids' => $validated['selected_users'],
                 'absence_type_ids' => $validated['selected_absence_types'],
@@ -97,7 +107,7 @@ class UserAbsenceFilterController extends Controller
         return back()->with('success', 'Filtergruppe erfolgreich aktualisiert.');
     }
 
-    public function destroy(Request $request, UserAbsenceFilter $userAbsenceFilter)
+    public function destroy(UserAbsenceFilter $userAbsenceFilter)
     {
         Gate::authorize('publicAuth', User::class);
 
