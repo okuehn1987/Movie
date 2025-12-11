@@ -24,8 +24,16 @@ const display = useDisplay();
 <template>
     <AdminLayout :noInlinePadding="display.smAndDown.value" title="Dashboard">
         <v-row>
-            <v-col cols="12" lg="6" v-if="can('app', 'tide') && !user.current_trust_working_hours && overtime && workingHours">
-                <WorkingHours :user :overtime :workingHours />
+            <v-col cols="12" lg="6" v-if="can('app', 'tide')">
+                <WorkingHours
+                    v-if="!user.current_trust_working_hours && overtime != undefined && workingHours != undefined"
+                    :user
+                    :overtime
+                    :workingHours
+                />
+                <v-card v-else title="Arbeitszeit">
+                    <v-card-text><v-img src="/img/Tide-Logo.webp" height="150px"></v-img></v-card-text>
+                </v-card>
             </v-col>
             <v-col cols="12" lg="6">
                 <Absences :absences="currentAbsences" />
