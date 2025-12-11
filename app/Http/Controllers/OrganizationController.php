@@ -29,6 +29,7 @@ class OrganizationController extends Controller
         Gate::authorize('viewIndex', Organization::class);
 
         $organizations = Organization::with(['chatAssistant:id,organization_id,created_at,updated_at', 'owner'])
+            ->withCount('users')
             ->get(['id', 'owner_id', 'name', 'created_at'])
             ->map(function ($organization) {
                 $chatAssistant = $organization->chatAssistant;
