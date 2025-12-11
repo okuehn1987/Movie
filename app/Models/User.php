@@ -736,7 +736,7 @@ class User extends Authenticatable
 
                 $currentAbsence = $futureAbsences->firstWhere(
                     fn($a) =>
-                    Carbon::parse($a['start'])->lte(now()) && Carbon::parse($a['end'])->gte(now())
+                    Carbon::parse($a['start'])->lte(now()->startOfDay()) && Carbon::parse($a['end'])->gte(now()->startOfDay())
                 );
                 $firstDay = $currentAbsence ? Carbon::parse($currentAbsence['start']) : now();
                 $lastDay = null;
