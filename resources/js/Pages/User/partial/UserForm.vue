@@ -496,7 +496,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                                 <v-text-field
                                     data-testid="userLeaveDays-since"
                                     type="month"
-                                    :min="mode == 'edit' ? DateTime.now().startOf('month').toFormat('yyyy-MM') : undefined"
+                                    :min="mode == 'edit' ? DateTime.now().startOf('year').toFormat('yyyy-MM') : undefined"
                                     variant="underlined"
                                     v-model="item.active_since"
                                     :disabled="isLeaveDayDisabled(item)"
