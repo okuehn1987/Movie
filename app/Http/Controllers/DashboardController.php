@@ -33,7 +33,8 @@ class DashboardController extends Controller
                 ->entries
                 ->filter(fn($e) => $e->end)
                 ->sortByDesc('start')
-                ->map(fn($e) => collect($e->append('duration'))->only(['id', 'start', 'end', 'duration']))->take(5)
+                ->map(fn($e) => collect($e->append('duration'))->only(['id', 'start', 'end', 'duration']))
+                ->take(5)
                 ->values();
 
             $tideProps = [
