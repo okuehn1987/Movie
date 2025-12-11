@@ -817,7 +817,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                             data-testid="userSupervisorSelection"
                         ></v-select>
                     </v-col>
-                    <v-col v-if="user && can('user', 'update')" cols="12" md="6">
+                    <v-col v-if="!user || (user && can('user', 'update'))" cols="12" md="6">
                         <v-checkbox v-model="userForm.is_supervisor" label="Ist ein Vorgesetzter"></v-checkbox>
                     </v-col>
                 </v-row>
