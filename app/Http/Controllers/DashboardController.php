@@ -20,24 +20,26 @@ class DashboardController extends Controller
             ->get(['id', 'supervisor_id', 'group_id', 'operating_site_id', 'first_name', 'last_name'])
             ->filter(fn($u) => $user->can('viewShow', [Absence::class, $u]));
 
-        $currentAbsences = $visibleUsers->map(fn($u) => [...$u->currentAbsencePeriod, 'name' => $u->name])
+        $currentAbsences = $visibleUsers->map(fn($u) => [...$u->currentAbsencePeriod, 'last_name' => $u->last_name, 'first_name' => $u->first_name])
             ->filter(fn($a) => $a['end'] !== null && $a['start'] !== null)
             ->values();
         $tideProps = [];
         if (AppModuleService::hasAppModule('tide')) {
-            $lastWeekEntries =
-                $user->currentWeekShifts
+            $lastEntries =
+                $user->shifts()
+                ->where('start', '>=', now()->subDays(7))
+                ->get()
                 ->flatMap
                 ->entries
                 ->filter(fn($e) => $e->end)
                 ->sortByDesc('start')
-                ->map(fn($e) => collect($e->append('duration'))->only(['id', 'start', 'end', 'duration']))
+                ->map(fn($e) => collect($e->append('duration'))->only(['id', 'start', 'end', 'duration']))->take(5)
                 ->values();
 
             $tideProps = [
                 'overtime' => $user->overtime,
                 'workingHours' => $user->currentWeekWorkingHours,
-                'lastWeekEntries' => $lastWeekEntries,
+                'lastEntries' => $lastEntries,
             ];
         }
 
