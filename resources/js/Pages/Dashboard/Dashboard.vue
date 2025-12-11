@@ -48,7 +48,7 @@ const display = useDisplay();
                                 />
                             </template>
                             <v-card-text>
-                                <v-data-table
+                                <v-data-table-virtual
                                     :items="
                                         lastEntries.map(l => ({
                                             ...l,
@@ -62,7 +62,7 @@ const display = useDisplay();
                                         { title: 'Ende', key: 'end', sortable: false },
                                         { title: 'Dauer', key: 'duration', sortable: false },
                                     ]"
-                                ></v-data-table>
+                                ></v-data-table-virtual>
                             </v-card-text>
                         </v-card>
                     </v-col>
