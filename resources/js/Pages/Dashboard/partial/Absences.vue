@@ -3,7 +3,7 @@ import { DateString } from '@/types/types';
 import { ref } from 'vue';
 import { useDisplay } from 'vuetify/lib/composables/display.mjs';
 
-const props = defineProps<{
+defineProps<{
     absences: { last_name: string; first_name: string; start: DateString; end: DateString; type: string }[];
 }>();
 
