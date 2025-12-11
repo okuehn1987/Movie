@@ -470,7 +470,9 @@ class UserController extends Controller
             ->whereIn('status', [Status::Accepted, Status::Created])
             ->get(['id', 'start', 'end', 'absence_type_id', 'status', 'user_id'])->append('usedDays');
 
-        $allAbsenceYears = $user->absences->flatMap(fn($a) => [Carbon::parse($a->start), Carbon::parse($a->end)])->unique(fn($e) => $e->year);
+        $allAbsenceYears = $user->absences
+            ->flatMap(fn($a) => [Carbon::parse($a->start), Carbon::parse($a->end)])
+            ->unique(fn($e) => $e->year);
         $usedLeaveDaysForYear = [];
         foreach ($allAbsenceYears as $year) {
             $usedLeaveDaysForYear = $usedLeaveDaysForYear + $user->usedLeaveDaysForYear($year);

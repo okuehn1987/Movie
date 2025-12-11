@@ -30,7 +30,10 @@ const openYear = ref([]);
                     <v-col v-if="user.absences.length === 0"><v-alert color="info">Keine Abwesenheiten vorhanden.</v-alert></v-col>
                     <v-col>
                         <v-expansion-panels elevation="1" multiple v-model="openYear">
-                            <template v-for="(data, year) in usedLeaveDaysForYear" :key="year">
+                            <template
+                                v-for="[year, data] in Object.entries(usedLeaveDaysForYear).toSorted(([ka, _va], [kb, _vb]) => kb.localeCompare(ka))"
+                                :key="year"
+                            >
                                 <v-expansion-panel :value="year">
                                     <v-expansion-panel-title>
                                         {{ year }}
@@ -130,7 +133,7 @@ const openYear = ref([]);
                                                                 <tr class="font-weight-bold">
                                                                     <td colspan="4">
                                                                         Genehmigte Urlaubstage für das Jahr
-                                                                        {{ DateTime.now().year }}:
+                                                                        {{ year }}:
                                                                     </td>
                                                                     <td>
                                                                         {{ data.accepted }}
@@ -139,7 +142,7 @@ const openYear = ref([]);
                                                                 <tr class="font-weight-bold">
                                                                     <td colspan="4">
                                                                         Beantragte Urlaubstage für das Jahr
-                                                                        {{ DateTime.now().year }}:
+                                                                        {{ year }}:
                                                                     </td>
                                                                     <td>
                                                                         {{ data.created }}
@@ -148,7 +151,7 @@ const openYear = ref([]);
                                                                 <tr class="font-weight-bold">
                                                                     <td colspan="4">
                                                                         Gesamt genutzte Urlaubstage für das Jahr
-                                                                        {{ DateTime.now().year }}:
+                                                                        {{ year }}:
                                                                     </td>
                                                                     <td>
                                                                         {{ data.accepted + data.created + ' von ' + user.leaveDaysForYear }}
