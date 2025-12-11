@@ -9,11 +9,6 @@ const props = defineProps<{
 
 const currentPage = ref(1);
 const display = useDisplay();
-
-const sortBy = ref([
-    { key: 'last_name', order: 'asc' },
-    { key: 'first_name', order: 'asc' },
-]);
 </script>
 <template>
     <v-card title="Abwesenheiten">
@@ -21,13 +16,12 @@ const sortBy = ref([
             hover
             items-per-page="5"
             v-model:page="currentPage"
-            v-model:sort-by="sortBy"
             multi-sort
             no-data-text="keine Abwesenheiten vorhanden."
             :items="
                 absences.map(a => ({
                     ...a,
-                    name: a.first_name + ' ' + a.last_name,
+                    name: a.last_name + ' ' + a.first_name,
                 }))
             "
             :headers="[
@@ -42,6 +36,8 @@ const sortBy = ref([
                 ...(absences.some(a => a.type) ? [{ title: 'Grund', key: 'type' }] : []),
             ]"
         >
+            <template v-slot:item.name="{ item }">{{ item.first_name }} {{ item.last_name }}</template>
+
             <template v-slot:bottom>
                 <v-pagination v-if="absences.length > 5" v-model="currentPage" :length="Math.ceil(absences.length / 5)"></v-pagination>
             </template>
