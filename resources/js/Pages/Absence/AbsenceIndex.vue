@@ -40,16 +40,19 @@ const groupFilterForm = useForm({
     selected_groups: [] as Group['id'][],
     selected_statuses: ['created', 'accepted'] as Status[],
     selected_holidays: [props.federal_state] as FederalState[],
+    is_default: false,
 });
 
+const defaultFilter = props.userAbsenceFilters.find(f => f.is_default);
+
 const singleFilterForm = useForm({
-    set: null as null | UserAbsenceFilter['id'],
-    selected_users: [] as User['id'][],
-    selected_absence_types: [] as AbsenceType['id'][],
-    selected_operating_sites: [] as OperatingSite['id'][],
-    selected_groups: [] as Group['id'][],
-    selected_statuses: ['created', 'accepted'] as Status[],
-    selected_holidays: [props.federal_state] as FederalState[],
+    set: defaultFilter?.id ?? null,
+    selected_users: defaultFilter?.data.user_ids ?? [],
+    selected_absence_types: defaultFilter?.data.absence_type_ids ?? [],
+    selected_operating_sites: defaultFilter?.data.operating_site_ids ?? [],
+    selected_groups: defaultFilter?.data.group_ids ?? [],
+    selected_statuses: defaultFilter?.data.statuses ?? ['created', 'accepted'],
+    selected_holidays: defaultFilter?.data.holidays_from_federal_states ?? [props.federal_state],
 });
 
 const currentFilterForm = ref<null | typeof groupFilterForm | typeof singleFilterForm>(singleFilterForm);

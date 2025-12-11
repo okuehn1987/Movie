@@ -37,6 +37,7 @@ const groupFilterForm = defineModel<
             selected_holidays: FederalState[];
             selected_operating_sites: OperatingSite['id'][];
             selected_groups: Group['id'][];
+            is_default: boolean;
         }>
     >
 >('filterForm', { required: true });
@@ -70,6 +71,7 @@ function selectExistingFilter(newValue: typeof groupFilterForm.value.set) {
 
     const data = {
         set: typeof newValue == 'string' ? { title: newValue, value: selectedFilter.id } : newValue,
+        is_default: selectedFilter.is_default,
         selected_users: selectedFilter.data.user_ids,
         selected_absence_types: selectedFilter.data.absence_type_ids,
         selected_statuses: selectedFilter.data.statuses,
@@ -115,6 +117,7 @@ function editFilter(filter: UserAbsenceFilter) {
     const set = { value: filter.id, title: filter.name };
     groupFilterForm.value.defaults({
         set,
+        is_default: filter.is_default,
         selected_users: filter.data.user_ids ?? [],
         selected_absence_types: filter.data.absence_type_ids ?? [],
         selected_statuses: filter.data.statuses ?? [],
@@ -281,13 +284,13 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                 <v-row class="mt-2">
                                     <v-col cols="12" md="6">
                                         <v-row>
-                                            <v-col cols="12">
+                                            <v-col cols="8">
                                                 <v-text-field
                                                     label="Gruppename"
                                                     :model-value="
                                                         typeof groupFilterForm.set === 'object' && groupFilterForm.set !== null
                                                             ? groupFilterForm.set.title
-                                                            : groupFilterForm.set ?? ''
+                                                            : (groupFilterForm.set ?? '')
                                                     "
                                                     @update:model-value="
                                                         newValue => {
@@ -296,6 +299,13 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                                     "
                                                     :error-messages="groupFilterForm.errors.set"
                                                 ></v-text-field>
+                                            </v-col>
+                                            <v-col cols="4">
+                                                <v-checkbox
+                                                    label="Standard"
+                                                    v-model="groupFilterForm.is_default"
+                                                    :error-messages="groupFilterForm.errors.is_default"
+                                                ></v-checkbox>
                                             </v-col>
                                             <v-col cols="12">
                                                 <v-autocomplete
@@ -338,7 +348,7 @@ watch([() => singleFilterForm.value.set, () => groupFilterForm.value.set], ([new
                                             </v-col>
                                             <v-col cols="12">
                                                 <v-select
-                                                    label="Abwesenheitsgrund"
+                                                    label="Abwesenheitsgründe"
                                                     :items="absenceTypes.map(a => ({ title: a.name, value: a.id }))"
                                                     v-model="groupFilterForm.selected_absence_types"
                                                     :error-messages="groupFilterForm.errors.selected_absence_types"
