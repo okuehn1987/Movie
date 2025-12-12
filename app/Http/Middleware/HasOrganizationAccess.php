@@ -38,6 +38,7 @@ class HasOrganizationAccess
                 => $instanceObject->absenceType()->select('organization_id')->first()->organization_id,
 
                 $instanceObject instanceof \App\Models\CustomerOperatingSite,
+                $instanceObject instanceof \App\Models\CustomerContact,
                 $instanceObject instanceof \App\Models\Ticket
                 => $instanceObject->customer()->select('organization_id')->first()->organization_id,
 
