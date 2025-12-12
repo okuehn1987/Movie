@@ -109,14 +109,24 @@ class DatabaseSeeder extends Seeder
 
             User::find($cu->supervisor_id)?->update(['is_supervisor' => true]);
 
+            $orgUserPermissions =collect(User::$PERMISSIONS)
+            ->flatten(1);
+
             OrganizationUser::create([
                 "user_id" => $cu->id,
                 "organization_id" => $cu->operatingSite->organization_id,
-                ...($cu->id === $admin->id ?
-                    collect(array_keys(User::$PERMISSIONS))->flatMap(fn($key) =>
-                    collect(User::$PERMISSIONS[$key])
-                        ->flatMap(fn($g) => [$g['name'] => 'write'])->toArray())
-                    ->toArray()
+                ...(
+                    $cu->id === $admin->id ?
+                    $orgUserPermissions
+                        ->map(fn($p) => $p['name'])
+                        ->mapWithKeys(function($p) use ($orgUserPermissions) { 
+                            $permissionEntry = $orgUserPermissions->firstWhere('name', $p);
+                            if(isset($permissionEntry['except'])) {
+                                return [$p => $permissionEntry['except'] == 'write' ? 'read' : 'write'];
+                            }
+                            return [$p => 'write'];
+                        })
+                        ->toArray()
                     : [])
             ]);
 
@@ -226,16 +236,27 @@ class DatabaseSeeder extends Seeder
 
             User::find($cu->supervisor_id)?->update(['is_supervisor' => true]);
 
+             $orgUserPermissions =collect(User::$PERMISSIONS)
+            ->flatten(1);
+
             OrganizationUser::create([
                 "user_id" => $cu->id,
                 "organization_id" => $cu->operatingSite->organization_id,
-                ...($cu->id === $admin->id ?
-                    collect(array_keys(User::$PERMISSIONS))->flatMap(fn($key) =>
-                    collect(User::$PERMISSIONS[$key])
-                        ->flatMap(fn($g) => [$g['name'] => 'write'])->toArray())
-                    ->toArray()
+                ...(
+                    $cu->id === $admin->id ?
+                    $orgUserPermissions
+                        ->map(fn($p) => $p['name'])
+                        ->mapWithKeys(function($p) use ($orgUserPermissions) { 
+                            $permissionEntry = $orgUserPermissions->firstWhere('name', $p);
+                            if(isset($permissionEntry['except'])) {
+                                return [$p => $permissionEntry['except'] == 'write' ? 'read' : 'write'];
+                            }
+                            return [$p => 'write'];
+                        })
+                        ->toArray()
                     : [])
             ]);
+
 
             OperatingSiteUser::create([
                 "user_id" => $cu->id,

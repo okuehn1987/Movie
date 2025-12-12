@@ -11,6 +11,7 @@ defineProps<{
     organizations: (Organization &
         RelationPick<'organization', 'owner', 'id' | 'first_name' | 'last_name'> & {
             stats: Record<Year, Partial<Record<Month, MonthStats>>>;
+            users_count: number;
         })[];
     countries: CountryProp[];
 }>();
@@ -56,6 +57,7 @@ function submit() {
                             { title: 'Owner', key: 'owner_name' },
                             { title: 'Name', key: 'name' },
                             { title: 'Erstellt am', key: 'created_at' },
+                            { title: 'Mitarbeiter', key: 'users_count' },
                             { title: '', key: 'actions', width: '1px', align: 'end' },
                         ]"
                         :items="

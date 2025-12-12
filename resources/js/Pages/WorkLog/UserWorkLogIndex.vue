@@ -7,6 +7,7 @@ import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 import { computed, onMounted, ref } from 'vue';
 import CreateNewWorkLog from './CreateNewWorkLog.vue';
+import UserShowNavBar from '../User/UserShow/partial/UserShowNavBar.vue';
 
 type patchkeys = 'id' | 'work_log_id' | 'status' | 'start' | 'end' | 'is_home_office' | 'comment';
 
@@ -146,6 +147,7 @@ const tableHeight = useMaxScrollHeight(0);
         :title="user.first_name + ' ' + user.last_name"
         :backurl="route().params['fromUserWorkLogs'] ? route('workLog.index') : route('dashboard')"
     >
+        <UserShowNavBar :user tab="workLog.index" />
         <v-card>
             <v-data-table-virtual
                 fixed-header

@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Status;
+use App\Models\Absence;
+use App\Models\TimeAccount;
+use App\Models\TimeAccountTransaction;
 use App\Models\User;
 use App\Models\UserTrustWorkingHour;
 use App\Models\WorkLog;
 use App\Models\WorkLogPatch;
 use App\Notifications\DisputeStatusNotification;
 use App\Notifications\WorkLogNotification;
+use App\Services\AppModuleService;
 use Carbon\Carbon;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
@@ -156,6 +160,8 @@ class WorkLogController extends Controller
     {
         Gate::authorize('viewShow', [WorkLog::class, $user]);
 
+        $canTide = AppModuleService::hasAppModule('tide');
+
         return Inertia::render('WorkLog/UserWorkLogIndex', [
             'user' => $user->only('id', 'first_name', 'last_name'),
             'workLogs' => WorkLog::where('user_id', $user->id)
@@ -174,6 +180,20 @@ class WorkLogController extends Controller
                 ],
                 'workLog' => [
                     'delete' => Gate::allows('delete', [WorkLog::class, $user]),
+                    'viewShow' => Gate::allows('viewShow', [WorkLog::class, $user]),
+                ],
+                'absences' => [
+                    'viewIndex' => Gate::allows('viewIndex', [Absence::class, $user]),
+                ],
+                'user' => [
+                    'viewShow' => Gate::allows('viewShow', $user),
+                    'viewIndex' => Gate::allows('viewIndex', User::class),
+                ],
+                'timeAccount' => [
+                    'viewIndex' => $canTide && Gate::allows('viewIndex', [TimeAccount::class, $user]),
+                ],
+                'timeAccountTransaction' => [
+                    'viewIndex' => $canTide &&  Gate::allows('viewIndex', [TimeAccountTransaction::class, $user]),
                 ]
             ]
         ]);

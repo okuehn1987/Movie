@@ -15,6 +15,7 @@ watch(tab, () => router.get(route('user.' + tab.value, tab.value === 'profile' ?
         <v-tab v-if="can('user', 'viewShow')" value="generalInformation">Allgemeine Informationen</v-tab>
         <v-tab v-if="can('absences', 'viewIndex')" value="absences">Abwesenheiten</v-tab>
         <v-tab v-if="can('timeAccount', 'viewIndex')" value="timeAccounts">Arbeitszeitkonten</v-tab>
+        <v-tab v-if="can('workLog', 'viewShow')" value="workLog.index">Arbeitszeiten</v-tab>
         <v-tab v-if="can('timeAccountTransaction', 'viewIndex')" value="timeAccountTransactions">Transaktionen</v-tab>
         <v-tab v-if="can('timeAccountTransaction', 'viewIndex')" value="documents">Dokumente</v-tab>
         <v-tab v-if="can('user', 'viewIndex')" value="userOrganigram">Organigramm</v-tab>

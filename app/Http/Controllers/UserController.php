@@ -26,6 +26,7 @@ use App\Models\UserLeaveDay;
 use App\Models\UserTrustWorkingHour;
 use App\Models\UserWorkingHour;
 use App\Models\UserWorkingWeek;
+use App\Models\WorkLog;
 use App\Services\AppModuleService;
 use App\Services\HolidayService;
 use Carbon\Carbon;
@@ -1218,7 +1219,10 @@ class UserController extends Controller
             'timeAccountTransaction' => [
                 'viewIndex' => $canTide &&  Gate::allows('viewIndex', [TimeAccountTransaction::class, $user]),
                 'create' => $canTide && Gate::allows('create', [TimeAccountTransaction::class, $user]),
-            ]
+            ],
+            'workLog' => [
+                'viewShow' => Gate::allows('viewShow', [WorkLog::class, $user]),
+            ],
         ];
     }
 
