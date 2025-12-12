@@ -137,19 +137,37 @@ class OrganizationController extends Controller
         $org->save();
 
 
+        $orgUserPermissions =collect(User::$PERMISSIONS)->flatten(1);
+
         OrganizationUser::create([
             "user_id" => $user->id,
             "organization_id" => $org->id,
-            ...collect(User::$PERMISSIONS)->flatten(1)->map(fn($p) => $p['name'])->mapWithKeys(fn($p) => [$p => 'write'])->toArray()
+            ...$orgUserPermissions
+                ->map(fn($p) => $p['name'])
+                ->mapWithKeys(function($p) use ($orgUserPermissions) { 
+                    $permissionEntry = $orgUserPermissions->firstWhere('name', $p);
+                    if(isset($permissionEntry['except'])) {
+                        return [$p => $permissionEntry['except'] == 'write' ? 'read' : 'write'];
+                    }
+                    return [$p => 'write'];
+                })
+                ->toArray()
         ]);
+
+        $siteUserPermissions = collect([User::$PERMISSIONS['all'], User::$PERMISSIONS['operatingSite']])->flatten(1);
 
         OperatingSiteUser::create([
             "user_id" => $user->id,
             "operating_site_id" => $user->operating_site_id,
-            ...collect([User::$PERMISSIONS['all'], User::$PERMISSIONS['operatingSite']])
-                ->flatten(1)
+            ...$siteUserPermissions
                 ->map(fn($p) => $p['name'])
-                ->mapWithKeys(fn($p) => [$p => 'write'])
+                ->mapWithKeys(function($p) use ($siteUserPermissions) { 
+                    $permissionEntry = $siteUserPermissions->firstWhere('name', $p);
+                    if(isset($permissionEntry['except'])) {
+                        return [$p => $permissionEntry['except'] == 'write' ? 'read' : 'write'];
+                    }
+                    return [$p => 'write'];
+                })
                 ->toArray()
         ]);
         $org->timeAccountSettings()->createMany(TimeAccountSetting::getDefaultSettings());
