@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { RelationPick, Relations, User, WorkLog } from '@/types/types';
-import { formatDuration, getMaxScrollHeight } from '@/utils';
+import { formatDuration, useMaxScrollHeight } from '@/utils';
 import { Link } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
 
@@ -25,18 +25,19 @@ function getPT(user: PropUser & { userWorkingWeekCount: number }) {
         10
     );
 }
+const maxHeight = useMaxScrollHeight(0);
 </script>
 <template>
     <AdminLayout title="Arbeitszeiten">
         <v-data-table-virtual
-            :style="{ maxHeight: getMaxScrollHeight(0) }"
+            :style="{ maxHeight }"
             fixed-header
             hover
             :items="
                 users.map(u => ({
                     ...u,
                     timeAccountBalance: u.default_time_account.balance,
-                    lastAction: u.latest_work_log.end ? 'Gehen' : 'Kommen',
+                    lastAction: (u.latest_work_log.end ? 'Gehen' : 'Kommen') + (u.latest_work_log.is_home_office ? ' Homeoffice' : ''),
                     time: DateTime.fromSQL(u.latest_work_log.end ? u.latest_work_log.end : u.latest_work_log.start).toFormat('dd.MM.yyyy HH:mm'),
                     timeBalanceTrafficLight:
                         u.time_balance_red_threshold !== null && u.time_balance_yellow_threshold !== null
