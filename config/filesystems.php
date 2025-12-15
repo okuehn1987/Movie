@@ -74,6 +74,21 @@ return [
             'throw' => false,
         ],
 
+        'backups' => [
+            'driver' => 'local',
+            'root' => storage_path('backups'),
+            'throw' => false,
+        ],
+
+        'ftp' => [
+            'driver'   => 'ftp',
+            'host'     => env('BACKUP_FTP_HOST'),
+            'username' => env('BACKUP_FTP_USERNAME'),
+            'password' => env('BACKUP_FTP_PASSWORD'),
+            'ssl' => true,
+            'passive' => true
+        ],
+
         // 's3' => [
         //     'driver' => 's3',
         //     'key' => env('AWS_ACCESS_KEY_ID'),
