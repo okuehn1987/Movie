@@ -1,24 +1,16 @@
 <?php
 
-use App\Models\Absence;
 use App\Models\Organization;
-use App\Models\Shift;
 use App\Models\TimeAccountTransactionChange;
 use App\Models\User;
 use App\Models\UserLeaveDay;
 use App\Models\WorkingHoursCalculation;
-use App\Models\WorkLog;
-use App\Models\WorkLogPatch;
 use Carbon\Carbon;
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
 
-// Artisan::command('inspire', function () {
-//     $this->comment(Inspiring::quote());
-// })->purpose('Display an inspiring quote')->hourly();
+Schedule::command('backup:clean')->daily()->at('01:00');
+Schedule::command('backup:run')->daily()->at('01:30');
 
 Schedule::call(function () {
     $organizations = Organization::where('balance_truncation_day', Carbon::now()->day)->with('users')->get();
@@ -68,7 +60,10 @@ Schedule::call(function () {
 
 Schedule::call(function () {
     foreach (User::with('operatingSite')->get() as $user) {
-        $newRemainingLeaveDays = $user->leaveDaysForYear(Carbon::now()->subYear()) - $user->usedLeaveDaysForYear(Carbon::now()->subYear());
+        $year = Carbon::now()->subYear();
+        $usedDaysData = $user->usedLeaveDaysForYear($year);
+        $days = isset($usedDaysData[$year->year]) ? $usedDaysData[$year->year] : 0;
+        $newRemainingLeaveDays = $user->leaveDaysForYear($year) - $days;
 
         UserLeaveDay::create([
             'user_id' => $user->id,
