@@ -28,7 +28,9 @@
         "staudenmeir/belongs-to-through": "2.16.4",
         "tightenco/ziggy": "2.5.3",
         "web-id/laravel-playwright": "dev-main",
-        "symfony/console": "7.3"
+        "symfony/console": "7.3",
+        "league/flysystem-ftp": "3.29",
+        "league/flysystem-sftp-v3": "3.30.0"
     },
     "require-dev": {
         "fakerphp/faker": "1.24.1",
