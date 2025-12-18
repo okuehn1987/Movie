@@ -4,7 +4,7 @@ import { AbsenceType, DateString, FederalState, Group, OperatingSite, Status, Us
 import { throttle, useMaxScrollHeight } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 import AbsenceFilter from './partials/AbsenceFilter.vue';
 import AbsenceTableCell from './partials/AbsenceTableCell.vue';
@@ -193,6 +193,9 @@ const reload = throttle(() => {
     });
 }, 500);
 watch(currentDate, reload);
+onMounted(() => {
+    if (!display.mdAndUp) reload();
+});
 
 const absenceTableHeight = useMaxScrollHeight(80 + 1);
 
