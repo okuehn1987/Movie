@@ -192,4 +192,14 @@ class CustomerController extends Controller
 
         return back()->with('success', 'Der Kunde wurde erfolgreich aktualisiert.');
     }
+
+
+    public function destroy(Customer $customer)
+    {
+        Gate::authorize('delete', Customer::class);
+
+        $customer->delete();
+
+        return redirect(route('customer.index'))->with('success', $customer->name . ' wurde erfolgreich gelöscht.');
+    }
 }

@@ -34,6 +34,6 @@ class CustomerPolicy
 
     public function delete(User $user): bool
     {
-        return $user->hasPermissionOrDelegation(null, 'customer_permission', 'write');
+        return false;
     }
 }
