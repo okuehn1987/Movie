@@ -502,7 +502,8 @@ declare module 'ziggy-js' {
     "customer.destroy": [
         {
             "name": "customer",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "customer.customerNoteFolder.store": [
