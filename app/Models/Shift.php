@@ -359,11 +359,11 @@ class Shift extends Model
             foreach ($affectedDays as $day) {
                 if ($type == 'absence' && $day->gt(now()->endOfDay())) continue;
 
-                $AbbauGleitzeitkonto = AbsenceType::inOrganization()->where('type', 'Abbau Gleitzeitkonto')->first();
+                $AbbauGleitzeitkontoIds = AbsenceType::inOrganization()->where('type', 'Abbau Gleitzeitkonto')->withTrashed()->pluck('id');
 
                 $previousAbsencesForDay = $model->user->getAbsencesForDate($day)
                     ->filter(
-                        fn($a) => !$a->is($model) && $a->absence_type_id !== $AbbauGleitzeitkonto->id &&
+                        fn($a) => !$a->is($model) && $AbbauGleitzeitkontoIds->doesntContain($a->absence_type_id) &&
                             (!array_key_exists('type', $a->toArray()) || $a->type != 'delete') &&
                             (
                                 $variant != 'patch' ||
@@ -378,10 +378,10 @@ class Shift extends Model
 
                 $hasAbsenceForDay = $previousAbsencesForDay->isNotEmpty();
                 $hasAbbauGleitzeitkontoForDay = $previousAbsencesForDay->contains(
-                    fn($a) => $a->absence_type_id === $AbbauGleitzeitkonto->id
-                ) || $type == 'absence' && $model->absence_type_id === $AbbauGleitzeitkonto->id;
+                    fn($a) => $AbbauGleitzeitkontoIds->contains($a->absence_type_id)
+                ) || $type == 'absence' && $AbbauGleitzeitkontoIds->contains($model->absence_type_id);
                 //erste abwesenheit des Tages, die nicht Abbau Gleitzeitkonto ist
-                $hasNewAbsence = $type == 'absence' && ($variant == 'log' || $model->type != 'delete') && $previousAbsencesForDay->isEmpty() && $model->absence_type_id !== $AbbauGleitzeitkonto->id;
+                $hasNewAbsence = $type == 'absence' && ($variant == 'log' || $model->type != 'delete') && $previousAbsencesForDay->isEmpty() && $AbbauGleitzeitkontoIds->doesntContain($model->absence_type_id);
 
                 $oldEntriesForAffectedDay = match ($type) {
                     'work'
