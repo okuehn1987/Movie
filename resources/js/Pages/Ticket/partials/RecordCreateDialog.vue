@@ -63,7 +63,7 @@ function submit() {
 <template>
     <v-dialog max-width="600px" v-model="showDialog">
         <template #activator="{ props: activatorProps }">
-            <v-btn v-if="mode === 'create'" title="Eintrag hinzufügen" v-bind="activatorProps" variant="text"><v-icon>mdi-plus</v-icon></v-btn>
+             <v-btn v-if="mode === 'create'" title="Eintrag hinzufügen" v-bind="activatorProps" variant="text" icon="mdi-plus"></v-btn>
             <v-btn v-if="record && can('ticketRecord', 'update', record)" title="Eintrag bearbeiten" v-bind="activatorProps" variant="text">
                 <v-icon>mdi-pencil</v-icon>
             </v-btn>
