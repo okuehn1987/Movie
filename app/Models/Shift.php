@@ -359,7 +359,7 @@ class Shift extends Model
             foreach ($affectedDays as $day) {
                 if ($type == 'absence' && $day->gt(now()->endOfDay())) continue;
 
-                $AbbauGleitzeitkonto = AbsenceType::inOrganization()->where('type', 'Abbau Gleitzeitkonto')->first();
+                $AbbauGleitzeitkonto = AbsenceType::inOrganization()->where('type', 'Abbau Gleitzeitkonto')->withTrashed()->first();
 
                 $previousAbsencesForDay = $model->user->getAbsencesForDate($day)
                     ->filter(
