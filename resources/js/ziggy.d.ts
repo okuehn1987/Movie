@@ -34,6 +34,7 @@ declare module 'ziggy-js' {
     "playwright.routes": [],
     "playwright.current-user": [],
     "home": [],
+    "one": [],
     "organization.index": [],
     "organization.store": [],
     "organization.destroy": [

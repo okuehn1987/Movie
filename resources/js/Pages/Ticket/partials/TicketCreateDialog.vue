@@ -62,7 +62,7 @@ watch(
                     <v-tab class="w-50" value="ticket">Auftrag</v-tab>
                     <v-tab class="w-50" value="expressTicket">Einzelauftrag</v-tab>
                 </v-tabs>
-                <v-card-text style="max-height: 750px; overflow-y: auto">
+                <v-card-text style="max-height: 734px; overflow-y: auto">
                     <v-form @submit.prevent="submit(isActive)">
                         <v-tabs-window v-model="ticketForm.tab">
                             <v-tabs-window-item value="ticket">

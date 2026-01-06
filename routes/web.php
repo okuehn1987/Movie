@@ -10,8 +10,17 @@ use App\Models\ChatFile;
 use App\Models\HomeOfficeDayGenerator;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
+use Spatie\Honeypot\ProtectAgainstSpam;
 
 Route::redirect('/', '/dashboard')->name('home');
+Route::get('/one', function () {
+    return Inertia::render('OnePage/Onepage', ['honeypot' => app(\Spatie\Honeypot\Honeypot::class),]);
+})->name('one');
+
+Route::post('/contact', [ContactController::class, 'store'])
+    ->name('contact.store')
+    ->middleware([ProtectAgainstSpam::class]);
 
 Route::middleware(['auth', HasOrganizationAccess::class, CheckIfGateWasUsedToAuthorizeRequest::class])->group(function () {
     //super admin routes

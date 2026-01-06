@@ -229,6 +229,7 @@ return [
         'weekdays' => 'Wochentage',
         'today' => 'Heute',
         'operating_site_id' => 'Betriebsstätte',
+        'message' => 'Nachricht',
     ],
 
     'values' => [
