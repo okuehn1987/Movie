@@ -73,7 +73,7 @@ function limitColor(current: number, limit: number): string {
                                 "
                                 rounded
                                 :max="chatAssistant.monthly_cost_limit"
-                                v-model="chatAssistant.current_monthly_cost"
+                                :model-value="chatAssistant.current_monthly_cost"
                                 :color="limitColor(chatAssistant.current_monthly_cost, chatAssistant.monthly_cost_limit)"
                                 height="15"
                             ></v-progress-linear>
@@ -106,7 +106,7 @@ function limitColor(current: number, limit: number): string {
                             "
                             rounded
                             :max="chatAssistant.monthly_cost_limit"
-                            v-model="chatAssistant.current_monthly_cost"
+                            :model-value="chatAssistant.current_monthly_cost"
                             :color="limitColor(chatAssistant.current_monthly_cost, chatAssistant.monthly_cost_limit)"
                             height="15"
                         ></v-progress-linear>
