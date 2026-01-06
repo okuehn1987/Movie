@@ -59,7 +59,7 @@ Schedule::call(function () {
 })->name('dailyWorkLogCalculation')->dailyAt("00:00");
 
 Schedule::call(function () {
-    foreach (User::with('operatingSite')->get() as $user) {
+    foreach (User::with('operatingSite.currentAddress')->get() as $user) {
         $year = Carbon::now()->subYear();
         $usedDaysData = $user->usedLeaveDaysForYear($year);
         $days = isset($usedDaysData[$year->year]) ? $usedDaysData[$year->year]['accepted'] : 0;
