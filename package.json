@@ -15,9 +15,12 @@
         "lint": "npx eslint resources/js",
         "testCoverage": "XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-clover test-reports/cov.xml",
         "websocket": "php artisan reverb:start",
-        "schedule": "php artisan schedule:work"
+        "schedule": "php artisan schedule:work",
+        "prepare": "husky"
     },
     "devDependencies": {
+        "@commitlint/cli": "19.8.1",
+        "@commitlint/config-conventional": "19.8.1",
         "@inertiajs/vue3": "2.1.5",
         "@playwright/test": "1.55.0",
         "@types/luxon": "3.7.1",

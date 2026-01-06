@@ -1,4 +1,2 @@
-echo "Running pre-commit hook formatting & linting, see command output for details"
-npx prettier --write .
-npm run lint
-php artisan ziggy:generate --types
+#!/usr/bin/env sh
+. "$(dirname "$0")/h"
