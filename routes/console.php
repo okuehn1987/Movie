@@ -62,7 +62,7 @@ Schedule::call(function () {
     foreach (User::with('operatingSite')->get() as $user) {
         $year = Carbon::now()->subYear();
         $usedDaysData = $user->usedLeaveDaysForYear($year);
-        $days = isset($usedDaysData[$year->year]) ? $usedDaysData[$year->year] : 0;
+        $days = isset($usedDaysData[$year->year]) ? $usedDaysData[$year->year]['accepted'] : 0;
         $newRemainingLeaveDays = $user->leaveDaysForYear($year) - $days;
 
         UserLeaveDay::create([
