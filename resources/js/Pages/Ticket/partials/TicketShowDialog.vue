@@ -35,6 +35,7 @@ watch(
             title: props.ticket.title,
             description: props.ticket.description,
             selected: props.ticket.records.filter(tr => tr.accounted_at).map(r => r.id),
+            appointment_at: props.ticket.appointment_at ? DateTime.fromSQL(props.ticket.appointment_at).toFormat(DATETIME_LOCAL_FORMAT) : null,
         }).reset();
     },
     { deep: true },
