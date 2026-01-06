@@ -221,6 +221,7 @@ class TicketController extends Controller
             'priority' => 'required|in:lowest,low,medium,high,highest',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'appointment_at' => 'nullable|date',
             'assignees' => 'present|array',
             'assignees.*' => ['required_if:tab,ticket', Rule::exists('users', 'id')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))],
             'selected' => 'present|array',
