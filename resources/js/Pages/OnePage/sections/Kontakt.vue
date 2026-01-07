@@ -19,23 +19,35 @@
                             <input type="text" v-model="honeypot.nameFieldName" :name="honeypot.nameFieldName" :id="honeypot.nameFieldName" />
                             <input type="text" v-model="honeypot.validFromFieldName" :name="honeypot.validFromFieldName" />
                         </div>
-                        <v-col cols="12" md="6">
-                            <v-text-field
-                                v-model="form.name"
-                                label="Name *"
+                        <v-col cols="6" sm="4">
+                            <v-select
+                                v-model="form.title"
+                                label="Anrede *"
+                                :items="['Herr', 'Frau', 'keine Angabe']"
                                 required
-                                :errorMessages="form.errors['name']"
+                                :errorMessages="form.errors['title']"
                                 variant="solo-filled"
-                                placeholder="Ihr Name"
                             />
                         </v-col>
-                        <v-col cols="12" md="6">
+                        <v-col cols="6" sm="8"></v-col>
+                        <v-col cols="12" sm="6">
                             <v-text-field
-                                v-model="form.company"
-                                label="Unternehmen"
-                                :errorMessages="form.errors['company']"
+                                v-model="form.first_name"
+                                label="Vorname *"
+                                required
+                                :errorMessages="form.errors['first_name']"
                                 variant="solo-filled"
-                                placeholder="Ihr Unternehmen"
+                                placeholder="Ihr Vorname"
+                            />
+                        </v-col>
+                        <v-col cols="12" sm="6">
+                            <v-text-field
+                                v-model="form.last_name"
+                                label="Nachname *"
+                                required
+                                :errorMessages="form.errors['last_name']"
+                                variant="solo-filled"
+                                placeholder="Ihr Nachname"
                             />
                         </v-col>
 
@@ -50,6 +62,26 @@
                                 placeholder="Ihre E-Mail-Adresse"
                             />
                         </v-col>
+                        <v-col cols="12" md="6">
+                            <v-text-field
+                                v-model="form.phone"
+                                label="Telefon"
+                                :errorMessages="form.errors['phone']"
+                                autocomplete="tel"
+                                variant="solo-filled"
+                                placeholder="Ihre Telefonnummer"
+                            />
+                        </v-col>
+                        <v-col cols="12" md="6">
+                            <v-text-field
+                                v-model="form.company"
+                                label="Unternehmen"
+                                :errorMessages="form.errors['company']"
+                                variant="solo-filled"
+                                placeholder="Ihr Unternehmen"
+                            />
+                        </v-col>
+
                         <v-col cols="12" class="pb-2">
                             <v-card-subtitle class="ps-2">Interesse an</v-card-subtitle>
                             <div class="modules-row">
@@ -57,6 +89,16 @@
                                 <v-checkbox hide-details color="rgb(0, 189, 157)" v-model="form.modules" value="flow" label="Flow"></v-checkbox>
                                 <v-checkbox hide-details color="rgb(0, 189, 157)" v-model="form.modules" value="isa" label="Isa"></v-checkbox>
                             </div>
+                        </v-col>
+                        <v-col cols="12" class="pt-2 pb-6">
+                            <v-textarea
+                                v-model="form.preferredDates"
+                                placeholder="Nennen Sie uns gerne Ihre Wunschtermine."
+                                label="Wunschtermine"
+                                variant="solo-filled"
+                                rows="3"
+                                :errorMessages="form.errors['preferredDates']"
+                            />
                         </v-col>
                         <v-col cols="12" class="pt-2 pb-6">
                             <v-textarea
@@ -96,11 +138,15 @@ const props = defineProps<{
 const form = useForm({
     [honeypot.nameFieldName]: '',
     [honeypot.validFromFieldName]: honeypot.encryptedValidFrom,
-    name: '',
-    company: '',
+    title: '',
+    first_name: '',
+    last_name: '',
     email: '',
+    phone: '',
+    company: '',
     modules: [] as string[],
     message: '',
+    preferredDates: '',
 });
 
 watch(

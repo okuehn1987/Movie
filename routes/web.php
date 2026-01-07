@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Spatie\Honeypot\ProtectAgainstSpam;
 
-foreach (['hr-tools-and-assistants.de', 'tide-hrta.de', 'flow-hrta.de', 'one.localhost'] as $domain) {
+foreach (['hr-tools-and-assistants.de', 'tide-hrta.de', 'flow-hrta.de', 'one.localhost', 'staging.herta.mbd-team.de'] as $domain) {
     Route::domain($domain)->group(function () {
         Route::get('/', function () {
             return Inertia::render('OnePage/Onepage', ['honeypot' => app(\Spatie\Honeypot\Honeypot::class),]);

@@ -133,7 +133,6 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 20px;
 }
 
 @media (max-width: 960px) {

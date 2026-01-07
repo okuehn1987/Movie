@@ -11,24 +11,31 @@ class ContactController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string',
+            'title' => 'required|string',
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
+            'phone' => 'nullable|string',
             'company' => 'nullable|string',
             'email' => 'required|email',
             'modules' => 'present|array',
             'modules.*' => 'nullable|string|in:tide,flow,isa',
             'message' => 'required|string|max:255',
+            'preferredDates' => 'nullable|string',
         ]);
 
         $mail = (new MailMessage)
             ->greeting('Anfrage zu Herta')
             ->line('-------------------------------')
-            ->line("Von: " . ($validated['name']))
+            ->line("Von: " . ($validated['title'] . ' ' . $validated['first_name'] . ' ' . $validated['last_name']))
             ->line("Email: " . $validated['email'])
-            ->line('Unternehmen: ' . ($validated['company'] ?? '—'))
+            ->lineIf($validated['phone'], 'Telefon: ' . ($validated['phone']))
+            ->lineIf($validated['company'], 'Unternehmen: ' . ($validated['company']))
             ->line('Interesse an: ' . (!empty($validated['modules'])
                 ? implode(', ', $validated['modules'])
                 : ''))
             ->line('Nachricht: ' . ($validated['message']))
+            ->lineIf($validated['preferredDates'], 'Bevorzugte Termine: ' . ($validated['preferredDates']))
+            ->line('-------------------------------')
             ->salutation(' ');
 
         Mail::send([], [], function ($message) use ($mail) {
