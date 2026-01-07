@@ -138,7 +138,7 @@ const props = defineProps<{
 const form = useForm({
     [honeypot.nameFieldName]: '',
     [honeypot.validFromFieldName]: honeypot.encryptedValidFrom,
-    title: '',
+    title: null,
     first_name: '',
     last_name: '',
     email: '',
