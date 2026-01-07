@@ -212,6 +212,7 @@ return [
         'month' => 'Monat',
         'description' => 'Beschreibung',
         'title' => 'Betreff',
+        'salutation' => 'Anrede',
         'resignation_date' => 'Kündigungsdatum',
         'set_name' => 'Filtername',
         'extra_charge' => 'Faktor Zuschlag',

@@ -19,17 +19,17 @@
                             <input type="text" v-model="honeypot.nameFieldName" :name="honeypot.nameFieldName" :id="honeypot.nameFieldName" />
                             <input type="text" v-model="honeypot.validFromFieldName" :name="honeypot.validFromFieldName" />
                         </div>
-                        <v-col cols="6" sm="4">
+                        <v-col cols="12" sm="6">
                             <v-select
-                                v-model="form.title"
+                                v-model="form.salutation"
                                 label="Anrede *"
                                 :items="['Herr', 'Frau', 'keine Angabe']"
                                 required
-                                :errorMessages="form.errors['title']"
+                                :errorMessages="form.errors['salutation']"
                                 variant="solo-filled"
                             />
                         </v-col>
-                        <v-col cols="6" sm="8"></v-col>
+                        <v-col cols="12" sm="6" class="d-none d-sm-block"></v-col>
                         <v-col cols="12" sm="6">
                             <v-text-field
                                 v-model="form.first_name"
@@ -138,7 +138,7 @@ const props = defineProps<{
 const form = useForm({
     [honeypot.nameFieldName]: '',
     [honeypot.validFromFieldName]: honeypot.encryptedValidFrom,
-    title: null,
+    salutation: null,
     first_name: '',
     last_name: '',
     email: '',

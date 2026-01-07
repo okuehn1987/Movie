@@ -11,7 +11,7 @@ class ContactController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => 'required|string',
+            'salutation' => 'required|string',
             'first_name' => 'required|string',
             'last_name' => 'required|string',
             'phone' => 'nullable|string',
@@ -26,7 +26,7 @@ class ContactController extends Controller
         $mail = (new MailMessage)
             ->greeting('Anfrage zu Herta')
             ->line('-------------------------------')
-            ->line("Von: " . ($validated['title'] . ' ' . $validated['first_name'] . ' ' . $validated['last_name']))
+            ->line("Von: " . ($validated['salutation'] . ' ' . $validated['first_name'] . ' ' . $validated['last_name']))
             ->line("Email: " . $validated['email'])
             ->lineIf($validated['phone'], 'Telefon: ' . ($validated['phone']))
             ->lineIf($validated['company'], 'Unternehmen: ' . ($validated['company']))
