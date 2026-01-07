@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Customer, PRIORITIES } from '@/types/types';
 import { formatAddress } from '@/utils';
-import { usePage } from '@inertiajs/vue3';
 import { Ref, watch } from 'vue';
 import { CustomerProp, OperatingSiteProp, UserProp } from './ticketTypes';
 
@@ -16,7 +15,7 @@ const ticketForm = useForm({
     description: '',
     priority: 'medium',
     customer_id: null as Customer['id'] | null,
-    assignees: [usePage().props.auth.user.id],
+    assignees: [],
     start: null as string | null,
     duration: '00:00',
     operatingSite: props.operatingSites.find(o => o.value.type === 'App\\Models\\OperatingSite')?.value,
