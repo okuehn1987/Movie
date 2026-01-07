@@ -34,6 +34,7 @@ declare module 'ziggy-js' {
     "playwright.routes": [],
     "playwright.current-user": [],
     "home": [],
+    "one": [],
     "organization.index": [],
     "organization.store": [],
     "organization.destroy": [
@@ -502,8 +503,7 @@ declare module 'ziggy-js' {
     "customer.destroy": [
         {
             "name": "customer",
-            "required": true,
-            "binding": "id"
+            "required": true
         }
     ],
     "customer.customerNoteFolder.store": [
