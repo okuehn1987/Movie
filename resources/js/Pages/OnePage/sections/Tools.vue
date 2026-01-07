@@ -1,6 +1,6 @@
 <template>
     <section id="tools" aria-labelledby="toolsTitle" class="mb-8 mb-md-16 pt-10 pb-md-16">
-        <h2 id="toolsTitle" class="headline text-center pt-16 mt-16 font-weight-semibold text-h4 text-md-h3" style="font-size: 2.5rem">
+        <h2 id="toolsTitle" class="headline text-center mt-8 font-weight-semibold text-h4 text-md-h3" style="font-size: 2.5rem">
             Das komplette HR-Toolkit
         </h2>
 

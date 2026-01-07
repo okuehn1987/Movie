@@ -1,6 +1,6 @@
 <template>
     <section id="headerComponent" aria-labelledby="headerComponentTitle" class="mb-8 mb-md-16 pt-10 pb-md-16">
-        <h1 id="headerComponentTitle" class="headline text-center text-h2 pt-16 mt-16 font-weight-black">
+        <h1 id="headerComponentTitle" class="headline text-center text-h2 pt-8 pt-md-16 mt-md-16 font-weight-black">
             HR Tools & Assistants
             <div style="color: rgb(0, 189, 157); margin-top: 5px">für moderne Teams</div>
         </h1>

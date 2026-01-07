@@ -220,7 +220,7 @@ function submitForm() {
 
 @media (max-width: 560px) {
     .headline {
-        font-size: 20px !important;
+        font-size: 28px !important;
         margin-inline: 10% !important;
     }
     .sub-headline {

@@ -1,7 +1,7 @@
 <template>
-    <section id="flow" aria-labelledby="flowTitle" class="mb-8 mb-md-16 pt-10 pb-md-16">
+    <section id="flow" aria-labelledby="flowTitle" class="mb-8 mb-md-16 pt-md-10 pb-md-16">
         <div style="width: 100%">
-            <v-img width="200px" eager class="my-6 mx-auto" src="/img/Flow-Transparent.png" alt="Flow-Logo"></v-img>
+            <v-img width="200px" eager class="mb-md-6 mx-auto" src="/img/Flow-Transparent.png" alt="Flow-Logo"></v-img>
         </div>
 
         <v-row class="mb-2 pt-2" style="font-size: 20px">

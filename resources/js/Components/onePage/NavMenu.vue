@@ -5,7 +5,7 @@ const showMobileMenu = ref(false);
 </script>
 
 <template>
-    <nav class="hamburger-menu" style="position: relative">
+    <nav class="hamburger-menu" style="position: relative; height: 26px">
         <button
             id="menu__toggle"
             style="position: relative; width: 26px; height: 26px; border: 0; background-color: transparent"
@@ -15,15 +15,16 @@ const showMobileMenu = ref(false);
         >
             <div class="menu__btn"></div>
         </button>
-
-        <menu class="menu__box" @click="showMobileMenu = false" :aria-expanded="showMobileMenu">
-            <li><a class="menuLink" href="#tools">Tools</a></li>
-            <li><a class="menuLink" href="#tide">Tide</a></li>
-            <li><a class="menuLink" href="#flow">Flow</a></li>
-            <li><a class="menuLink" href="#isa">Isa</a></li>
-            <li><a class="menuLink" href="#preise">Preise</a></li>
-            <li><a class="menuLink" href="#kontakt">Kontakt</a></li>
-        </menu>
+        <div class="menu__wrapper" @click="showMobileMenu = false" style="height: 100vh; width: 100vw; position: fixed; top: 0">
+            <menu class="menu__box" @click.stop="() => {}" :aria-expanded="showMobileMenu">
+                <li @click.stop="showMobileMenu = false"><a class="menuLink" href="#tools">Tools</a></li>
+                <li @click.stop="showMobileMenu = false"><a class="menuLink" href="#tide">Tide</a></li>
+                <li @click.stop="showMobileMenu = false"><a class="menuLink" href="#flow">Flow</a></li>
+                <li @click.stop="showMobileMenu = false"><a class="menuLink" href="#isa">Isa</a></li>
+                <li @click.stop="showMobileMenu = false"><a class="menuLink" href="#preise">Preise</a></li>
+                <li @click.stop="showMobileMenu = false"><a class="menuLink" href="#kontakt">Kontakt</a></li>
+            </menu>
+        </div>
     </nav>
 </template>
 
@@ -55,15 +56,23 @@ const showMobileMenu = ref(false);
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) rotate(45deg);
+    background-color: #214d63;
 }
 #menu__toggle[pressed='true'] .menu__btn::after {
     top: 0;
     left: 50%;
     transform: translate(-50%, -50%) rotate(-45deg);
+    background-color: #214d63;
 }
-#menu__toggle[pressed='true'] ~ .menu__box {
+#menu__toggle[pressed='true'] ~ .menu__wrapper > .menu__box,
+#menu__toggle[pressed='true'] ~ .menu__wrapper {
     right: 0 !important;
 }
+
+#menu__toggle[pressed='false'] ~ .menu__wrapper {
+    right: -100vw !important;
+}
+
 .menu__btn {
     cursor: pointer;
     z-index: 1;

@@ -21,37 +21,37 @@ function onSelectModules(modules: string[]) {
     <OnePageLayout title="Hrta - Weil besser einfach besser ist">
         <div class="customFont">
             <div style="background-image: linear-gradient(rgb(239, 246, 255), rgb(255, 255, 255))">
-                <v-container fluid class="pt-0 px-sm-4 px-0">
+                <v-container fluid class="pt-0 px-md-8 px-0">
                     <HeaderComponent></HeaderComponent>
                 </v-container>
             </div>
             <div style="background-image: linear-gradient(rgb(239, 246, 255), rgb(255, 255, 255))">
-                <v-container fluid class="pt-0 px-sm-4 px-0">
+                <v-container fluid class="pt-0 px-md-8 px-0">
                     <Tools></Tools>
                 </v-container>
             </div>
             <div style="background-image: linear-gradient(rgb(239, 246, 255), rgb(255, 255, 255))">
-                <v-container fluid class="pt-0 px-sm-4 px-0">
+                <v-container fluid class="pt-0 px-md-8 px-0">
                     <Tide></Tide>
                 </v-container>
             </div>
             <div style="background-image: linear-gradient(rgb(239, 246, 255), rgb(255, 255, 255))">
-                <v-container fluid class="pt-0 px-sm-4 px-0">
+                <v-container fluid class="pt-0 px-md-8 px-0">
                     <Flow></Flow>
                 </v-container>
             </div>
             <div style="background-image: linear-gradient(rgb(239, 246, 255), rgb(255, 255, 255))">
-                <v-container fluid class="pt-0 px-sm-4 px-0">
+                <v-container fluid class="pt-0 px-md-8 px-0">
                     <Isa></Isa>
                 </v-container>
             </div>
             <div style="background-image: linear-gradient(rgb(239, 246, 255), rgb(255, 255, 255))">
-                <v-container fluid class="pt-0 px-sm-4 px-0">
+                <v-container fluid class="pt-0 px-md-8 px-0">
                     <Preise @selected-modules="onSelectModules"></Preise>
                 </v-container>
             </div>
             <div style="background-image: linear-gradient(rgb(239, 246, 255), rgb(255, 255, 255))">
-                <v-container fluid class="pt-0 px-sm-4 px-0">
+                <v-container fluid class="pt-0 px-md-8 px-0">
                     <Kontakt :preselected-modules="selectedModules"></Kontakt>
                 </v-container>
             </div>

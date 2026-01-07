@@ -1,7 +1,7 @@
 <template>
-    <section id="isa" aria-labelledby="isaTitle" class="mb-8 mb-md-16 pt-10 pb-md-16">
+    <section id="isa" aria-labelledby="isaTitle" class="mb-8 mb-md-16 pt-md-10 pb-md-16">
         <div style="width: 100%">
-            <v-img width="200px" eager class="justify-content-center align-items-center mx-auto" src="/img/Isa-Transparent.png"></v-img>
+            <v-img width="200px" eager class="mb-md-6 mx-auto" src="/img/Isa-Transparent.png"></v-img>
         </div>
 
         <v-row class="mb-2 pt-2" style="font-size: 20px">
@@ -84,17 +84,17 @@
                 </v-card>
             </v-col>
         </v-row>
-        <v-row style="height: 20%" class="cards-band mb-8 d-flex align-center">
-            <v-col cols="12" md="6" class="py-6">
-                <p class="sub-headline text-center text-sm-start text-grey-darken-2 mb-1">
+        <v-row style="height: 20%" class="cards-band mb-8 px-3 px-sm-6 px-md-0 d-flex align-center" dense>
+            <v-col cols="12" md="6" class="py-6 d-flex align-md-start align-center flex-column">
+                <p class="sub-headline text-grey-darken-2 mb-6 text-center text-md-start">
                     Sie haben Interesse an einem KI-basierten Chatbot für Ihre Kunden?
+                    <br />
+                    Dann schauen Sie sich gerne Britta AI an.
                 </p>
-                <p class="sub-headline text-center text-sm-start text-grey-darken-2 mb-6">Dann schauen Sie sich gerne Britta AI an.</p>
                 <v-hover v-slot="{ isHovering, props }">
                     <v-btn
                         href="https://britta-ai.de"
                         style="height: 40px"
-                        :style="display.smAndUp.value ? '' : 'margin-left: 25%'"
                         target="_blank"
                         rel="noopener"
                         v-bind="props"
@@ -106,7 +106,7 @@
                     </v-btn>
                 </v-hover>
             </v-col>
-            <v-col cols="12" md="6">
+            <v-col cols="12" md="6" class="pa-2">
                 <v-card style="height: 200px" class="pa-3 rounded-lg elevation border d-flex justify-center align-center">
                     <v-card-text class="text-center">Placeholder</v-card-text>
                 </v-card>
@@ -115,15 +115,9 @@
     </section>
 </template>
 
-<script setup lang="ts">
-import { useDisplay } from 'vuetify';
-const display = useDisplay();
-</script>
-
 <style scoped>
 .cards-band {
     max-width: 1100px;
-    margin-inline: auto;
 }
 
 .elevation {
@@ -145,7 +139,6 @@ const display = useDisplay();
 @media (max-width: 960px) {
     .sub-headline {
         font-size: 18px !important;
-        margin-inline: 10% !important;
     }
 }
 

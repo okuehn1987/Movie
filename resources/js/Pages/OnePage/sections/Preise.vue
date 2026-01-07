@@ -8,7 +8,7 @@
             </v-col>
         </v-row>
 
-        <v-row class="mb-8 cards-band" dense>
+        <v-row class="mb-8 px-3 px-sm-6 px-md-0" dense>
             <v-col cols="12" sm="6" lg="4" class="pa-2">
                 <v-card class="pa-3 h-100 rounded-xl elevation border" aria-label="Tide Zeiterfassung">
                     <v-card-title>
@@ -91,7 +91,7 @@
                     </v-card-text>
                 </v-card>
             </v-col>
-            <v-col cols="12" sm="6" lg="4" class="pa-2">
+            <v-col cols="12" md="6" lg="4" class="pa-2 mx-auto">
                 <v-card color="#214d63" class="pa-3 h-100 rounded-xl elevation with-badge" aria-label="Tide und Flow Paket">
                     <span class="pill">Empfohlen</span>
                     <v-card-title class="d-flex flex-column align-start justify-center">
@@ -139,7 +139,7 @@
             </v-col>
         </v-row>
 
-        <v-row class="mb-8 mx-auto d-flex justify-center" dense>
+        <v-row class="mb-8 px-3 px-sm-6 px-md-0 d-flex justify-center" dense>
             <v-col cols="12" md="5" class="pa-2">
                 <v-card class="pa-3 h-100 rounded-xl elevation border" aria-label="Isa Suchassistent">
                     <v-card-title>
@@ -317,14 +317,11 @@ function select(modules: string[]) {
     .headline {
         font-size: 1.5rem !important;
     }
-    .cards-band {
-        max-width: 90%;
-    }
 }
 
 @media (max-width: 560px) {
     .headline {
-        font-size: 20px !important;
+        font-size: 28px !important;
         margin-inline: 10% !important;
     }
     .sub-headline {
@@ -336,7 +333,6 @@ function select(modules: string[]) {
 /* ✅ Speziell für 360–320px */
 @media (max-width: 360px) {
     .cards-band {
-        max-width: 100%;
         padding-inline: 10px;
     }
 

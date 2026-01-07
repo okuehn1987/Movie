@@ -16,17 +16,16 @@ defineProps<{
         <v-app-bar flat class="appbar--bordered" color="#214d63" height="80">
             <!-- Mobile Burger + Drawer -->
             <div class="d-flex mx-4 w-100 justify-space-between align-center d-md-none position-relative">
-                <NavMenu></NavMenu>
-
                 <Link href="/one" aria-label="Zur Startseite">
-                    <v-img width="44px" src="/img/logo.png" alt="Hrta-Logo" />
+                    <v-img class="rounded-lg" width="60px" src="/img/logo-ohne-Subtitle.png" alt="Hrta-Logo" />
                 </Link>
+                <NavMenu></NavMenu>
             </div>
 
             <div class="appbar-inner d-none d-md-flex">
                 <div class="left-group">
                     <Link href="/one" aria-label="Zur Startseite">
-                        <v-img width="66px" src="/img/logo.png" alt="Hrta-Logo" />
+                        <v-img width="70px" src="/img/logo-ohne-Subtitle.png" alt="Hrta-Logo" />
                     </Link>
                     <MenuLinks />
                 </div>
@@ -37,19 +36,21 @@ defineProps<{
             <div style="background-image: linear-gradient(rgb(239, 246, 255), rgb(255, 255, 255))"></div>
             <slot />
         </v-main>
-        <v-footer id="footer" style="background-color: #214d63" class="pt-12">
-            <v-container>
-                <v-img class="mx-auto" eager :width="140" src="/img/logo.png" alt="Hrta-Logo" />
-                <v-divider class="mt-12 mb-4" style="border: 1px solid grey" />
+        <div style="background-color: #214d63">
+            <div class="mx-auto">
+                <v-img class="mx-auto" eager :width="200" src="/img/logo.png" alt="Hrta-Logo" />
+            </div>
+            <v-divider style="border: 1px solid grey" />
+            <v-footer style="background-color: #214d63" class="justify-center py-4">
                 <nav aria-label="Rechtliches">
-                    <div class="d-flex justify-center ga-4 ga-sm-12 mx-auto">
+                    <div class="d-flex justify-center ga-4 ga-sm-12">
                         <a class="menuLink text-grey-lighten-2" href="https://mbd-team.de/agb" target="_blank" rel="noopener">AGB</a>
                         <a class="menuLink text-grey-lighten-2" href="https://mbd-team.de/datenschutz" target="_blank" rel="noopener">Datenschutz</a>
                         <a class="menuLink text-grey-lighten-2" href="https://mbd-team.de/impressum" target="_blank" rel="noopener">Impressum</a>
                     </div>
                 </nav>
-            </v-container>
-        </v-footer>
+            </v-footer>
+        </div>
         <v-snackbar
             v-model="showSnackbar"
             id="snackbar"
