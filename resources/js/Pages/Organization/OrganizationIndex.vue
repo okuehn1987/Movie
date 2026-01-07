@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Country, CountryProp, Organization, RelationPick } from '@/types/types';
+import { Country, CountryProp, Organization, RelationPick, Month, MonthStats, Year } from '@/types/types';
 import { fillNullishValues, getStates } from '@/utils';
 import { Link } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
-import { Month, MonthStats, Year } from '@/types/types';
 import PaymentTable from '../Isa/PaymentTable.vue';
 
 defineProps<{

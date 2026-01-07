@@ -4,7 +4,7 @@ import { AbsenceType, DateString, FederalState, Group, OperatingSite, Status, Us
 import { throttle, useMaxScrollHeight } from '@/utils';
 import { router } from '@inertiajs/vue3';
 import { DateTime } from 'luxon';
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 import AbsenceFilter from './partials/AbsenceFilter.vue';
 import AbsenceTableCell from './partials/AbsenceTableCell.vue';
@@ -174,19 +174,28 @@ function getDaysInWeek() {
 const loadedMonths = ref([currentDate.value.toFormat('yyyy-MM')]);
 const loading = ref(false);
 const reload = throttle(() => {
-    if (loadedMonths.value.includes(currentDate.value.toFormat('yyyy-MM'))) return;
+    const dates = display.mdAndUp.value
+        ? [currentDate.value.startOf('month').toFormat('yyyy-MM')]
+        : [currentDate.value.startOf('week').toFormat('yyyy-MM'), currentDate.value.endOf('week').toFormat('yyyy-MM')];
+
+    const missingDate = dates.find(d => !loadedMonths.value.includes(d));
+    if (!missingDate) return;
+
     router.reload({
         only: ['absences', 'absencePatches', 'holidays', 'homeOfficeDays', 'schoolHolidays'],
-        data: { date: currentDate.value.toFormat('yyyy-MM'), openAbsence: null, openAbsencePatch: null },
+        data: { date: missingDate, openAbsence: null, openAbsencePatch: null },
         onStart: () => {
-            loadedMonths.value.push(currentDate.value.toFormat('yyyy-MM'));
+            loadedMonths.value.push(missingDate);
             loading.value = true;
         },
-        onError: () => (loadedMonths.value = loadedMonths.value.filter(e => e != currentDate.value.toFormat('yyyy-MM'))),
+        onError: () => (loadedMonths.value = loadedMonths.value.filter(e => e != missingDate)),
         onFinish: () => (loading.value = false),
     });
 }, 500);
 watch(currentDate, reload);
+onMounted(() => {
+    if (!display.mdAndUp) reload();
+});
 
 const absenceTableHeight = useMaxScrollHeight(80 + 1);
 

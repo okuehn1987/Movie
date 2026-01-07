@@ -5,7 +5,7 @@ import { Country, Paginator, FederalState, TimeAccountSetting, Tree, Address, No
 
 export function useNow() {
     const now = ref(DateTime.now());
-    let interval: number;
+    let interval: NodeJS.Timeout;
     onMounted(() => (interval = setInterval(() => (now.value = DateTime.now()), 1000)));
     onUnmounted(() => clearInterval(interval));
     return now;
@@ -97,8 +97,8 @@ export function fillNullishValues<T extends Record<string, unknown>, Default ext
         [K in keyof T]: null extends T[K]
             ? Exclude<T[K], null | undefined> | Default
             : undefined extends T[K]
-              ? Exclude<T[K], null | undefined> | Default
-              : T[K];
+            ? Exclude<T[K], null | undefined> | Default
+            : T[K];
     };
 }
 
@@ -134,7 +134,7 @@ export const mapTree = <K extends string & keyof T, T extends { [x in K]?: T[] }
     fn: (e: Omit<T, K>, level: number) => MappedType,
     level: number = 0,
 ): Tree<MappedType, K>[] => {
-    return tree.map(e => ({ ...fn(e, level), [k]: e[k] ? mapTree(e[k], k, fn, level + 1) : [] }) as Tree<MappedType, K>);
+    return tree.map(e => ({ ...fn(e, level), [k]: e[k] ? mapTree(e[k], k, fn, level + 1) : [] } as Tree<MappedType, K>));
 };
 
 export function getStates(country: Country, countries: { title: string; value: Country; regions: Record<FederalState, string> }[]) {
@@ -174,13 +174,10 @@ export function throttle<T extends (...args: unknown[]) => void>(func: T, delayL
         } else {
             // Otherwise, set a timeout to call the function after the limit period
             if (lastFunc) clearTimeout(lastFunc);
-            lastFunc = setTimeout(
-                () => {
-                    func(...args);
-                    lastRan = now;
-                },
-                delayLimit - (now - lastRan),
-            );
+            lastFunc = setTimeout(() => {
+                func(...args);
+                lastRan = now;
+            }, delayLimit - (now - lastRan));
         }
     };
 }
@@ -269,7 +266,7 @@ export function getNotificationUrl(notification: Notification) {
 }
 
 export function useClickHandler() {
-    const singleClickTimer = ref<number | null>(null);
+    const singleClickTimer = ref<NodeJS.Timeout | null>(null);
     const handlerState = ref<unknown>();
 
     function clickHandler(singleClickFunction: () => void, doubleClickFunction: (state?: unknown) => void, stateToAdd: unknown, delay: number = 200) {

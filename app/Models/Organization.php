@@ -18,7 +18,8 @@ class Organization extends Model
         // "vacation_limitation_period" => "Verjährungsfrist bei Urlaub",
         // "auto_accept_travel_logs" => "Dienstreisen standardmäßig genehmigen",
         "christmas_vacation_day" => "24.12 als Urlaubstag",
-        "new_year_vacation_day" => "31.12 als Urlaubstag"
+        "new_year_vacation_day" => "31.12 als Urlaubstag",
+        "allow_mobile_access" => "Mobile Nutzung erlauben"
     ];
 
     public function modules()
