@@ -1,21 +1,23 @@
 <script setup lang="ts">
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Absence, AbsenceType, RelationPick, Status, User } from '@/types/types';
+import { Absence, AbsencePatch, AbsenceType, RelationPick, Status, User } from '@/types/types';
 import { DateTime } from 'luxon';
 import UserShowNavBar from './partial/UserShowNavBar.vue';
 import { useMaxScrollHeight } from '@/utils';
 import { ref } from 'vue';
 
 defineProps<{
-    user: User & {
-        leaveDaysForYear: number;
-        absences: (Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'user_id' | 'absence_type_id'> &
-            RelationPick<'absence', 'absence_type', 'id' | 'name'> & {
-                usedDays: Record<string, number>;
-            })[];
-    };
+    user: User;
+    absences: ((
+        | Pick<Absence, 'id' | 'start' | 'end' | 'status' | 'user_id' | 'absence_type_id'>
+        | Pick<AbsencePatch, 'id' | 'start' | 'end' | 'status' | 'user_id' | 'absence_type_id' | 'absence_id'>
+    ) &
+        RelationPick<'absence', 'absence_type', 'id' | 'name'> & {
+            usedDays: Record<string, number>;
+        })[];
     usedLeaveDaysForYear: Record<string, Record<Exclude<Status, 'declined'>, number>>;
     absenceTypes: Pick<AbsenceType, 'id' | 'name'>[];
+    leaveDaysForYear: Record<string, number>;
 }>();
 
 const open = ref([]);
@@ -27,7 +29,7 @@ const openYear = ref([]);
         <v-card :max-height="useMaxScrollHeight(48).value" class="overflow-auto">
             <v-card-text>
                 <v-row>
-                    <v-col v-if="user.absences.length === 0"><v-alert color="info">Keine Abwesenheiten vorhanden.</v-alert></v-col>
+                    <v-col v-if="absences.length === 0"><v-alert color="info">Keine Abwesenheiten vorhanden.</v-alert></v-col>
                     <v-col>
                         <v-expansion-panels elevation="1" multiple v-model="openYear">
                             <template
@@ -44,7 +46,7 @@ const openYear = ref([]);
                                                 <v-expansion-panel
                                                     :value="year + '/' + absenceType.id"
                                                     v-if="
-                                                        user.absences
+                                                        absences
                                                             .filter(
                                                                 a =>
                                                                     a.absence_type_id == absenceType.id &&
@@ -61,7 +63,7 @@ const openYear = ref([]);
                                                             </v-col>
                                                             <v-col cols="12" md="1" style="place-self: center">
                                                                 {{
-                                                                    user.absences
+                                                                    absences
                                                                         .filter(
                                                                             a =>
                                                                                 a.absence_type_id == absenceType.id &&
@@ -78,7 +80,7 @@ const openYear = ref([]);
                                                         <v-data-table-virtual
                                                             id="userAbsenceTable"
                                                             :items="
-                                                                user.absences
+                                                                absences
                                                                     .filter(
                                                                         a =>
                                                                             a.absence_type_id == absenceType.id &&
@@ -154,7 +156,7 @@ const openYear = ref([]);
                                                                         {{ year }}:
                                                                     </td>
                                                                     <td>
-                                                                        {{ data.accepted + data.created + ' von ' + user.leaveDaysForYear }}
+                                                                        {{ data.accepted + data.created + ' von ' + leaveDaysForYear[year] }}
                                                                     </td>
                                                                 </tr>
                                                             </template>
