@@ -1,6 +1,6 @@
 <template>
-    <section id="kontakt" aria-labelledby="kontaktTitle" class="mb-8 mb-md-16 pt-10 pb-md-16">
-        <h2 id="kontaktTitle" class="headline text-h4 text-md-h3 text-center my-8 font-weight-semibold">Kontaktanfrage</h2>
+    <section id="kontakt" aria-labelledby="kontaktTitle" class="pt-10 pb-10 pb-md-16">
+        <h2 id="kontaktTitle" class="headline text-h4 text-md-h3 text-center mb-8 font-weight-semibold">Kontaktanfrage</h2>
 
         <v-row class="mb-4">
             <v-col cols="12" class="d-flex justify-center pb-0">

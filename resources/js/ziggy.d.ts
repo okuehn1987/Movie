@@ -33,8 +33,8 @@ declare module 'ziggy-js' {
     "playwright.csrf-token": [],
     "playwright.routes": [],
     "playwright.current-user": [],
+    "contact.store": [],
     "home": [],
-    "one": [],
     "organization.index": [],
     "organization.store": [],
     "organization.destroy": [
@@ -503,7 +503,8 @@ declare module 'ziggy-js' {
     "customer.destroy": [
         {
             "name": "customer",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
     "customer.customerNoteFolder.store": [

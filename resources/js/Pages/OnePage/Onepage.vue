@@ -18,7 +18,7 @@ function onSelectModules(modules: string[]) {
 </script>
 
 <template>
-    <OnePageLayout title="Hrta - Weil besser einfach besser ist">
+    <OnePageLayout title="Hrta - HR Tools and Assistants">
         <div class="customFont">
             <div style="background-image: linear-gradient(rgb(239, 246, 255), rgb(255, 255, 255))">
                 <v-container fluid class="pt-0 px-md-8 px-0">

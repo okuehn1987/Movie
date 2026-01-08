@@ -2,7 +2,7 @@
 import MenuLinks from '@/Components/onePage/MenuLinks.vue';
 import NavMenu from '@/Components/onePage/NavMenu.vue';
 import { showSnackbar, snackbarContent } from '@/snackbarService';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 
 defineProps<{
     title?: string;
@@ -16,17 +16,17 @@ defineProps<{
         <v-app-bar flat class="appbar--bordered" color="#214d63" height="80">
             <!-- Mobile Burger + Drawer -->
             <div class="d-flex mx-4 w-100 justify-space-between align-center d-md-none position-relative">
-                <Link href="/one" aria-label="Zur Startseite">
+                <a href="#" aria-label="Zur Startseite">
                     <v-img class="rounded-lg" width="60px" src="/img/logo-ohne-Subtitle.png" alt="Hrta-Logo" />
-                </Link>
+                </a>
                 <NavMenu></NavMenu>
             </div>
 
             <div class="appbar-inner d-none d-md-flex">
                 <div class="left-group">
-                    <Link href="/one" aria-label="Zur Startseite">
+                    <a href="#" aria-label="Zur Startseite">
                         <v-img width="70px" src="/img/logo-ohne-Subtitle.png" alt="Hrta-Logo" />
-                    </Link>
+                    </a>
                     <MenuLinks />
                 </div>
             </div>
