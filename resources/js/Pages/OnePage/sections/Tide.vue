@@ -1,23 +1,23 @@
 <template>
-    <section id="tide" aria-labelledby="tideTitle" class="mb-8 mb-md-16 pt-md-10 pb-md-16">
+    <section id="tide" aria-labelledby="tideTitle" class="pt-10 pb-10 pb-md-16">
         <div style="width: 100%">
-            <v-img width="200px" eager class="mb-md-6 mx-auto" src="/img/Tide-Transparent.png" alt="Tide-Logo"></v-img>
+            <v-img width="200px" eager class="mb-md-6 pt-4 mx-auto" src="/img/Tide-Transparent.png" alt="Tide-Logo"></v-img>
         </div>
 
         <v-row class="mb-2 pt-2" style="font-size: 20px">
-            <v-col cols="12" class="d-flex justify-center mb-md-8">
+            <v-col cols="12" class="d-flex justify-center mb-md-2">
                 <span class="sub-headline text-center text-grey-darken-2 px-4 px-md-0">
                     Arbeitszeiten erfassen, Abwesenheiten steuern und Teams transparent managen – einfach, flexibel und datenschutzkonform.
                 </span>
             </v-col>
-            <v-col cols="12" class="d-flex justify-center pb-0">
+            <v-col cols="12" class="d-flex justify-center mb-md-2">
                 <span class="sub-headline text-center text-grey-darken-2">
                     <b>Tide</b>
                     vereint Zeiterfassung, Abwesenheitsmanagement und Teamübersicht in einer zentralen, intuitiven Lösung. Ob Büro, Homeoffice oder
                     hybrid:
                 </span>
             </v-col>
-            <v-col cols="12" class="d-flex justify-center mb-md-8 pt-0">
+            <v-col cols="12" class="d-flex justify-center mb-md-8">
                 <span class="sub-headline text-center text-grey-darken-2">
                     <b>Tide</b>
                     passt sich euren Arbeitsmodellen an – nicht umgekehrt.
@@ -25,7 +25,7 @@
             </v-col>
         </v-row>
 
-        <v-row class="mb-8 px-3 px-sm-6 px-md-0" dense>
+        <v-row class="px-3 px-sm-6 px-md-0" dense>
             <v-col cols="12" sm="6" class="pa-2">
                 <v-card class="pa-3 h-100 rounded-lg elevation border" tabindex="0" aria-label="Informationen zu Arbeitszeiten & Zeitkonten">
                     <v-card-title class="pt-6">

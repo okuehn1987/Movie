@@ -18,7 +18,7 @@ foreach (['hr-tools-and-assistants.de', 'tide-hrta.de', 'flow-hrta.de', 'one.loc
     Route::domain($domain)->group(function () {
         Route::get('/', function () {
             return Inertia::render('OnePage/Onepage', ['honeypot' => app(\Spatie\Honeypot\Honeypot::class),]);
-        })->name('one');
+        });
     });
 }
 

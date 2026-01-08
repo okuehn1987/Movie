@@ -1,23 +1,23 @@
 <template>
-    <section id="flow" aria-labelledby="flowTitle" class="mb-8 mb-md-16 pt-md-10 pb-md-16">
+    <section id="flow" aria-labelledby="flowTitle" class="pt-10 pb-10 pb-md-16">
         <div style="width: 100%">
-            <v-img width="200px" eager class="mb-md-6 mx-auto" src="/img/Flow-Transparent.png" alt="Flow-Logo"></v-img>
+            <v-img width="200px" eager class="mb-md-6 pt-4 mx-auto" src="/img/Flow-Transparent.png" alt="Flow-Logo"></v-img>
         </div>
 
         <v-row class="mb-2 pt-2" style="font-size: 20px">
-            <v-col cols="12" class="d-flex justify-center mb-md-8">
+            <v-col cols="12" class="d-flex justify-center mb-md-2">
                 <span class="sub-headline text-center text-grey-darken-2 px-4 px-md-0">
                     Planen, bearbeiten und dokumentieren Sie Aufträge strukturiert, transparent und ohne Informationsverlust – vom ersten Ticket bis
                     zum Leistungsnachweis.
                 </span>
             </v-col>
-            <v-col cols="12" class="d-flex justify-center mb-md-8 pt-4">
+            <v-col cols="12" class="d-flex justify-center mb-md-2">
                 <span class="sub-headline text-center text-grey-darken-2">
                     <b>Flow</b>
                     bündelt Auftragsplanung, Ticketbearbeitung und Dokumentation in einer zentralen Lösung.
                 </span>
             </v-col>
-            <v-col cols="12" class="d-flex justify-center mb-md-8 pt-0">
+            <v-col cols="12" class="d-flex justify-center mb-md-8">
                 <span class="sub-headline text-center text-grey-darken-2">
                     Von der einfachen Ticketerstellung über die Zusammenarbeit im Team bis hin zur revisionssicheren Berichterstellung sorgt
                     <b>Flow</b>
@@ -26,7 +26,7 @@
             </v-col>
         </v-row>
 
-        <v-row class="mb-8 cards-band px-3 px-sm-6 px-md-0" dense>
+        <v-row class="cards-band px-3 px-sm-6 px-md-0" dense>
             <v-col cols="12" sm="6" class="pa-2">
                 <v-card class="pa-3 h-100 rounded-lg elevation border" tabindex="0" aria-label="Informationen zu strukturierter Ticketerstellung">
                     <v-card-title class="pt-6">

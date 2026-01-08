@@ -1,6 +1,6 @@
 <template>
-    <section id="preise" class="mb-8 mb-md-16 pt-10 pb-md-16" aria-labelledby="preiseTitle">
-        <h2 id="preiseTitle" class="headline text-h4 text-md-h3 text-center my-8 font-weight-semibold">Transparente Preise</h2>
+    <section id="preise" class="pt-10 pb-10 pb-md-16" aria-labelledby="preiseTitle">
+        <h2 id="preiseTitle" class="headline text-h4 text-md-h3 text-center mb-8 font-weight-semibold">Transparente Preise</h2>
 
         <v-row class="mb-4" style="font-size: 20px">
             <v-col cols="12" class="d-flex justify-center">
@@ -8,91 +8,101 @@
             </v-col>
         </v-row>
 
-        <v-row class="mb-8 px-3 px-sm-6 px-md-0" dense>
+        <v-row class="px-3 px-sm-6 px-md-0" dense>
             <v-col cols="12" sm="6" lg="4" class="pa-2">
-                <v-card class="pa-3 h-100 rounded-xl elevation border" aria-label="Tide Zeiterfassung">
+                <v-card class="pa-3 h-100 rounded-xl elevation border d-flex flex-column" aria-label="Tide Zeiterfassung">
                     <v-card-title>
                         <v-img width="120px" eager class="logo" src="/img/Tide.png"></v-img>
                         <h3 class="card-h3">Tide</h3>
                     </v-card-title>
                     <v-card-subtitle>Zeiterfassung</v-card-subtitle>
-                    <v-card-text>
-                        <div class="d-flex justify-start align-end mb-6 mt-0 price-row">
-                            <h2 class="mb-0 mt-2 text-start font-weight-bold text-h4">4,75€</h2>
-                            <v-card-subtitle class="text-body-1 ps-2">/ Mitarbeitende / Monat</v-card-subtitle>
+                    <v-card-text class="d-flex flex-column justify-space-between flex-grow-1">
+                        <div>
+                            <div class="d-flex justify-start align-end mb-6 mt-0 price-row">
+                                <h2 class="mb-0 mt-2 text-start font-weight-bold text-h4">4,75€</h2>
+                                <v-card-subtitle class="text-body-1 ps-2">/ Mitarbeitende / Monat</v-card-subtitle>
+                            </div>
+                            <div class="my-2 d-flex flex-row align-top justify-start">
+                                <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
+                                <p class="font-weight-regular text-body-1">Unbegrenzte Zeiteinträge</p>
+                            </div>
+                            <div class="my-2 d-flex flex-row align-top justify-start">
+                                <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
+                                <p class="font-weight-regular text-body-1">Automatische Berichte</p>
+                            </div>
+                            <div class="my-2 d-flex flex-row align-top justify-start">
+                                <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
+                                <p class="font-weight-regular text-body-1">Mobile App inklusive</p>
+                            </div>
                         </div>
-                        <div class="my-2 d-flex flex-row align-top justify-start">
-                            <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
-                            <p class="font-weight-regular text-body-1">Unbegrenzte Zeiteinträge</p>
+                        <div>
+                            <div class="d-flex justify-center mt-6 text-start font-weight-bold text-body-1">
+                                <v-hover v-slot="{ isHovering, props }">
+                                    <v-btn
+                                        v-bind="props"
+                                        :variant="isHovering ? 'flat' : 'outlined'"
+                                        color="#214d63"
+                                        :size="display.mdAndUp.value ? 'large' : undefined"
+                                        class="rounded-lg w-100 btn-transition"
+                                        @click.prevent="select(['tide'])"
+                                    >
+                                        Auswählen
+                                    </v-btn>
+                                </v-hover>
+                            </div>
+                            <div class="mt-2 text-center font-weight-regular text-body-2" style="color: grey">*Preise exkl. 19% Mehrwertsteuer</div>
                         </div>
-                        <div class="my-2 d-flex flex-row align-top justify-start">
-                            <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
-                            <p class="font-weight-regular text-body-1">Automatische Berichte</p>
-                        </div>
-                        <div class="my-2 d-flex flex-row align-top justify-start">
-                            <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
-                            <p class="font-weight-regular text-body-1">Mobile App inklusive</p>
-                        </div>
-                        <div class="d-flex justify-center mt-6 text-start font-weight-bold text-body-1">
-                            <v-hover v-slot="{ isHovering, props }">
-                                <v-btn
-                                    v-bind="props"
-                                    :variant="isHovering ? 'flat' : 'outlined'"
-                                    color="#214d63"
-                                    class="rounded-lg w-100 btn-transition"
-                                    @click.prevent="select(['tide'])"
-                                >
-                                    Auswählen
-                                </v-btn>
-                            </v-hover>
-                        </div>
-                        <div class="mt-2 text-center font-weight-regular text-body-2" style="color: grey">*Preise exkl. 19% Mehrwertsteuer</div>
                     </v-card-text>
                 </v-card>
             </v-col>
             <v-col cols="12" sm="6" lg="4" class="pa-2">
-                <v-card class="pa-3 h-100 rounded-xl elevation border" aria-label="Flow Auftragsmanagement">
+                <v-card class="pa-3 h-100 rounded-xl elevation border d-flex flex-column" aria-label="Flow Auftragsmanagement">
                     <v-card-title>
                         <v-img width="120px" eager class="text-start" src="/img/Flow.png"></v-img>
                         <h3>Flow</h3>
                     </v-card-title>
                     <v-card-subtitle>Auftragsmanagement</v-card-subtitle>
-                    <v-card-text>
-                        <div class="d-flex justify-start align-end mb-6 mt-0 price-row">
-                            <h2 class="mb-0 mt-2 text-start font-weight-bold text-h4">4,75€</h2>
-                            <v-card-subtitle class="text-body-1 ps-2">/ Mitarbeitende / Monat</v-card-subtitle>
+                    <v-card-text class="d-flex flex-column justify-space-between flex-grow-1">
+                        <div>
+                            <div class="d-flex justify-start align-end mb-6 mt-0 price-row">
+                                <h2 class="mb-0 mt-2 text-start font-weight-bold text-h4">4,75€</h2>
+                                <v-card-subtitle class="text-body-1 ps-2">/ Mitarbeitende / Monat</v-card-subtitle>
+                            </div>
+                            <div class="my-2 d-flex flex-row align-top justify-start">
+                                <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
+                                <p class="font-weight-regular text-body-1">Unbegrenzte Tickets</p>
+                            </div>
+                            <div class="my-2 d-flex flex-row align-top justify-start">
+                                <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
+                                <p class="font-weight-regular text-body-1">Custom Workflows</p>
+                            </div>
+                            <div class="my-2 d-flex flex-row align-top justify-start">
+                                <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
+                                <p class="font-weight-regular text-body-1">Mobile App inklusive</p>
+                            </div>
                         </div>
-                        <div class="my-2 d-flex flex-row align-top justify-start">
-                            <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
-                            <p class="font-weight-regular text-body-1">Unbegrenzte Tickets</p>
+                        <div>
+                            <div class="d-flex justify-center mt-6 text-start font-weight-bold text-body-1">
+                                <v-hover v-slot="{ isHovering, props }">
+                                    <v-btn
+                                        v-bind="props"
+                                        :variant="isHovering ? 'flat' : 'outlined'"
+                                        color="#214d63"
+                                        :size="display.mdAndUp.value ? 'large' : undefined"
+                                        class="rounded-lg w-100 btn-transition"
+                                        @click.prevent="select(['flow'])"
+                                    >
+                                        Auswählen
+                                    </v-btn>
+                                </v-hover>
+                            </div>
+                            <div class="mt-2 text-center font-weight-regular text-body-2" style="color: grey">*Preise exkl. 19% Mehrwertsteuer</div>
                         </div>
-                        <div class="my-2 d-flex flex-row align-top justify-start">
-                            <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
-                            <p class="font-weight-regular text-body-1">Custom Workflows</p>
-                        </div>
-                        <div class="my-2 d-flex flex-row align-top justify-start">
-                            <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
-                            <p class="font-weight-regular text-body-1">Mobile App inklusive</p>
-                        </div>
-                        <div class="d-flex justify-center mt-6 text-start font-weight-bold text-body-1">
-                            <v-hover v-slot="{ isHovering, props }">
-                                <v-btn
-                                    v-bind="props"
-                                    :variant="isHovering ? 'flat' : 'outlined'"
-                                    color="#214d63"
-                                    class="rounded-lg w-100 btn-transition"
-                                    @click.prevent="select(['flow'])"
-                                >
-                                    Auswählen
-                                </v-btn>
-                            </v-hover>
-                        </div>
-                        <div class="mt-2 text-center font-weight-regular text-body-2" style="color: grey">*Preise exkl. 19% Mehrwertsteuer</div>
                     </v-card-text>
                 </v-card>
             </v-col>
             <v-col cols="12" md="6" lg="4" class="pa-2 mx-auto">
-                <v-card color="#214d63" class="pa-3 h-100 rounded-xl elevation with-badge" aria-label="Tide und Flow Paket">
+                <v-card color="#214d63" class="pa-3 h-100 rounded-xl elevation with-badge d-flex flex-column" aria-label="Tide und Flow Paket">
                     <span class="pill">Empfohlen</span>
                     <v-card-title class="d-flex flex-column align-start justify-center">
                         <div class="combo-logos d-flex justify-center align-center">
@@ -103,43 +113,50 @@
                         <h3>Tide + Flow</h3>
                     </v-card-title>
                     <v-card-subtitle>Komplettpaket</v-card-subtitle>
-                    <v-card-text>
-                        <div class="d-flex justify-start align-end mb-6 mt-0 price-row">
-                            <h2 class="mb-0 mt-2 text-start font-weight-bold text-h4">8,00€</h2>
-                            <v-card-subtitle class="text-body-1 ps-2">/ Mitarbeitende / Monat</v-card-subtitle>
+                    <v-card-text class="d-flex flex-column justify-space-between flex-grow-1">
+                        <div>
+                            <div class="d-flex justify-start align-end mb-6 mt-0 price-row">
+                                <h2 class="mb-0 mt-2 text-start font-weight-bold text-h4">8,00€</h2>
+                                <v-card-subtitle class="text-body-1 ps-2">/ Mitarbeitende / Monat</v-card-subtitle>
+                            </div>
+                            <div class="my-2 d-flex flex-row align-top justify-start">
+                                <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
+                                <p class="font-weight-regular text-body-1">Alle Tide-Funktionen</p>
+                            </div>
+                            <div class="my-2 d-flex flex-row align-top justify-start">
+                                <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
+                                <p class="font-weight-regular text-body-1">Alle Flow-Funktionen</p>
+                            </div>
+                            <div class="my-2 d-flex flex-row align-top justify-start">
+                                <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
+                                <p class="font-weight-regular text-body-1">1,50 € pro User sparen</p>
+                            </div>
                         </div>
-                        <div class="my-2 d-flex flex-row align-top justify-start">
-                            <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
-                            <p class="font-weight-regular text-body-1">Alle Tide-Funktionen</p>
+                        <div>
+                            <div class="d-flex justify-center mt-6 text-start font-weight-bold text-body-1">
+                                <v-hover v-slot="{ isHovering, props }">
+                                    <v-btn
+                                        v-bind="props"
+                                        :variant="isHovering ? 'flat' : 'outlined'"
+                                        color="rgb(0, 189, 157)"
+                                        :size="display.mdAndUp.value ? 'large' : undefined"
+                                        class="rounded-lg w-100 btn-transition"
+                                        @click.prevent="select(['tide', 'flow'])"
+                                    >
+                                        Auswählen
+                                    </v-btn>
+                                </v-hover>
+                            </div>
+                            <div class="mt-2 text-center font-weight-regular text-body-2" style="color: lightgrey">
+                                *Preise exkl. 19% Mehrwertsteuer
+                            </div>
                         </div>
-                        <div class="my-2 d-flex flex-row align-top justify-start">
-                            <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
-                            <p class="font-weight-regular text-body-1">Alle Flow-Funktionen</p>
-                        </div>
-                        <div class="my-2 d-flex flex-row align-top justify-start">
-                            <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
-                            <p class="font-weight-regular text-body-1">1,50 € pro User sparen</p>
-                        </div>
-                        <div class="d-flex justify-center mt-6 text-start font-weight-bold text-body-1">
-                            <v-hover v-slot="{ isHovering, props }">
-                                <v-btn
-                                    v-bind="props"
-                                    :variant="isHovering ? 'flat' : 'outlined'"
-                                    color="rgb(0, 189, 157)"
-                                    class="rounded-lg w-100 btn-transition"
-                                    @click.prevent="select(['tide', 'flow'])"
-                                >
-                                    Auswählen
-                                </v-btn>
-                            </v-hover>
-                        </div>
-                        <div class="mt-2 text-center font-weight-regular text-body-2" style="color: lightgrey">*Preise exkl. 19% Mehrwertsteuer</div>
                     </v-card-text>
                 </v-card>
             </v-col>
         </v-row>
 
-        <v-row class="mb-8 px-3 px-sm-6 px-md-0 d-flex justify-center" dense>
+        <v-row class="px-3 px-sm-6 px-md-0 d-flex justify-center" dense>
             <v-col cols="12" md="5" class="pa-2">
                 <v-card class="pa-3 h-100 rounded-xl elevation border" aria-label="Isa Suchassistent">
                     <v-card-title>
@@ -159,6 +176,7 @@
                                     v-bind="props"
                                     :variant="isHovering ? 'flat' : 'outlined'"
                                     color="#214d63"
+                                    :size="display.mdAndUp.value ? 'large' : undefined"
                                     class="rounded-lg w-100 btn-transition"
                                     @click.prevent="select(['isa'])"
                                 >
@@ -221,6 +239,9 @@
 </template>
 
 <script setup lang="ts">
+import { useDisplay } from 'vuetify';
+const display = useDisplay();
+
 const emit = defineEmits<{
     (e: 'selected-modules', modules: string[]): void;
 }>();
