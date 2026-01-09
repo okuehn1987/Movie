@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { useDisplay } from 'vuetify';
 import ReportBugDialog from './ReportBugDialog.vue';
 import { ref } from 'vue';
 
 const display = useDisplay();
+const page = usePage();
 
 const countUnread= ref(page.props.unreadNotifications.length);  
 
