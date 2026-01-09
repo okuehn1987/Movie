@@ -210,7 +210,7 @@ class TicketController extends Controller
             ->unique('id')
             ->each(function ($user) use ($authUser, $ticket) {
                                 $user->notify(new TicketCreationNotification($authUser, $ticket));
-                                event(new NotificationCreated($user->id));
+                                event(new NotificationCreated($user));
                     });
 
         return back()->with('success', 'Ticket erfolgreich erstellt.');

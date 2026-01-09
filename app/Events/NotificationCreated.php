@@ -20,16 +20,18 @@ class NotificationCreated implements ShouldBroadcast
      * Create a new event instance.
      */
 
-    private int $userId;
+    public int $userId;
+    public int $unreadCount;
 
     public function __construct( User $user)
     {
         $this->userId = $user->id;
+        $this->unreadCount = $user->unreadNotifications()->count();
     }
 
-    public function broadcastOn(): Channel
+    public function broadcastOn(): array   
     {
-        return new Channel("notification.{$this->userId}");
+        return [new Channel("notification.{$this->userId}")];
     }
     
     public function broadcastAs()

@@ -19,13 +19,13 @@ const page = usePage();
 const isMobile = useDisplay().smAndDown;
 const showDrawer = ref(!isMobile.value);
 
-const { start, stop } = usePoll(
-    1000 * 60 * 2,
-    {
-        only: ['unreadNotifications'],
-    },
-    { keepAlive: true },
-);
+// const { start, stop } = usePoll(
+//     1000 * 60 * 2,
+//     {
+//         only: ['unreadNotifications'],
+//     },
+//     { keepAlive: true },
+// );
 onMounted(() => {
     start();
 });

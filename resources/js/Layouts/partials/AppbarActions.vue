@@ -2,15 +2,22 @@
 import { router } from '@inertiajs/vue3';
 import { useDisplay } from 'vuetify';
 import ReportBugDialog from './ReportBugDialog.vue';
+import { ref } from 'vue';
 
 const display = useDisplay();
+
+const countUnread= ref(page.props.unreadNotifications.length);  
+
+ window.Echo.channel('notification.' + page.props.auth.user.id).listen('.NotificationCreated', (n: {unreadCount : number}) => {
+       countUnread.value = n.unreadCount;
+    });
 </script>
 
 <template>
     <v-btn color="primary" stacked @click.stop="router.get(route('notification.index'))">
         <v-badge
-            v-if="$page.props.unreadNotifications.length > 0"
-            :content="$page.props.unreadNotifications.length <= 99 ? $page.props.unreadNotifications.length : '99+'"
+            v-if="countUnread > 0"
+            :content="countUnread <= 99 ? countUnread : '99+'"
             color="error"
         >
             <v-icon icon="mdi-bell"></v-icon>
