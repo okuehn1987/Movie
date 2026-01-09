@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Status;
+use App\Events\NotificationCreated;
 use App\Models\Customer;
 use App\Models\CustomerOperatingSite;
 use App\Models\OperatingSite;
@@ -207,8 +208,10 @@ class TicketController extends Controller
         $users = $ticket->assignees->filter(fn($u) => !$authUser->is($u));
         $users->merge($users->flatMap(fn($u) => $u->loadMissing('isSubstitutedBy')->isSubstitutedBy))
             ->unique('id')
-            ->each
-            ->notify(new TicketCreationNotification($authUser, $ticket));
+            ->each(function ($user) use ($authUser, $ticket) {
+                                $user->notify(new TicketCreationNotification($authUser, $ticket));
+                                event(new NotificationCreated($user->id));
+                    });
 
         return back()->with('success', 'Ticket erfolgreich erstellt.');
     }

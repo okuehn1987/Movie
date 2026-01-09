@@ -21,12 +21,10 @@ class NotificationCreated implements ShouldBroadcast
      */
 
     private int $userId;
-    private int $unreadMessages;
 
-    public function __construct( User $user, int $unreadMessages)
+    public function __construct( User $user)
     {
         $this->userId = $user->id;
-        $this->unreadMessages = $unreadMessages;
     }
 
     public function broadcastOn(): Channel
