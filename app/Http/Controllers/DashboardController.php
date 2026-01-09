@@ -42,7 +42,11 @@ class DashboardController extends Controller
             ->values();
         $tideProps = [];
         if (AppModuleService::hasAppModule('tide')) {
-            $authUser->load(['shifts' => fn($q) => $q->with('user:id,date_of_birth')->whereDate('start', '>=', now()->subDays(7))->with('workLogs', 'workLogPatches')]);
+            $authUser->load([
+                'shifts' => fn($q) => $q->with('user:id,date_of_birth')
+                    ->whereDate('start', '>=', now()->subDays(7))
+                    ->with('workLogs', 'workLogPatches')
+            ]);
 
             $lastEntries = $authUser->workLogs()
                 ->whereIn('shift_id', $authUser->shifts()->whereDate('start', '>=', now()->subDays(7))->select('id'))
