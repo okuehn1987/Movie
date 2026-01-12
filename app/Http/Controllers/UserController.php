@@ -464,26 +464,47 @@ class UserController extends Controller
     {
         Gate::authorize('viewIndex', [Absence::class, $user]);
 
-        $user['leaveDaysForYear'] = $user->leaveDaysForYear(Carbon::now());
-        $user['absences'] = $user->absences()
-            ->whereYear('start', '>=', Carbon::now()->year - 1)
-            ->with(['absenceType:id,name', 'user:id,operating_site_id'])
-            ->whereIn('status', [Status::Accepted, Status::Created])
-            ->get(['id', 'start', 'end', 'absence_type_id', 'status', 'user_id'])->append('usedDays');
-
+        $user->load('operatingSite.currentAddress');
+        $absences =
+            $user->absences()
+            ->where(
+                fn($q) =>
+                $q->whereIn('status', [Status::Accepted, Status::Created])
+                    ->doesntHave('currentAcceptedPatch')
+                    ->whereYear('end', '>=', now()->year - 1)
+            )->orWhereHas(
+                'currentAcceptedPatch',
+                fn($q) => $q->whereYear('end', '>=', now()->year - 1)
+            )
+            ->with('currentAcceptedPatch:id,start,end,absence_type_id,status,user_id,absence_patches.absence_id')
+            ->get(['id', 'start', 'end', 'absence_type_id', 'status', 'user_id'])
+            ->map(
+                function ($a) use ($user) {
+                    $entry = $a->currentAcceptedPatch ?? $a;
+                    $entry->user = $user;
+                    $usedDays = Absence::calculateUsedDays($entry);
+                    $entry->usedDays = $usedDays;
+                    return $entry;
+                }
+            );
         $allAbsenceYears = $user->absences
             ->flatMap(fn($a) => [Carbon::parse($a->start), Carbon::parse($a->end)])
-            ->unique(fn($e) => $e->year);
+            ->unique(fn($e) => $e->year)
+            ->filter(fn($e) => $e->year >= now()->year - 1);
         $usedLeaveDaysForYear = [];
+        $leaveDaysForYear = (object)[];
         foreach ($allAbsenceYears as $year) {
             $usedLeaveDaysForYear = $usedLeaveDaysForYear + $user->usedLeaveDaysForYear($year);
+            $leaveDaysForYear->{$year->year} = $user->leaveDaysForYear($year);
         }
 
         return Inertia::render('User/UserShow/Absences', [
             'user' => $user,
+            'absences' => $absences,
             'can' => self::getUserShowCans($user),
             'absenceTypes' => AbsenceType::inOrganization()->get(['id', 'name']),
-            'usedLeaveDaysForYear' => $usedLeaveDaysForYear
+            'usedLeaveDaysForYear' => $usedLeaveDaysForYear,
+            'leaveDaysForYear' => $leaveDaysForYear
         ]);
     }
 
