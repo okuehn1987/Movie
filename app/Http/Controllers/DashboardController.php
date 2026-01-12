@@ -119,6 +119,7 @@ class DashboardController extends Controller
     private function getCurrentWeekWorkingHours(User $user)
     {
         $shifts = $user->shifts
+            ->filter(fn($s) => Carbon::parse($s->start)->gte(now()->startOfWeek()))
             ->map(function ($shift) use ($user) {
                 $shift->user = $user;
                 return $shift;
