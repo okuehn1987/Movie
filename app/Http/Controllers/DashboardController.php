@@ -55,10 +55,9 @@ class DashboardController extends Controller
                 ->whereNotNull('end')
                 ->get()
                 ->map(fn($e) => $e->currentAcceptedPatch ?? $e)
-                ->each
-                ->append('duration')
                 ->sortByDesc('start')
                 ->take(5)
+                ->each->append('duration')
                 ->map(fn($e) => collect($e)->only(['id', 'start', 'end', 'duration']))
                 ->values();
 
