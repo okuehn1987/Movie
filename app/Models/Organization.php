@@ -11,6 +11,8 @@ class Organization extends Model
 {
     use HasFactory, SoftDeletes, ScopeInOrganization;
 
+    protected $hidden = ['openai_api_key'];
+
     protected $guarded = [];
 
     public static $FLAGS = [

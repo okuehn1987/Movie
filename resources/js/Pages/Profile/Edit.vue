@@ -9,7 +9,7 @@ defineProps<{
 </script>
 
 <template>
-    <AdminLayout title="Profil" tooltip="Profile">
+    <AdminLayout title="Profil">
         <v-row>
             <v-col cols="12" sm="6">
                 <UpdateProfileInformationForm :must-verify-email="mustVerifyEmail" :status="status" />
