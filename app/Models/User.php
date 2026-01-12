@@ -359,7 +359,7 @@ class User extends Authenticatable
     public function workingWeeks(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->userWorkingWeeks()->get()
+            get: fn() => $this->loadMissing('userWorkingWeeks')->userWorkingWeeks
         )->shouldCache();
     }
 
@@ -381,68 +381,6 @@ class User extends Authenticatable
     {
         return Attribute::make(
             get: fn() => Carbon::parse($this->date_of_birth)->age,
-        )->shouldCache();
-    }
-
-    public function currentWeekShifts(): Attribute
-    {
-        return Attribute::make(
-            get: function () {
-                return $this->shifts()
-                    ->where('start', '>=', now()->startOfWeek())
-                    ->get();
-            }
-        )->shouldCache();
-    }
-
-    public function currentWeekWorkingHours(): Attribute
-    {
-        return Attribute::make(
-            get: function () {
-                $shifts = $this->currentWeekShifts;
-
-                $totalHours = $shifts->map(function (Shift $s) {
-                    $stats = $s->accountableDuration();
-                    return $stats['workDuration'] - $stats['missingBreakDuration'];
-                })->sum();
-
-                $partialShifts = $this->shifts()
-                    ->where('end', '>=', now()->startOfWeek())
-                    ->where('start', '<', now()->startOfWeek())
-                    ->get();
-
-                $partialShiftEntries = collect($partialShifts)->flatMap(
-                    fn($s) => $s->entries->filter(
-                        fn($e) => Carbon::parse($e->start)->gte(now()->startOfWeek())
-                    )
-                );
-
-                $totalHours += Shift::workDuration($partialShiftEntries) - $partialShiftEntries->sum('missingBreakDuration');
-
-                $homeOfficeShifts = $shifts->filter(
-                    fn($s) => $s->entries->filter(
-                        fn($e) => !property_exists($e, 'is_home_office') || !$e->is_home_office
-                    )->count() == 0
-                );
-
-                $homeOfficeHours = $homeOfficeShifts->map(function (Shift $s) {
-                    $stats = $s->accountableDuration($s->entries->filter(
-                        fn($e) => property_exists($e, 'is_home_office') && $e->is_home_office
-                    ));
-                    return $stats['workDuration'] - $stats['missingBreakDuration'];
-                })->sum();
-
-                $otherHomeOfficeEntries = $shifts->filter(fn($s) => !$homeOfficeShifts->contains($s))->flatMap->entries->filter(
-                    fn($e) => property_exists($e, 'is_home_office') && $e->is_home_office
-                );
-
-                $homeOfficeHours += Shift::workDuration($otherHomeOfficeEntries);
-
-                return [
-                    'totalHours' => $totalHours,
-                    'homeOfficeHours' => $homeOfficeHours,
-                ];
-            }
         )->shouldCache();
     }
 

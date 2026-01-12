@@ -27,9 +27,19 @@ function changeWorkStatus(is_home_office = false) {
 const currentWorkingHours = computed(() => {
     if (!props.user.latest_work_log) return 0;
     return props.user.latest_work_log.end
-        ? props.user.current_shift?.current_work_duration ?? 0
+        ? (props.user.current_shift?.current_work_duration ?? 0)
         : now.value.diff(DateTime.fromSQL(props.user.latest_work_log?.start || '')).as('seconds') +
               (props.user.current_shift?.current_work_duration ?? 0);
+});
+
+const currentHomeOfficeHours = computed(() => {
+    if (!props.user.latest_work_log) return 0;
+
+    if (props.user.latest_work_log.end || !props.user.latest_work_log.is_home_office) {
+        return props.workingHours.homeOfficeHours;
+    }
+
+    return now.value.diff(DateTime.fromSQL(props.user.latest_work_log?.start || '')).as('seconds') + props.workingHours.homeOfficeHours;
 });
 
 const lastActionText = computed(() => {
@@ -90,7 +100,7 @@ const lastActionText = computed(() => {
                         </div>
                     </div>
                 </v-col>
-                <v-col cols="12" sm="6" v-if="$page.props.auth.user.home_office || workingHours.homeOfficeHours">
+                <v-col cols="12" sm="6" v-if="$page.props.auth.user.home_office || currentHomeOfficeHours">
                     <div class="d-flex align-center ga-3">
                         <v-avatar color="green" rounded size="40" class="elevation-2">
                             <v-icon size="24" icon="mdi-clock-check" />
@@ -99,11 +109,8 @@ const lastActionText = computed(() => {
                         <div class="d-flex flex-column">
                             Woche Homeoffice
                             <div class="text-h6">
-                                <!-- TODO: should probably get live updates like currentWorkingHours -->
-                                {{ formatDuration(workingHours.homeOfficeHours, 'minutes') }}
-                                <span v-if="workingHours.totalHours">
-                                    ({{ Math.round((workingHours.homeOfficeHours / workingHours.totalHours) * 100) }}%)
-                                </span>
+                                {{ formatDuration(currentHomeOfficeHours, 'minutes') }}
+                                <span v-if="currentWorkingHours">({{ Math.round((currentHomeOfficeHours / currentWorkingHours) * 100) }}%)</span>
                             </div>
                         </div>
                     </div>

@@ -33,6 +33,7 @@ declare module 'ziggy-js' {
     "playwright.csrf-token": [],
     "playwright.routes": [],
     "playwright.current-user": [],
+    "contact.store": [],
     "home": [],
     "organization.index": [],
     "organization.store": [],

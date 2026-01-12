@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Customer, PRIORITIES } from '@/types/types';
 import { formatAddress } from '@/utils';
-import { usePage } from '@inertiajs/vue3';
 import { Ref, watch } from 'vue';
 import { CustomerProp, OperatingSiteProp, UserProp } from './ticketTypes';
 
@@ -16,7 +15,7 @@ const ticketForm = useForm({
     description: '',
     priority: 'medium',
     customer_id: null as Customer['id'] | null,
-    assignees: [usePage().props.auth.user.id],
+    assignees: [],
     start: null as string | null,
     duration: '00:00',
     operatingSite: props.operatingSites.find(o => o.value.type === 'App\\Models\\OperatingSite')?.value,
@@ -62,7 +61,7 @@ watch(
                     <v-tab class="w-50" value="ticket">Auftrag</v-tab>
                     <v-tab class="w-50" value="expressTicket">Einzelauftrag</v-tab>
                 </v-tabs>
-                <v-card-text style="max-height: 750px; overflow-y: auto">
+                <v-card-text style="max-height: 734px; overflow-y: auto">
                     <v-form @submit.prevent="submit(isActive)">
                         <v-tabs-window v-model="ticketForm.tab">
                             <v-tabs-window-item value="ticket">
