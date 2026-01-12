@@ -51,23 +51,23 @@ class Shift extends Model
                     ->doesntHave('currentAcceptedPatch')
                     ->where('status', Status::Accepted)
                     ->get();
-                $travelLogs = $this->travelLogs()
-                    ->doesntHave('currentAcceptedPatch')
-                    ->where('status', Status::Accepted)
-                    ->get();
+                // $travelLogs = $this->travelLogs()
+                //     ->doesntHave('currentAcceptedPatch')
+                //     ->where('status', Status::Accepted)
+                //     ->get();
                 $workLogPatches = $this->workLogPatches()
                     ->with('log.currentAcceptedPatch')
                     ->where('status', Status::Accepted)
                     ->whereNot('type', 'delete')
                     ->get()
                     ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p));
-                $travelLogPatches = $this->travelLogPatches()
-                    ->with('log.currentAcceptedPatch')
-                    ->where('status', Status::Accepted)
-                    ->whereNot('type', 'delete')
-                    ->get()
-                    ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p));
-                return  collect($workLogs)->merge($travelLogs)->merge($workLogPatches)->merge($travelLogPatches);
+                // $travelLogPatches = $this->travelLogPatches()
+                //     ->with('log.currentAcceptedPatch')
+                //     ->where('status', Status::Accepted)
+                //     ->whereNot('type', 'delete')
+                //     ->get()
+                //     ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p));
+                return  collect($workLogs)->merge($workLogPatches);
             }
         )->shouldCache();
     }
@@ -158,7 +158,7 @@ class Shift extends Model
 
     public function requiredBreakDuration(int $duration)
     {
-        $this->loadMissing('user:id,date_of_birth');
+        if (!isset($this->user?->date_of_birth)) $this->loadMissing('user:id,date_of_birth');
         return match ($this->durationThreshold($duration) / 3600) {
             0
             => 0,
@@ -173,7 +173,7 @@ class Shift extends Model
 
     public function durationThreshold(int $duration)
     {
-        $this->loadMissing('user:id,date_of_birth');
+        if (!isset($this->user?->date_of_birth)) $this->loadMissing('user:id,date_of_birth');
         return match (true) {
             ($duration / 3600) > 9 && $this->user->age >= 18
             => 9,
@@ -217,10 +217,13 @@ class Shift extends Model
 
     public function accountableDuration(?\Illuminate\Support\Collection $entries = null)
     {
+        if (!isset($this->user)) $this->loadMissing('user:id,date_of_birth');
+
         $entries ??= $this->entries;
+
         $missingBreak = max(
             $this->missingBreakDuration(),
-            $entries->sum('missingBreakDuration'),
+            $entries->map->getMissingBreakDuration($this->user->age)->sum(),
         );
         $workDuration = self::workDuration($entries);
 
