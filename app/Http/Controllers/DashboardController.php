@@ -53,12 +53,11 @@ class DashboardController extends Controller
                 ->with('currentAcceptedPatch:id,start,end,work_log_patches.work_log_id')
                 ->whereDoesntHave('currentAcceptedPatch', fn($q) => $q->where('type', 'delete'))
                 ->whereNotNull('end')
-                ->limit(5)
                 ->get()
                 ->map(fn($e) => $e->currentAcceptedPatch ?? $e)
-                ->each
-                ->append('duration')
                 ->sortByDesc('start')
+                ->take(5)
+                ->each->append('duration')
                 ->map(fn($e) => collect($e)->only(['id', 'start', 'end', 'duration']))
                 ->values();
 
