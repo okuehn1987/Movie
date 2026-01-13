@@ -3,34 +3,21 @@ import { router, usePage } from '@inertiajs/vue3';
 import { useDisplay } from 'vuetify';
 import ReportBugDialog from './ReportBugDialog.vue';
 import { ref } from 'vue';
-import { useEcho } from "@laravel/echo-vue"; 
-
+import { useEcho } from '@laravel/echo-vue';
 
 const display = useDisplay();
 const page = usePage();
 
-const countUnread= ref(page.props.unreadNotifications.length);  
+const unreadNotificationCount = ref(page.props.unreadNotifications.length);
 
-//  window.Echo.channel('notification.' + page.props.auth.user.id).listen('.NotificationCreated', (n: {unreadCount : number}) => {
-//        countUnread.value = n.unreadCount;
-//     });
-
-useEcho(
-    'notification.' + page.props.auth.user.id,
-    "NotificationCreated",
-    (e) => {
-        countUnread.value = e.unreadCount
-    },
-);
+useEcho<{ unreadCount: number }>('notification.' + page.props.auth.user.id, 'NotificationCreated', e => {
+    unreadNotificationCount.value = e.unreadCount;
+});
 </script>
 
 <template>
     <v-btn color="primary" stacked @click.stop="router.get(route('notification.index'))">
-        <v-badge
-            v-if="countUnread > 0"
-            :content="countUnread <= 99 ? countUnread : '99+'"
-            color="error"
-        >
+        <v-badge v-if="unreadNotificationCount > 0" :content="unreadNotificationCount <= 99 ? unreadNotificationCount : '99+'" color="error">
             <v-icon icon="mdi-bell"></v-icon>
         </v-badge>
         <v-icon v-else icon="mdi-bell"></v-icon>

@@ -4,6 +4,7 @@ import ChatMessageComp from './ChatMessage.vue';
 import { useForm, router } from '@inertiajs/vue3';
 import { watch, toRefs, ref, nextTick } from 'vue';
 import { DateTime } from 'luxon';
+import { useEcho } from '@laravel/echo-vue';
 
 const props = defineProps<{
     chat: Pick<Chat, 'id'> & {
@@ -59,8 +60,8 @@ function scrollToBottom() {
 }
 
 if (chat.value) {
-    window.Echo.channel('chat.' + chat.value.id).listen('.ChatMessageDelta', ({ msg }: { msg: string }) => {
-        currentPartialChatResponse.value += msg;
+    useEcho<{ msg: string }>('chat.' + chat.value.id, 'ChatMessageDelta', e => {
+        currentPartialChatResponse.value += e.msg;
     });
 }
 </script>

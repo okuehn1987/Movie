@@ -8,8 +8,10 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 
-class ChatMessageDelta implements ShouldBroadcast
+class ChatMessageDelta implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -24,14 +26,9 @@ class ChatMessageDelta implements ShouldBroadcast
         $this->msg = $msg;
     }
 
-    public function broadcastOn(): Channel
+    public function broadcastOn(): array
     {
-        return new Channel("chat.{$this->chat->id}");
-    }
-
-    public function broadcastAs(): string
-    {
-        return 'ChatMessageDelta';
+        return [new PrivateChannel("chat.{$this->chat->id}")];
     }
 
     public function broadcastWith(): array

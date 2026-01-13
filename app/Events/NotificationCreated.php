@@ -8,11 +8,12 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Queue\SerializesModels;
 
-class NotificationCreated implements ShouldBroadcast
+class NotificationCreated implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -20,23 +21,22 @@ class NotificationCreated implements ShouldBroadcast
      * Create a new event instance.
      */
 
-    public int $userId;
-    public int $unreadCount;
+    private int $userId;
+    private int $unreadCount;
 
-    public function __construct( User $user)
+    public function __construct(User $user)
     {
         $this->userId = $user->id;
         $this->unreadCount = $user->unreadNotifications()->count();
     }
 
-    public function broadcastOn(): array   
+    public function broadcastOn(): array
     {
-        return [new Channel("notification.{$this->userId}")];
-    }
-    
-    public function broadcastAs()
-    {
-        return 'NotificationCreated';
+        return [new PrivateChannel("notification.{$this->userId}")];
     }
 
+    public function broadcastWith(): array
+    {
+        return ['unreadCount' => $this->unreadCount];
+    }
 }
