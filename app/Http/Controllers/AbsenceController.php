@@ -175,7 +175,7 @@ class AbsenceController extends Controller
                         $usedLeaveDaysForYear = $usedLeaveDaysForYear + $u->usedLeaveDaysForYear(
                             $year,
                             $u->userWorkingWeeks,
-                            collect($u->absences)->merge($u->absencePatches->filter(fn($p) => $p->log->currentAcceptedPatch->is($p)))
+                            collect($u->absences)->merge($u->absencePatches->filter(fn($p) => $p->status === Status::Accepted && $p->log->currentAcceptedPatch->is($p)))
                         );
                     }
                     if (count($usedLeaveDaysForYear) == 0) $usedLeaveDaysForYear = (object)[];
