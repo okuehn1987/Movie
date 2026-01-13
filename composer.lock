@@ -4,19 +4,19 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c810922157fb228bad4b2f026e7a2cf7",
+    "content-hash": "d70dd1ca281893b092b6dc37852062f4",
     "packages": [
         {
             "name": "barryvdh/laravel-debugbar",
             "version": "v3.16.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/barryvdh/laravel-debugbar.git",
+                "url": "https://github.com/fruitcake/laravel-debugbar.git",
                 "reference": "f265cf5e38577d42311f1a90d619bcd3740bea23"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/barryvdh/laravel-debugbar/zipball/f265cf5e38577d42311f1a90d619bcd3740bea23",
+                "url": "https://api.github.com/repos/fruitcake/laravel-debugbar/zipball/f265cf5e38577d42311f1a90d619bcd3740bea23",
                 "reference": "f265cf5e38577d42311f1a90d619bcd3740bea23",
                 "shasum": ""
             },
@@ -76,8 +76,8 @@
                 "webprofiler"
             ],
             "support": {
-                "issues": "https://github.com/barryvdh/laravel-debugbar/issues",
-                "source": "https://github.com/barryvdh/laravel-debugbar/tree/v3.16.0"
+                "issues": "https://github.com/fruitcake/laravel-debugbar/issues",
+                "source": "https://github.com/fruitcake/laravel-debugbar/tree/v3.16.0"
             },
             "funding": [
                 {
@@ -2202,16 +2202,16 @@
         },
         {
             "name": "laravel/reverb",
-            "version": "v1.5.1",
+            "version": "v1.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/reverb.git",
-                "reference": "c82751070c9a5397095d91ff743aefb0549917c3"
+                "reference": "4300fbbc3535f5cbbdf600b00edca1e4c515bfcf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/reverb/zipball/c82751070c9a5397095d91ff743aefb0549917c3",
-                "reference": "c82751070c9a5397095d91ff743aefb0549917c3",
+                "url": "https://api.github.com/repos/laravel/reverb/zipball/4300fbbc3535f5cbbdf600b00edca1e4c515bfcf",
+                "reference": "4300fbbc3535f5cbbdf600b00edca1e4c515bfcf",
                 "shasum": ""
             },
             "require": {
@@ -2231,8 +2231,8 @@
                 "symfony/http-foundation": "^6.3|^7.0"
             },
             "require-dev": {
-                "orchestra/testbench": "^8.0|^9.0|^10.0",
-                "pestphp/pest": "^2.0|^3.0",
+                "orchestra/testbench": "^8.36|^9.15|^10.8",
+                "pestphp/pest": "^2.0|^3.0|^4.0",
                 "phpstan/phpstan": "^1.10",
                 "ratchet/pawl": "^0.4.1",
                 "react/async": "^4.2",
@@ -2278,9 +2278,9 @@
             ],
             "support": {
                 "issues": "https://github.com/laravel/reverb/issues",
-                "source": "https://github.com/laravel/reverb/tree/v1.5.1"
+                "source": "https://github.com/laravel/reverb/tree/v1.7.0"
             },
-            "time": "2025-06-16T13:48:47+00:00"
+            "time": "2026-01-06T16:26:25+00:00"
         },
         {
             "name": "laravel/sanctum",
@@ -6735,16 +6735,16 @@
         },
         {
             "name": "spatie/temporary-directory",
-            "version": "2.3.0",
+            "version": "2.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/temporary-directory.git",
-                "reference": "580eddfe9a0a41a902cac6eeb8f066b42e65a32b"
+                "reference": "662e481d6ec07ef29fd05010433428851a42cd07"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/temporary-directory/zipball/580eddfe9a0a41a902cac6eeb8f066b42e65a32b",
-                "reference": "580eddfe9a0a41a902cac6eeb8f066b42e65a32b",
+                "url": "https://api.github.com/repos/spatie/temporary-directory/zipball/662e481d6ec07ef29fd05010433428851a42cd07",
+                "reference": "662e481d6ec07ef29fd05010433428851a42cd07",
                 "shasum": ""
             },
             "require": {
@@ -6780,7 +6780,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/temporary-directory/issues",
-                "source": "https://github.com/spatie/temporary-directory/tree/2.3.0"
+                "source": "https://github.com/spatie/temporary-directory/tree/2.3.1"
             },
             "funding": [
                 {
@@ -6792,7 +6792,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-01-13T13:04:43+00:00"
+            "time": "2026-01-12T07:42:22+00:00"
         },
         {
             "name": "staudenmeir/belongs-to-through",
