@@ -52,7 +52,7 @@ class AbsencePatchController extends Controller
             collect($authUser->supervisor->loadMissing('isSubstitutedBy')->isSubstitutedBy)
                 ->merge([$authUser->supervisor])
                 ->unique('id')
-                ->eachr->notify(new AbsencePatchNotification($authUser, $absencePatch));
+                ->each->notify(new AbsencePatchNotification($authUser, $absencePatch));
         } else $absencePatch->accept();
 
         return back()->with('success', 'Korrektur erfolgreich ' . ($requires_approval ? 'beantragt' : 'eingetragen'));
