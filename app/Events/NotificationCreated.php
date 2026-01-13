@@ -27,7 +27,7 @@ class NotificationCreated implements ShouldBroadcastNow
     public function __construct(User $user)
     {
         $this->userId = $user->id;
-        $this->unreadCount = $user->unreadNotifications()->count();
+        $this->unreadCount = $user->unreadNotifications()->count() + 1;
     }
 
     public function broadcastOn(): array

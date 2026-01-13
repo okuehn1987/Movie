@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Models\Absence;
 use App\Models\AbsencePatch;
 use App\Enums\Status;
+use App\Events\NotificationCreated;
 use App\Models\TravelLog;
 use App\Models\TravelLogPatch;
 use App\Models\User;
@@ -41,6 +42,11 @@ class DisputeStatusNotification extends Notification
      */
     public function via(object $notifiable): array
     {
+        $channels = $notifiable->notification_channels ?? ['database'];
+
+        if (in_array('database', $channels)) {
+            event(new NotificationCreated($notifiable));
+        }
         return $notifiable->notification_channels ?? ['database'];
     }
 

@@ -206,12 +206,11 @@ class TicketController extends Controller
         }
 
         $users = $ticket->assignees->filter(fn($u) => !$authUser->is($u));
+
         $users->merge($users->flatMap(fn($u) => $u->loadMissing('isSubstitutedBy')->isSubstitutedBy))
             ->unique('id')
-            ->each(function ($user) use ($authUser, $ticket) {
-                                $user->notify(new TicketCreationNotification($authUser, $ticket));
-                                event(new NotificationCreated($user));
-                    });
+            ->each
+            ->notify(new TicketCreationNotification($authUser, $ticket));
 
         return back()->with('success', 'Ticket erfolgreich erstellt.');
     }

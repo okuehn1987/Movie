@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Events\NotificationCreated;
 use App\Models\Ticket;
 use Illuminate\Bus\Queueable;
 use App\Models\User;
@@ -30,6 +31,11 @@ class TicketRecordCreationNotification extends Notification
      */
     public function via(object $notifiable): array
     {
+        $channels = $notifiable->notification_channels ?? ['database'];
+
+        if (in_array('database', $channels)) {
+            event(new NotificationCreated($notifiable));
+        }
         return $notifiable->notification_channels ?? ['database'];
     }
 
