@@ -20,7 +20,7 @@
                         <div>
                             <div class="d-flex justify-start align-end mb-6 mt-0 price-row">
                                 <h2 class="mb-0 mt-2 text-start font-weight-bold text-h4">4,75€</h2>
-                                <v-card-subtitle class="text-body-1 ps-2">/ Mitarbeitende / Monat</v-card-subtitle>
+                                <v-card-subtitle class="text-body-1 ps-2">/ Nutzer / Monat</v-card-subtitle>
                             </div>
                             <div class="my-2 d-flex flex-row align-top justify-start">
                                 <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
@@ -66,7 +66,7 @@
                         <div>
                             <div class="d-flex justify-start align-end mb-6 mt-0 price-row">
                                 <h2 class="mb-0 mt-2 text-start font-weight-bold text-h4">4,75€</h2>
-                                <v-card-subtitle class="text-body-1 ps-2">/ Mitarbeitende / Monat</v-card-subtitle>
+                                <v-card-subtitle class="text-body-1 ps-2">/ Nutzer / Monat</v-card-subtitle>
                             </div>
                             <div class="my-2 d-flex flex-row align-top justify-start">
                                 <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
@@ -74,7 +74,7 @@
                             </div>
                             <div class="my-2 d-flex flex-row align-top justify-start">
                                 <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
-                                <p class="font-weight-regular text-body-1">Custom Workflows</p>
+                                <p class="font-weight-regular text-body-1">Umfassende Kundenverwaltung</p>
                             </div>
                             <div class="my-2 d-flex flex-row align-top justify-start">
                                 <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
@@ -117,7 +117,7 @@
                         <div>
                             <div class="d-flex justify-start align-end mb-6 mt-0 price-row">
                                 <h2 class="mb-0 mt-2 text-start font-weight-bold text-h4">8,00€</h2>
-                                <v-card-subtitle class="text-body-1 ps-2">/ Mitarbeitende / Monat</v-card-subtitle>
+                                <v-card-subtitle class="text-body-1 ps-2">/ Nutzer / Monat</v-card-subtitle>
                             </div>
                             <div class="my-2 d-flex flex-row align-top justify-start">
                                 <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
@@ -129,7 +129,7 @@
                             </div>
                             <div class="my-2 d-flex flex-row align-top justify-start">
                                 <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
-                                <p class="font-weight-regular text-body-1">1,50 € pro User sparen</p>
+                                <p class="font-weight-regular text-body-1">1,50 € pro Nutzer sparen</p>
                             </div>
                         </div>
                         <div>
@@ -170,7 +170,7 @@
                             <v-card-subtitle class="text-body-1 ps-2">einmalig</v-card-subtitle>
                         </div>
                         <v-card-subtitle class="text-wrap">+ monatliche Chat-Kosten nach Verbrauch</v-card-subtitle>
-                        <div class="d-flex justify-center mt-6 text-start font-weight-bold text-body-1">
+                        <div class="d-flex justify-center mt-8 text-start font-weight-bold text-body-1">
                             <v-hover v-slot="{ isHovering, props }">
                                 <v-btn
                                     v-bind="props"
@@ -184,12 +184,14 @@
                                 </v-btn>
                             </v-hover>
                         </div>
-                        <v-card-subtitle class="text-wrap mt-2 text-center font-weight-regular text-body-2">
-                            *Preise exkl. 19% Mehrwertsteuer
-                        </v-card-subtitle>
-                        <v-card-subtitle class="text-wrap text-center font-weight-regular text-body-2">
-                            *nur in Verbindung mit Tide oder Flow verwendbar
-                        </v-card-subtitle>
+                        <div class="mt-6">
+                            <v-card-subtitle class="text-wrap mt-2 text-center font-weight-regular text-body-2">
+                                *Preise exkl. 19% Mehrwertsteuer
+                            </v-card-subtitle>
+                            <v-card-subtitle class="text-wrap text-center font-weight-regular text-body-2">
+                                *nur in Verbindung mit Tide oder Flow verwendbar
+                            </v-card-subtitle>
+                        </div>
                     </v-card-text>
                 </v-card>
             </v-col>
@@ -200,31 +202,31 @@
                     </v-card-title>
                     <v-card-text>
                         <v-row class="my-2 d-flex flex-row align-center">
-                            <v-col cols="12" sm="8">
+                            <v-col cols="12" sm="7">
                                 <h3 class="text-h6">Setup & Einrichtung</h3>
                                 <v-card-subtitle class="ps-0 text-wrap">inkl. Mitarbeitenden- und Admin-Schulung</v-card-subtitle>
                             </v-col>
-                            <v-col cols="12" sm="4">
+                            <v-col cols="12" sm="5">
                                 <h3 class="text-h6">ab 500€</h3>
                             </v-col>
                         </v-row>
                         <v-divider></v-divider>
                         <v-row class="my-2 d-flex flex-row align-center">
-                            <v-col cols="12" sm="8">
+                            <v-col cols="12" sm="7">
                                 <h3 class="text-h6">Support-Paket</h3>
                                 <v-card-subtitle class="ps-0 text-wrap">Wartung, Hosting und Support</v-card-subtitle>
                             </v-col>
-                            <v-col cols="12" sm="4">
+                            <v-col cols="12" sm="5">
                                 <h3 class="text-h6">ab 100€/Monat</h3>
                             </v-col>
                         </v-row>
                         <v-divider></v-divider>
                         <v-row class="my-2 d-flex flex-row align-center">
-                            <v-col cols="12" sm="8">
+                            <v-col cols="12" sm="7">
                                 <h3 class="text-h6">Individuelle Anpassungen</h3>
                                 <v-card-subtitle class="ps-0 text-wrap">Nach Anforderung</v-card-subtitle>
                             </v-col>
-                            <v-col cols="12" sm="4">
+                            <v-col cols="12" sm="5">
                                 <h3 class="text-h6">Auf Anfrage</h3>
                             </v-col>
                         </v-row>
