@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Enums\Status;
+use App\Events\NotificationCreated;
 use App\Models\HomeOfficeDayGenerator;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
@@ -35,7 +36,12 @@ class HomeOfficeDayDisputeStatusNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return $notifiable->notification_channels ?? ['database'];
+        $channels = $notifiable->notification_channels ?? ['database'];
+
+        if (in_array('database', $channels)) {
+            event(new NotificationCreated($notifiable));
+        }
+        return $channels;
     }
 
     /**

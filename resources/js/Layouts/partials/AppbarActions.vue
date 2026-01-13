@@ -1,18 +1,23 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { useDisplay } from 'vuetify';
 import ReportBugDialog from './ReportBugDialog.vue';
+import { ref } from 'vue';
+import { useEcho } from '@laravel/echo-vue';
 
 const display = useDisplay();
+const page = usePage();
+
+const unreadNotificationCount = ref(page.props.unreadNotifications.length);
+
+useEcho<{ unreadCount: number }>('notification.' + page.props.auth.user.id, 'NotificationCreated', e => {
+    unreadNotificationCount.value = e.unreadCount;
+});
 </script>
 
 <template>
     <v-btn color="primary" stacked @click.stop="router.get(route('notification.index'))">
-        <v-badge
-            v-if="$page.props.unreadNotifications.length > 0"
-            :content="$page.props.unreadNotifications.length <= 99 ? $page.props.unreadNotifications.length : '99+'"
-            color="error"
-        >
+        <v-badge v-if="unreadNotificationCount > 0" :content="unreadNotificationCount <= 99 ? unreadNotificationCount : '99+'" color="error">
             <v-icon icon="mdi-bell"></v-icon>
         </v-badge>
         <v-icon v-else icon="mdi-bell"></v-icon>
