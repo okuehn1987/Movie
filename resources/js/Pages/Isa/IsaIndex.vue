@@ -124,7 +124,22 @@ function limitColor(current: number, limit: number): string {
                     </v-col>
                 </v-row>
                 <v-row>
-                    <v-card-subtitle class="mt-8">Verbrauchsübersicht</v-card-subtitle>
+                    <v-card-subtitle class="mt-8">
+                        Verbrauchsübersicht
+                        <v-tooltip :open-on-hover="false" open-on-click origin="bottom start" class="">
+                            <template v-slot:activator="{ props }">
+                                <v-btn v-bind="props" icon variant="text" size="small" class="ms-2">
+                                    <v-icon icon="mdi-information" color="primary" />
+                                </v-btn>
+                            </template>
+                            <span class="background__color">
+                                Wird ein Chat über mehrere Monate oder sogar Jahre geführt, wird er zeitlich dem Erstellungsdatum zugeordnet.
+                                <br />
+                                Die Chatkosten berechnen sich für jede Nachricht separat und werden gegebenenfalls den jeweiligen Monaten und Jahren
+                                in denen sie entstanden sind zugeordnet.
+                            </span>
+                        </v-tooltip>
+                    </v-card-subtitle>
                     <v-col cols="12">
                         <PaymentTable :stats :chatAssistantId></PaymentTable>
                     </v-col>
@@ -239,3 +254,10 @@ function limitColor(current: number, limit: number): string {
         </v-card>
     </AdminLayout>
 </template>
+
+<style scoped>
+.background__color .v-overlay__content {
+    text-align: end;
+    background-color: yellow;
+}
+</style>

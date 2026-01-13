@@ -103,11 +103,13 @@ if (chat.value) {
                 </template>
                 <ChatMessageComp
                     v-if="chatMessageForm.processing || currentPartialChatResponse"
-                    :chatMessage="({
-                    msg: currentPartialChatResponse,
-                    role: 'assistant',
-                    id: -1,
-                } as ChatMessage)"
+                    :chatMessage="
+                        {
+                            msg: currentPartialChatResponse,
+                            role: 'assistant',
+                            id: -1,
+                        } as ChatMessage
+                    "
                     :isLoading="true"
                     :reached_token_limit="null"
                 />

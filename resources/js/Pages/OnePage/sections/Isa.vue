@@ -76,11 +76,23 @@
                 </v-card>
             </v-col>
             <v-col cols="12" sm="6" class="mx-auto mt-8 pa-2">
-                <v-card class="pa-3 h-100 rounded-lg elevation border" tabindex="0" aria-label="Mehr Informationen zu Kundenmanagement & Wissen">
-                    <v-card-text>
-                        <v-img eager src="/img/Isa-Screenshot.png"></v-img>
-                    </v-card-text>
-                </v-card>
+                <v-carousel height="400" hide-delimiters :transition-duration="800" cycle show-arrows="hover">
+                    <v-carousel-item
+                        v-for="(src, i) in [
+                            '/img/Isa-Screenshot.png',
+                            '/img/Isa-Screenshot_2.png',
+                            '/img/Isa-Screenshot_3.png',
+                            '/img/Isa-Screenshot_4.png',
+                        ]"
+                        :key="i"
+                        :src="src"
+                    ></v-carousel-item>
+                </v-carousel>
+            </v-col>
+            <v-col cols="12" class="d-flex justify-center mb-md-2">
+                <span class="sub-headline text-center text-grey-darken-2 px-4 px-md-0">
+                    <i>* &nbsp; Beispielchats - abhängig von freigegebenen Dateien</i>
+                </span>
             </v-col>
         </v-row>
         <v-row class="cards-band pt-16 px-3 px-sm-6 px-md-16 d-flex align-center" dense>
