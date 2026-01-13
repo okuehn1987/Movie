@@ -42,7 +42,7 @@ class HomeOfficeDayNotification extends Notification
         if (in_array('database', $channels)) {
             event(new NotificationCreated($notifiable));
         }
-        return $notifiable->notification_channels ?? ['database'];
+        return $channels;
     }
 
     /**
