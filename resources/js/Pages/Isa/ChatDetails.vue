@@ -58,11 +58,11 @@ function scrollToBottom() {
     if (elem) elem.scrollTo({ top: elem.scrollHeight, behavior: 'instant' });
 }
 
-if (chat.value) {
-    window.Echo.channel('chat.' + chat.value.id).listen('.ChatMessageDelta', ({ msg }: { msg: string }) => {
-        currentPartialChatResponse.value += msg;
-    });
-}
+// if (chat.value) {
+//     window.Echo.channel('chat.' + chat.value.id).listen('.ChatMessageDelta', ({ msg }: { msg: string }) => {
+//         currentPartialChatResponse.value += msg;
+//     });
+// }
 </script>
 
 <template>
@@ -102,11 +102,13 @@ if (chat.value) {
                 </template>
                 <ChatMessageComp
                     v-if="chatMessageForm.processing || currentPartialChatResponse"
-                    :chatMessage="({
-                    msg: currentPartialChatResponse,
-                    role: 'assistant',
-                    id: -1,
-                } as ChatMessage)"
+                    :chatMessage="
+                        {
+                            msg: currentPartialChatResponse,
+                            role: 'assistant',
+                            id: -1,
+                        } as ChatMessage
+                    "
                     :isLoading="true"
                     :reached_token_limit="null"
                 />
