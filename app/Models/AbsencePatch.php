@@ -39,7 +39,7 @@ class AbsencePatch extends Model
     public function getHidden()
     {
         $user = request()->user();
-        if ($user && $user->cannot('viewShow', [AbsenceType::class, $user->usersInOrganization->find($this->user_id)])) return ['absence_type_id', 'absenceType'];
+        if ($user && $user->cannot('viewShow', [AbsenceType::class, $user->usersInOrganization->find($this->user_id) ?? $this->loadMissing('user')->user])) return ['absence_type_id', 'absenceType'];
         return [];
     }
 
