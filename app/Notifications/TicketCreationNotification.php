@@ -46,7 +46,7 @@ class TicketCreationNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("Timesheets - (" . $this->ticket->referenceNumber . ")")
+            ->subject("Flow - (" . $this->ticket->referenceNumber . ")")
             ->line($this->user->name . ' hat ein neues Ticket erstellt.')
             ->action('Zum Ticket', $this->getNotificationURL());
     }
