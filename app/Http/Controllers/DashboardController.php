@@ -140,7 +140,10 @@ class DashboardController extends Controller
             )
         );
 
-        $totalHours += Shift::workDuration($partialShiftEntries) - $partialShiftEntries->sum('missingBreakDuration');
+        $totalHours += Shift::workDuration($partialShiftEntries) - $partialShiftEntries->map(function ($e) use ($user) {
+            $e->user = $user;
+            return $e;
+        })->sum('missingBreakDuration');
 
         $homeOfficeShifts = $shifts->filter(
             fn($s) => $s->entries->filter(
