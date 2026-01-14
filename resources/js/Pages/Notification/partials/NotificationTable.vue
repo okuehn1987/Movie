@@ -64,7 +64,7 @@ function readAllNotifications() {
         </template>
         <template v-slot:item.actions="{ item }">
             <v-btn
-                v-if="tab !== 'archive'"
+                v-if="tab !== 'archive' && getNotificationUrl(item)"
                 color="primary"
                 icon="mdi-eye"
                 variant="text"
