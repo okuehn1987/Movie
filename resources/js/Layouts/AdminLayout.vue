@@ -12,6 +12,7 @@ import { showsGlobalMessage } from '@/utils';
 const props = defineProps<{
     title: string;
     backurl?: string;
+    backurlTitle?: string;
     noInlinePadding?: boolean;
 }>();
 
@@ -121,12 +122,26 @@ function deleteChat() {
 
         <v-app-bar elevation="0" color="background">
             <v-app-bar-nav-icon v-if="!showDrawer || isMobile" variant="text" @click.stop="showDrawer = !showDrawer"></v-app-bar-nav-icon>
-            <v-app-bar-nav-icon
-                v-if="backurl"
-                variant="text"
-                icon="mdi-arrow-left"
-                @click.stop="router.visit(backurl, { preserveState: true })"
-            ></v-app-bar-nav-icon>
+            <span class="ms-1 d-flex justify-content-center align-center" v-if="backurl">
+                <template v-if="backurlTitle">
+                    <v-btn
+                        prepend-icon="mdi-arrow-left"
+                        color="info"
+                        variant="flat"
+                        size="small"
+                        class="ms-3 text-subtitle-2"
+                        @click.stop="router.visit(backurl, { preserveState: true })"
+                    >
+                        {{ backurlTitle }}
+                    </v-btn>
+                </template>
+                <v-app-bar-nav-icon
+                    v-else
+                    variant="text"
+                    icon="mdi-arrow-left"
+                    @click.stop="router.visit(backurl, { preserveState: true })"
+                ></v-app-bar-nav-icon>
+            </span>
 
             <div class="d-flex align-center mr-auto ga-2">
                 <span
