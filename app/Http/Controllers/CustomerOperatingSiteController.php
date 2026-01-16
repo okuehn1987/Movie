@@ -36,7 +36,15 @@ class CustomerOperatingSiteController extends Controller
 
         $customerOperatingSite = CustomerOperatingSite::create([
             'customer_id' => $customer->id,
-            'name' => $validated['name'] ?? '',
+            'name' =>
+            $validated['name'] ??
+                'Standort #' . max(
+                    $customer->customerOperatingSites()
+                        ->where('name', 'like', 'Standort #%')
+                        ->get()
+                        ->map(fn($co) => (int)explode('#', $co->name)[1])
+                        ->toArray() ?: [0]
+                ) + 1,
         ]);
 
         $customerOperatingSite->addresses()->create(collect($validated)->only(Address::$ADDRESS_KEYS)->toArray());
@@ -68,7 +76,16 @@ class CustomerOperatingSiteController extends Controller
         }
 
         $customerOperatingSite->update([
-            'name' => $validated['name'] ?? '',
+            'name' =>
+            $validated['name'] ?? $customerOperatingSite->name ??
+                'Standort #' . max(
+                    CustomerOperatingSite::whereNot('id', $customerOperatingSite->id)
+                        ->where('customer_id', $customerOperatingSite->customer_id)
+                        ->where('name', 'like', 'Standort #%')
+                        ->get()
+                        ->map(fn($co) => (int)explode('#', $co->name)[1])
+                        ->toArray() ?: [0]
+                ) + 1,
         ]);
 
         foreach (Address::$ADDRESS_KEYS as $key) {

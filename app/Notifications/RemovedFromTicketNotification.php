@@ -46,7 +46,7 @@ class RemovedFromTicketNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("Timesheets - (" . $this->ticket->referenceNumber . ")")
+            ->subject("Flow - (" . $this->ticket->referenceNumber . ")")
             ->line('Du wurdest vom Ticket ' . $this->ticket->referenceNumber . ' entfernt.');
     }
 
