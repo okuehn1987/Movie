@@ -101,6 +101,17 @@ function copyRecordToClipBoard(record: TicketRecord & { userName: string }) {
                 <v-card title="Auftrag anzeigen">
                     <template #append>
                         <v-btn
+                            append-icon="mdi-arrow-right"
+                            title="Kundenakte öffnen"
+                            variant="flat"
+                            color="info"
+                            size="small"
+                            class="me-2"
+                            @click.stop="router.get(route('customer.show', { customer: ticket.customer_id, fromTicket: ticket.id }))"
+                        >
+                            zum Kunden
+                        </v-btn>
+                        <v-btn
                             icon
                             variant="text"
                             @click.stop="

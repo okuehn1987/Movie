@@ -90,7 +90,7 @@
                         </div>
                         <div class="my-2 d-flex flex-row align-top justify-start">
                             <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>
-                            <p class="font-weight-regular text-sm-body-1 text-body-2 flex-wrap">Abwesenheiten und Terminbindungen im Team sichtbar</p>
+                            <p class="font-weight-regular text-sm-body-1 text-body-2 flex-wrap">Abwesenheiten im Team sichtbar</p>
                         </div>
                         <div class="my-2 d-flex flex-row align-top justify-start">
                             <v-icon color="rgb(0, 189, 157)" class="me-3" style="margin-top: 2px">mdi-checkbox-marked-circle-outline</v-icon>

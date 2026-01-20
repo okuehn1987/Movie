@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { DATETIME_LOCAL_FORMAT } from '@/types/types';
-import { secondsToDuration } from '@/utils';
+import { formatAddress, secondsToDuration } from '@/utils';
 import { DateTime } from 'luxon';
 import { computed, ref, watch } from 'vue';
 import { OperatingSiteProp, TicketProp, UserProp } from './ticketTypes';
@@ -63,7 +63,7 @@ function submit() {
 <template>
     <v-dialog max-width="600px" v-model="showDialog">
         <template #activator="{ props: activatorProps }">
-             <v-btn v-if="mode === 'create'" title="Eintrag hinzufügen" v-bind="activatorProps" variant="text" icon="mdi-plus"></v-btn>
+            <v-btn v-if="mode === 'create'" title="Eintrag hinzufügen" v-bind="activatorProps" variant="text" icon="mdi-plus"></v-btn>
             <v-btn v-if="record && can('ticketRecord', 'update', record)" title="Eintrag bearbeiten" v-bind="activatorProps" variant="text">
                 <v-icon>mdi-pencil</v-icon>
             </v-btn>
@@ -106,7 +106,15 @@ function submit() {
                                 <v-select
                                     label="Standort"
                                     v-model="recordForm.operatingSite"
-                                    :items="operatingSites.filter(o => !('customer_id' in o) || o.customer_id === ticket.customer_id)"
+                                    :items="
+                                        operatingSites
+                                            .filter(o => !('customer_id' in o) || o.customer_id === ticket.customer_id)
+                                            .map(o => ({
+                                                title: o.value.type !== 'App\\Models\\User' ? formatAddress(o.address) : o.title,
+                                                value: o.value,
+                                                props: { subtitle: o.value.type !== 'App\\Models\\User' ? o.title : '' },
+                                            }))
+                                    "
                                     :error-messages="recordForm.errors.operatingSite"
                                 ></v-select>
                             </v-col>

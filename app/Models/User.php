@@ -404,7 +404,7 @@ class User extends Authenticatable
                 ->whereDate('start', '<=', $endOfYear)
                 ->whereDate('end', '>=', $startOfYear)
                 ->get()
-                ->filter(fn($p) => $p->log->currentAcceptedPatch->is($p))
+                ->filter(fn($p) => $p->status == Status::Accepted && $p->log->currentAcceptedPatch->is($p))
         ));
 
         $usedDays = [];

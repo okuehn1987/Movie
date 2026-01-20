@@ -25,9 +25,15 @@ const props = defineProps<{
     tab: Tab;
 }>();
 const currentTab = ref<Tab>(props.tab);
+
+const redirectedFromTicketId = ref<number | null>(Number(route().queryParams['fromTicket']) ?? null);
 </script>
 <template>
-    <AdminLayout :title="'Kunde: ' + customer.name" :backurl="route('customer.index')">
+    <AdminLayout
+        :title="'Kunde: ' + customer.name"
+        :backurl="redirectedFromTicketId ? route('ticket.index', { openTicket: redirectedFromTicketId }) : route('customer.index')"
+        :backurlTitle="redirectedFromTicketId ? 'zum Ticket' : ''"
+    >
         <v-tabs v-model="currentTab">
             <v-tab value="customerData">Stammdaten</v-tab>
             <v-tab value="customerNotes">Unterlagen</v-tab>

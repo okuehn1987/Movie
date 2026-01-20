@@ -146,7 +146,7 @@ class WorkLogController extends Controller
         Gate::authorize('delete', [WorkLog::class, $workLog->user]);
 
         if ($workLog->delete()) {
-            $workLog->user->supervisor->notifications()
+            $workLog->user->supervisor?->notifications()
                 ->where('type', WorkLogNotification::class)
                 ->where('data->status', Status::Created)
                 ->where('data->work_log_id', $workLog->id)
