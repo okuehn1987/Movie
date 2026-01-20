@@ -16,7 +16,7 @@ on:
 
 jobs:
     build-and-deploy:
-        uses: MBD-Team/deployments/.github/workflows/deploy.yml@master
+        uses: MBD-Team/deployments/.github/workflows/deployLive.yml@master
         with:
             env: LIVE
             server: server5.mbd-team.de
