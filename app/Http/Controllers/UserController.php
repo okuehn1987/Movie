@@ -750,9 +750,11 @@ class UserController extends Controller
             'time_balance_red_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_red_threshold'] : null,
         ]);
 
+        $currentAddress = $user->currentAddress;
         foreach (Address::$ADDRESS_KEYS as $key) {
-            $user->currentAddress->$key = $validated[$key];
+            $currentAddress->$key = $validated[$key];
         }
+        $user->currentAddress = $currentAddress;
         if ($user->currentAddress->isDirty()) {
             $user->currentAddress->active_since = now();
             $user->currentAddress->replicate()->save();
