@@ -71,8 +71,10 @@ class TicketController extends Controller
         ]);
         return Inertia::render('Ticket/TicketIndex', [
             'tickets' => fn() => (clone $ticketQuery)
-                ->whereNull('tickets.finished_at')
-                ->orWhereHas('records', fn($q) => $q->whereNull('accounted_at'))
+                ->where(
+                    fn($q) => $q->whereNull('tickets.finished_at')
+                        ->orWhereHas('records', fn($q) => $q->whereNull('accounted_at'))
+                )
                 ->get()
                 ->map(fn($t) => [
                     ...$t->toArray(),

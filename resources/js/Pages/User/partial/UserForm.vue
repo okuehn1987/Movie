@@ -525,7 +525,7 @@ function isLeaveDayDisabled(item: { id: UserLeaveDays['id'] | null; active_since
                 </v-row>
             </v-card-text>
         </v-card>
-        <v-card v-if="(user && can('user', 'update')) || !user" class="mb-4" title="Gleitzeitkonto">
+        <v-card v-if="can('app', 'tide') && ((user && can('user', 'update')) || !user)" class="mb-4" title="Gleitzeitkonto">
             <v-card-text>
                 <v-row>
                     <v-col cols="12">
