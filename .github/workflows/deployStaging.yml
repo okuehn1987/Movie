@@ -2,7 +2,7 @@ name: Build and Deploy to Staging
 
 on:
     push:
-        branches: ['master', 'Reverb']
+        branches: ['master']
     workflow_dispatch:
         inputs:
             mode:
