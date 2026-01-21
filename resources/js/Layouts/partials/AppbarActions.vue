@@ -3,16 +3,16 @@ import { router, usePage } from '@inertiajs/vue3';
 import { useDisplay } from 'vuetify';
 import ReportBugDialog from './ReportBugDialog.vue';
 import { ref } from 'vue';
-import { useEcho } from '@laravel/echo-vue';
+// import { useEcho } from '@laravel/echo-vue';
 
 const display = useDisplay();
 const page = usePage();
 
 const unreadNotificationCount = ref(page.props.unreadNotifications.length);
 
-useEcho<{ unreadCount: number }>('notification.' + page.props.auth.user.id, 'NotificationCreated', e => {
-    unreadNotificationCount.value = e.unreadCount;
-});
+// useEcho<{ unreadCount: number }>('notification.' + page.props.auth.user.id, 'NotificationCreated', e => {
+//     unreadNotificationCount.value = e.unreadCount;
+// });
 </script>
 
 <template>
