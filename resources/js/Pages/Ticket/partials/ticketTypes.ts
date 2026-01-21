@@ -9,6 +9,7 @@ export type TicketProp = Ticket &
         records: (TicketRecord &
             Canable &
             RelationPick<'ticketRecord', 'files', 'id' | 'original_name' | 'ticket_record_id'> &
+            RelationPick<'ticketRecord', 'address', 'id' | 'street' | 'house_number' | 'zip' | 'city' | 'country'|'federal_state' > &
             RelationPick<'ticketRecord', 'user', 'id' | 'first_name' | 'last_name'>)[];
     };
 export type CustomerProp = Pick<Customer, 'id' | 'name'>;
