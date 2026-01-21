@@ -2,7 +2,7 @@
 import ConfirmDelete from '@/Components/ConfirmDelete.vue';
 import { Canable, DATETIME_LOCAL_FORMAT, PRIORITIES, TicketRecord } from '@/types/types';
 import { router } from '@inertiajs/vue3';
-import { formatDuration } from '@/utils';
+import { formatAddress, formatDuration } from '@/utils';
 import { DateTime } from 'luxon';
 import { computed, ref, watch } from 'vue';
 import RecordCreateDialog from './RecordCreateDialog.vue';
@@ -314,6 +314,16 @@ function copyRecordToClipBoard(record: TicketRecord & { userName: string }) {
                                                             <th style="width: 1px">Beschreibung</th>
                                                             <td class="py-2">
                                                                 <pre style="font: unset">{{ item.description }}</pre>
+                                                            </td>
+                                                            <td></td>
+                                                            <td></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th style="width: 1px">Standort</th>
+                                                            <td class="py-2">
+                                                                <pre style="font: unset"
+                                                                    >{{ formatAddress(item.address) }} ({{ item.address.addressable.name }})</pre
+                                                                >
                                                             </td>
                                                             <td></td>
                                                             <td></td>

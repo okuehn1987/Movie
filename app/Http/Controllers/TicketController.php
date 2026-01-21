@@ -85,7 +85,7 @@ class TicketController extends Controller
                             'delete' => Gate::allows('update', $t),
                         ],
                     ],
-                    'records' => $t->records->map(
+                    'records' => $t->records->load(['address:id,street,house_number,zip,city,country,federal_state,addressable_id,addressable_type', 'address.addressable:id,name'])->map(
                         fn($ticketRecord) => [
                             ...$ticketRecord->toArray(),
                             'can' => [
