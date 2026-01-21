@@ -321,7 +321,9 @@ function copyRecordToClipBoard(record: TicketRecord & { userName: string }) {
                                                         <tr>
                                                             <th style="width: 1px">Standort</th>
                                                             <td class="py-2">
-                                                                <pre style="font: unset">{{ formatAddress(item.address) }}</pre>
+                                                                <pre style="font: unset"
+                                                                    >{{ formatAddress(item.address) }} ({{ item.address.addressable.name }})</pre
+                                                                >
                                                             </td>
                                                             <td></td>
                                                             <td></td>
