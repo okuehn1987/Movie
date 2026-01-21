@@ -17,17 +17,17 @@ import * as directives from 'vuetify/directives';
 import { VDateInput } from 'vuetify/labs/components';
 import colors from 'vuetify/util/colors';
 
-// import { configureEcho } from '@laravel/echo-vue';
+import { configureEcho } from '@laravel/echo-vue';
 
-// configureEcho({
-//     broadcaster: 'reverb',
-//     key: import.meta.env['VITE_REVERB_APP_KEY'],
-//     wsHost: window.location.hostname,
-//     wsPort: import.meta.env['VITE_REVERB_PORT'],
-//     wssPort: import.meta.env['VITE_REVERB_PORT'],
-//     forceTLS: false,
-//     enabledTransports: ['ws', 'wss'],
-// });
+configureEcho({
+    broadcaster: 'reverb',
+    key: import.meta.env['VITE_REVERB_APP_KEY'],
+    wsHost: window.location.hostname,
+    wsPort: import.meta.env['VITE_REVERB_PORT'],
+    wssPort: import.meta.env['VITE_REVERB_PORT'],
+    forceTLS: false,
+    enabledTransports: ['ws', 'wss'],
+});
 
 const vuetify = createVuetify({
     defaults: {
