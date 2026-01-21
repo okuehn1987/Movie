@@ -4,7 +4,7 @@ import ChatMessageComp from './ChatMessage.vue';
 import { useForm, router } from '@inertiajs/vue3';
 import { watch, toRefs, ref, nextTick } from 'vue';
 import { DateTime } from 'luxon';
-// import { useEcho } from '@laravel/echo-vue';
+import { useEcho } from '@laravel/echo-vue';
 
 const props = defineProps<{
     chat: Pick<Chat, 'id'> & {
@@ -59,11 +59,11 @@ function scrollToBottom() {
     if (elem) elem.scrollTo({ top: elem.scrollHeight, behavior: 'instant' });
 }
 
-// if (chat.value) {
-//     useEcho<{ msg: string }>('chat.' + chat.value.id, 'ChatMessageDelta', e => {
-//         currentPartialChatResponse.value += e.msg;
-//     });
-// }
+if (chat.value) {
+    useEcho<{ msg: string }>('chat.' + chat.value.id, 'ChatMessageDelta', e => {
+        currentPartialChatResponse.value += e.msg;
+    });
+}
 </script>
 
 <template>

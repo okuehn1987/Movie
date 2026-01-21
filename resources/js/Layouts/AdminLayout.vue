@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import ChatDetails from '@/Pages/Isa/ChatDetails.vue';
 import { AppModule, ChatMessage } from '@/types/types';
-import { Head, router, usePage, usePoll } from '@inertiajs/vue3';
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 import AppbarActions from './partials/AppbarActions.vue';
 import DrawerMenu from './partials/DrawerMenu.vue';
@@ -19,23 +19,6 @@ const props = defineProps<{
 const page = usePage();
 const isMobile = useDisplay().smAndDown;
 const showDrawer = ref(!isMobile.value);
-
-const { start, stop } = usePoll(
-    1000 * 60 * 2,
-    {
-        only: ['unreadNotifications'],
-    },
-    { keepAlive: true },
-);
-onMounted(() => {
-    start();
-});
-router.on('before', () => {
-    stop();
-});
-router.on('finish', () => {
-    start();
-});
 
 const showOrgImg = ref(!!page.props.organization.logo);
 watch(
