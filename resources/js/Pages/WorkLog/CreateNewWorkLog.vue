@@ -10,8 +10,8 @@ const props = defineProps<{
 const showCreationDialog = ref(false);
 
 const newWorkLogForm = useForm({
-    start: new Date(),
-    end: new Date(),
+    start: '',
+    end: '',
     comment: null as null | string,
     start_time: '09:00',
     end_time: '17:00',
@@ -25,12 +25,12 @@ function submit() {
             const end_time = DateTime.fromFormat(d.end_time, 'HH:mm');
             return {
                 ...d,
-                start: DateTime.fromISO(d.start.toISOString()).set({
+                start: DateTime.fromISO(d.start).set({
                     hour: start_time.hour,
                     minute: start_time.minute,
                     second: 0,
                 }),
-                end: DateTime.fromISO(d.end.toISOString()).set({
+                end: DateTime.fromISO(d.end).set({
                     hour: end_time.hour,
                     minute: end_time.minute,
                     second: 0,

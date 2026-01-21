@@ -16,6 +16,7 @@ use App\Services\AppModuleService;
 use Carbon\Carbon;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
@@ -146,7 +147,7 @@ class WorkLogController extends Controller
         Gate::authorize('delete', [WorkLog::class, $workLog->user]);
 
         if ($workLog->delete()) {
-            $workLog->user->supervisor?->notifications()
+            DB::table('notifications')
                 ->where('type', WorkLogNotification::class)
                 ->where('data->status', Status::Created)
                 ->where('data->work_log_id', $workLog->id)

@@ -1244,7 +1244,7 @@ class UserController extends Controller
                 'create' => $canTide && Gate::allows('create', [TimeAccountTransaction::class, $user]),
             ],
             'workLog' => [
-                'viewShow' => Gate::allows('viewShow', [WorkLog::class, $user]),
+                'viewShow' => $canTide && Gate::allows('viewShow', [WorkLog::class, $user]),
             ],
         ];
     }

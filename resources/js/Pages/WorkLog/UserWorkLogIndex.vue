@@ -312,7 +312,12 @@ const tableHeight = useMaxScrollHeight(0);
 
                                     <v-col cols="12" class="text-end">
                                         <v-btn
-                                            v-if="workLogForm.status == 'created' && can('workLogPatch', 'delete') && patchMode === 'show'"
+                                            v-if="
+                                                workLogForm.type == 'patch' &&
+                                                workLogForm.status == 'created' &&
+                                                can('workLogPatch', 'delete') &&
+                                                patchMode === 'show'
+                                            "
                                             :loading="workLogForm.processing"
                                             @click.stop="retreatPatch"
                                             color="primary"
