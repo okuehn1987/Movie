@@ -73,7 +73,7 @@ class WorkLogController extends Controller
         Gate::authorize('create', [WorkLog::class, $authUser]);
 
         $validated = $request->validate([
-            'start' => ['required', 'date', 'before:end', function ($attr, $value, $fail) use ($request, $user) {
+            'start' => ['required', 'date', 'before:end', 'after:' . now()->subWeeks(8)->format('d.m.Y'), function ($attr, $value, $fail) use ($request, $user) {
                 if (UserTrustWorkingHour::checkCollisions([
                     'start' => $value,
                     'end' => $request['end'],

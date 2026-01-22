@@ -197,7 +197,7 @@ export function formatDuration(seconds: number, accuracy: 'seconds' | 'minutes' 
     return (seconds < 0 ? '-' : '') + Duration.fromObject({ seconds: Math.abs(seconds) }).toFormat(format[accuracy]);
 }
 
-export function formatAddress(obj: Address) {
+export function formatAddress(obj: Pick<Address, 'street' | 'house_number' | 'zip' | 'city' | 'country' | 'federal_state'>) {
     const a = obj.street && obj.house_number ? obj.street + ' ' + obj.house_number : '';
     const b = obj.zip && obj.city ? obj.zip + ' ' + obj.city : '';
     return [a, b].filter(e => !!e).join(', ');
