@@ -954,7 +954,7 @@ class UserController extends Controller
                 ->limit(1))
             ->first();
 
-        if ($lastTransactionBeforeStatement->changes()->whereDate('date', '>=', $start->format('Y-m-d'))->count() != 0) {
+        if ($lastTransactionBeforeStatement?->changes()->whereDate('date', '>=', $start->format('Y-m-d'))->count() != 0) {
             $lastTransactionBeforeStatement = null;
         }
 
