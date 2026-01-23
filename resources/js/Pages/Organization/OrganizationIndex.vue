@@ -219,7 +219,7 @@ function submit() {
                                                     <v-col cols="12"><h3>Funktionen</h3></v-col>
                                                     <v-col cols="12" sm="6">
                                                         <v-checkbox
-                                                            label="FLow aktivieren"
+                                                            label="Flow aktivieren"
                                                             required
                                                             v-model="organizationForm.flow_active"
                                                             :error-messages="organizationForm.errors.flow_active"
