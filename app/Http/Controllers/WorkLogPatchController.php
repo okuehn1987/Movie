@@ -48,8 +48,7 @@ class WorkLogPatchController extends Controller
         ]);
 
         $supervisor = $workLog->user->supervisor;
-        $requiresApproval = $supervisor && !$authUser->can('update', [WorkLogPatch::class, $user]);
-        if (!$requiresApproval) $patch->accept();
+        if ($authUser->can('update', [WorkLogPatch::class, $patch->user])) $patch->accept();
         else {
             collect($supervisor->loadMissing('isSubstitutedBy')->isSubstitutedBy)
                 ->merge([$supervisor])
@@ -58,7 +57,7 @@ class WorkLogPatchController extends Controller
                 ->notify(new WorkLogPatchNotification($workLog->user, $patch));
         }
 
-        return back()->with('success',  "Korrektur der Arbeitszeit erfolgreich " . ($requiresApproval ? 'beantragt' : 'gespeichert') . ".");
+        return back()->with('success',  "Korrektur der Arbeitszeit erfolgreich " . ($authUser->can('update', [WorkLogPatch::class, $workLog->user]) ? 'gespeichert' : 'beantragt') . ".");
     }
 
     public function update(Request $request, WorkLogPatch $workLogPatch, #[CurrentUser] User $authUser)

@@ -14,11 +14,11 @@ class TimeAccountTransactionPolicy
         return
             $authUser->id == $user->id ||
             $authUser->id == $user->supervisor_id ||
-            $authUser->hasPermissionOrDelegation($user, 'timeAccountTransaction', 'read');
+            $authUser->hasPermissionOrDelegation($user, 'timeAccountTransaction_permission', 'read');
     }
 
     public function create(User $authUser, User $user): bool
     {
-        return $authUser->hasPermissionOrDelegation($user, 'timeAccountTransaction', 'write');
+        return $authUser->hasPermissionOrDelegation($user, 'timeAccountTransaction_permission', 'write');
     }
 }
