@@ -39,7 +39,8 @@ class HasOrganizationAccess
 
                 $instanceObject instanceof \App\Models\CustomerOperatingSite,
                 $instanceObject instanceof \App\Models\CustomerContact,
-                $instanceObject instanceof \App\Models\Ticket
+                $instanceObject instanceof \App\Models\Ticket,
+                $instanceObject instanceof \App\Models\CustomerNoteFolder
                 => $instanceObject->customer()->select('organization_id')->first()->organization_id,
 
                 $instanceObject instanceof \App\Models\TicketRecordFile
