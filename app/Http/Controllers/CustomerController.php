@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Status;
+use App\Models\CustomAddress;
 use App\Models\Customer;
 use App\Models\CustomerContact;
 use App\Models\CustomerNoteFolder;
@@ -70,7 +71,15 @@ class CustomerController extends Controller
             'assignees:id,first_name,last_name',
             'records.user',
             'files',
-            'records.files'
+            'records.files',
+            'records.address.addressable' => function ($q) {
+                $q->constrain([
+                    User::class => fn($q2) => $q2->select('id', 'first_name', 'last_name'),
+                    OperatingSite::class => fn($q2) => $q2->select('id', 'name'),
+                    CustomAddress::class => fn($q2) => $q2->select('id', 'name'),
+                    CustomerOperatingSite::class => fn($q2) => $q2->select('id', 'name'),
+                ]);
+            }
         ]);
 
         return Inertia::render('Customer/CustomerShow', [
@@ -111,7 +120,17 @@ class CustomerController extends Controller
             'archiveTickets' => fn() => (clone $ticketQuery)
                 ->whereNotNull('tickets.finished_at')
                 ->whereDoesntHave('records', fn($q) => $q->whereNull('accounted_at'))
-                ->with('records')
+                ->with([
+                    'records.address:id,street,house_number,zip,city,country,federal_state,addressable_id,addressable_type',
+                    'records.address.addressable' => function ($q) {
+                        $q->constrain([
+                            User::class => fn($q2) => $q2->select('id', 'first_name', 'last_name'),
+                            OperatingSite::class => fn($q2) => $q2->select('id', 'name'),
+                            CustomAddress::class => fn($q2) => $q2->select('id', 'name'),
+                            CustomerOperatingSite::class => fn($q2) => $q2->select('id', 'name'),
+                        ]);
+                    }
+                ])
                 ->when(
                     array_key_exists('assignees', $validated) && $validated['assignees'] != null,
                     fn($q) => $q->whereHas('assignees', fn($q2) => $q2->where('status', Status::Accepted)->whereIn('users.id', $validated['assignees']))

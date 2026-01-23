@@ -313,7 +313,15 @@ function copyRecordToClipBoard(record: TicketRecord & { userName: string }) {
                                                         <tr>
                                                             <th style="width: 1px">Beschreibung</th>
                                                             <td class="py-2">
-                                                                <pre style="font: unset">{{ item.description }}</pre>
+                                                                <pre
+                                                                    style="
+                                                                        font: unset;
+                                                                        max-width: 100%;
+                                                                        word-break: break-word;
+                                                                        white-space: pre-wrap;
+                                                                    "
+                                                                    >{{ item.description }}</pre
+                                                                >
                                                             </td>
                                                             <td></td>
                                                             <td></td>
