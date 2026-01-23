@@ -45,7 +45,7 @@ class UserController extends Controller
 
     private function validateUser(Request $request, array $additionalRules = [], string $mode = 'create', User | null $user = null)
     {
-        return $request->validate([
+        $generalKeys = [
             "first_name" => "required|string",
             "last_name" => "required|string",
             "academic_title" => "nullable|string",
@@ -65,6 +65,7 @@ class UserController extends Controller
                 "nullable",
                 Rule::exists('groups', 'id')->where('organization_id', Organization::getCurrent()->id)
             ],
+
             'operating_site_id' => [
                 "required",
                 Rule::exists('operating_sites', 'id')->where('organization_id', Organization::getCurrent()->id)
@@ -78,10 +79,6 @@ class UserController extends Controller
             ],
 
             'is_supervisor' => 'required|boolean',
-
-            'use_time_balance_traffic_light' => 'required|boolean',
-            'time_balance_yellow_threshold' => 'nullable|required_if:use_time_balance_traffic_light,true|integer',
-            'time_balance_red_threshold' => 'nullable|required_if:use_time_balance_traffic_light,true|integer',
 
             'resignation_date' => ['nullable', 'date', function ($attribute, $value, $fail) use ($request, $mode, $user) {
                 if ($mode == 'create') return;
@@ -150,6 +147,56 @@ class UserController extends Controller
                 }
                 if (!$request['home_office'] && Carbon::parse($value)->gt(Carbon::now()->startOfDay())) $fail('Es können keine Homeoffice-Tage gespeichert werden, wenn Homeoffice nicht aktiv ist.');
             }],
+
+            'user_working_weeks' => 'present|array',
+            'user_working_weeks.*.id' => [
+                'nullable',
+                Rule::exists('user_working_weeks', 'id')->when(
+                    $mode == 'update' && isset($user),
+                    fn($q) => $q->where('user_id', $user->id)
+                )
+            ],
+            'user_working_weeks.*.weekdays' => 'required|array',
+            'user_working_weeks.*.weekdays.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
+            'user_working_weeks.*.active_since' =>  ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
+                $index  = explode('.', $attribute)[1];
+                $currentWorkingWeek = $request['user_working_weeks'][$index];
+                if ($mode == 'update' && !isset($currentWorkingWeek['id']) && Carbon::parse($currentWorkingWeek['active_since'])->lte(Carbon::now()->endOfDay())) {
+                    $fail('validation.after')->translate([
+                        'attribute' => __('validation.attributes.active_since'),
+                        'date' => Carbon::now()->format('d.m.Y')
+                    ]);
+                }
+            }],
+
+            'user_leave_days' => 'present|array',
+            'user_leave_days.*.id' => [
+                'nullable',
+                Rule::exists('user_leave_days', 'id')->when(
+                    $mode == 'update' && isset($user),
+                    fn($q) => $q->where('user_id', $user->id)
+                )
+            ],
+            'user_leave_days.*.leave_days' => 'required|integer|min:0',
+            'user_leave_days.*.active_since' => ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
+                $index  = explode('.', $attribute)[1];
+                $currentLeaveDays = $request['user_leave_days'][$index];
+                if ($mode == 'update' && !isset($currentLeaveDays['id']) && Carbon::parse($currentLeaveDays['active_since'])->lt(Carbon::now()->startOfYear())) {
+                    $fail('validation.after_or_equal')->translate([
+                        'attribute' => __('validation.attributes.active_since'),
+                        'date' => Carbon::now()->startOfYear()->format('m.Y')
+                    ]);
+                }
+            }],
+
+        ];
+
+        $tideKeys = [
+            'use_time_balance_traffic_light' => 'required|boolean',
+            'time_balance_yellow_threshold' => 'nullable|required_if:use_time_balance_traffic_light,true|integer',
+            'time_balance_red_threshold' => 'nullable|required_if:use_time_balance_traffic_light,true|integer',
+
+
             'user_working_hours' => 'present|array',
             'user_working_hours.*.id' => [
                 'nullable',
@@ -237,49 +284,15 @@ class UserController extends Controller
                 }
             }],
 
-
-            'user_working_weeks' => 'present|array',
-            'user_working_weeks.*.id' => [
-                'nullable',
-                Rule::exists('user_working_weeks', 'id')->when(
-                    $mode == 'update' && isset($user),
-                    fn($q) => $q->where('user_id', $user->id)
-                )
-            ],
-            'user_working_weeks.*.weekdays' => 'required|array',
-            'user_working_weeks.*.weekdays.*' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
-            'user_working_weeks.*.active_since' =>  ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
-                $index  = explode('.', $attribute)[1];
-                $currentWorkingWeek = $request['user_working_weeks'][$index];
-                if ($mode == 'update' && !isset($currentWorkingWeek['id']) && Carbon::parse($currentWorkingWeek['active_since'])->lte(Carbon::now()->endOfDay())) {
-                    $fail('validation.after')->translate([
-                        'attribute' => __('validation.attributes.active_since'),
-                        'date' => Carbon::now()->format('d.m.Y')
-                    ]);
-                }
-            }],
-
-            'user_leave_days' => 'present|array',
-            'user_leave_days.*.id' => [
-                'nullable',
-                Rule::exists('user_leave_days', 'id')->when(
-                    $mode == 'update' && isset($user),
-                    fn($q) => $q->where('user_id', $user->id)
-                )
-            ],
-            'user_leave_days.*.leave_days' => 'required|integer|min:0',
-            'user_leave_days.*.active_since' => ['required', 'date', function ($attribute, $value, $fail) use ($request, $mode) {
-                $index  = explode('.', $attribute)[1];
-                $currentLeaveDays = $request['user_leave_days'][$index];
-                if ($mode == 'update' && !isset($currentLeaveDays['id']) && Carbon::parse($currentLeaveDays['active_since'])->lt(Carbon::now()->startOfYear())) {
-                    $fail('validation.after_or_equal')->translate([
-                        'attribute' => __('validation.attributes.active_since'),
-                        'date' => Carbon::now()->startOfYear()->format('m.Y')
-                    ]);
-                }
-            }],
-
             "overtime_calculations_start" => "required|date",
+        ];
+
+        $flowKeys = [];
+
+        return $request->validate([
+            ...$generalKeys,
+            ...(AppModuleService::hasAppModule('tide') ? $tideKeys : []),
+            ...(AppModuleService::hasAppModule('flow') ? $flowKeys : []),
 
             'organizationUser' => 'required|array',
             'organizationUser.*' => ['nullable', function ($attribute, $value, $fail) {
@@ -577,7 +590,7 @@ class UserController extends Controller
             "initialRemainingLeaveDays" => "required|integer",
         ]);
 
-        $user = (new User)->forceFill([
+        $generalKeys = [
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
             'academic_title' => $validated['academic_title'],
@@ -587,7 +600,6 @@ class UserController extends Controller
             'phone_number' => $validated['phone_number'],
             'staff_number' => $validated['staff_number'],
             'password' =>  Hash::make($validated['password']),
-            'overtime_calculations_start' => $validated['overtime_calculations_start'],
             'group_id' => $validated['group_id'],
             'is_supervisor' => $validated['is_supervisor'],
             'supervisor_id' => $validated['supervisor_id'],
@@ -597,10 +609,22 @@ class UserController extends Controller
             'home_office' => $validated['home_office'],
             'home_office_hours_per_week' => $validated['home_office'] ? $validated['home_office_hours_per_week'] ?? 0 : null,
             'job_role' => $validated['job_role'],
-            'time_balance_yellow_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_yellow_threshold'] : null,
-            'time_balance_red_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_red_threshold'] : null,
             'email_verified_at' => now(),
             'notification_channels' => ['database', 'mail'],
+        ];
+
+        $tideKeys = AppModuleService::hasAppModule('tide') ? [
+            'overtime_calculations_start' => $validated['overtime_calculations_start'],
+            'time_balance_yellow_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_yellow_threshold'] : null,
+            'time_balance_red_threshold' => $validated['use_time_balance_traffic_light'] ? $validated['time_balance_red_threshold'] : null,
+        ] : [];
+
+        $flowKeys = [];
+
+        $user = (new User)->forceFill([
+            ...$generalKeys,
+            ...$tideKeys,
+            ...(AppModuleService::hasAppModule('flow') ? $flowKeys : []),
         ]);
         $user->save();
 
@@ -621,26 +645,31 @@ class UserController extends Controller
                 'type' => 'annual'
             ]);
         }
-        foreach ($validated['user_working_hours'] as $workingHour) {
-            UserWorkingHour::create([
-                'user_id' => $user->id,
-                'weekly_working_hours' => $workingHour['weekly_working_hours'],
-                'active_since' => Carbon::parse($workingHour['active_since'])
-            ]);
-        }
-        foreach ($validated['user_trust_working_hours'] as $trustWorkingHour) {
-            UserTrustWorkingHour::create([
-                'user_id' => $user->id,
-                'active_since' => Carbon::parse($trustWorkingHour['active_since']),
-                'active_until' => Carbon::parse($trustWorkingHour['active_until']),
-            ]);
-        }
+
         foreach ($validated['user_working_weeks'] as $workingWeek) {
             UserWorkingWeek::create([
                 'user_id' => $user->id,
                 ...collect($workingWeek['weekdays'])->flatMap(fn($e) => [$e => true]),
                 'active_since' => Carbon::parse($workingWeek['active_since'])
             ]);
+        }
+
+        if (AppModuleService::hasAppModule('tide')) {
+            foreach ($validated['user_working_hours'] as $workingHour) {
+                UserWorkingHour::create([
+                    'user_id' => $user->id,
+                    'weekly_working_hours' => $workingHour['weekly_working_hours'],
+                    'active_since' => Carbon::parse($workingHour['active_since'])
+                ]);
+            }
+
+            foreach ($validated['user_trust_working_hours'] as $trustWorkingHour) {
+                UserTrustWorkingHour::create([
+                    'user_id' => $user->id,
+                    'active_since' => Carbon::parse($trustWorkingHour['active_since']),
+                    'active_until' => Carbon::parse($trustWorkingHour['active_until']),
+                ]);
+            }
         }
 
         $currentWorkingHours = UserWorkingHour::where('user_id', $user->id)
