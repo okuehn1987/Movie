@@ -33,11 +33,6 @@ const reload = throttle(() => {
 }, 500);
 watch(selectedFolder, reload);
 
-function openFile(note: CustomerNoteEntry) {
-    const fileURL = route('customerNoteEntry.getFile', { customerNoteEntry: note.id });
-    window.open(fileURL, '_blank');
-}
-
 const height = useMaxScrollHeight(48);
 
 const opened = ref<CustomerNoteFolder['id'][]>([]);
