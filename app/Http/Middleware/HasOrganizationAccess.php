@@ -50,7 +50,7 @@ class HasOrganizationAccess
                 => $instanceObject->ticket->customer()->select('organization_id')->first()->organization_id,
 
                 $instanceObject instanceof \App\Models\CustomerNoteEntry
-                => $instanceObject->customerNoteFolder->customer()->select('organization_id')->first()->organization_id,
+                => $instanceObject->folder->customer()->select('organization_id')->first()->organization_id,
 
                 $instanceObject instanceof \App\Models\TimeAccount
                 => $instanceObject->timeAccountSetting()->select('organization_id')->first()->organization_id,
