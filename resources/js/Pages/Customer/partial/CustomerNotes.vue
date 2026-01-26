@@ -138,7 +138,14 @@ function onActivate(value: CustomerNoteFolder['id']) {
                     </template>
                     <template #item.value="{ item }">
                         <span v-if="item.type == 'text'">{{ item.value }}</span>
-                        <v-btn v-else @click.stop="openFile(item)" color="primary" variant="text" :icon="'mdi-file-document-outline'"></v-btn>
+                        <v-btn
+                            v-else
+                            color="primary"
+                            variant="text"
+                            :icon="'mdi-file-document-outline'"
+                            :href="route('customerNoteEntry.getFile', { customerNoteEntry: item.id })"
+                            :download="item.title"
+                        ></v-btn>
                     </template>
                     <template #item.actions="{ item }">
                         <div class="d-flex">
