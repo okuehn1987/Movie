@@ -104,8 +104,7 @@ class WorkLogController extends Controller
         ]);
 
         $supervisor = $workLog->user->supervisor;
-        $requiresApproval = $supervisor && $supervisor->id != $authUser->id;
-        if (!$requiresApproval) $workLog->accept();
+        if ($authUser->can('update', [WorkLog::class, $workLog->user])) $workLog->accept();
         else {
             collect($supervisor->loadMissing('isSubstitutedBy')->isSubstitutedBy)
                 ->merge([$supervisor])
@@ -113,7 +112,7 @@ class WorkLogController extends Controller
                 ->each
                 ->notify(new WorkLogNotification($workLog->user, $workLog));
         }
-        return back()->with('success', 'Buchung erfolgreich ' . ($requiresApproval ? 'beantragt.' : 'gespeichert.'));
+        return back()->with('success', 'Buchung erfolgreich ' . ($authUser->can('update', [WorkLog::class, $workLog->user]) ? 'gespeichert.' : 'beantragt.'));
     }
 
     public function update(Request $request, WorkLog $workLog, #[CurrentUser] User $authUser)

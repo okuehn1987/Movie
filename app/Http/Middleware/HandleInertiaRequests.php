@@ -34,7 +34,7 @@ class HandleInertiaRequests extends Middleware
         return parent::version($request);
     }
 
-    public function shareHerta(Request $request): array
+    public function shareTide(Request $request): array
     {
         return [
             'appGlobalCan' => [
@@ -45,7 +45,7 @@ class HandleInertiaRequests extends Middleware
         ];
     }
 
-    public function shareTimesheets(Request $request): array
+    public function shareFlow(Request $request): array
     {
         return [
             'appGlobalCan' => [
@@ -120,9 +120,9 @@ class HandleInertiaRequests extends Middleware
                 ],
             ],
             ...match (AppModuleService::currentAppModule()) {
-                'tide' => $this->shareHerta($request),
-                'flow' => $this->shareTimesheets($request),
-                default => $this->shareHerta($request),
+                'tide' => $this->shareTide($request),
+                'flow' => $this->shareFlow($request),
+                default => $this->shareTide($request),
             }
         ];
     }

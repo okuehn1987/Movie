@@ -12,7 +12,7 @@ class CustomerNoteEntry extends Model
 
     public function folder()
     {
-        return $this->belongsTo(CustomerNoteFolder::class);
+        return $this->belongsTo(CustomerNoteFolder::class, 'customer_note_folder_id');
     }
 
     public function user()

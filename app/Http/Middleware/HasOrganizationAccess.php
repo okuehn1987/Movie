@@ -39,7 +39,8 @@ class HasOrganizationAccess
 
                 $instanceObject instanceof \App\Models\CustomerOperatingSite,
                 $instanceObject instanceof \App\Models\CustomerContact,
-                $instanceObject instanceof \App\Models\Ticket
+                $instanceObject instanceof \App\Models\Ticket,
+                $instanceObject instanceof \App\Models\CustomerNoteFolder
                 => $instanceObject->customer()->select('organization_id')->first()->organization_id,
 
                 $instanceObject instanceof \App\Models\TicketRecordFile
@@ -49,7 +50,7 @@ class HasOrganizationAccess
                 => $instanceObject->ticket->customer()->select('organization_id')->first()->organization_id,
 
                 $instanceObject instanceof \App\Models\CustomerNoteEntry
-                => $instanceObject->customerNoteFolder->customer()->select('organization_id')->first()->organization_id,
+                => $instanceObject->folder->customer()->select('organization_id')->first()->organization_id,
 
                 $instanceObject instanceof \App\Models\TimeAccount
                 => $instanceObject->timeAccountSetting()->select('organization_id')->first()->organization_id,

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Status;
 use App\Events\NotificationCreated;
+use App\Models\CustomAddress;
 use App\Models\Customer;
 use App\Models\CustomerOperatingSite;
 use App\Models\OperatingSite;
@@ -85,7 +86,17 @@ class TicketController extends Controller
                             'delete' => Gate::allows('update', $t),
                         ],
                     ],
-                    'records' => $t->records->load(['address:id,street,house_number,zip,city,country,federal_state,addressable_id,addressable_type', 'address.addressable:id,name'])->map(
+                    'records' => $t->records->load([
+                        'address:id,street,house_number,zip,city,country,federal_state,addressable_id,addressable_type',
+                        'address.addressable' => function ($q) {
+                            $q->constrain([
+                                User::class => fn($q2) => $q2->select('id', 'first_name', 'last_name'),
+                                OperatingSite::class => fn($q2) => $q2->select('id', 'name'),
+                                CustomAddress::class => fn($q2) => $q2->select('id', 'name'),
+                                CustomerOperatingSite::class => fn($q2) => $q2->select('id', 'name'),
+                            ]);
+                        }
+                    ])->map(
                         fn($ticketRecord) => [
                             ...$ticketRecord->toArray(),
                             'can' => [
@@ -99,7 +110,17 @@ class TicketController extends Controller
             'archiveTickets' => fn() => (clone $ticketQuery)
                 ->whereNotNull('tickets.finished_at')
                 ->whereDoesntHave('records', fn($q) => $q->whereNull('accounted_at'))
-                ->with('records')
+                ->with([
+                    'records.address:id,street,house_number,zip,city,country,federal_state,addressable_id,addressable_type',
+                    'records.address.addressable' => function ($q) {
+                        $q->constrain([
+                            User::class => fn($q2) => $q2->select('id', 'first_name', 'last_name'),
+                            OperatingSite::class => fn($q2) => $q2->select('id', 'name'),
+                            CustomAddress::class => fn($q2) => $q2->select('id', 'name'),
+                            CustomerOperatingSite::class => fn($q2) => $q2->select('id', 'name'),
+                        ]);
+                    }
+                ])
                 ->when(
                     array_key_exists('customer_id', $validated) && $validated['customer_id'] != null,
                     fn($q) => $q->where('customer_id', $validated['customer_id'])
