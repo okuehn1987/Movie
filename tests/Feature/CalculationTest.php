@@ -13,7 +13,7 @@ use Tests\TestCase;
 
 class CalculationTest extends TestCase
 {
-    private $oldUser, $youngUser, $tim;
+    private $oldUser, $youngUser, $tim, $bsp;
     public function setUp(): void
     {
         parent::setUp();
@@ -21,6 +21,7 @@ class CalculationTest extends TestCase
         $this->oldUser = User::whereDate('date_of_birth', '<=', now()->subYears(18))->first();
         $this->youngUser = User::whereDate('date_of_birth', '>', now()->subYears(18))->first();
         $this->tim = User::where('first_name', 'tim')->first();
+        $this->bsp = User::where('first_name', 'bsp')->first();
     }
     public function test_should_only_handle_work_related_models(): void
     {
@@ -738,6 +739,32 @@ class CalculationTest extends TestCase
             'accepted_at' =>  now(),
             'absence_type_id' => 10,
         ]);
+
+        $this->assertEquals(0, $this->oldUser->defaultTimeAccount->fresh()->balance);
+    }
+
+    public function test_deleting_work_log_with_current_accepted_patch()
+    {
+        $date = Carbon::parse('2026-01-12 08:28:09');
+        $this->travelTo($date);
+
+        $workLog = $this->oldUser->workLogs()->create([
+            'start' =>  $date,
+            'end' =>  $date->copy()->addHours(8),
+            'status' => 'accepted',
+            'accepted_at' =>  $date,
+        ]);
+
+        $this->assertEquals(0, $this->oldUser->defaultTimeAccount->fresh()->balance);
+
+        $workLog->patches()->create([
+            'start' =>  '2026-01-12 09:00:00',
+            'end' =>  '2026-01-12 12:00:00',
+            'status' => 'accepted',
+            'accepted_at' =>  '2026-01-14 10:07:29',
+            'user_id' => $this->oldUser->id,
+        ]);
+        $workLog->fresh()->delete();
 
         $this->assertEquals(0, $this->oldUser->defaultTimeAccount->fresh()->balance);
     }

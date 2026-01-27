@@ -420,7 +420,6 @@ class Shift extends Model
                     }
                 };
 
-
                 $entriesOfUnaffectedShifts = $model->user->getEntriesForDate($day)
                     ->filter(
                         fn($e) => !$newShifts->flatMap(fn($s) => $s['entries'])
@@ -448,10 +447,11 @@ class Shift extends Model
                 };
 
                 //if ist > soll overtime can be added immediatly else schedule will subtract the missing amount at 0:00 
-                if ($day->isSameDay(now()) || $hasAbsenceForDay || $hasAbbauGleitzeitkontoForDay)
+                if ($day->isSameDay(now()) || $hasAbsenceForDay || $hasAbbauGleitzeitkontoForDay) {
                     $change =  max($sollForAffectedDay, $newIstForAffectedDay) - max($sollForAffectedDay, $oldIstForAffectedDay);
-                else
+                } else {
                     $change =  $newIstForAffectedDay - $oldIstForAffectedDay;
+                }
 
                 $diffToApply += $change;
                 $dayChanges->{$day->format('Y-m-d')} = $change;
@@ -476,7 +476,7 @@ class Shift extends Model
                 'work' =>  'Berechnung für ' .
                     Carbon::parse($variant == 'log' || $model->type == 'patch' ? $model->start : $previousModel->start)->format('d.m.Y H:i') .
                     ' - ' .
-                    Carbon::parse($model->end)->format('d.m.Y H:i') .
+                    Carbon::parse($variant == 'log' || $model->type == 'patch' ? $model->end : $previousModel->end)->format('d.m.Y H:i') .
                     ' aufgrund von ' . $transactionDescription,
                 'absence' => 'Berechnung für ' .
                     ($model->start == $model->end ?
@@ -587,5 +587,65 @@ class Shift extends Model
 
 
         return $newShifts;
+    }
+
+
+
+    public static function recomputeShifts(Carbon $start, Carbon $end, User $user)
+    {
+
+
+
+        $state = [
+            'user' => $user->first_name . ' ' . $user->last_name,
+            'balance_before' => $user->defaultTimeAccount->balance / 3600
+        ];
+
+        foreach ($user->timeAccounts as $timeAccount) {
+            $transactions = $timeAccount->allTimeAccountTransactions()
+                ->get()
+                ->filter(
+                    fn($transaction) =>
+                    $transaction->changes()->where('date', '<=', $end)->where('date', '>=', $start)->exists()
+                );
+
+            $firstTransaction = $transactions
+                ->sortBy(
+                    fn($transaction) =>
+                    $transaction->changes()->where('date', '<=', $end)->where('date', '>=', $start)->min('date')
+                )
+                ->first()->load(['from', 'to']);
+
+            if ($firstTransaction->from_id == $timeAccount->id) {
+                $timeAccount->updateQuietly(['balance' => $firstTransaction->from_previous_balance]);
+            } else {
+                $timeAccount->updateQuietly(['balance' => $firstTransaction->to_previous_balance]);
+            }
+
+            foreach ($transactions as $transaction) {
+                $transaction->changes()->delete();
+                $transaction->delete();
+            }
+        }
+
+        $checkDate = fn($query, Carbon $start, Carbon $end) => $query->where('start', '<=', $end)->where('end', '>=', $start);
+
+        $checkDate($user->load('workLogs')->workLogs(), $start, $end)->get()->each->updateQuietly(['shift_id' => null]);
+        $checkDate($user->load('workLogPatches')->workLogPatches(), $start, $end)->get()->each->updateQuietly(['shift_id' => null]);
+        $checkDate($user->load('shifts')->shifts(), $start, $end)->delete();
+
+
+        $entries = WorkLogPatch::getCurrentEntries($user, false, $start, $end)->load('user');
+        for ($day = $start->copy(); $day->lte($end); $day->addDay()) {
+            if ($day->lt($user->overtime_calculations_start)) continue;
+
+            if (!$day->isSameDay(now())) $user->removeMissingWorkTimeForDate($day);
+
+            $entriesForDay = $entries->filter(fn($e) => $day->copy()->startOfDay() <= $e->start && $e->start <= $day->endOfDay())->sortBy(fn($e) => $e->accepted_at);
+
+            $entriesForDay->each->save();
+        }
+        $state['balance_after'] = $user->defaultTimeAccount->fresh()->balance / 3600;
+        dump($state);
     }
 }
