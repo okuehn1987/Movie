@@ -59,7 +59,7 @@ function scrollToBottom() {
     if (elem) elem.scrollTo({ top: elem.scrollHeight, behavior: 'instant' });
 }
 
-if (chat.value) {
+if (chat.value && chat.value.id >= 0) {
     useEcho<{ msg: string }>('chat.' + chat.value.id, 'ChatMessageDelta', e => {
         currentPartialChatResponse.value += e.msg;
     });
