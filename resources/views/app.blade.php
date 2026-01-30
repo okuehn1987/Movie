@@ -11,10 +11,6 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-    @if (App\Models\Organization::getCurrent())
-        <link rel="manifest" href="/webmanifest" crossorigin="use-credentials">
-        <link rel="icon" href="/favicon.ico" crossorigin="use-credentials" type="image/png" />
-    @endif
 
     <script id="vite-plugin-pwa:register-sw" src="/build/registerSW.js"></script>
 

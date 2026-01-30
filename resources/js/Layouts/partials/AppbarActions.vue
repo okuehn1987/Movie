@@ -1,27 +1,11 @@
 <script setup lang="ts">
-import { router, usePage } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import { useDisplay } from 'vuetify';
-import ReportBugDialog from './ReportBugDialog.vue';
-import { ref } from 'vue';
-import { useEcho } from '@laravel/echo-vue';
 
 const display = useDisplay();
-const page = usePage();
-
-const unreadNotificationCount = ref(page.props.unreadNotifications.length);
-
-useEcho<{ unreadCount: number }>('notification.' + page.props.auth.user.id, 'NotificationCreated', e => {
-    unreadNotificationCount.value = e.unreadCount;
-});
 </script>
 
 <template>
-    <v-btn color="primary" stacked @click.stop="router.get(route('notification.index'))">
-        <v-badge v-if="unreadNotificationCount > 0" :content="unreadNotificationCount <= 99 ? unreadNotificationCount : '99+'" color="error">
-            <v-icon icon="mdi-bell"></v-icon>
-        </v-badge>
-        <v-icon v-else icon="mdi-bell"></v-icon>
-    </v-btn>
     <v-menu :location="display.smAndDown.value ? 'bottom left' : 'bottom'">
         <template #activator="{ props: activatorProps }">
             <v-btn stacked color="primary" prepend-icon="mdi-account-details" v-bind="activatorProps"></v-btn>
@@ -30,9 +14,6 @@ useEcho<{ unreadCount: number }>('notification.' + page.props.auth.user.id, 'Not
             <v-list-item @click.stop="router.get(route('user.profile', { user: $page.props.auth.user.id }))">
                 <v-icon icon="mdi-account" color="primary" class="me-2"></v-icon>
                 Profil
-            </v-list-item>
-            <v-list-item @click.stop="() => {}">
-                <ReportBugDialog></ReportBugDialog>
             </v-list-item>
             <v-list-item @click.stop="router.post(route('logout'))">
                 <v-icon icon="mdi-logout" color="primary" class="me-2"></v-icon>

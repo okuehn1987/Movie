@@ -17,18 +17,6 @@ import * as directives from 'vuetify/directives';
 import { VDateInput } from 'vuetify/labs/components';
 import colors from 'vuetify/util/colors';
 
-import { configureEcho } from '@laravel/echo-vue';
-
-configureEcho({
-    broadcaster: 'reverb',
-    key: import.meta.env['VITE_REVERB_APP_KEY'],
-    wsHost: window.location.hostname,
-    wsPort: import.meta.env['VITE_REVERB_PORT'],
-    wssPort: import.meta.env['VITE_REVERB_PORT'],
-    forceTLS: false,
-    enabledTransports: ['ws', 'wss'],
-});
-
 const vuetify = createVuetify({
     defaults: {
         VTextField: { variant: 'underlined' },
@@ -70,7 +58,6 @@ const vuetify = createVuetify({
     directives,
 });
 
-import canPlugin from './canPlugin';
 import useFormPlugin from './useFormPlugin';
 
 createInertiaApp({
@@ -80,7 +67,6 @@ createInertiaApp({
         createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
-            .use(canPlugin)
             .use(useFormPlugin)
             .use(vuetify)
             .mount(el);

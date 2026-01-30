@@ -38,14 +38,5 @@ class AppServiceProvider extends ServiceProvider
 
         Vite::prefetch(concurrency: 3);
 
-        Gate::defaultDenialResponse(app()->environment('local') ? Response::denyWithStatus(403) : Response::denyAsNotFound());
-
-        Feature::resolveScopeUsing(fn() => Organization::getCurrent());
-
-        EnsureFeaturesAreActive::whenInactive(fn() => new Response(428));
-
-        foreach (Organization::$FLAGS as $feature => $description) {
-            Feature::define($feature, fn(Organization $organization) => !!$organization->{$feature});
-        }
     }
 }
