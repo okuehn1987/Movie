@@ -17,7 +17,7 @@ defineProps<{
                         <v-img src="/img/logo.svg" class="mb-6" style="max-width: 200px"></v-img>
                     </div>
                     <h1 class="text-center font-weight-medium d-flex">
-                        <span class="ms-3">{{ $page.props.organization.name }}</span>
+                        <!-- <span class="ms-3">{{ $page.props.organization.name }}</span> -->
                     </h1>
                 </v-card-text>
 

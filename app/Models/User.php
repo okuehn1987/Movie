@@ -11,13 +11,22 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 
 class User extends Authenticatable
 {
-
-    // public function chirps(): HasMany
-    // {
-    //     return $this->hasMany(Chirp::class);
-    // }
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
+
+    public function chirps(): HasMany
+    {
+        return $this->hasMany(Chirp::class);
+    }
+
+    public function movies(): HasMany
+    {
+        return $this->hasMany(Movie::class);
+    }
+
+    public function music(): HasMany
+    {
+        return $this->hasMany(Music::class);
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -28,6 +37,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'remember_token',
     ];
 
     /**

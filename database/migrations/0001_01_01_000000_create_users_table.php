@@ -13,30 +13,10 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->softDeletes();
-            $table->string('first_name');
-            $table->string('last_name');
+            $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('role', ['super-admin', 'employee'])->default('employee');
-            $table->foreignId('operating_site_id');
-            $table->foreignId('group_id')->nullable();
-            $table->foreignId('supervisor_id')->nullable()->references('id')->on('users');
-            $table->boolean('is_supervisor')->default(false);
-            $table->foreignId('organization_id')->nullable();
-            $table->string("staff_number")->nullable();
-            $table->date("date_of_birth");
-            $table->boolean("home_office")->default(false);
-            $table->float("home_office_ratio")->nullable();
-            $table->string("phone_number")->nullable();
-            $table->string("street")->nullable();
-            $table->string("house_number")->nullable();
-            $table->string("address_suffix")->nullable();
-            $table->string("country")->default("DE");
-            $table->string("city")->nullable();
-            $table->string("zip")->nullable();
-            $table->string("federal_state")->default("SH");
 
             $table->rememberToken();
             $table->timestamps();

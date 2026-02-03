@@ -32,6 +32,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        User::factory()
+            ->create([
+                'name' => 'Test User',
+                'email' => 'test@test.de',
+                'password' => Hash::make('test1234'),
+            ]);
     }
-
 }

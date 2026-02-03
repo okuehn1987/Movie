@@ -36,7 +36,6 @@ class AuthenticatedSessionController extends Controller
                 'required',
                 'string',
                 'email',
-                Rule::exists('users', 'email')->whereIn('id', Organization::getCurrent()->users()->select('users.id'))
             ],
             'password' => ['required', 'string'],
         ]);
@@ -45,7 +44,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('home'));
+        return redirect()->intended(route('dashboard'));
     }
 
     /**
