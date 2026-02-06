@@ -30,27 +30,9 @@ return [
 
     'disks' => [
 
-        'organization_logos' => [
+        'movies' => [
             'driver' => 'local',
-            'root' => storage_path('app/private/organization_logos'),
-            'throw' => false,
-        ],
-
-        'customer_note_files' => [
-            'driver' => 'local',
-            'root' => storage_path('app/private/customer_note_files'),
-            'throw' => false,
-        ],
-
-        'ticket_record_files' => [
-            'driver' => 'local',
-            'root' => storage_path('app/private/ticket_record_files'),
-            'throw' => false,
-        ],
-
-        'ticket_files' => [
-            'driver' => 'local',
-            'root' => storage_path('app/private/ticket_files'),
+            'root' => storage_path('app/private/movies'),
             'throw' => false,
         ],
 
@@ -59,18 +41,6 @@ return [
             'root' => storage_path('app/public'),
             'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
-            'throw' => false,
-        ],
-
-        'bug_reports' => [
-            'driver' => 'local',
-            'root' => storage_path('app/private/bug_reports'),
-            'throw' => false,
-        ],
-
-        'chat_files' => [
-            'driver' => 'local',
-            'root' => storage_path('app/private/chat_files'),
             'throw' => false,
         ],
 
@@ -102,7 +72,6 @@ return [
         // ],
 
     ],
-
     /*
     |--------------------------------------------------------------------------
     | Symbolic Links

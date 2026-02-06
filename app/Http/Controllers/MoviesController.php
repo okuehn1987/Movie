@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Movie;
 use App\Models\User;
+use Illuminate\Auth\Access\Gate;
 use Illuminate\Container\Attributes\CurrentUser;
+
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 
@@ -16,7 +19,7 @@ class MoviesController extends Controller
      */
     public function index()
     {
-        return Inertia::render('Movies/Index', ['movies' => Movie::get()]);
+        return Inertia::render('Movies/Index', ['movies' => Movie::where('hidden', false)->get()]);
     }
 
     /**
@@ -41,21 +44,50 @@ class MoviesController extends Controller
             'movieLength' => 'required|string|max:255',
             'rating' => 'string|min:0|max:5',
             'hidden' => 'boolean',
-            'name' => 'required|string|max:255',
-            'year' => 'required|integer|min:1940|max:9999',
+            'movie_file' => 'required',
+            'thumbnail_file' => 'required'
         ]);
 
-        $authUser->movies()->create($validated);
+        $validated['movie_file'];
+        $movieName = $validated['title'] . '.mp4';
+        $thumbnailName = $validated['title'] . 'jpg';
+
+        $moviePath = Storage::disk('movies')->putFileAs('', $validated['movie_file'], $movieName);
+        $thumbnailPath = Storage::disk('movies')->putFileAs('thumbnails', $validated['thumbnail_file'], $thumbnailName);
+
+
+        $authUser->movies()->create([
+            'title' => $validated['title'],
+            'genre' => $validated['genre'],
+            'actor' => $validated['actor'],
+            'publicationDate' => $validated['publicationDate'],
+            'movieLength' => $validated['movieLength'],
+            'rating' => $validated['rating'],
+            'hidden' => $validated['hidden'],
+            'movie_file_path' => $moviePath,
+            'thumbnail_file_path' => $thumbnailPath
+        ]);
 
         return back(); //redirect(route('movies.index'));
+    }
+
+
+    public function getMovieContent(Movie $movieFile,)
+    {
+        return response()->file(Storage::disk('movies')->path($movieFile->movie_file_path));
+    }
+
+    public function getThumbnailContent(Movie $thumbnailFile)
+    {
+        return response()->file(Storage::disk('movies')->path($thumbnailFile->thumbnail_file_path));
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Movie $movie)
+    public function show()
     {
-        //
+        return Inertia::render('Movies/Show');
     }
 
     /**

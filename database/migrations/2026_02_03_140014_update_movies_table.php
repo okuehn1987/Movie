@@ -24,6 +24,8 @@ return new class extends Migration
             $table->string('movieLength');
             $table->unsignedTinyInteger('rating');
             $table->boolean('hidden');
+            $table->string('movie_file_path');
+            $table->string('thumbnail_file_path');
         });
     }
 

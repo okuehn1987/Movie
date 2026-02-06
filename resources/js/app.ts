@@ -14,7 +14,7 @@ import 'vuetify/styles';
 import { createVuetify } from 'vuetify';
 import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
-import { VDateInput } from 'vuetify/labs/components';
+import { VDateInput, VFileUpload, VVideo } from 'vuetify/labs/components';
 import colors from 'vuetify/util/colors';
 
 const vuetify = createVuetify({
@@ -54,7 +54,7 @@ const vuetify = createVuetify({
             de: 'de-DE',
         },
     },
-    components: { ...components, VDateInput },
+    components: { ...components, VDateInput, VFileUpload, VVideo },
     directives,
 });
 

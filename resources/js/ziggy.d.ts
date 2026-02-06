@@ -25,7 +25,43 @@ declare module 'ziggy-js' {
     "ignition.healthCheck": [],
     "ignition.executeSolution": [],
     "ignition.updateConfig": [],
+    "playwright.factory": [],
+    "playwright.login": [],
+    "playwright.logout": [],
+    "playwright.artisan": [],
+    "playwright.run-php": [],
+    "playwright.csrf-token": [],
+    "playwright.routes": [],
+    "playwright.current-user": [],
     "dashboard": [],
+    "chirps.index": [],
+    "chirps.store": [],
+    "movies.index": [],
+    "movies.create": [],
+    "movies.store": [],
+    "movies.show": [
+        {
+            "name": "movie",
+            "required": true
+        }
+    ],
+    "music.index": [],
+    "music.store": [],
+    "movieFile.getMovieContent": [
+        {
+            "name": "movieFile",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "thumbnailFile.getThumbnailContent": [
+        {
+            "name": "thumbnailFile",
+            "required": true,
+            "binding": "id"
+        }
+    ],
+    "register": [],
     "login": [],
     "password.request": [],
     "password.email": [],

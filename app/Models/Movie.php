@@ -13,7 +13,9 @@ class Movie extends Model
         'publicationDate',
         'movieLength',
         'rating',
-        'hidden'
+        'hidden',
+        'movie_file_path',
+        'thumbnail_file_path'
     ];
     public function user()
     {
