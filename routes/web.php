@@ -3,23 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\ChirpController;
+use App\Http\Middleware\EnsureAdminIsValid;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-Route::resource('chirps', ChirpController::class)
-    ->only(['index', 'store'])
-    ->middleware(['auth', 'verified']);
+Route::middleware(['auth', 'verified'])->group(function () {
 
-Route::resource('movies', MoviesController::class)
-    ->only(['index', 'store', 'create', 'show'])
-    ->middleware(['auth', 'verified']);
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::resource('chirps', ChirpController::class)
+        ->only(['index', 'store']);
 
-Route::resource('music', MusicController::class)
-    ->only(['index', 'store'])
-    ->middleware('auth', 'verified');
+    Route::resource('movies', MovieController::class)->only(['index', 'show']);
 
-Route::get('/movies/{movieFile}/getMovieContent', [MoviesController::class, 'getMovieContent'])->name('movieFile.getMovieContent');
+    Route::resource('movie', MovieController::class)->only(['store', 'create'])->middleware(EnsureAdminIsValid::class);
 
-Route::get('/movies/{thumbnailFile}/getThumbnailContent', [MoviesController::class, 'getThumbnailContent'])->name('thumbnailFile.getThumbnailContent');
+    Route::resource('music', MusicController::class)->only(['index', 'store']);
+    Route::get('/movie/{movieFile}/getMovieContent', [MovieController::class, 'getMovieContent'])->name('movieFile.getMovieContent');
+
+    Route::get('/movie/{thumbnailFile}/getThumbnailContent', [MovieController::class, 'getThumbnailContent'])->name('thumbnailFile.getThumbnailContent');
+});
 require __DIR__ . '/auth.php';

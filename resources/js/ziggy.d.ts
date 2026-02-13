@@ -37,14 +37,15 @@ declare module 'ziggy-js' {
     "chirps.index": [],
     "chirps.store": [],
     "movies.index": [],
-    "movies.create": [],
-    "movies.store": [],
     "movies.show": [
         {
             "name": "movie",
-            "required": true
+            "required": true,
+            "binding": "id"
         }
     ],
+    "movie.create": [],
+    "movie.store": [],
     "music.index": [],
     "music.store": [],
     "movieFile.getMovieContent": [

@@ -8,6 +8,17 @@ import { router } from '@inertiajs/vue3';
         @click:select="route => router.get(route.id as string)"
         :items="[
             { props: { active: route().current('dashboard'), prependIcon: 'mdi-view-dashboard' }, value: route('dashboard'), title: 'Dashboard' },
+            { props: { active: route().current('movies.index'), prependIcon: 'mdi-play' }, value: route('movies.index'), title: 'Movie' },
+
+            ...($page.props.auth.user.is_admin
+                ? [
+                      {
+                          props: { active: route().current('movie.create'), prependIcon: 'mdi-cloud-upload' },
+                          value: route('movie.create'),
+                          title: 'Add Movies ',
+                      },
+                  ]
+                : []),
         ]"
     />
 </template>

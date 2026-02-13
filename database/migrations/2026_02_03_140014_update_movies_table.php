@@ -21,11 +21,12 @@ return new class extends Migration
             $table->string('title')->unique();
             $table->string('actor');
             $table->string('publicationDate');
-            $table->string('movieLength');
+            $table->string('duration_in_seconds');
             $table->unsignedTinyInteger('rating');
             $table->boolean('hidden');
             $table->string('movie_file_path');
             $table->string('thumbnail_file_path');
+            $table->text('description');
         });
     }
 

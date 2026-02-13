@@ -6,20 +6,22 @@ use App\Models\Movie;
 use App\Models\User;
 use Illuminate\Auth\Access\Gate;
 use Illuminate\Container\Attributes\CurrentUser;
-
+use FFMpeg\FFProbe;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 
-class MoviesController extends Controller
+
+class MovieController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return Inertia::render('Movies/Index', ['movies' => Movie::where('hidden', false)->get()]);
+        return Inertia::render('Movies/Index', ['movies' => Movie::when(!Auth::user()->is_admin, fn($q) => $q->where('hidden', false))->get()]);
     }
 
     /**
@@ -35,25 +37,31 @@ class MoviesController extends Controller
      */
     public function store(Request $request, #[CurrentUser] User $authUser)
     {
+
         // dd($request->all());
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'genre' => 'required|string|max:255',
             'actor' => 'required|string|max:255',
             'publicationDate' => 'required|string|max:255',
-            'movieLength' => 'required|string|max:255',
             'rating' => 'string|min:0|max:5',
             'hidden' => 'boolean',
             'movie_file' => 'required',
-            'thumbnail_file' => 'required'
+            'thumbnail_file' => 'required',
+            'description' => 'required|string|max:1000'
+
+
+
         ]);
 
         $validated['movie_file'];
         $movieName = $validated['title'] . '.mp4';
-        $thumbnailName = $validated['title'] . 'jpg';
-
+        $thumbnailName = $validated['title'] . '.jpg';
         $moviePath = Storage::disk('movies')->putFileAs('', $validated['movie_file'], $movieName);
         $thumbnailPath = Storage::disk('movies')->putFileAs('thumbnails', $validated['thumbnail_file'], $thumbnailName);
+
+
+
 
 
         $authUser->movies()->create([
@@ -61,12 +69,14 @@ class MoviesController extends Controller
             'genre' => $validated['genre'],
             'actor' => $validated['actor'],
             'publicationDate' => $validated['publicationDate'],
-            'movieLength' => $validated['movieLength'],
             'rating' => $validated['rating'],
             'hidden' => $validated['hidden'],
             'movie_file_path' => $moviePath,
-            'thumbnail_file_path' => $thumbnailPath
+            'thumbnail_file_path' => $thumbnailPath,
+            'description' => $validated['description'],
+            'duration_in_seconds' => FFProbe::create()->format(Storage::disk('movies')->path($moviePath))->get('duration'),
         ]);
+
 
         return back(); //redirect(route('movies.index'));
     }
@@ -85,9 +95,10 @@ class MoviesController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show()
+    public function show(Request $request, Movie $movie)
     {
-        return Inertia::render('Movies/Show');
+        // dd($movie);
+        return Inertia::render('Movies/Show', ['movie' => $movie]);
     }
 
     /**

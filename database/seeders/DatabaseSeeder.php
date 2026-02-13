@@ -37,6 +37,15 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Test User',
                 'email' => 'test@test.de',
                 'password' => Hash::make('test1234'),
+                'is_admin' => false
+            ]);
+
+        User::factory()
+            ->create([
+                'name' => 'Admin',
+                'email' => 'admin@admin.de',
+                'password' => Hash::make('admin1234'),
+                'is_admin' => true
             ]);
     }
 }

@@ -31,7 +31,7 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     graphviz \
     poppler-utils \
-    # ffmpeg \
+    ffmpeg \
     g++ \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd 
@@ -42,7 +42,7 @@ RUN docker-php-ext-install bz2 intl iconv bcmath opcache calendar mbstring pdo_m
 RUN docker-php-ext-configure ftp --with-openssl-dir=/usr \
     && docker-php-ext-install ftp
 
-# RUN echo -e "\npost_max_size = 2G\nupload_max_filesize = 2G" >> /usr/local/etc/php/php.ini
+RUN echo -e "\npost_max_size = 2G\nupload_max_filesize = 2G" >> /usr/local/etc/php/php.ini
 # RUN echo -e "\nclient_max_body_size 2g" >> /etc/nginx/nginx.conf  TODO: Add this to nginx config but in http{} block
 
 # [Choice] Node.js version: none, lts/*, 16, 14, 12, 10

@@ -12,4 +12,16 @@ export type DBObject<Brand extends string> = {
 
 export type User = DBObject<'user'> & {
     name: string;
+    is_admin: boolean;
+};
+
+export type Movie = DBObject<'movie'> & {
+    id: number;
+    title: string;
+    genre: string;
+    actor: string;
+    rating: number;
+    publicationDate: string;
+    hidden: boolean;
+    description: string;
 };
