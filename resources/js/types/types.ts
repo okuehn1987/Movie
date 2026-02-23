@@ -25,3 +25,11 @@ export type Movie = DBObject<'movie'> & {
     hidden: boolean;
     description: string;
 };
+
+export type Comment = {
+    id: number;
+    user_id: number;
+    movie_id: number;
+    comment: string;
+    created_at: Date;
+};

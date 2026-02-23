@@ -21,5 +21,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/movie/{movieFile}/getMovieContent', [MovieController::class, 'getMovieContent'])->name('movieFile.getMovieContent');
 
     Route::get('/movie/{thumbnailFile}/getThumbnailContent', [MovieController::class, 'getThumbnailContent'])->name('thumbnailFile.getThumbnailContent');
+    Route::resource('movie.comment', CommentController::class)->only(['store', 'update'])->shallow();
 });
 require __DIR__ . '/auth.php';

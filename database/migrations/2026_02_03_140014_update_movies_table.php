@@ -17,7 +17,6 @@ return new class extends Migration
             $table->dropColumn('name');
             $table->dropColumn('year');
 
-
             $table->string('title')->unique();
             $table->string('actor');
             $table->string('publicationDate');

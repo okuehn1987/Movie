@@ -3,11 +3,13 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Fortify\TwoFactorAuthenticatable;
+
 
 class User extends Authenticatable
 {
@@ -28,6 +30,11 @@ class User extends Authenticatable
         return $this->hasMany(Music::class);
     }
 
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
     /**
      * The attributes that are mass assignable.
      *
@@ -38,7 +45,7 @@ class User extends Authenticatable
         'email',
         'password',
         'remember_token',
-        'is_admin'
+        'is_admin',
     ];
 
     /**

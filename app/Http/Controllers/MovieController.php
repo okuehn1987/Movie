@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Comment;
 use App\Models\Movie;
 use App\Models\User;
 use Illuminate\Auth\Access\Gate;
@@ -48,10 +49,7 @@ class MovieController extends Controller
             'hidden' => 'boolean',
             'movie_file' => 'required',
             'thumbnail_file' => 'required',
-            'description' => 'required|string|max:1000'
-
-
-
+            'description' => 'required|string|max:1000',
         ]);
 
         $validated['movie_file'];
@@ -59,10 +57,6 @@ class MovieController extends Controller
         $thumbnailName = $validated['title'] . '.jpg';
         $moviePath = Storage::disk('movies')->putFileAs('', $validated['movie_file'], $movieName);
         $thumbnailPath = Storage::disk('movies')->putFileAs('thumbnails', $validated['thumbnail_file'], $thumbnailName);
-
-
-
-
 
         $authUser->movies()->create([
             'title' => $validated['title'],
@@ -75,6 +69,7 @@ class MovieController extends Controller
             'thumbnail_file_path' => $thumbnailPath,
             'description' => $validated['description'],
             'duration_in_seconds' => FFProbe::create()->format(Storage::disk('movies')->path($moviePath))->get('duration'),
+
         ]);
 
 
@@ -92,12 +87,15 @@ class MovieController extends Controller
         return response()->file(Storage::disk('movies')->path($thumbnailFile->thumbnail_file_path));
     }
 
+
+
     /**
      * Display the specified resource.
      */
     public function show(Request $request, Movie $movie)
     {
         // dd($movie);
+        $movie->load('comments');
         return Inertia::render('Movies/Show', ['movie' => $movie]);
     }
 

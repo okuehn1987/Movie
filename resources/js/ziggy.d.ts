@@ -62,6 +62,19 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
+    "movie.comment.store": [
+        {
+            "name": "movie",
+            "required": true
+        }
+    ],
+    "comment.update": [
+        {
+            "name": "comment",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "register": [],
     "login": [],
     "password.request": [],

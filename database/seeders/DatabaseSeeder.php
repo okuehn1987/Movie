@@ -8,6 +8,7 @@ use App\Models\ChatAssistant;
 use App\Models\Customer;
 use App\Models\CustomerOperatingSite;
 use App\Models\Group;
+use App\Models\Movie;
 use App\Models\OperatingSite;
 use App\Models\OperatingSiteUser;
 use App\Models\OperatingTime;
@@ -23,7 +24,9 @@ use App\Services\AppModuleService;
 use App\Services\OpenAIService;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
+use Illuminate\Http\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class DatabaseSeeder extends Seeder
 {
@@ -40,12 +43,44 @@ class DatabaseSeeder extends Seeder
                 'is_admin' => false
             ]);
 
-        User::factory()
+        $admin = User::factory()
             ->create([
                 'name' => 'Admin',
                 'email' => 'admin@admin.de',
                 'password' => Hash::make('admin1234'),
                 'is_admin' => true
+            ]);
+
+        Movie::factory()
+            ->create([
+                'user_id' => $admin->id,
+                'title' => 'The Bunny',
+                'genre' => 'Zeichentrick',
+                'actor' => 'Bunny',
+                'publicationDate' => '09.02.2026',
+                'rating' => '3',
+                'hidden' => false,
+                'movie_file_path' => Storage::disk('movies')->putFileAs('', new File('storage/app/public/The Bunny.mp4'), 'Bunny.mp4'),
+                'thumbnail_file_path' => Storage::disk('movies')->putFileAs('thumbnails', new File('storage/app/public/thumbnails/The Bunny.jpg'), 'The Bunny.jpg'),
+                'duration_in_seconds' => 5.803000,
+                'description' => 'In diesem bezaubernden Beispielvideo "Bunny" erleben wir die Abenteuer eines süßen Kaninchens, das in einem farbenfrohen Garten voller Blumen und fröhlicher Tiere lebt. Das Video zeigt die neugewonnene Neugier des kleinen Bunny, während es die Umgebung erkundet, Freundschaften mit anderen Tieren schließt und verschiedene Herausforderungen meistert.',
+            ]);
+
+
+
+        Movie::factory()
+            ->create([
+                'user_id' => $admin->id,
+                'title' => 'The World',
+                'genre' => 'Si-Fi',
+                'actor' => 'World',
+                'publicationDate' => '10.02.2026',
+                'rating' => '2',
+                'hidden' => false,
+                'movie_file_path' => Storage::disk('movies')->putFileAs('', new File('storage/app/public/The World.mp4'), 'World.mp4'),
+                'thumbnail_file_path' => Storage::disk('movies')->putFileAs('thumbnails', new File('storage/app/public/thumbnails/The World.jpg'), 'World.jpg'),
+                'duration_in_seconds' => 30.526667,
+                'description' => 'In dieser faszinierenden Sci-Fi-Visualisierung erleben wir eine dynamische, drehende Weltkugel, die in einem futuristischen Setting präsentiert wird. Die Weltkugel ist nicht nur ein einfaches Modell der Erde, sondern ein interaktives, holografisches Objekt, das die Magie der Technologie und das Mysterium des Universums vereint.',
             ]);
     }
 }
