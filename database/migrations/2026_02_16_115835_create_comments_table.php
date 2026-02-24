@@ -17,6 +17,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('movie_id')->constrained()->cascadeOnDelete();
             $table->string('comment', 1000);
+            $table->foreign('name')->references('name')->on('users')->onDelete('cascade');
+            $table->string('name');
             $table->timestamps();
         });
     }

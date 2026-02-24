@@ -11,7 +11,8 @@ class Comment extends Model
 
     protected $fillable = [
         'comment',
-        'movie_id'
+        'movie_id',
+        'name'
     ];
 
     public function user()

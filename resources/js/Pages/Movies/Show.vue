@@ -173,21 +173,24 @@ const form = useForm({
                                             </form>
                                         </v-col>
                                     </v-row>
-                                    <v-container class="bg-surface-variant" v-for="comment in movie.comments" :key="comment.id">
-                                        <v-row no-gutters>
-                                            <v-col>
-                                                <v-sheet class="pa-1">.v-col-auto</v-sheet>
-                                            </v-col>
-                                            <v-col>
-                                                <v-sheet class="pa-1" style="text-align: right">{{ comment.created_at }}</v-sheet>
-                                            </v-col>
-                                        </v-row>
+                                    <v-container class="pa-4" style="max-height: 300px; overflow-y: auto">
+                                        <div v-for="comment in movie.comments" :key="comment.id" class="mb-4">
+                                            <v-row no-gutters mb-2>
+                                                <v-col>
+                                                    <v-sheet class="pa-2 font-weight-bold">{{ comment.name }}</v-sheet>
+                                                </v-col>
+                                                <v-col class="text-right">
+                                                    <v-sheet class="pa-2 text-caption grey--text">{{ comment.created_at }}</v-sheet>
+                                                </v-col>
+                                            </v-row>
 
-                                        <v-row no-gutters>
-                                            <v-col>
-                                                <v-sheet class="pa-1">{{ comment.comment }}</v-sheet>
-                                            </v-col>
-                                        </v-row>
+                                            <v-row no-gutters>
+                                                <v-col>
+                                                    <v-sheet class="pa-3">{{ comment.comment }}</v-sheet>
+                                                </v-col>
+                                            </v-row>
+                                            <v-divider class="my-2"></v-divider>
+                                        </div>
                                     </v-container>
                                 </v-container>
                             </v-card>

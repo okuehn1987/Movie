@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Comment;
 use App\Models\Movie;
 use App\Models\User;
+use FontLib\Table\Type\name;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Request;
 
@@ -40,7 +41,8 @@ class CommentController extends Controller
 
         $authUser->comments()->create([
             'comment' => $validated['comment'],
-            'movie_id' => $movie->id
+            'movie_id' => $movie->id,
+            'name' => $authUser->name
         ]);
 
         return back();

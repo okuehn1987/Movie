@@ -28,6 +28,7 @@ export type Movie = DBObject<'movie'> & {
 
 export type Comment = {
     id: number;
+    name: string;
     user_id: number;
     movie_id: number;
     comment: string;
