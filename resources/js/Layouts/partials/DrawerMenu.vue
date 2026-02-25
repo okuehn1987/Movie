@@ -17,6 +17,11 @@ import { router } from '@inertiajs/vue3';
                           value: route('movie.create'),
                           title: 'Add Movies ',
                       },
+                      {
+                          props: { active: route().current('movie.actor'), prependIcon: 'mdi-circle' },
+                          value: route('actor.index'),
+                          title: 'Add Actors ',
+                      },
                   ]
                 : []),
         ]"

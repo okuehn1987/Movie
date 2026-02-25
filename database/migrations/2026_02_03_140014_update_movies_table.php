@@ -19,8 +19,8 @@ return new class extends Migration
 
             $table->string('title')->unique();
             $table->string('actor');
-            $table->string('publicationDate');
-            $table->string('duration_in_seconds');
+            $table->date('publication_date');
+            $table->smallInteger('duration_in_seconds');
             $table->unsignedTinyInteger('rating');
             $table->boolean('hidden');
             $table->string('movie_file_path');

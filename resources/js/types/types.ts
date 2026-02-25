@@ -21,7 +21,7 @@ export type Movie = DBObject<'movie'> & {
     genre: string;
     actor: string;
     rating: number;
-    publicationDate: string;
+    publication_date: string;
     hidden: boolean;
     description: string;
 };

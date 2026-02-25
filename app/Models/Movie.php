@@ -14,7 +14,7 @@ class Movie extends Model
         'title',
         'genre',
         'actor',
-        'publicationDate',
+        'publication_date',
         'movieLength',
         'rating',
         'hidden',
@@ -31,5 +31,10 @@ class Movie extends Model
     public function comments()
     {
         return $this->hasMany(Comment::class);
+    }
+
+    public function actors()
+    {
+        return $this->belongsToMany(Actor::class);
     }
 }

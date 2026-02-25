@@ -2,6 +2,8 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Comment, Movie } from '@/types/types';
 import { ref } from 'vue';
+import { DateTime } from 'luxon';
+import CreateUpdateForm from './CreateUpdateForm.vue';
 
 defineProps<{
     movie: Movie & { comments: Comment[] };
@@ -33,7 +35,29 @@ const form = useForm({
                                 </v-card-title>
                             </div>
                         </v-img>
+                        <v-container style="direction: rtl; padding: 2%">
+                            <v-dialog max-width="500">
+                                <template v-slot:activator="{ props: activatorProps }">
+                                    <v-btn icon v-bind="activatorProps">
+                                        <v-icon>mdi-pencil</v-icon>
+                                    </v-btn>
+                                </template>
 
+                                <template v-slot:default="{ isActive }">
+                                    <v-card title="Edit">
+                                        <v-card-text style="padding-bottom: 0px">
+                                            <CreateUpdateForm></CreateUpdateForm>
+                                        </v-card-text>
+
+                                        <v-card-actions>
+                                            <v-spacer></v-spacer>
+
+                                            <v-btn text="Close Dialog" @click="isActive.value = false"></v-btn>
+                                        </v-card-actions>
+                                    </v-card>
+                                </template>
+                            </v-dialog>
+                        </v-container>
                         <v-list lines="two">
                             <v-list-item>
                                 <template v-slot:prepend>
@@ -43,7 +67,6 @@ const form = useForm({
                                 </template>
 
                                 <v-list-item-title>{{ movie.rating }}</v-list-item-title>
-                                <!-- <v-list-item-subtitle>Rating</v-list-item-subtitle> -->
 
                                 <template v-slot:append></template>
                             </v-list-item>
@@ -55,7 +78,9 @@ const form = useForm({
                                     </v-avatar>
                                 </template>
 
-                                <v-list-item-title>{{ movie.publicationDate }}</v-list-item-title>
+                                <v-list-item-title>
+                                    {{ DateTime.fromISO(movie.publication_date.toString()).toLocaleString(DateTime.DATE_SHORT) }}
+                                </v-list-item-title>
                                 <!-- <v-list-item-subtitle>Publication Date</v-list-item-subtitle> -->
 
                                 <template v-slot:append></template>
@@ -180,7 +205,16 @@ const form = useForm({
                                                     <v-sheet class="pa-2 font-weight-bold">{{ comment.name }}</v-sheet>
                                                 </v-col>
                                                 <v-col class="text-right">
-                                                    <v-sheet class="pa-2 text-caption grey--text">{{ comment.created_at }}</v-sheet>
+                                                    <v-sheet class="pa-2 text-caption grey--text">
+                                                        {{ DateTime.fromISO(comment.created_at.toString()).toLocaleString(DateTime.DATE_SHORT) }}
+                                                        <p>
+                                                            {{
+                                                                DateTime.fromISO(comment.created_at.toString()).toLocaleString(
+                                                                    DateTime.TIME_24_WITH_SECONDS,
+                                                                )
+                                                            }}
+                                                        </p>
+                                                    </v-sheet>
                                                 </v-col>
                                             </v-row>
 
