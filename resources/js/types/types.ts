@@ -16,21 +16,24 @@ export type User = DBObject<'user'> & {
 };
 
 export type Movie = DBObject<'movie'> & {
-    id: number;
     title: string;
     genre: string;
-    actor: string;
     rating: number;
     publication_date: string;
     hidden: boolean;
     description: string;
+    thumbnail_file_path: string;
 };
 
-export type Comment = {
-    id: number;
+export type Comment = DBObject<'comment'> & {
     name: string;
     user_id: number;
     movie_id: number;
     comment: string;
     created_at: Date;
+};
+
+export type Actor = DBObject<'actor'> & {
+    first_name: string;
+    last_name: string;
 };

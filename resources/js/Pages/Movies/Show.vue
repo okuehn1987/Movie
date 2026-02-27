@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Comment, Movie } from '@/types/types';
+import { Actor, Comment, Movie } from '@/types/types';
 import { ref } from 'vue';
 import { DateTime } from 'luxon';
 import CreateUpdateForm from './CreateUpdateForm.vue';
 
 defineProps<{
-    movie: Movie & { comments: Comment[] };
+    movie: Movie & { comments: Comment[]; actors: Actor[] };
+    actors: Actor[];
 }>();
 
 const toggledVolume = ref(false);
@@ -46,7 +47,7 @@ const form = useForm({
                                 <template v-slot:default="{ isActive }">
                                     <v-card title="Edit">
                                         <v-card-text style="padding-bottom: 0px">
-                                            <CreateUpdateForm></CreateUpdateForm>
+                                            <CreateUpdateForm :actors :movie></CreateUpdateForm>
                                         </v-card-text>
 
                                         <v-card-actions>
@@ -95,8 +96,10 @@ const form = useForm({
                                     </v-avatar>
                                 </template>
 
-                                <v-list-item-title>{{ movie.actor }}</v-list-item-title>
                                 <v-list-item-subtitle>Actors</v-list-item-subtitle>
+                                <v-list-item-title v-for="actor in movie.actors" :key="actor.id">
+                                    {{ actor.first_name }} {{ actor.last_name }}
+                                </v-list-item-title>
                             </v-list-item>
 
                             <v-divider inset></v-divider>

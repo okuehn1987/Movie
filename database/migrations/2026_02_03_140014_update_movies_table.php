@@ -12,13 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('movies', function (Blueprint $table) {
-            // $table->dropColumn('id');
-            // $table->text('name')->change();
+
             $table->dropColumn('name');
             $table->dropColumn('year');
 
             $table->string('title')->unique();
-            $table->string('actor');
             $table->date('publication_date');
             $table->smallInteger('duration_in_seconds');
             $table->unsignedTinyInteger('rating');
