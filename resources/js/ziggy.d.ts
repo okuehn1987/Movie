@@ -46,6 +46,13 @@ declare module 'ziggy-js' {
     ],
     "movie.create": [],
     "movie.store": [],
+    "movie.update": [
+        {
+            "name": "movie",
+            "required": true,
+            "binding": "id"
+        }
+    ],
     "actor.index": [],
     "actor.create": [],
     "actor.store": [],

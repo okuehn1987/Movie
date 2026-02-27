@@ -16,7 +16,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('movies', MovieController::class)->only(['index', 'show']);
 
-    Route::resource('movie', MovieController::class)->only(['store', 'create'])->middleware(EnsureAdminIsValid::class);
+    Route::resource('movie', MovieController::class)->only(['store', 'create', 'update'])->middleware(EnsureAdminIsValid::class);
 
     Route::resource('actor', ActorController::class)->only(['index', 'store', 'create', 'update', 'delete'])->middleware(EnsureAdminIsValid::class);
 

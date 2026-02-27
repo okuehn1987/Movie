@@ -55,7 +55,7 @@ class MovieController extends Controller
         // dd($validated);
 
         $movieName = $validated['title'] . '.mp4';
-        $thumbnailName = $validated['title'] . '.jpg';
+        $thumbnailName = $validated['thumbnail_file']->getClientOriginalName();
         $moviePath = Storage::disk('movies')->putFileAs('', $validated['movie_file'], $movieName);
         $thumbnailPath = Storage::disk('movies')->putFileAs('thumbnails', $validated['thumbnail_file'], $thumbnailName);
 
@@ -92,6 +92,7 @@ class MovieController extends Controller
      */
     public function update(Request $request, Movie $movie)
     {
+
         dd($request->all());
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -99,7 +100,6 @@ class MovieController extends Controller
             'publicationDate' => 'required|date',
             'rating' => 'string|min:0|max:5',
             'hidden' => 'boolean',
-            'movie_file' => 'required',
             'thumbnail_file' => 'required',
             'description' => 'required|string|max:1000',
             'actors' => 'required|array',

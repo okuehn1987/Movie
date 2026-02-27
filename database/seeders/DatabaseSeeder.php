@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\AbsenceType;
+use App\Models\Actor;
 use App\Models\Address;
 use App\Models\ChatAssistant;
 use App\Models\Customer;
@@ -50,6 +51,20 @@ class DatabaseSeeder extends Seeder
                 'password' => Hash::make('admin1234'),
                 'is_admin' => true
             ]);
+
+        Actor::factory()
+            ->create([
+                'first_name' => 'World',
+                'last_name' => 'Worlds'
+            ]);
+
+        Actor::factory()
+            ->create([
+                'first_name' => 'Bib Buck',
+                'last_name' => 'Bunny'
+            ]);
+
+
 
         Movie::factory()
             ->create([

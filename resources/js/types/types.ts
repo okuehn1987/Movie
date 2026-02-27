@@ -23,6 +23,7 @@ export type Movie = DBObject<'movie'> & {
     hidden: boolean;
     description: string;
     thumbnail_file_path: string;
+    thumbnail_orginal_name: string;
 };
 
 export type Comment = DBObject<'comment'> & {
