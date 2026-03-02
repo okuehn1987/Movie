@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Actor, Movie } from '@/types/types';
+import { watch } from 'vue';
 import { VDateInput } from 'vuetify/labs/VDateInput';
 
 const props = defineProps<{
@@ -10,7 +11,7 @@ const props = defineProps<{
 const form = useForm({
     title: props.movie?.title ?? '',
     genre: props.movie?.genre ?? '',
-    actors: props.movie?.actors ?? ([] as Actor['id'][]),
+    actors: props.movie?.actors.map(actor => actor.id) ?? ([] as Actor['id'][]),
     publicationDate: props.movie?.publication_date ?? '',
     rating: props.movie?.rating ?? '',
     hidden: props.movie?.hidden ?? false,
@@ -19,6 +20,26 @@ const form = useForm({
     movie_file: undefined as File | undefined,
     thumbnail_file: undefined as File | undefined,
 });
+
+if (props.movie) {
+    watch(
+        () => props.movie,
+        newMovie => {
+            form.defaults({
+                title: newMovie?.title ?? '',
+                genre: newMovie?.genre ?? '',
+                actors: (newMovie?.actors.map(actor => actor.id) ?? []) as Actor['id'][],
+                publicationDate: newMovie?.publication_date ?? '',
+                rating: newMovie?.rating ?? '',
+                hidden: newMovie?.hidden ?? false,
+                description: newMovie?.description ?? '',
+                thumbnail_file: undefined as File | undefined,
+            });
+            form.reset();
+        },
+        { deep: true },
+    );
+}
 
 function submit() {
     if (props.movie) {

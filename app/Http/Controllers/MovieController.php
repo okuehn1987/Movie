@@ -44,7 +44,7 @@ class MovieController extends Controller
             'title' => 'required|string|max:255',
             'genre' => 'required|string|max:255',
             'publicationDate' => 'required|date',
-            'rating' => 'string|min:0|max:5',
+            'rating' => 'integer|min:0|max:5',
             'hidden' => 'boolean',
             'movie_file' => 'required',
             'thumbnail_file' => 'required',
@@ -92,28 +92,30 @@ class MovieController extends Controller
      */
     public function update(Request $request, Movie $movie)
     {
+        // dd($request->all());
 
-        dd($request->all());
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'genre' => 'required|string|max:255',
             'publicationDate' => 'required|date',
-            'rating' => 'string|min:0|max:5',
+            'rating' => 'integer|min:0|max:5',
             'hidden' => 'boolean',
-            'thumbnail_file' => 'required',
+            'thumbnail_file' => 'nullable',
             'description' => 'required|string|max:1000',
             'actors' => 'required|array',
             'actors.*' => 'exists:actors,id'
         ]);
-
+        // dd($validated);
         //TODO: Ceck thumbnail neu? 
         //TODO: Validation Check
         //TODO: Laraveldocs attach lesen weitere methode
 
-        $movieName = $validated['title'] . '.mp4';
-        $thumbnailName = $validated['title'] . '.jpg';
-        $moviePath = Storage::disk('movies')->putFileAs('', $validated['movie_file'], $movieName);
+        //TODO: thumbnailPath muss angepasst werden (turnery)
+
+
+        $thumbnailName = !array_key_exists('thumbnail_file', $validated) ? collect(preg_split("/\//", $movie->thumbnail_file_path))->last() :  $validated['thumbnail_file']->getClientOriginalName();
         $thumbnailPath = Storage::disk('movies')->putFileAs('thumbnails', $validated['thumbnail_file'], $thumbnailName);
+        // dd($thumbnailName);
 
         $movie->update([
             'title' => $validated['title'],
@@ -121,13 +123,11 @@ class MovieController extends Controller
             'publication_date' => Carbon::parse($validated['publicationDate']),
             'rating' => $validated['rating'],
             'hidden' => $validated['hidden'],
-            'movie_file_path' => $moviePath,
             'thumbnail_file_path' => $thumbnailPath,
             'description' => $validated['description'],
-            'duration_in_seconds' => FFProbe::create()->format(Storage::disk('movies')->path($moviePath))->get('duration'),
 
         ]);
-        $movie->actors()->attach($validated['actors']);
+        $movie->actors()->sync($validated['actors']);
     }
 
     /**
