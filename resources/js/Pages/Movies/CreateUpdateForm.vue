@@ -13,7 +13,6 @@ const form = useForm({
     genre: props.movie?.genre ?? '',
     actors: props.movie?.actors.map(actor => actor.id) ?? ([] as Actor['id'][]),
     publicationDate: props.movie?.publication_date ?? '',
-    rating: props.movie?.rating ?? '',
     hidden: props.movie?.hidden ?? false,
     description: props.movie?.description ?? '',
 
@@ -30,7 +29,6 @@ if (props.movie) {
                 genre: newMovie?.genre ?? '',
                 actors: (newMovie?.actors.map(actor => actor.id) ?? []) as Actor['id'][],
                 publicationDate: newMovie?.publication_date ?? '',
-                rating: newMovie?.rating ?? '',
                 hidden: newMovie?.hidden ?? false,
                 description: newMovie?.description ?? '',
                 thumbnail_file: undefined as File | undefined,
@@ -73,7 +71,6 @@ function submit() {
             ></v-select>
             <v-date-input v-model="form.publicationDate" placeholder="Publication Date" :error-messages="form.errors.publicationDate"></v-date-input>
             <v-text-field v-model="form.description" placeholder="Description" :error-messages="form.errors.description"></v-text-field>
-            <v-text-field v-model="form.rating" placeholder="Rating" :error-messages="form.errors.rating"></v-text-field>
             <v-checkbox v-model="form.hidden" label="Hidden" :error-messages="form.errors.hidden"></v-checkbox>
             <v-file-upload v-if="!movie" style="margin-bottom: 20px" v-model="form.movie_file" density="compact"></v-file-upload>
             <v-btn type="submit">{{ !!movie ? 'Save Edit' : 'Add Movie' }}</v-btn>

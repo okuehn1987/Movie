@@ -18,7 +18,6 @@ export type User = DBObject<'user'> & {
 export type Movie = DBObject<'movie'> & {
     title: string;
     genre: string;
-    rating: number;
     publication_date: string;
     hidden: boolean;
     description: string;

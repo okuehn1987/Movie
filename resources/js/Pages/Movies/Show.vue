@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Actor, Comment, Movie } from '@/types/types';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { DateTime } from 'luxon';
 import CreateUpdateForm from './CreateUpdateForm.vue';
 
@@ -9,6 +9,12 @@ defineProps<{
     movie: Movie & { comments: Comment[]; actors: Actor[] };
     actors: Actor[];
 }>();
+
+const rating = ref(0);
+
+watch(rating, newRating => {
+    //TODO: watcher fertig schreiben mit router.post
+});
 
 const toggledVolume = ref(false);
 
@@ -23,7 +29,12 @@ const form = useForm({
             <v-col style="min-width: 375px; max-width: 375px; height: 830px">
                 <v-sheet style="margin-right: 20px">
                     <v-card max-width="375" height="830">
-                        <v-img class="text-white" height="300px" :src="route('thumbnailFile.getThumbnailContent', { thumbnailFile: movie.id })" cover>
+                        <v-img
+                            class="text-white"
+                            height="300px"
+                            :src="route('movie.getThumbnailContent', { movie: movie.id, path: movie.thumbnail_file_path })"
+                            cover
+                        >
                             <div class="d-flex flex-column h-100">
                                 <v-card-title class="d-flex ga-2 px-2">
                                     <v-spacer></v-spacer>
@@ -60,14 +71,27 @@ const form = useForm({
                             </v-dialog>
                         </v-container>
                         <v-list lines="two">
-                            <v-list-item>
-                                <template v-slot:prepend>
-                                    <v-avatar>
-                                        <v-icon color="yellow" icon="mdi-star"></v-icon>
-                                    </v-avatar>
-                                </template>
+                            <div class="d-flex justify-center mt-auto text-headline-small">Rating</div>
 
-                                <v-list-item-title>{{ movie.rating }}</v-list-item-title>
+                            <div class="d-flex align-center flex-column my-auto">
+                                <div class="text-display-large mt-5">3.5 / 5</div>
+                            </div>
+
+                            <v-list-item>
+                                <div class="d-flex justify-center">
+                                    <v-rating
+                                        v-model="rating"
+                                        clearable
+                                        mt-auto
+                                        half-increments
+                                        hover
+                                        :length="5"
+                                        :size="32"
+                                        active-color="yellow-darken-3"
+                                        color="yellow-darken-3"
+                                    />
+                                </div>
+                                <div class="d-flex justify-center px-3">3,360 ratings</div>
 
                                 <template v-slot:append></template>
                             </v-list-item>
@@ -104,7 +128,7 @@ const form = useForm({
 
                             <v-divider inset></v-divider>
 
-                            <v-list-item>
+                            <v-list-item style="max-height: 160px; overflow-y: auto">
                                 <template v-slot:prepend></template>
 
                                 <p>
@@ -127,7 +151,7 @@ const form = useForm({
                         min-width="275"
                         mx-auto="none"
                         rounded="lg"
-                        :src="route('movieFile.getMovieContent', { movieFile: movie.id })"
+                        :src="route('movie.getMovieContent', { movie: movie.id })"
                         eager
                         :muted="false"
                         pills

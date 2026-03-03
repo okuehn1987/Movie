@@ -60,7 +60,7 @@ class DatabaseSeeder extends Seeder
 
         Actor::factory()
             ->create([
-                'first_name' => 'Bib Buck',
+                'first_name' => 'Big Buck',
                 'last_name' => 'Bunny'
             ]);
 
@@ -72,7 +72,6 @@ class DatabaseSeeder extends Seeder
                 'title' => 'The Bunny',
                 'genre' => 'Zeichentrick',
                 'publication_date' => '2026-02-09',
-                'rating' => '3',
                 'hidden' => false,
                 'movie_file_path' => Storage::disk('movies')->putFileAs('', new File('storage/app/public/The Bunny.mp4'), 'Bunny.mp4'),
                 'thumbnail_file_path' => Storage::disk('movies')->putFileAs('thumbnails', new File('storage/app/public/thumbnails/The Bunny.jpg'), 'The Bunny.jpg'),
@@ -88,7 +87,6 @@ class DatabaseSeeder extends Seeder
                 'title' => 'The World',
                 'genre' => 'Si-Fi',
                 'publication_date' => '2026-02-10',
-                'rating' => '2',
                 'hidden' => false,
                 'movie_file_path' => Storage::disk('movies')->putFileAs('', new File('storage/app/public/The World.mp4'), 'World.mp4'),
                 'thumbnail_file_path' => Storage::disk('movies')->putFileAs('thumbnails', new File('storage/app/public/thumbnails/The World.jpg'), 'World.jpg'),

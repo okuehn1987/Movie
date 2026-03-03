@@ -36,7 +36,7 @@ function secondsToMinutes(seconds: number) {
                                     </div>
                                     <img
                                         style="width: 100%; height: 180px; object-fit: cover"
-                                        :src="route('thumbnailFile.getThumbnailContent', { thumbnailFile: movie.id })"
+                                        :src="route('movie.getThumbnailContent', { movie: movie.id })"
                                     />
                                     <span
                                         style="

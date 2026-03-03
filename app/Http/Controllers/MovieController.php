@@ -44,7 +44,6 @@ class MovieController extends Controller
             'title' => 'required|string|max:255',
             'genre' => 'required|string|max:255',
             'publicationDate' => 'required|date',
-            'rating' => 'integer|min:0|max:5',
             'hidden' => 'boolean',
             'movie_file' => 'required',
             'thumbnail_file' => 'required',
@@ -54,7 +53,7 @@ class MovieController extends Controller
         ]);
         // dd($validated);
 
-        $movieName = $validated['title'] . '.mp4';
+        $movieName = $validated['movie_file']->getClientOriginalName();
         $thumbnailName = $validated['thumbnail_file']->getClientOriginalName();
         $moviePath = Storage::disk('movies')->putFileAs('', $validated['movie_file'], $movieName);
         $thumbnailPath = Storage::disk('movies')->putFileAs('thumbnails', $validated['thumbnail_file'], $thumbnailName);
@@ -63,7 +62,6 @@ class MovieController extends Controller
             'title' => $validated['title'],
             'genre' => $validated['genre'],
             'publication_date' => Carbon::parse($validated['publicationDate']),
-            'rating' => $validated['rating'],
             'hidden' => $validated['hidden'],
             'movie_file_path' => $moviePath,
             'thumbnail_file_path' => $thumbnailPath,
@@ -98,7 +96,6 @@ class MovieController extends Controller
             'title' => 'required|string|max:255',
             'genre' => 'required|string|max:255',
             'publicationDate' => 'required|date',
-            'rating' => 'integer|min:0|max:5',
             'hidden' => 'boolean',
             'thumbnail_file' => 'nullable',
             'description' => 'required|string|max:1000',
@@ -106,22 +103,21 @@ class MovieController extends Controller
             'actors.*' => 'exists:actors,id'
         ]);
         // dd($validated);
-        //TODO: Ceck thumbnail neu? 
-        //TODO: Validation Check
-        //TODO: Laraveldocs attach lesen weitere methode
 
-        //TODO: thumbnailPath muss angepasst werden (turnery)
+
+
+
+
 
 
         $thumbnailName = !array_key_exists('thumbnail_file', $validated) ? collect(preg_split("/\//", $movie->thumbnail_file_path))->last() :  $validated['thumbnail_file']->getClientOriginalName();
-        $thumbnailPath = Storage::disk('movies')->putFileAs('thumbnails', $validated['thumbnail_file'], $thumbnailName);
+        $thumbnailPath = !array_key_exists('thumbnail_file', $validated) ? $movie->thumbnail_file_path : Storage::disk('movies')->putFileAs('thumbnails', $validated['thumbnail_file'], $thumbnailName);
         // dd($thumbnailName);
 
         $movie->update([
             'title' => $validated['title'],
             'genre' => $validated['genre'],
             'publication_date' => Carbon::parse($validated['publicationDate']),
-            'rating' => $validated['rating'],
             'hidden' => $validated['hidden'],
             'thumbnail_file_path' => $thumbnailPath,
             'description' => $validated['description'],
@@ -138,13 +134,13 @@ class MovieController extends Controller
         //
     }
 
-    public function getMovieContent(Movie $movieFile,)
+    public function getMovieContent(Movie $movie)
     {
-        return response()->file(Storage::disk('movies')->path($movieFile->movie_file_path));
+        return response()->file(Storage::disk('movies')->path($movie->movie_file_path));
     }
 
-    public function getThumbnailContent(Movie $thumbnailFile)
+    public function getThumbnailContent(Movie $movie)
     {
-        return response()->file(Storage::disk('movies')->path($thumbnailFile->thumbnail_file_path));
+        return response()->file(Storage::disk('movies')->path($movie->thumbnail_file_path));
     }
 }

@@ -64,16 +64,16 @@ declare module 'ziggy-js' {
     ],
     "music.index": [],
     "music.store": [],
-    "movieFile.getMovieContent": [
+    "movie.getMovieContent": [
         {
-            "name": "movieFile",
+            "name": "movie",
             "required": true,
             "binding": "id"
         }
     ],
-    "thumbnailFile.getThumbnailContent": [
+    "movie.getThumbnailContent": [
         {
-            "name": "thumbnailFile",
+            "name": "movie",
             "required": true,
             "binding": "id"
         }
